@@ -57,20 +57,52 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
 
     $discord_user_id = sanitize_text_field($user_data['id']);
     $discord_email = isset($user_data['email']) ? sanitize_email($user_data['email']) : '';
-
-    // Fetch the user's guild (server) specific nickname
+    
+    // Fetch the user's guild (server) specific nickname (this stays as-is)
     $guild_id = '816387080334737436';  // Your Discord server (guild) ID
     $guild_member_response = wp_remote_get("https://discord.com/api/guilds/{$guild_id}/members/{$discord_user_id}", array(
         'headers' => array(
             'Authorization' => 'Bot MTI5NzkwODA3NjkyOTYxMzk1Ng.GrCF_s.Alz6b563skzSJIHDIwoKlR3bTok4S6W1dvIcMc',
         ),
     ));
-
+    
     $guild_member_data = null;
     if (!is_wp_error($guild_member_response)) {
         $guild_member_data = json_decode(wp_remote_retrieve_body($guild_member_response), true);
     }
+    
+    // Fetch user API key and cache login state
+        global $wpdb;
+        $table_name = 'jotun_user_api_key';
 
+        // Check if user exists in the jotun_user_api_key table
+        $user_api_key_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table_name WHERE discord_user_id = %s",
+            $discord_user_id
+        ));
+
+        if ($user_api_key_data) {
+            // Cache user login state
+            update_user_meta($user_id, 'logged_in_user', array(
+                'discord_user_id' => $discord_user_id,
+                'api_key' => $user_api_key_data->api_key,
+                'permissions' => $user_api_key_data->permissions
+            ));
+
+            // Assign roles based on permissions using role-access logic
+            if (function_exists('assign_roles_from_permissions')) {
+                assign_roles_from_permissions($user_id, $user_api_key_data->permissions);
+            }
+            
+            // Log the user in
+            wp_set_auth_cookie($user_id);
+
+        } else {
+            wp_die('User not authorized. Please contact an administrator.');
+    }
+    
+    // Continue with the rest of your code...
+    
     // Ensure we log the guild member data for debugging purposes
     error_log('Guild Member Data: ' . print_r($guild_member_data, true));
 
