@@ -1,0 +1,74 @@
+/* pricelist.css */
+
+/* Default desktop layout */
+.section1-items .item-grid,
+.section2-items-container .item-grid, /* Targeting item-grids within section2 */
+.section3-items-container .item-grid { /* Targeting item-grids within section3 */
+    display: grid;
+    gap: 10px;
+}
+
+/* Section 1, Section 2, and Section 3: Default desktop layout */
+.section1-items .item-grid,
+.section2-items-container .item-grid,
+.section3-items-container .item-grid {
+    grid-template-columns: repeat(7, 1fr); /* 7 items across by default */
+}
+
+/* Tablet layout */
+@media (max-width: 1024px) {
+    /* Limit to 4 items across on tablet for all sections */
+    .section1-items .item-grid,
+    .section2-items-container .item-grid,
+    .section3-items-container .item-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+    /* Limit to 2 items across on mobile for all sections */
+    .section1-items .item-grid,
+    .section2-items-container .item-grid,
+    .section3-items-container .item-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Additional styling for section containers */
+.section1-items, .section2-items, .section3-items {
+    padding: 20px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.85);
+    margin-bottom: 20px;
+}
+
+.section1-items h2, .section2-items h2, .section3-items h2 {
+    color: #fff;
+    text-align: center;
+}
+
+/* Style for tabs */
+.tier-tab {
+    padding: 10px;
+    margin-right: 5px;
+    background: #f5f5f5;
+    color: #333;
+    border: none;
+    cursor: pointer;
+}
+
+.tier-tab.active {
+    background: #333;
+    color: #fff;
+}
+
+/* Style for individual items */
+.item-box {
+    padding: 10px;
+    background: #1f1f1f;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+}

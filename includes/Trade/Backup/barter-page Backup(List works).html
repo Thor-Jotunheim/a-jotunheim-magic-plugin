@@ -1,0 +1,160 @@
+<div id="jotunheim-barter-page">
+    <h1>Jotunheim Barter Page</h1>
+
+    <div class="trade-layout">
+        <!-- Left Sidebar: Item List with Search Bar -->
+        <div class="item-list-sidebar">
+            <input type="text" id="item-search" placeholder="Search items..." oninput="filterItems()">
+            <div id="item-list-accordion">
+                <!-- JavaScript will populate this accordion dynamically based on item data -->
+            </div>
+        </div>
+
+        <!-- Right Content: Selected Items -->
+        <div id="selected-items-container">
+            <!-- JavaScript will add item frames here in rows of 4 -->
+        </div>
+    </div>
+
+    <div class="totals-container">
+        <div>Total for Trader 1: <span id="trader1-total">0 Coins</span></div>
+        <div>Total for Trader 2: <span id="trader2-total">0 Coins</span></div>
+        <div>Trade Difference: <span id="trade-difference">0 Coins</span></div>
+    </div>
+</div>
+
+<style>
+    /* Layout */
+    #jotunheim-barter-page {
+        font-family: Arial, sans-serif;
+        margin-top: 20px;
+    }
+
+    .trade-layout {
+        display: flex;
+        gap: 20px;
+    }
+
+    .item-list-sidebar {
+        width: 30%;
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 10px;
+        background: #333;
+        border-radius: 5px;
+        color: #fff;
+    }
+
+    #item-search {
+        width: 100%;
+        padding: 8px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    #selected-items-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        width: 65%;
+    }
+
+    /* Item Frame Style */
+    .item-frame {
+        width: 150px;
+        height: 200px;
+        background: url('/wp-content/uploads/Jotunheim-magic/wood-frame.png') no-repeat center center;
+        background-size: cover;
+        border-radius: 10px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .item-frame img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .item-frame h3 {
+        font-family: 'Valheim', sans-serif;
+        font-size: 1rem;
+        margin: 5px 0;
+        text-align: center;
+        color: #fff;
+    }
+
+    .level-select {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    /* Remove Button */
+    .remove-item {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* Accordion */
+    .accordion-section {
+        background-color: #444;
+        margin-bottom: 5px;
+    }
+
+    .accordion-header {
+        padding: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        background-color: #555;
+        color: #fff;
+    }
+
+    .accordion-content {
+        display: none;
+        padding: 10px;
+        background-color: #222;
+    }
+
+    .accordion-content.active {
+        display: block;
+    }
+
+    /* Item Button */
+    .item-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        padding: 5px;
+        border-bottom: 1px solid #555;
+        color: #ddd;
+    }
+
+    .item-button:hover {
+        background-color: #555;
+    }
+
+    .item-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .totals-container {
+        margin-top: 20px;
+        font-size: 1.2rem;
+    }
+
+    .totals-container div {
+        margin-bottom: 10px;
+    }
+</style>

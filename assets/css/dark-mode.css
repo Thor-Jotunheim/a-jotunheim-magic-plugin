@@ -1,0 +1,72 @@
+/* General dark mode styling for the body */
+body.dark-mode {
+    background-color: #181818;
+    color: #e0e0e0; /* Lighter text color for readability */
+}
+
+/* Dark Mode Styling Specific to Pricelist Sections */
+body.dark-mode .pricelist-section .section1-items,
+body.dark-mode .pricelist-section .section2-items,
+body.dark-mode .pricelist-section .section3-items,
+body.dark-mode .pricelist-section .item-grid,
+body.dark-mode .pricelist-section .item-box {
+    background-color: #1f1f1f !important; /* Consistent dark background for pricelist */
+    color: #e0e0e0 !important; /* Ensure text color is light enough */
+}
+
+/* General Dark Mode Styling for Gutenverse Blocks */
+body.dark-mode .wp-block-gutenverse-section,
+body.dark-mode .guten-element,
+body.dark-mode .guten-section,
+body.dark-mode .wp-block-gutenverse-container {
+    background-color: inherit; /* Keep original background outside of pricelist */
+    color: inherit; /* Keep text color outside pricelist unaffected */
+}
+
+/* Headers and titles within Pricelist Section */
+body.dark-mode .pricelist-section h1,
+body.dark-mode .pricelist-section h2,
+body.dark-mode .pricelist-section h3,
+body.dark-mode .pricelist-section h4,
+body.dark-mode .pricelist-section h5,
+body.dark-mode .pricelist-section h6 {
+    color: #ffffff !important; /* Ensure headers are visible in pricelist */
+}
+
+/* Dark Mode Styling for Item Boxes within Pricelist */
+body.dark-mode .pricelist-section .item-box {
+    background-color: #333333 !important; /* Dark but distinct background */
+    color: #e0e0e0 !important; /* Lighter text color within item boxes */
+    border: 1px solid #444444 !important; /* Subtle border for definition */
+}
+
+/* Dark Mode for Buttons and Links within Pricelist */
+body.dark-mode .pricelist-section a,
+body.dark-mode .pricelist-section button,
+body.dark-mode .pricelist-section .button,
+body.dark-mode .pricelist-section .tier-tab {
+    background-color: #444444 !important;
+    color: #e0e0e0 !important;
+    border-color: #555555 !important;
+}
+
+/* Specific text color overrides for pricelist */
+body.dark-mode .pricelist-section p,
+body.dark-mode .pricelist-section span,
+body.dark-mode .pricelist-section h2 {
+    color: #e0e0e0 !important; /* Ensure all text is readable */
+}
+
+/* Additional adjustments for pricelist-specific buttons */
+body.dark-mode .pricelist-section .discord-login-button,
+body.dark-mode .pricelist-section #dark-mode-toggle {
+    background-color: #7289da !important;
+    color: #ffffff !important;
+    border: none;
+}
+
+/* Fine-tune borders and grid layout in pricelist */
+body.dark-mode .pricelist-section .wp-block-gutenverse-section,
+body.dark-mode .pricelist-section .guten-element {
+    border-color: #444444 !important;
+}
