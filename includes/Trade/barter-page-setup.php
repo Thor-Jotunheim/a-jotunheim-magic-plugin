@@ -14,13 +14,13 @@ function jotunheim_barter_page_shortcode() {
 function jotunheim_barter_page_half_screenshortcode() {
     // Start output buffering
     ob_start();
-    include plugin_dir_path(__FILE__) . 'jotunheim_barter_page-half_screen.html';
+    include plugin_dir_path(__FILE__) . 'jotunheim-barter-page-half-screen.html';
     return ob_get_clean();
 }
 
 // Register Barter Page shortcode
 add_shortcode('jotunheim_barter_page', 'jotunheim_barter_page_shortcode');
-add_shortcode('jotunheim_barter_page-half_screen', 'jotunheim_barter_page_half_screenshortcode');
+add_shortcode('jotunheim_barter_page_half_screen', 'jotunheim_barter_page_half_screenshortcode');
 
 // Conditionally enqueue the JavaScript file for the Barter Page
 function jotunheim_enqueue_barter_scripts() {
