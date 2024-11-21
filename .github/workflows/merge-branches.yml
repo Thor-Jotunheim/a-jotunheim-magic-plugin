@@ -1,0 +1,41 @@
+name: Flexible Branch Merge
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+    inputs:
+      source_branch:
+        description: 'The branch to merge from (e.g., dev, 0.0.2)'
+        required: true
+        default: 'dev'
+      target_branch:
+        description: 'The branch to merge into (e.g., main, staging, or new branch name)'
+        required: true
+        default: 'main'
+
+jobs:
+  merge-branches:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Create Target Branch (if needed)
+      run: |
+        git fetch origin
+        if ! git show-ref --verify --quiet refs/heads/${{ github.event.inputs.target_branch }}; then
+          echo "Branch ${{ github.event.inputs.target_branch }} does not exist. Creating it..."
+          git checkout -b ${{ github.event.inputs.target_branch }}
+          git push origin ${{ github.event.inputs.target_branch }}
+        else
+          echo "Branch ${{ github.event.inputs.target_branch }} exists. Checking out..."
+          git checkout ${{ github.event.inputs.target_branch }}
+        fi
+
+    - name: Merge Source into Target
+      run: |
+        git merge ${{ github.event.inputs.source_branch }} --no-ff
+        git push origin ${{ github.event.inputs.target_branch }}
+
+    - name: Merge Complete
+      run: echo "Successfully merged ${{ github.event.inputs.source_branch }} into ${{ github.event.inputs.target_branch }}"
