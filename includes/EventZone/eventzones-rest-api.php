@@ -44,16 +44,33 @@ add_action('rest_api_init', function () {
     ));
 });
 
-// Function to validate API key directly from wp-config.php
 function validate_api_key($request) {
+    global $wpdb;
+
     // Retrieve the API key from the request headers
     $api_key = $request->get_header('x-api-key');
-    
-    // Ensure that the key matches the one defined in wp-config.php
-    if (!defined('esc_js($api_key)') || $api_key !== esc_js($api_key)) {
-        error_log('Invalid API key provided.');
+    if (empty($api_key)) {
+        error_log('API key missing from request.');
+        return new WP_Error('rest_forbidden', __('API key is missing.'), array('status' => 403));
+    }
+
+    // Fetch the logged-in user's API key from the database
+    $current_user = wp_get_current_user();
+    if (!$current_user || !$current_user->ID) {
+        error_log('Permission denied: User is not logged in.');
+        return new WP_Error('rest_forbidden', __('User is not logged in.'), array('status' => 403));
+    }
+
+    $user_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+        $current_user->ID
+    ));
+
+    if (!$user_data || $api_key !== $user_data->api_key) {
+        error_log('Invalid API key provided for user ID ' . $current_user->ID);
         return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
     }
+
     return true;
 }
 
