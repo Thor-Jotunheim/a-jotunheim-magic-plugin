@@ -123,10 +123,11 @@ function jotunheim_magic_add_new_zone_interface() {
                 });
             });
         });
+
     </script>
+
     <?php
     return ob_get_clean(); // Return the content
-}
 
 // Shortcode to display the "Add New Zone" form
 add_shortcode('jotunheim_add_new_zone', 'jotunheim_magic_add_new_zone_interface');
