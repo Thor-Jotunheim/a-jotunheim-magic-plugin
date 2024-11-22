@@ -3,6 +3,39 @@
 if (!defined('ABSPATH')) exit;
 
 /**
+ * Defines a role hierarchy where higher roles can access permissions of lower roles.
+ */
+function get_role_hierarchy() {
+    return [
+        'admin'     => ['moderator', 'valkyrie', 'vithar'], // Admin has all permissions
+        'moderator' => ['valkyrie', 'vithar'],              // Moderator can access Valkyrie and Vithar pages
+        'valkyrie'  => ['vithar'],                         // Valkyrie can access Vithar pages
+        'vithar'    => []                                  // Vithar has no additional permissions
+    ];
+}
+
+/**
+ * Checks if a user's role matches or exceeds the required role in the hierarchy.
+ */
+function user_has_access($user_roles, $required_role) {
+    $role_hierarchy = get_role_hierarchy();
+    
+    // If the user has the exact required role, grant access
+    if (in_array($required_role, $user_roles)) {
+        return true;
+    }
+
+    // Check if the user has a higher role that includes the required role
+    foreach ($user_roles as $user_role) {
+        if (isset($role_hierarchy[$user_role]) && in_array($required_role, $role_hierarchy[$user_role])) {
+            return true;
+        }
+    }
+
+    return false; // Access denied
+}
+
+/**
  * Page access control based on Discord roles mapped to WordPress roles
  */
 function jotunheim_magic_staff_page_access() {
@@ -39,8 +72,8 @@ function jotunheim_magic_staff_page_access() {
         error_log("Page being accessed: " . $post->post_name);
         error_log("Required role for this page: " . $required_role);
 
-        // Allow access if the user has the required Discord role or is an administrator
-        if (current_user_can('administrator') || (is_array($discord_roles) && in_array($required_role, $discord_roles))) {
+        // Allow access if the user has the required role or a higher role
+        if (current_user_can('administrator') || (is_array($discord_roles) && user_has_access($discord_roles, $required_role))) {
             error_log("Access granted to page: " . $post->post_name);
             add_filter('post_password_required', '__return_false'); // Disable password for the page
         } else {
@@ -50,4 +83,20 @@ function jotunheim_magic_staff_page_access() {
         error_log("Page " . $post->post_name . " does not require special access.");
     }
 }
+
+function assign_roles_from_permissions($user_id, $permissions_csv) {
+    $permissions = explode(',', $permissions_csv); // Assuming permissions are comma-separated
+    $wp_role = 'subscriber'; // Default role
+
+    if (in_array('admin', $permissions)) {
+        $wp_role = 'administrator';
+    } elseif (in_array('editor', $permissions)) {
+        $wp_role = 'editor';
+    }
+
+    // Assign WordPress role
+    $user = new WP_User($user_id);
+    $user->set_role($wp_role);
+}
+
 add_action('wp', 'jotunheim_magic_staff_page_access');
