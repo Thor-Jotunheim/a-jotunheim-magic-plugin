@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 global $wpdb;
-global $api_key; // Declare as global to make it accessible in other scopes
+global $api_key; // Declare once globally
 
 // Get the current user
 $current_user = wp_get_current_user();
@@ -75,26 +75,12 @@ function jotunheim_magic_add_new_zone_interface() {
                                 <option value='NPC'>NPC</option>
                               </select>";
                     } else {
-                        // Add placeholders for specific fields
-                        if ($field_name == 'name') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='eventZoneName' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'priority') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='10' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'position') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='0,0,0' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'respawnLocation') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='0,0,0' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'radius') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='20' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } else {
-                            echo "<input type='text' id='$field_name' name='$field_name' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        }
-
+                        echo "<input type='text' id='$field_name' name='$field_name' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
                     }
+
                     echo "</div></div>";
                 endforeach; ?>
 
-                <!-- Submit Button -->
                 <button type="button" id="add-zone-btn" style="padding: 10px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%;">
                     Add Zone
                 </button>
@@ -104,63 +90,36 @@ function jotunheim_magic_add_new_zone_interface() {
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // Initially hide square-related fields container
-            $('[data-field="squareXRadius"], [data-field="squareZRadius"]').hide();
-            // Initially hide respawn location fields container
-            $('[data-field="respawnLocation"]').hide();
+            const apiKey = "<?php echo $apiKey; ?>"; // Use prepared API key
+            if (!apiKey) {
+                console.error("API key is missing or invalid.");
+                return;
+            }
 
-            // Show/hide square radius fields based on shape selection
-            $('#shape').change(function() {
-                const isSquare = $(this).val() === 'Square';
-                $('[data-field="squareXRadius"], [data-field="squareZRadius"]').toggle(isSquare);
-            });
-
-            // Only "RespawnAtLocation" checkbox controls visibility of respawn location fields
-            $('#respawnAtLocation').change(function() {
-                const isChecked = $(this).is(':checked');
-                $('[data-field="respawnLocation"]').toggle(isChecked);
-            });
-
-            // When OnlyLeaveViaTeleport is checked, automatically check RespawnAtLocation without changing its visibility control
-            $('#onlyLeaveViaTeleport').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#respawnAtLocation').prop('checked', true).trigger('change'); // Check and trigger change on RespawnAtLocation
-                }
-            });
-
-            // AJAX call to add new event zone with proper checkbox values
             $('#add-zone-btn').click(function() {
-                const formData = $('#add-new-zone-form').serializeArray();
+                const formData = new FormData($('#add-new-zone-form')[0]);
                 const data = {};
 
-                // Convert form data to key-value pairs, setting checkboxes to 0 if unchecked
-                formData.forEach(item => {
-                    data[item.name] = item.value || '0'; // Default unchecked checkboxes to '0'
-                });
+                for (const [key, value] of formData.entries()) {
+                    data[key] = value || '0'; // Default unchecked checkboxes to '0'
+                }
 
-                // Add unchecked checkboxes explicitly with a value of 0
-                $('#add-new-zone-form input[type="checkbox"]').each(function() {
-                    if (!$(this).is(':checked')) {
-                        data[$(this).attr('name')] = '0';
-                    }
-                });
-
-                $.ajax({
-                    url: '/wp-json/jotunheim-magic/v1/eventzones',
+                fetch('/wp-json/jotunheim-magic/v1/eventzones', {
                     method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
                     headers: {
-                        'X-API-KEY': "<?php echo esc_js($api_key); ?>"
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
                     },
-                    success: function(response) {
-                        alert('Zone added successfully');
-                        location.reload();
-                    },
-                    error: function(error) {
-                        alert('Failed to add zone');
-                        console.error(error);
-                    }
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    alert('Zone added successfully');
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('Failed to add zone');
+                    console.error(error);
                 });
             });
         });
