@@ -1,5 +1,26 @@
 <?php
-// File: eventzones-add-new-zone-interface.php
+if (!defined('ABSPATH')) exit;
+
+global $wpdb;
+global $api_key; // Declare as global to make it accessible in other scopes
+
+// Get the current user
+$current_user = wp_get_current_user();
+
+if ($current_user && $current_user->ID) {
+    // Fetch the API key for the logged-in user
+    $user_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+        $current_user->ID
+    ));
+    $api_key = $user_data ? $user_data->api_key : ''; // Assign API key or default to empty
+} else {
+    $api_key = ''; // Default to empty if the user is not logged in
+}
+
+// Prepare the API key for use in JavaScript
+$apiKey = esc_js($api_key);
+?>
 
 function jotunheim_magic_add_new_zone_interface() {
     global $wpdb;
