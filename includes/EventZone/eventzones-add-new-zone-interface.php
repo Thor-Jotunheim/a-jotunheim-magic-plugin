@@ -130,7 +130,7 @@ function jotunheim_magic_add_new_zone_interface() {
                     contentType: 'application/json',
                     data: JSON.stringify(data),
                     headers: {
-                        'X-API-KEY': "<?php echo EVENTZONES_API_KEY; ?>"
+                        'X-API-KEY': "<?php echo esc_js($api_key); ?>"
                     },
                     success: function(response) {
                         alert('Zone added successfully');
