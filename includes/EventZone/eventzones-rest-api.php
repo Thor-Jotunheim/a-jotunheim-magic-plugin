@@ -68,59 +68,41 @@ function validate_api_key($request) {
     return true;
 }
 
+// Callback function for fetching all event zones
 function fetch_all_eventzones_rest($request) {
     global $wpdb;
     $table_name = 'jotun_eventzones';
 
-    // Get column names with caching
-    $cache_key = 'columns_' . $table_name;
-    $columns = get_transient($cache_key);
-
-    if ($columns === false) {
-        $columns = $wpdb->get_results("DESCRIBE $table_name", ARRAY_A);
-        if (!$columns) {
-            return new WP_Error('no_columns', 'No columns found in the table or the table does not exist.', array('status' => 404));
-        }
-
-        set_transient($cache_key, $columns, HOUR_IN_SECONDS);
+    // Get column names dynamically from the database schema
+    $columns = $wpdb->get_results("DESCRIBE $table_name", ARRAY_A);
+    if (!$columns) {
+        return new WP_Error('no_columns', 'No columns found in the table', array('status' => 404));
     }
 
     // Extract the column names
-    $column_names = array_column($columns, 'Field');
+    $column_names = array_map(function($column) {
+        return $column['Field'];
+    }, $columns);
+
+    // Create the SELECT query dynamically based on the column names
     $column_list = implode(", ", $column_names);
 
-    // Handle search parameter
+    // Check if there is a search parameter
     $search = $request->get_param('search');
-    $query = "SELECT $column_list FROM $table_name";
-
     if (!empty($search)) {
-        $query .= $wpdb->prepare(" WHERE name LIKE %s", '%' . $wpdb->esc_like($search) . '%');
+        // Use a LIKE query for partial matching
+        $zones = $wpdb->get_results($wpdb->prepare("SELECT $column_list FROM $table_name WHERE name LIKE %s", '%' . $wpdb->esc_like($search) . '%'), ARRAY_A);
+    } else {
+        // Fetch all zones if no search parameter is provided
+        $zones = $wpdb->get_results("SELECT $column_list FROM $table_name", ARRAY_A);
     }
-
-    // Add pagination (default to 1-100 rows)
-    $page = max(1, (int) $request->get_param('page'));
-    $per_page = min(100, max(1, (int) $request->get_param('per_page')));
-    $offset = ($page - 1) * $per_page;
-
-    $query .= $wpdb->prepare(" LIMIT %d OFFSET %d", $per_page, $offset);
-
-    // Execute the query
-    $zones = $wpdb->get_results($query, ARRAY_A);
 
     if (!empty($zones)) {
-        return rest_ensure_response(array(
-            'zones' => $zones,
-            'pagination' => array(
-                'current_page' => $page,
-                'per_page' => $per_page,
-                'total' => $wpdb->get_var("SELECT COUNT(*) FROM $table_name")
-            )
-        ));
+        return rest_ensure_response($zones);
     } else {
-        return new WP_Error('no_zones', 'No event zones found.', array('status' => 404));
+        return new WP_Error('no_zones', 'No event zones found', array('status' => 404));
     }
 }
-
 
 // Callback function for fetching a single event zone by ID
 function fetch_single_eventzone_rest($request) {
