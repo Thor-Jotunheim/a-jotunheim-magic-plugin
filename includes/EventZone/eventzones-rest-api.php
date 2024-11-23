@@ -4,7 +4,7 @@
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
-// Register REST API endpoints for event zones and event zone logs
+// Register REST API endpoints for event zones
 add_action('rest_api_init', function () {
     // Public endpoint to fetch all event zones
     register_rest_route('jotunheim-magic/v1', '/eventzones', array(
@@ -42,40 +42,43 @@ add_action('rest_api_init', function () {
             ),
         ),
     ));
-
-    // Register new endpoint for event zone logs
-    register_rest_route('jotunheim-magic/v1', '/eventzone-logs', array(
-        'methods' => 'GET',
-        'callback' => 'fetch_all_eventzone_logs_rest',
-        'permission_callback' => '__return_true', // No authentication required for log access
-    ));
-
-    register_rest_route('jotunheim-magic/v1', '/eventzone-logs/(?P<id>\d+)', array(
-        'methods' => 'GET',
-        'callback' => 'fetch_single_eventzone_log_rest',
-        'permission_callback' => '__return_true', // No authentication required
-        'args' => array(
-            'id' => array(
-                'required' => true,
-                'validate_callback' => function($param, $request, $key) {
-                    return is_numeric($param);
-                }
-            ),
-        ),
-    ));
 });
 
-
-// Function to validate API key directly from wp-config.php
 function validate_api_key($request) {
+    global $wpdb;
+
     // Retrieve the API key from the request headers
     $api_key = $request->get_header('x-api-key');
-    
-    // Ensure that the key matches the one defined in wp-config.php
-    if (!defined('EVENTZONES_API_KEY') || $api_key !== EVENTZONES_API_KEY) {
-        error_log('Invalid API key provided.');
+    if (empty($api_key)) {
+        error_log('API key missing from request.');
+        return new WP_Error('rest_forbidden', __('API key is missing.'), array('status' => 403));
+    }
+
+    // Fetch the logged-in user's API key from the database
+    $current_user = wp_get_current_user();
+    if (!$current_user || !$current_user->ID) {
+        error_log('Permission denied: User is not logged in.');
+        return new WP_Error('rest_forbidden', __('User is not logged in.'), array('status' => 403));
+    }
+
+    $cache_key = 'api_key_user_' . $current_user->ID;
+$api_key = get_transient($cache_key);
+
+if ($api_key === false) {
+    $user_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+        $current_user->ID
+    ));
+    $api_key = $user_data ? $user_data->api_key : '';
+    set_transient($cache_key, $api_key, HOUR_IN_SECONDS);
+}
+
+
+    if (!$user_data || $api_key !== $user_data->api_key) {
+        error_log('Invalid API key provided for user ID ' . $current_user->ID);
         return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
     }
+
     return true;
 }
 
@@ -145,77 +148,32 @@ function fetch_single_eventzone_rest($request) {
     }
 }
 
-function insert_eventzone_log(WP_REST_Request $request) {
+// Callback function for fetching a single event zone by name
+function fetch_eventzone_by_name_rest($request) {
     global $wpdb;
-    $table_name = 'jotun_eventzone_logs';
+    $table_name = 'jotun_eventzones';
+    $zone_name = sanitize_text_field($request['name']); // Retrieve and sanitize the name parameter
 
-    // Extract data from the request
-    $zone_id = sanitize_text_field($request->get_param('zone_id'));
-    $user = sanitize_text_field($request->get_param('user'));
-    $change_type = sanitize_text_field($request->get_param('change_type'));
-    $timestamp = sanitize_text_field($request->get_param('timestamp'));
-    $details = sanitize_textarea_field($request->get_param('details'));
-
-    // Log the incoming data for debugging purposes
-    error_log("Inserting log entry: zone_id=$zone_id, user=$user, change_type=$change_type, timestamp=$timestamp, details=$details");
-
-    // Insert data into the logs table
-    $inserted = $wpdb->insert(
-        $table_name,
-        array(
-            'zone_id' => $zone_id,
-            'user' => $user,
-            'change_type' => $change_type,
-            'timestamp' => $timestamp,
-            'details' => $details
-        ),
-        array(
-            '%d',   // zone_id
-            '%s',   // user
-            '%s',   // change_type
-            '%s',   // timestamp
-            '%s'    // details
-        )
-    );
-
-    if ($inserted) {
-        return rest_ensure_response(array(
-            'status' => 'success',
-            'message' => 'Log entry inserted successfully'
-        ));
-    } else {
-        error_log("Failed to insert log entry: " . $wpdb->last_error);
-        return new WP_Error('log_insert_failed', 'Failed to insert log entry', array('status' => 500));
+    // Get column names dynamically from the database schema
+    $columns = $wpdb->get_results("DESCRIBE $table_name", ARRAY_A);
+    if (!$columns) {
+        return new WP_Error('no_columns', 'No columns found in the table', array('status' => 404));
     }
-}
 
-// Function to fetch all event zone logs
-function fetch_all_eventzone_logs_rest($request) {
-    global $wpdb;
-    $table_name = 'jotun_eventzone_logs';
+    // Extract the column names
+    $column_names = array_map(function($column) {
+        return $column['Field'];
+    }, $columns);
 
-    // Fetch all logs from the table
-    $logs = $wpdb->get_results("SELECT * FROM $table_name", ARRAY_A);
+    // Create the SELECT query dynamically based on the column names
+    $column_list = implode(", ", $column_names);
 
-    if ($logs) {
-        return rest_ensure_response($logs);
+    // Run the query using the dynamic column names
+    $zone = $wpdb->get_row($wpdb->prepare("SELECT $column_list FROM $table_name WHERE name = %s", $zone_name), ARRAY_A);
+
+    if ($zone) {
+        return rest_ensure_response($zone);
     } else {
-        return new WP_Error('no_logs', 'No event zone logs found', array('status' => 404));
-    }
-}
-
-// Function to fetch a specific event zone log by ID
-function fetch_single_eventzone_log_rest($request) {
-    global $wpdb;
-    $table_name = 'jotun_eventzone_logs';
-    $log_id = intval($request['id']);
-
-    // Fetch the log by its ID
-    $log = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $log_id), ARRAY_A);
-
-    if ($log) {
-        return rest_ensure_response($log);
-    } else {
-        return new WP_Error('log_not_found', 'Event zone log not found', array('status' => 404));
+        return new WP_Error('zone_not_found', 'Event zone not found', array('status' => 404));
     }
 }
