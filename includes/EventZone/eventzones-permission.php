@@ -31,15 +31,7 @@ function validate_eventzones_api_key($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_manage_eventzones($request) {
-    $user_id = validate_eventzones_api_key($request);
-    if ($user_id) {
-        // Log in the user
-        wp_set_current_user($user_id);
-        wp_set_auth_cookie($user_id);
-        return true;
-    } else {
-        return false;
-    }
+    return validate_eventzones_api_key($request);
 }
 
 /**
@@ -50,15 +42,7 @@ function can_manage_eventzones($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_edit_eventzones($request) {
-    $user_id = validate_eventzones_api_key($request);
-    if ($user_id) {
-        // Log in the user
-        wp_set_current_user($user_id);
-        wp_set_auth_cookie($user_id);
-        return true;
-    } else {
-        return false;
-    }
+    return validate_eventzones_api_key($request);
 }
 
 /**
