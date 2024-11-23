@@ -55,13 +55,21 @@ function validate_api_key($request) {
         return new WP_Error('rest_forbidden', __('User not logged in.'), array('status' => 403));
     }
 
-    $cached_api_key = get_transient('api_key_user_' . $current_user->ID);
-    if ($cached_api_key === false) {
-        $cached_api_key = get_user_api_key($current_user->ID);
-        set_transient('api_key_user_' . $current_user->ID, $cached_api_key, HOUR_IN_SECONDS);
-    }
+    $cache_key = 'api_key_user_' . $current_user->ID;
+    $api_key = get_transient($cache_key);
 
-    if ($api_key !== $cached_api_key) {
+        if ($api_key === false) {
+        $user_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+        $current_user->ID
+    ));
+    $api_key = $user_data ? $user_data->api_key : '';
+    set_transient($cache_key, $api_key, HOUR_IN_SECONDS);
+}
+
+
+    if (!$user_data || $api_key !== $user_data->api_key) {
+        error_log('Invalid API key provided for user ID ' . $current_user->ID);
         return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
     }
 
