@@ -1,7 +1,7 @@
 <?php
 function eventzones_editor_interface() {
     $apiUrl = esc_url(rest_url('jotunheim-magic/v1/eventzones'));
-    $apiKey = EVENTZONES_API_KEY;
+    $apiKey = esc_js($api_key);
     ?>
     <div class="wrap eventzones-editor-container" id="eventzones-editor-container" style="width: 100%; max-width: 1000px; margin: auto; background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bhmpics.com%2Fdownloads%2FValheim-Wallpapers%2F77.3-mistlands-teaser-1bb74b243f7219098476.jpg&f=1&nofb=1&ipt=45065e8b7cc5ca3ae8824364501250a2b5b4cf1428e93cd817bd8671ce697ec2&ipo=images') no-repeat fixed center; background-size: cover; padding: 5px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; gap: 20px; height: auto; min-height: calc(110vh - 50px);">
         

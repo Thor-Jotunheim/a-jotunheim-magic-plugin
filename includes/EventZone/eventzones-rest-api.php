@@ -50,7 +50,7 @@ function validate_api_key($request) {
     $api_key = $request->get_header('x-api-key');
     
     // Ensure that the key matches the one defined in wp-config.php
-    if (!defined('EVENTZONES_API_KEY') || $api_key !== EVENTZONES_API_KEY) {
+    if (!defined('esc_js($api_key)') || $api_key !== esc_js($api_key)) {
         error_log('Invalid API key provided.');
         return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
     }
