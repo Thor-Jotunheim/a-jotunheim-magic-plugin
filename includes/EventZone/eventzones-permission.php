@@ -16,10 +16,18 @@ function validate_eventzones_api_key_and_permissions($request, $required_permiss
 
     // Retrieve the current user
     $current_user = wp_get_current_user();
+
     if (!$current_user || $current_user->ID === 0) {
-        error_log('Permission denied: User is not logged in.'); // Logging
+        static $rest_logged_out_error_logged = false;
+
+        if (!$rest_logged_out_error_logged) {
+            error_log('Permission denied: User is not logged in.');
+            $rest_logged_out_error_logged = true;
+        }
+
         return new WP_Error('rest_forbidden', __('Permission denied: User is not logged in.'), array('status' => 403));
     }
+
 
     // Retrieve the API key from the request header
     $api_key = $request->get_header('x-api-key');
