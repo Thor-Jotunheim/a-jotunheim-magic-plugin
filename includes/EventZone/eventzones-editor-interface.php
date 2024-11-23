@@ -17,9 +17,6 @@ if ($current_user && $current_user->ID) {
 }
 
 });
-
-// Prepare the API key for use in JavaScript
-$apiKey = esc_js($api_key);
 ?>
 
 <?php

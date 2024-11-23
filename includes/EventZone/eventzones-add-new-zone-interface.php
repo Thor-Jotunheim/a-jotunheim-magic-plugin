@@ -18,9 +18,6 @@ add_action('init', function() {
     
 });
 
-// Prepare the API key for use in JavaScript
-$apiKey = esc_js($api_key);
-
 function jotunheim_magic_add_new_zone_interface() {
     global $wpdb;
     $table_name = 'jotun_eventzones';
