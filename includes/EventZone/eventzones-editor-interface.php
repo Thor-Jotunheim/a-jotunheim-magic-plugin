@@ -57,17 +57,17 @@ function eventzones_editor_interface() {
                 const container = document.getElementById('eventzones-container');
                 container.innerHTML = '';
                 data.forEach(zone => {
-                    const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
+                    const checkbox = <div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>;
                     container.insertAdjacentHTML('beforeend', checkbox);
                 });
-                restoreCheckedState();
-                trackCheckedState();
+                restoreCheckedState(); // Restore checked state
+                trackCheckedState(); // Track changes
             })
             .catch(error => console.error('Error fetching zones:', error));
         }
 
         function searchEventZones(searchValue) {
-            fetch(`${apiUrl}?search=${encodeURIComponent(searchValue)}`, {
+            fetch(${apiUrl}?search=${encodeURIComponent(searchValue)}, {
                 headers: { 'X-API-KEY': apiKey }
             })
             .then(response => response.json())
@@ -75,11 +75,11 @@ function eventzones_editor_interface() {
                 const container = document.getElementById('eventzones-container');
                 container.innerHTML = '';
                 data.forEach(zone => {
-                    const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
+                    const checkbox = <div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>;
                     container.insertAdjacentHTML('beforeend', checkbox);
                 });
-                restoreCheckedState();
-                trackCheckedState();
+                restoreCheckedState(); // Restore checked state
+                trackCheckedState(); // Track changes
             })
             .catch(error => console.error('Error searching zones:', error));
         }
@@ -88,7 +88,7 @@ function eventzones_editor_interface() {
             const editContainer = document.getElementById('edit-sections-container');
             editContainer.innerHTML = '';
 
-            fetch(`${apiUrl}/${zoneId}`, {
+            fetch(${apiUrl}/${zoneId}, {
                 headers: { 'X-API-KEY': apiKey }
             })
             .then(response => response.json())
@@ -100,7 +100,7 @@ function eventzones_editor_interface() {
                     }));
                     const formHtml = generateEditZoneForm(zone, columns);
                     editContainer.insertAdjacentHTML('beforeend', formHtml);
-                    initializeRespawnLocationHandler();
+                    initializeConditionalFieldBehavior();
                 } else {
                     console.error("No data returned for zone ID:", zoneId);
                 }
@@ -108,62 +108,77 @@ function eventzones_editor_interface() {
             .catch(error => console.error('Error fetching zone details:', error));
         }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            refreshZoneList();
+
+            document.getElementById('eventzones-search').addEventListener('input', function () {
+                const searchValue = this.value;
+                if (searchValue.length >= 2) {
+                    searchEventZones(searchValue);
+                } else {
+                    refreshZoneList();
+                }
+            });
+        });
+
         function generateEditZoneForm(zone, columns) {
             const booleanFields = ['forcePvp', 'godMode', 'ghostMode', 'iceZone', 'noItemLoss', 'noStatLoss', 'noStatGain', 'disableDrops', 'noBuild', 'noShipDamage', 'onlyLeaveViaTeleport', 'respawnOnCorpse', 'respawnAtLocation', 'allowSignUse'];
-            let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+            let formHtml = <div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
                             <h4>Editing: ${zone.name || ''}</h4>
-                            <form class="zone-details-form" data-zone-id="${zone.id}">`;
+                            <form class="zone-details-form" data-zone-id="${zone.id}">;
 
             columns.forEach(column => {
                 const field_name = column.Field;
 
                 if (field_name === 'id') return;
 
-                formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
+                formHtml += <div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
                                 <label for='${field_name}' style='flex: 1; font-weight: bold;'>${capitalizeEditorFirstLetter(field_name.replace('_', ' '))}:</label>
-                                <div style='flex: 2;'>`;
+                                <div style='flex: 2;'>;
 
                 if (field_name === 'shape') {
-                    formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
+                    formHtml += <select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
                                     <option value='Circle' ${zone[field_name] === 'Circle' ? 'selected' : ''}>Circle</option>
                                     <option value='Square' ${zone[field_name] === 'Square' ? 'selected' : ''}>Square</option>
-                                 </select>`;
-                } else if (field_name === 'respawnLocation_x' || field_name === 'respawnLocation_y' || field_name === 'respawnLocation_z') {
-                    formHtml += `<label for="respawnLocation" style="font-weight: bold;">Respawn Location (x, y, z):</label>
+                                 </select>;
+                } else if (field_name === 'eventzone_status') {
+                    formHtml += <select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
+                                    <option value='enabled' ${zone[field_name] === 'enabled' ? 'selected' : ''}>Enabled</option>
+                                    <option value='disabled' ${zone[field_name] === 'disabled' ? 'selected' : ''}>Disabled</option>
+                                 </select>;
+                } else if (field_name === 'zone_type') {
+                    formHtml += <select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
+                                    <option value='Server Infrastructure' ${zone[field_name] === 'Server Infrastructure' ? 'selected' : ''}>Server Infrastructure</option>
+                                    <option value='Quest' ${zone[field_name] === 'Quest' ? 'selected' : ''}>Quest</option>
+                                    <option value='Event' ${zone[field_name] === 'Event' ? 'selected' : ''}>Event</option>
+                                    <option value='Boss Power' ${zone[field_name] === 'Boss Power' ? 'selected' : ''}>Boss Power</option>
+                                    <option value='Boss Fight' ${zone[field_name] === 'Boss Fight' ? 'selected' : ''}>Boss Fight</option>
+                                    <option value='NPC' ${zone[field_name] === 'NPC' ? 'selected' : ''}>NPC</option>
+                                 </select>;
+                } 
+                else if (field_name === 'respawnLocation_x' || field_name === 'respawnLocation_y' || field_name === 'respawnLocation_z') {
+                    formHtml += <label for="respawnLocation" style="font-weight: bold;">Respawn Location (x, y, z):</label>
                                 <input type="text" id="respawnLocation" name="respawnLocation" placeholder="e.g., 10.5, 20.3, 15.7" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #666;">
                                 <input type="hidden" name="respawnLocation_x" class="respawn-location-hidden">
                                 <input type="hidden" name="respawnLocation_y" class="respawn-location-hidden">
-                                <input type="hidden" name="respawnLocation_z" class="respawn-location-hidden">`;
+                                <input type="hidden" name="respawnLocation_z" class="respawn-location-hidden">;
                     return; 
                 } else if (booleanFields.includes(field_name)) {
                     const isChecked = zone[field_name] == 1;
-                    formHtml += `<input type="hidden" name="${field_name}" value="0">
-                                 <input type="checkbox" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.8); margin-top: 5px;">`;
+                    const checkboxClass = field_name === 'respawnAtLocation' ? 'respawn-at-location' : 
+                                          field_name === 'onlyLeaveViaTeleport' ? 'only-leave-via-teleport' : '';
+
+                    formHtml += <input type="hidden" name="${field_name}" value="0">
+                                 <input type="checkbox" class="${checkboxClass}" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.8); margin-top: 5px;">;
                 } else {
-                    formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${zone[field_name] || ''}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>`;
+                    formHtml += <input type='text' id='${field_name}' name='${field_name}' value='${zone[field_name] || ''}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>;
                 }
 
-                formHtml += `</div></div>`;
+                formHtml += </div></div>;
             });
 
-            formHtml += `</form></div>`;
+            formHtml += </form></div>;
             return formHtml;
-        }
-
-        function initializeRespawnLocationHandler() {
-            const respawnLocationInput = document.getElementById('respawnLocation');
-            const hiddenX = document.querySelector('input[name="respawnLocation_x"]');
-            const hiddenY = document.querySelector('input[name="respawnLocation_y"]');
-            const hiddenZ = document.querySelector('input[name="respawnLocation_z"]');
-
-            if (respawnLocationInput) {
-                respawnLocationInput.addEventListener('input', () => {
-                    const [x, y, z] = respawnLocationInput.value.split(',').map(coord => coord.trim());
-                    hiddenX.value = x || '';
-                    hiddenY.value = y || '';
-                    hiddenZ.value = z || '';
-                });
-            }
         }
 
         jQuery(document).ready(function ($) {
@@ -175,6 +190,18 @@ function eventzones_editor_interface() {
                 $('#eventzones-search').val('');
                 $('#edit-sections-container').empty();
                 refreshZoneList();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('.zone-details-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const respawnLocationInput = document.getElementById('respawnLocation').value;
+                const [x, y, z] = respawnLocationInput.split(',').map(coord => coord.trim());
+                document.querySelector('input[name="respawnLocation_x"]').value = x || '';
+                document.querySelector('input[name="respawnLocation_y"]').value = y || '';
+                document.querySelector('input[name="respawnLocation_z"]').value = z || '';
+                event.target.submit();
             });
         });
     </script>
