@@ -1,22 +1,26 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-global $wpdb;
-global $api_key; // Declare once globally
+// Hook to initialize user and API key handling after WordPress is ready
+add_action('init', function() {
+    global $wpdb;
+    global $api_key; // Declare global variable
 
-// Get the current user
-$current_user = wp_get_current_user();
+    // Get the current user
+    $current_user = wp_get_current_user();
 
-if ($current_user && $current_user->ID) {
-    // Fetch the API key for the logged-in user
-    $user_data = $wpdb->get_row($wpdb->prepare(
-        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
-        $current_user->ID
-    ));
-    $api_key = $user_data ? $user_data->api_key : ''; // Assign API key or default to empty
-} else {
-    $api_key = ''; // Default to empty if the user is not logged in
-}
+    if ($current_user && $current_user->ID) {
+        // Fetch the API key for the logged-in user
+        $user_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+            $current_user->ID
+        ));
+        $api_key = $user_data ? $user_data->api_key : ''; // Assign API key or default to empty
+    } else {
+        $api_key = ''; // Default to empty if the user is not logged in
+    }
+});
+
 
 // Prepare the API key for use in JavaScript
 $apiKey = esc_js($api_key);
