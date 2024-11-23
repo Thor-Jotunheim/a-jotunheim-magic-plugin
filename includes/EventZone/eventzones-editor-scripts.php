@@ -29,7 +29,7 @@ function enqueue_eventzones_editor_scripts() {
         document.addEventListener('DOMContentLoaded', function() {
             const ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
             const apiBase = "/wp-json/jotunheim-magic/v1/eventzones";
-            const apiKey = "<?php echo esc_js($api_key); ?>";
+            const apiKey = "<?php echo EVENTZONES_API_KEY; ?>";
 
             // Search functionality with call to external refreshZoneList() in interface file
             document.getElementById('eventzones-search').addEventListener('input', function () {

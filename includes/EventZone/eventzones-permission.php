@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) exit;
  * @param string $required_permission The required permission to access the resource.
  * @return bool True if the API key and permissions are valid, false otherwise.
  */
-function validate_esc_js($api_key)_and_permissions($request, $required_permission) {
+function validate_eventzones_api_key_and_permissions($request, $required_permission) {
     global $wpdb;
 
     // Retrieve the API key from headers
@@ -50,7 +50,7 @@ function validate_esc_js($api_key)_and_permissions($request, $required_permissio
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_manage_eventzones($request) {
-    return validate_esc_js($api_key)_and_permissions($request, 'manage_eventzones');
+    return validate_eventzones_api_key_and_permissions($request, 'manage_eventzones');
 }
 
 /**
@@ -60,7 +60,7 @@ function can_manage_eventzones($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_edit_eventzones($request) {
-    return validate_esc_js($api_key)_and_permissions($request, 'edit_eventzones');
+    return validate_eventzones_api_key_and_permissions($request, 'edit_eventzones');
 }
 
 /**
@@ -70,5 +70,5 @@ function can_edit_eventzones($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_view_eventzones($request) {
-    return validate_esc_js($api_key)_and_permissions($request, 'view_eventzones');
+    return validate_eventzones_api_key_and_permissions($request, 'view_eventzones');
 }
