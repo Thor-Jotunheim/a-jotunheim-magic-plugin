@@ -17,11 +17,13 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/eventzones/(?P<id>\d+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_single_eventzone_rest',
-        'permission_callback' => '__return_true',
+        'permission_callback' => '__return_true', // No authentication required
         'args' => array(
             'id' => array(
                 'required' => true,
-                'validate_callback' => 'is_numeric'
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param);
+                }
             ),
         ),
     ));
@@ -30,12 +32,12 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/eventzones/name/(?P<name>[a-zA-Z0-9_-]+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_eventzone_by_name_rest',
-        'permission_callback' => 'validate_api_key',
+        'permission_callback' => 'validate_api_key', // Requires API key
         'args' => array(
             'name' => array(
                 'required' => true,
-                'validate_callback' => function($param) {
-                    return preg_match('/^[a-zA-Z0-9_-]+$/', $param);
+                'validate_callback' => function($param, $request, $key) {
+                    return is_string($param);
                 }
             ),
         ),
@@ -43,30 +45,26 @@ add_action('rest_api_init', function () {
 });
 
 function validate_api_key($request) {
+    global $wpdb;
+
     // Retrieve the API key from the request headers
     $api_key = $request->get_header('x-api-key');
     if (empty($api_key)) {
-        return new WP_Error('rest_forbidden', __('Missing API key.'), array('status' => 403));
+        error_log('API key missing from request.');
+        return new WP_Error('rest_forbidden', __('API key is missing.'), array('status' => 403));
     }
 
     // Fetch the logged-in user's API key from the database
     $current_user = wp_get_current_user();
-    if (!$current_user->exists()) {
-        return new WP_Error('rest_forbidden', __('User not logged in.'), array('status' => 403));
+    if (!$current_user || !$current_user->ID) {
+        error_log('Permission denied: User is not logged in.');
+        return new WP_Error('rest_forbidden', __('User is not logged in.'), array('status' => 403));
     }
 
-    $cache_key = 'api_key_user_' . $current_user->ID;
-    $api_key = get_transient($cache_key);
-
-        if ($api_key === false) {
-        $user_data = $wpdb->get_row($wpdb->prepare(
+    $user_data = $wpdb->get_row($wpdb->prepare(
         "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
         $current_user->ID
     ));
-    $api_key = $user_data ? $user_data->api_key : '';
-    set_transient($cache_key, $api_key, HOUR_IN_SECONDS);
-}
-
 
     if (!$user_data || $api_key !== $user_data->api_key) {
         error_log('Invalid API key provided for user ID ' . $current_user->ID);
