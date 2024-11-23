@@ -15,7 +15,7 @@ add_action('rest_api_init', function () {
         'args' => array(
             'id' => array(
                 'required' => true,
-                'validate_callback' => function($param, $request, $key) {
+                'validate_callback' => function ($param, $request, $key) {
                     return is_numeric($param);
                 }
             ),
@@ -27,6 +27,7 @@ add_action('rest_api_init', function () {
 function update_eventzone_put_rest($request) {
     global $wpdb;
     $table_name = 'jotun_eventzones';
+    $logs_table = 'jotun_eventzone_logs'; // Log table name
     $zone_id = intval($request['id']); // Get the ID from the request parameters
 
     // Get the columns dynamically
@@ -42,12 +43,47 @@ function update_eventzone_put_rest($request) {
 
     // Update the row based on the ID
     $result = $wpdb->update($table_name, $data, array('id' => $zone_id));
-    
+
     if ($result === false) {
         error_log("Update failed for ID $zone_id: " . $wpdb->last_error);
-        return new WP_Error('update_failed', 'Failed to update event zone', array('status' => 500));
+        return new WP_Error('update_failed', 'Failed to update event zone.', array('status' => 500));
     }
 
-    return rest_ensure_response(array('status' => 'updated', 'zone_id' => $zone_id, 'message' => 'Event zone updated successfully.'));
+    // Log the update action
+$current_user = wp_get_current_user();
+
+if (!$current_user->exists()) {
+    error_log("No authenticated user in PUT/POST handler.");
+    $username = 'Guest';
+} else {
+    $username = $current_user->user_login;
+    error_log("Authenticated user in PUT/POST handler: $username");
+}
+
+    $timestamp = current_time('mysql');
+    $details = 'Updated event zone fields: ' . implode(', ', array_keys($data));
+
+$log_result = $wpdb->insert(
+    $logs_table,
+    array(
+        'zone_id'   => $zone_id,
+        'user_id'   => $username, // Log the username instead of numeric user_id
+        'action'    => 'update',
+        'timestamp' => $timestamp,
+        'details'   => $details,
+    ),
+    array('%d', '%s', '%s', '%s', '%s') // Adjusted to match `user_id` as VARCHAR
+);
+
+    if ($log_result === false) {
+        error_log("Logging failed for update on Zone ID $zone_id: " . $wpdb->last_error);
+    }
+
+    // Return a success response
+    return rest_ensure_response(array(
+        'status' => 'updated',
+        'zone_id' => $zone_id,
+        'message' => 'Event zone updated successfully.'
+    ));
 }
 ?>
