@@ -29,10 +29,18 @@ function enqueue_eventzones_editor_scripts() {
     // Dynamically fetch the API key for the logged-in user
     $current_user = wp_get_current_user();
     if ($current_user && $current_user->ID) {
-        $user_data = $wpdb->get_row($wpdb->prepare(
-            "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
-            $current_user->ID
-        ));
+        $cache_key = 'api_key_user_' . $current_user->ID;
+$api_key = get_transient($cache_key);
+
+if ($api_key === false) {
+    $user_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+        $current_user->ID
+    ));
+    $api_key = $user_data ? $user_data->api_key : '';
+    set_transient($cache_key, $api_key, HOUR_IN_SECONDS);
+}
+
         if ($user_data && $user_data->api_key) {
             $api_key = $user_data->api_key;
         } else {

@@ -1,25 +1,24 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-// Hook to initialize user and API key handling after WordPress is ready
+// Hook to initialize user and API key handling
 add_action('init', function () {
-    global $wpdb, $api_key;
-
-    $api_key = ''; // Initialize API key
-
+    // Get the current logged-in user
     $current_user = wp_get_current_user();
 
     if ($current_user->exists()) {
-        error_log("User ID: " . $current_user->ID);
+        // Fetch API key using the helper function
+        $api_key = get_user_api_key($current_user->ID);
 
-        // Fetch the API key
-        $user_data = $wpdb->get_row($wpdb->prepare(
-            "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
-            $current_user->ID
-        ));
-        $api_key = $user_data ? $user_data->api_key : '';
-        error_log("API Key: $api_key");
+        // Optional: Log User ID and API key for debugging (avoid in production)
+        error_log("User ID: " . $current_user->ID);
+        if ($api_key) {
+            error_log("API Key found for User ID {$current_user->ID}");
+        } else {
+            error_log("No API Key found for User ID {$current_user->ID}");
+        }
     } else {
+        // Log user not logged in
         error_log("User is not logged in.");
     }
 });
