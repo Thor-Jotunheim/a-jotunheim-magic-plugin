@@ -18,7 +18,6 @@ if ($current_user && $current_user->ID) {
 
 });
 ?>
-
 <?php
 function eventzones_editor_interface() {
     $apiUrl = esc_url(rest_url('jotunheim-magic/v1/eventzones'));

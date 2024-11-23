@@ -17,7 +17,8 @@ add_action('init', function() {
     }
     
 });
-
+?>
+<?php
 function jotunheim_magic_add_new_zone_interface() {
     global $wpdb;
     $table_name = 'jotun_eventzones';
