@@ -12,7 +12,7 @@ Author: Thor
 if (!defined('ABSPATH')) exit;
 
 // File: jotunheim-magic.php
-//require_once plugin_dir_path(__FILE__) . 'helpers.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php';
 
 // Include Utility files
 include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
