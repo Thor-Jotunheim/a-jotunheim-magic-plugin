@@ -1,43 +1,44 @@
 <?php
-    if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) exit;
 
-    // Hook to initialize user and API key handling
-    add_action('init', function () {
-        // Get the current logged-in user
-        $current_user = wp_get_current_user();
+// Hook to initialize user and API key handling after WordPress is ready
+add_action('init', function () {
+    global $wpdb, $api_key;
 
-        if ($current_user->exists()) {
-        // Fetch API key using the helper function
-        $api_key = get_user_api_key($current_user->ID);
+    $api_key = ''; // Initialize API key
 
-        // Optional: Log User ID and API key for debugging (avoid in production)
+    $current_user = wp_get_current_user();
+
+    if ($current_user->exists()) {
         error_log("User ID: " . $current_user->ID);
-        if ($api_key) {
-                error_log("API Key found for User ID {$current_user->ID}");
-            } else {
-                error_log("No API Key found for User ID {$current_user->ID}");
-            }
-            } else {
-                // Log user not logged in
-                error_log("User is not logged in.");
-            }
-    });
 
-    function eventzones_editor_interface() {
-        global $api_key; // Declare as global to access the variable
-        $apiUrl = esc_url(rest_url('jotunheim-magic/v1/eventzones'));
-        $apiKey = esc_js($api_key);
-?>
-<div class="wrap eventzones-editor-container" id="eventzones-editor-container" style="width: 100%; max-width: 1000px; margin: auto; background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bhmpics.com%2Fdownloads%2FValheim-Wallpapers%2F77.3-mistlands-teaser-1bb74b243f7219098476.jpg&f=1&nofb=1&ipt=45065e8b7cc5ca3ae8824364501250a2b5b4cf1428e93cd817bd8671ce697ec2&ipo=images') no-repeat fixed center; background-size: cover; padding: 5px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; gap: 20px; height: auto; min-height: calc(110vh - 50px);">
+        // Fetch the API key
+        $user_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
+            $current_user->ID
+        ));
+        $api_key = $user_data ? $user_data->api_key : '';
+        error_log("API Key: $api_key");
+    } else {
+        error_log("User is not logged in.");
+    }
+});
+
+function eventzones_editor_interface() {
+    global $api_key; // Declare as global to access the variable
+    $apiUrl = esc_url(rest_url('jotunheim-magic/v1/eventzones'));
+    $apiKey = esc_js($api_key);
+    ?>
+    <div class="wrap eventzones-editor-container" id="eventzones-editor-container" style="width: 100%; max-width: 1000px; margin: auto; background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bhmpics.com%2Fdownloads%2FValheim-Wallpapers%2F77.3-mistlands-teaser-1bb74b243f7219098476.jpg&f=1&nofb=1&ipt=45065e8b7cc5ca3ae8824364501250a2b5b4cf1428e93cd817bd8671ce697ec2&ipo=images') no-repeat fixed center; background-size: cover; padding: 5px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; gap: 20px; height: auto; min-height: calc(110vh - 50px);">
         
-    <div style="flex: 1; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
-        <h1 class="eventzones-title" style="font-family: 'MedievalSharp', cursive; font-size: 36px; color: #fff; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); text-align: center;">Jotunheim Event Zones Editor</h1>
+        <div style="flex: 1; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
+            <h1 class="eventzones-title" style="font-family: 'MedievalSharp', cursive; font-size: 36px; color: #fff; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); text-align: center;">Jotunheim Event Zones Editor</h1>
             <div class="search-section" style="margin-bottom: 5px;">
                 <input type="text" id="eventzones-search" placeholder="Search for an event zone..." style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #666; font-size: 16px;">
                 <button id="load-zone-btn" style="width: 100%; background: #444; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px;">Load Selected Zones</button>
                 <button id="clear-zone-btn" style="width: 100%; background: #888; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; margin-bottom: 10px;">Clear Selected</button>
                 <div id="eventzones-container" style="height: auto; max-height: calc(90vh - 140px); overflow-y: auto; background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 5px;">
-                <!-- Dynamically added checkboxes for event zones -->
+                    <!-- Dynamically added checkboxes for event zones -->
                 </div>
             </div>
         </div>
@@ -51,11 +52,8 @@
     </div>
 
     <script type="text/javascript">
-        wp_localize_script('your-script-handle', 'eventzonesData', [
-            'apiUrl' => esc_url(rest_url('jotunheim-magic/v1/eventzones')),
-            'apiKey' => $api_key
-        ]);
-
+        const apiUrl = "<?php echo $apiUrl; ?>";
+        const apiKey = "<?php echo $apiKey; ?>";
         let checkedZones = new Set();
 
         function trackCheckedState() {
@@ -70,59 +68,63 @@
             });
         }
 
-        function restoreCheckedState() {
-                document.querySelectorAll('.zone-selection-checkbox').forEach(checkbox => {
-                checkbox.checked = checkedZones.has(checkbox.dataset.id);
-            });
-        }
+    function restoreCheckedState() {
+    document.querySelectorAll('.zone-selection-checkbox').forEach(checkbox => {
+        checkbox.checked = checkedZones.has(checkbox.dataset.id);
+    });
+}
     
         function capitalizeEditorFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
-        // Helper function to fetch API key for a user
-        function get_user_api_key($user_id) {
-            global $wpdb;
+function refreshZoneList() {
+    fetch(apiUrl, {
+        headers: { 'X-API-KEY': apiKey }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('eventzones-container');
+        container.innerHTML = '';
+        data.forEach(zone => {
+            const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
+            container.insertAdjacentHTML('beforeend', checkbox);
+        });
+        restoreCheckedState(); // Restore checked state
+        trackCheckedState(); // Track changes
+    })
+    .catch(error => console.error('Error fetching zones:', error));
+}
 
-            // Fetch the API key from the database
-            $user_data = $wpdb->get_row($wpdb->prepare(
-            "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
-            $user_id
-        ));
+function searchEventZones(searchValue) {
+    fetch(`${apiUrl}?search=${encodeURIComponent(searchValue)}`, {
+        headers: { 'X-API-KEY': apiKey }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('eventzones-container');
+        container.innerHTML = '';
+        data.forEach(zone => {
+            const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
+            container.insertAdjacentHTML('beforeend', checkbox);
+        });
+        restoreCheckedState(); // Restore checked state
+        trackCheckedState(); // Track changes
+    })
+    .catch(error => console.error('Error searching zones:', error));
+}
 
-        return $user_data ? $user_data->api_key : '';
-        }
+function loadZoneDetails(zoneId) {
+    // Clear out existing form before loading new details
+    const editContainer = document.getElementById('edit-sections-container');
+    editContainer.innerHTML = '';
 
-        function fetchZones(endpoint, options = {}) {
-            return fetch(endpoint, options)
-            .then(response => response.json())
-            .catch(error => console.error('Error fetching zones:', error));
-        }
-
-        function refreshZoneList() {
-            fetchZones(apiUrl, { headers: { 'X-API-KEY': apiKey } }).then(data => {
-            // Process zone list
-            });
-        }
-
-        function searchEventZones(searchValue) {
-            fetchZones(`${apiUrl}?search=${encodeURIComponent(searchValue)}`, { headers: { 'X-API-KEY': apiKey } }).then(data => {
-            // Process search results
-            });
-        }
-
-
-        function loadZoneDetails(zoneId) {
-            // Clear out existing form before loading new details
-            const editContainer = document.getElementById('edit-sections-container');
-            editContainer.innerHTML = '';
-
-            fetch(`${apiUrl}/${zoneId}`, {
-            headers: { 'X-API-KEY': apiKey }
-            })
-            .then(response => response.json())
-            .then(zone => {
-            if (zone) {
+    fetch(`${apiUrl}/${zoneId}`, {
+        headers: { 'X-API-KEY': apiKey }
+    })
+    .then(response => response.json())
+    .then(zone => {
+        if (zone) {
             const columns = Object.keys(zone).map(field => ({
                 Field: field,
                 Type: typeof zone[field]
@@ -136,35 +138,27 @@
             const formHtml = generateEditZoneForm(zone, columns);
             editContainer.insertAdjacentHTML('beforeend', formHtml);
             initializeConditionalFieldBehavior();
-            } else {
+        } else {
             console.error("No data returned for zone ID:", zoneId);
-            }
-            })
-            .catch(error => console.error('Error fetching zone details:', error));
         }
+    })
+    .catch(error => console.error('Error fetching zone details:', error));
+}
+
 
         document.addEventListener('DOMContentLoaded', function () {
             refreshZoneList();
 
             // Search functionality
-        function debounce(func, delay) {
-                let timeout;
-                return function (...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func(...args), delay);
-                };
-            }
-
-                const searchInput = document.getElementById('eventzones-search');
-                searchInput.addEventListener('input', debounce(function () {
+            document.getElementById('eventzones-search').addEventListener('input', function () {
                 const searchValue = this.value;
-            if (searchValue.length >= 2) {
-                searchEventZones(searchValue);
-            } else {
-                refreshZoneList();
-            }
-        }, 300));
-
+                if (searchValue.length >= 2) {
+                    searchEventZones(searchValue);
+                } else {
+                    refreshZoneList();
+                }
+            });
+        });
 
 document.addEventListener('DOMContentLoaded', function () {
     // Event listener for saving updated zone details
@@ -383,17 +377,11 @@ function generateEditZoneForm(zone, columns) {
                     }
                 });
 
-                function toggleFieldVisibility(form, fieldSelector, condition) {
-    form.querySelectorAll(fieldSelector).forEach(field => {
-        field.style.display = condition ? 'block' : 'none';
-    });
-}
-
-document.querySelectorAll('.zone-details-form').forEach(form => {
-    form.querySelector('#shape').addEventListener('change', function () {
-        toggleFieldVisibility(form, '[data-field="squareXRadius"], [data-field="squareZRadius"]', this.value === 'Square');
-    });
-});
+                $('.zone-details-form').on('change', '#shape', function() {
+                    const form = $(this).closest('.zone-details-form');
+                    const isSquare = $(this).val() === 'Square';
+                    form.find('[data-field="squareXRadius"], [data-field="squareZRadius"]').toggle(isSquare);
+                });
 
                 // Event listener for changing "respawn-at-location" and "only-leave-via-teleport"
                 $('.zone-details-form').on('change', '.respawn-at-location, .only-leave-via-teleport', function() {
