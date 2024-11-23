@@ -17,11 +17,13 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/eventzones/(?P<id>\d+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_single_eventzone_rest',
-        'permission_callback' => '__return_true',
+        'permission_callback' => '__return_true', // No authentication required
         'args' => array(
             'id' => array(
                 'required' => true,
-                'validate_callback' => 'is_numeric'
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param);
+                }
             ),
         ),
     ));
@@ -30,41 +32,28 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/eventzones/name/(?P<name>[a-zA-Z0-9_-]+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_eventzone_by_name_rest',
-        'permission_callback' => 'validate_api_key',
+        'permission_callback' => 'validate_api_key', // Requires API key
         'args' => array(
             'name' => array(
                 'required' => true,
-                'validate_callback' => function($param) {
-                    return preg_match('/^[a-zA-Z0-9_-]+$/', $param);
+                'validate_callback' => function($param, $request, $key) {
+                    return is_string($param);
                 }
             ),
         ),
     ));
 });
 
+// Function to validate API key directly from wp-config.php
 function validate_api_key($request) {
     // Retrieve the API key from the request headers
     $api_key = $request->get_header('x-api-key');
-    if (empty($api_key)) {
-        return new WP_Error('rest_forbidden', __('Missing API key.'), array('status' => 403));
-    }
-
-    // Fetch the logged-in user's API key from the database
-    $current_user = wp_get_current_user();
-    if (!$current_user->exists()) {
-        return new WP_Error('rest_forbidden', __('User not logged in.'), array('status' => 403));
-    }
-
-    $cached_api_key = get_transient('api_key_user_' . $current_user->ID);
-    if ($cached_api_key === false) {
-        $cached_api_key = get_user_api_key($current_user->ID);
-        set_transient('api_key_user_' . $current_user->ID, $cached_api_key, HOUR_IN_SECONDS);
-    }
-
-    if ($api_key !== $cached_api_key) {
+    
+    // Ensure that the key matches the one defined in wp-config.php
+    if (!defined('esc_js($api_key)') || $api_key !== esc_js($api_key)) {
+        error_log('Invalid API key provided.');
         return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
     }
-
     return true;
 }
 

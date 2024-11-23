@@ -24,45 +24,12 @@ if (!function_exists('eventzones_add_new_zone_shortcode')) {
 }
 
 function enqueue_eventzones_editor_scripts() {
-    global $wpdb;
-
-    // Dynamically fetch the API key for the logged-in user
-    $current_user = wp_get_current_user();
-    if ($current_user && $current_user->ID) {
-        $cache_key = 'api_key_user_' . $current_user->ID;
-$api_key = get_transient($cache_key);
-
-if ($api_key === false) {
-    $user_data = $wpdb->get_row($wpdb->prepare(
-        "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
-        $current_user->ID
-    ));
-    $api_key = $user_data ? $user_data->api_key : '';
-    set_transient($cache_key, $api_key, HOUR_IN_SECONDS);
-}
-
-        if ($user_data && $user_data->api_key) {
-            $api_key = $user_data->api_key;
-        } else {
-            $api_key = ''; // Fallback value
-            error_log('API key not found for user ID: ' . ($current_user->ID ?: 'not logged in'));
-        }
-        
-    } else {
-        $api_key = ''; // No API key if the user isn't logged in
-    }
-
     ?>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
             const ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
             const apiBase = "/wp-json/jotunheim-magic/v1/eventzones";
-            const apiKey = "<?php echo esc_js($api_key); ?>"; // Dynamically set API key
-
-            if (!apiKey) {
-                console.error("API key not found. Event zones functionality will be limited.");
-                return;
-            }
+            const apiKey = "<?php echo esc_js($api_key); ?>";
 
             // Search functionality with call to external refreshZoneList() in interface file
             document.getElementById('eventzones-search').addEventListener('input', function () {
@@ -70,7 +37,7 @@ if ($api_key === false) {
                 if (searchValue.length >= 2) {
                     searchEventZones(searchValue);
                 } else {
-                    refreshZoneList(); // Calls refreshZoneList() from the interface file
+                    refreshZoneList();  // Calls refreshZoneList() from the interface file
                 }
             });
 
