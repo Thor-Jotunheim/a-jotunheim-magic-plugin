@@ -1,4 +1,6 @@
+<?php
 // File: helpers.php
+
 function has_permission($capability = 'read') {
     $current_user = wp_get_current_user();
 
