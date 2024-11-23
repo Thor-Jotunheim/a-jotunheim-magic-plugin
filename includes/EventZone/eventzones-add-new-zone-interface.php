@@ -3,28 +3,23 @@ if (!defined('ABSPATH')) exit;
 
 // Hook to initialize user and API key handling after WordPress is ready
 add_action('init', function() {
-    global $wpdb;
-    global $api_key; // Declare global variable
-
-    // Get the current user
+    global $wpdb, $api_key;
     $current_user = wp_get_current_user();
-
+    
     if ($current_user && $current_user->ID) {
-        // Fetch the API key for the logged-in user
         $user_data = $wpdb->get_row($wpdb->prepare(
             "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
             $current_user->ID
         ));
-        $api_key = $user_data ? $user_data->api_key : ''; // Assign API key or default to empty
+        $api_key = $user_data ? $user_data->api_key : '';
     } else {
-        $api_key = ''; // Default to empty if the user is not logged in
+        $api_key = '';
     }
+    
 });
-
 
 // Prepare the API key for use in JavaScript
 $apiKey = esc_js($api_key);
-?>
 
 function jotunheim_magic_add_new_zone_interface() {
     global $wpdb;
@@ -38,6 +33,11 @@ function jotunheim_magic_add_new_zone_interface() {
 
     // Fetch columns from the event zones table
     $columns = $wpdb->get_results("DESCRIBE $table_name");
+
+    if (!$columns) {
+        error_log("Failed to fetch columns for table: $table_name");
+        $columns = []; // Default to an empty array
+    }
 
     ob_start(); // Start output buffering
     ?>
@@ -91,7 +91,6 @@ function jotunheim_magic_add_new_zone_interface() {
             </form>
         </div>    
     </div>
-
     <script type="text/javascript">
         jQuery(document).ready(function($) {
             const apiKey = "<?php echo $apiKey; ?>"; // Use prepared API key
@@ -127,11 +126,10 @@ function jotunheim_magic_add_new_zone_interface() {
                 });
             });
         });
-
     </script>
-
     <?php
     return ob_get_clean(); // Return the content
+}
 
 // Shortcode to display the "Add New Zone" form
 add_shortcode('jotunheim_add_new_zone', 'jotunheim_magic_add_new_zone_interface');
