@@ -17,9 +17,9 @@ if ($current_user && $current_user->ID) {
 }
 
 });
-?>
-<?php
+
 function eventzones_editor_interface() {
+    global $api_key; // Declare as global to access the variable
     $apiUrl = esc_url(rest_url('jotunheim-magic/v1/eventzones'));
     $apiKey = esc_js($api_key);
     ?>

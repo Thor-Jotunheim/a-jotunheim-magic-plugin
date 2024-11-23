@@ -17,10 +17,9 @@ add_action('init', function() {
     }
     
 });
-?>
-<?php
+
 function jotunheim_magic_add_new_zone_interface() {
-    global $wpdb;
+    global $wpdb, $api_key; // Declare globals to access the variables
     $table_name = 'jotun_eventzones';
 
     // Check if table exists
@@ -31,11 +30,13 @@ function jotunheim_magic_add_new_zone_interface() {
 
     // Fetch columns from the event zones table
     $columns = $wpdb->get_results("DESCRIBE $table_name");
-
     if (!$columns) {
         error_log("Failed to fetch columns for table: $table_name");
         $columns = []; // Default to an empty array
     }
+
+    // Prepare API key for use in JavaScript
+    $apiKey = esc_js($api_key);
 
     ob_start(); // Start output buffering
     ?>
