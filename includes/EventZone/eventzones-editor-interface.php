@@ -2,32 +2,27 @@
 if (!defined('ABSPATH')) exit;
 
 // Hook to initialize user and API key handling after WordPress is ready
-add_action('init', function() {
+add_action('init', function () {
     global $wpdb, $api_key;
 
-    // Initialize API key as empty
-    $api_key = '';
+    $api_key = ''; // Initialize API key
 
-    // Get the current user
     $current_user = wp_get_current_user();
 
-    if ($current_user && $current_user->exists()) {
-        // Log user ID for debugging
+    if ($current_user->exists()) {
         error_log("User ID: " . $current_user->ID);
 
-        // Fetch the API key for the logged-in user
+        // Fetch the API key
         $user_data = $wpdb->get_row($wpdb->prepare(
             "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
             $current_user->ID
         ));
-
         $api_key = $user_data ? $user_data->api_key : '';
-        error_log("API Key: " . $api_key);
+        error_log("API Key: $api_key");
     } else {
         error_log("User is not logged in.");
     }
 });
-
 
 function eventzones_editor_interface() {
     global $api_key; // Declare as global to access the variable

@@ -11,6 +11,9 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
+// File: jotunheim-magic.php
+require_once plugin_dir_path(__FILE__) . 'helpers.php';
+
 // Include Utility files
 include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
 
@@ -66,7 +69,6 @@ include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-get.php';
 include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-put.php';
 include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-claim.php';
 include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-player.php';
-
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
