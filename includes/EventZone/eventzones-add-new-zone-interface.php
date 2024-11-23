@@ -4,18 +4,23 @@ if (!defined('ABSPATH')) exit;
 // Hook to initialize user and API key handling after WordPress is ready
 add_action('init', function() {
     global $wpdb, $api_key;
-    $current_user = wp_get_current_user();
     
+    $api_key = ''; // Default to an empty value
+    $current_user = wp_get_current_user();
+
     if ($current_user && $current_user->ID) {
+        // Log user ID for debugging
+        error_log("User ID: " . $current_user->ID);
+
+        // Fetch the API key for the logged-in user
         $user_data = $wpdb->get_row($wpdb->prepare(
             "SELECT api_key FROM jotun_user_api_keys WHERE user_id = %d",
             $current_user->ID
         ));
         $api_key = $user_data ? $user_data->api_key : '';
     } else {
-        $api_key = '';
+        error_log("User is not logged in.");
     }
-    
 });
 
 function jotunheim_magic_add_new_zone_interface() {
