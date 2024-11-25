@@ -176,7 +176,7 @@ footer {
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
     display: grid;
-    grid-template-columns: repeat(1, 1fr); /* Two equal columns for Trader 1 and Trader 2 */
+    grid-template-columns: repeat(2, 1fr); /* Two equal columns for Trader 1 and Trader 2 */
     gap: 20px; /* Space between the two containers */
     width: 700px; /* Fixed width for the center section */
     max-width: 700px;
@@ -184,14 +184,14 @@ footer {
     margin: 0 auto;
 }
 
-
-.selected-items-container,
-.selected-items-panel {
-    background: #f4f4f4; /* Optional: light background for center containers */
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-    height: 455px; /* Match previous height */
+.selected-items-container {
+    display: flex;
+    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
+    flex-direction: column; /* Stack panels vertically for each trader */
+    gap: 0px; /* Space between panels in the same trader container */
+    width: 50%; /* Each trader takes up half the width of the wrapper */
+    height: 460px;
+    background: none;
 }
 
 #selected-items-container .item-frame:not(:first-child),
