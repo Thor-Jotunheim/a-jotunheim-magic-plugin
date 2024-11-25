@@ -87,6 +87,46 @@ html, body {
     width: 100%;
 }
 
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .trade-layout {
+        gap: 10px; /* Reduce gaps between elements */
+    }
+
+    .item-list-sidebar-container {
+        min-width: 200px; /* Shrink sidebar minimum width */
+        max-width: 15%; /* Ensure sidebars shrink proportionally */
+    }
+
+    #selected-items-container, #selected-items-container-2 {
+        max-width: 300px; /* Adjust center container width */
+    }
+
+    .search-bar {
+        font-size: 0.9rem; /* Slightly smaller font for search bars */
+        padding: 8px; /* Reduce padding */
+    }
+}
+
+@media (max-width: 992px) {
+    .trade-layout {
+        gap: 5px; /* Further reduce gaps */
+    }
+
+    .item-list-sidebar-container {
+        min-width: 180px; /* Shrink sidebar minimum width further */
+        flex: 0 1 15%; /* Ensure it shrinks relative to other elements */
+    }
+
+    .selected-items-wrapper {
+        grid-template-columns: repeat(2, 1fr); /* Adjust grid layout */
+    }
+
+    #selected-items-container, #selected-items-container-2 {
+        max-width: 250px; /* Further reduce center container width */
+    }
+}
+
 @media (max-width: 768px) {
     .trade-layout {
         gap: 5px; /* Maintain layout with reduced gaps */
@@ -122,7 +162,7 @@ footer {
 /* Layout for the trader containers and sidebar */
 .trade-layout {
     display: flex;
-    gap: 2px; /* Keep consistent spacing between elements */
+    gap: 20px; /* Keep consistent spacing between elements */
     justify-content: space-between; /* Ensure equal spacing for elements */
     align-items: flex-start; /* Vertically align items to the top */
     width: 100%; /* Occupy full width */
@@ -335,7 +375,7 @@ footer {
     justify-content: space-between; /* Spread items across the row */
     align-items: center; /* Vertically center the items */
     margin: 20px 0; /* Add spacing around the panel */
-    width: 1400px;
+    width: 1000px;
     padding: 10px;
     background-color: #f4f4f4; /* Optional: light background for visibility */
     border-radius: 8px; /* Rounded corners */
