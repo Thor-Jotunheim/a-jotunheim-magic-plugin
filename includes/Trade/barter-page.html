@@ -88,9 +88,9 @@ html, body {
 .trade-layout {
     transform: scale(0.85);
     display: flex;
-    gap: 5px; /* Space between sidebars and containers */
+    gap: 1px; /* Space between sidebars and containers */
     justify-content: center; /* Distribute items evenly */
-    align-items: flex-start;
+    /* align-items: flex-start; */
     width: 100%; /* Ensure it uses full width */
 }
 
@@ -127,7 +127,7 @@ html, body {
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
     transform: scale(0.85);
-    display: flexbox;
+    display: grid;
     grid-template-columns: repeat(2, 1fr); /* 2 items per row */
     gap: 5px; /* Space between the two trader containers */
     /* width: 100%; /* Full width of the wrapper */
@@ -146,7 +146,7 @@ html, body {
 
 #selected-items-container .item-frame:not(:first-child),
 #selected-items-container-2 .item-frame:not(:first-child) {
-    margin-left: 5;
+    margin-left: 0px;
 }
 
 #selected-items-container,
