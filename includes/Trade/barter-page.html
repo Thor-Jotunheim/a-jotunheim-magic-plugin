@@ -103,19 +103,22 @@ html, body {
 
 @media (max-width: 768px) {
     .trade-layout {
-        overflow-x: auto; /* Allow horizontal scrolling if necessary */
-        flex-wrap: nowrap; /* Prevent stacking */
+        flex-direction: column; /* Stack items vertically */
+        gap: 20px;
     }
 
     .item-list-sidebar-container {
-        flex: 0 0 200px; /* Shrink sidebars slightly on narrow screens */
-        max-width: 200px;
-        min-width: 200px;
+        width: 100%; /* Allow sidebars to span full width */
+        max-width: none;
     }
 
     .selected-items-wrapper {
-        flex: 1 1 auto; /* Let the center section resize */
-        max-width: 500px; /* Adjust to fit smaller screens */
+        grid-template-columns: 1fr; /* Stack center containers */
+        width: 100%; /* Responsive width */
+    }
+
+    .selected-items-container {
+        width: 100%; /* Match container width */
     }
 }
 
@@ -174,12 +177,13 @@ footer {
 /* Trader containers */
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
-    flex: 1 1 auto; /* Allow center section to resize */
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two equal columns */
-    gap: 20px;
-    max-width: 700px; /* Prevent center section from expanding too much */
+    grid-template-columns: repeat(1, 1fr); /* Two equal columns for Trader 1 and Trader 2 */
+    gap: 20px; /* Space between the two containers */
+    width: 700px; /* Fixed width for the center section */
+    max-width: 700px;
     box-sizing: border-box;
+    margin: 0 auto;
 }
 
 .selected-items-container {
