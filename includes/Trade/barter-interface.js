@@ -8,34 +8,16 @@ async function fetchItems() {
 
         if (Array.isArray(data)) {
             itemsData = data;
+            populateItemList('item-list-accordion', '');
+            populateItemList('item-list-accordion-2', '');
 
-            // Ensure the accordion containers exist before populating them
-            if (document.getElementById('item-list-accordion')) {
-                populateItemList('item-list-accordion', '');
-            } else {
-                console.error("Accordion container 'item-list-accordion' not found.");
-            }
-
-            if (document.getElementById('item-list-accordion-2')) {
-                populateItemList('item-list-accordion-2', '');
-            } else {
-                console.error("Accordion container 'item-list-accordion-2' not found.");
-            }
-
-            // Attach event listeners to search bars if they exist
-            const searchBar1 = document.getElementById('item-search');
-            if (searchBar1) {
-                searchBar1.addEventListener('input', (event) => {
-                    populateItemList('item-list-accordion', event.target.value);
-                });
-            }
-
-            const searchBar2 = document.getElementById('item-search-2');
-            if (searchBar2) {
-                searchBar2.addEventListener('input', (event) => {
-                    populateItemList('item-list-accordion-2', event.target.value);
-                });
-            }
+            // Add event listeners to search bars
+            document.getElementById('search-bar-1').addEventListener('input', (event) => {
+                populateItemList('item-list-accordion', event.target.value);
+            });
+            document.getElementById('search-bar-2').addEventListener('input', (event) => {
+                populateItemList('item-list-accordion-2', event.target.value);
+            });
         } else {
             console.error("Error fetching items:", data.message || "Unexpected data format");
         }
@@ -43,9 +25,6 @@ async function fetchItems() {
         console.error("Error fetching items:", error);
     }
 }
-
-// Fetch items on page load
-fetchItems();
 
 function adjustPageHeight() {
     const barterPage = document.getElementById('jotunheim-barter-page');

@@ -47,23 +47,25 @@ add_action('wp_enqueue_scripts', 'jotunheim_enqueue_barter_scripts');
 // Search Bar and Accordion Shortcode
 function render_search_bar_with_sidebar($atts) {
     $atts = shortcode_atts([
-        'id' => 'item-search', // ID for the search bar
-        'placeholder' => 'Search items...', // Placeholder text for the search bar
-        'accordion_id' => 'item-list-accordion', // ID for the accordion container
+        'id' => 'item-search',
+        'placeholder' => 'Search items...',
+        'accordion_id' => 'item-list-accordion',
     ], $atts);
 
-    return '
-        <div class="item-list-sidebar-container">
-            <input type="text" id="' . esc_attr($atts['id']) . '" class="search-bar" 
-                placeholder="' . esc_attr($atts['placeholder']) . '" 
-                oninput="filterItems(\'' . esc_attr($atts['accordion_id']) . '\')">
-            <div class="item-list-sidebar" id="' . esc_attr($atts['accordion_id']) . '">
-                <!-- JavaScript will populate this accordion dynamically -->
-            </div>
-        </div>';
+    ob_start();
+    ?>
+    <div class="item-list-sidebar-container">
+        <input type="text" id="<?php echo esc_attr($atts['id']); ?>" 
+            class="search-bar" 
+            placeholder="<?php echo esc_attr($atts['placeholder']); ?>" 
+            oninput="filterItems('<?php echo esc_attr($atts['accordion_id']); ?>')">
+        <div class="item-list-sidebar" id="<?php echo esc_attr($atts['accordion_id']); ?>">
+            <!-- JavaScript will populate this accordion dynamically -->
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
 }
-
-// Register the shortcode
 add_shortcode('search_bar_with_sidebar', 'render_search_bar_with_sidebar');
 
 // Selected Items Container Shortcode
