@@ -199,12 +199,11 @@ footer {
 /* Trader containers */
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
-    transform: scale(0.85);
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 items per row */
-    gap: 5px; /* Space between the two trader containers */
-    width: 100%; /* Full width of the wrapper */
-    height: 460px
+    flex: 1; /* Take up available space */
+    max-width: calc(100% - 400px); /* Adjust dynamically based on sidebar width */
+    margin: 0; /* Remove unnecessary margins */
+    padding: 0; /* Ensure no added padding */
+    box-sizing: border-box; /* Include padding/border in width calculations */
 }
 
 .selected-items-container {
