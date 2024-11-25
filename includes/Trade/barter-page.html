@@ -159,25 +159,20 @@ footer {
 
 /* Layout for the trader containers and sidebar */
 .trade-layout {
-    transform: scale(0.85);
     display: flex;
-    gap: 20px; /* Space between sidebars and containers */
-    justify-content: center; /* Distribute items evenly */
-    align-items: flex-start;
-    width: 100%; /* Ensure it uses full width */
+    gap: 0; /* Ensure there's no extra space added between elements */
+    justify-content: space-between; /* Spread items evenly */
+    align-items: flex-start; /* Ensure vertical alignment at the top */
+    width: 100%; /* Ensure full-width usage of the container */
+    box-sizing: border-box; /* Prevent extra width from padding */
 }
 
-    /* Sidebar Styling */
+/* Sidebar Styling */
 .item-list-sidebar-container {
-    flex: 1;
-    min-width: 250px; /* Prevent sidebars from shrinking */
-    max-width: 20%;
-    overflow-y: visible;
-    padding: 10px;
-    background: #333;
-    border-radius: 10px;
-    color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex: 0 1 auto; /* Allow sidebars to shrink/grow dynamically */
+    margin: 0; /* Remove any extra margins */
+    padding: 10px; /* Adjust padding for spacing inside the container */
+    box-sizing: border-box; /* Include padding in width calculations */
 }
 
 .item-list-sidebar {
@@ -199,12 +194,11 @@ footer {
 /* Trader containers */
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
-    transform: scale(0.85);
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 items per row */
-    gap: 5px; /* Space between the two trader containers */
-    width: 100%; /* Full width of the wrapper */
-    height: 460px
+    flex: 1; /* Take up available space */
+    max-width: calc(100% - 400px); /* Adjust dynamically based on sidebar width */
+    margin: 0; /* Remove unnecessary margins */
+    padding: 0; /* Ensure no added padding */
+    box-sizing: border-box; /* Include padding/border in width calculations */
 }
 
 .selected-items-container {
