@@ -167,12 +167,17 @@ footer {
     box-sizing: border-box; /* Prevent extra width from padding */
 }
 
-/* Sidebar Styling */
+    /* Sidebar Styling */
 .item-list-sidebar-container {
-    flex: 0 1 auto; /* Allow sidebars to shrink/grow dynamically */
-    margin: 0; /* Remove any extra margins */
-    padding: 10px; /* Adjust padding for spacing inside the container */
-    box-sizing: border-box; /* Include padding in width calculations */
+    flex: 0 1 auto;
+    min-width: 250px; /* Prevent sidebars from shrinking */
+    max-width: 20%;
+    overflow-y: visible;
+    padding: 10px;
+    background: #333;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .item-list-sidebar {
@@ -194,11 +199,12 @@ footer {
 /* Trader containers */
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
-    flex: 1; /* Take up available space */
-    max-width: calc(100% - 400px); /* Adjust dynamically based on sidebar width */
-    margin: 0; /* Remove unnecessary margins */
-    padding: 0; /* Ensure no added padding */
-    box-sizing: border-box; /* Include padding/border in width calculations */
+    transform: scale(0.85);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 items per row */
+    gap: 5px; /* Space between the two trader containers */
+    width: 100%; /* Full width of the wrapper */
+    height: 460px
 }
 
 .selected-items-container {
