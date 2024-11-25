@@ -88,64 +88,37 @@ html, body {
 }
 
 /* Responsive adjustments */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .trade-layout {
-        gap: 10px; /* Reduce gaps between elements */
-    }
-
-    .item-list-sidebar-container {
-        min-width: 200px; /* Shrink sidebar minimum width */
-        max-width: 15%; /* Ensure sidebars shrink proportionally */
-    }
-
-    #selected-items-container, #selected-items-container-2 {
-        max-width: 300px; /* Adjust center container width */
-    }
-
-    .search-bar {
-        font-size: 0.9rem; /* Slightly smaller font for search bars */
-        padding: 8px; /* Reduce padding */
-    }
-}
-
-@media (max-width: 992px) {
-    .trade-layout {
-        gap: 5px; /* Further reduce gaps */
-    }
-
-    .item-list-sidebar-container {
-        min-width: 180px; /* Shrink sidebar minimum width further */
-        flex: 0 1 15%; /* Ensure it shrinks relative to other elements */
+        width: 100%;
+        max-width: 100%;
+        padding: 0 20px; /* Add padding to avoid edge collision */
     }
 
     .selected-items-wrapper {
-        grid-template-columns: repeat(2, 1fr); /* Adjust grid layout */
-    }
-
-    #selected-items-container, #selected-items-container-2 {
-        max-width: 250px; /* Further reduce center container width */
+        width: 100%; /* Make center containers responsive */
+        max-width: 700px;
     }
 }
 
 @media (max-width: 768px) {
     .trade-layout {
-        gap: 5px; /* Maintain layout with reduced gaps */
-        flex-wrap: wrap; /* Allow wrapping when space is too tight */
+        flex-direction: column; /* Stack items vertically */
+        gap: 20px;
     }
 
     .item-list-sidebar-container {
-        flex: 0 1 auto; /* Allow sidebars to shrink freely */
-        min-width: 150px; /* Set a reasonable minimum width */
+        width: 100%; /* Allow sidebars to span full width */
+        max-width: none;
     }
 
-    #selected-items-container, #selected-items-container-2 {
-        flex: 1 1 100%; /* Center containers take up remaining space */
-        max-width: 300px;
+    .selected-items-wrapper {
+        grid-template-columns: 1fr; /* Stack center containers */
+        width: 100%; /* Responsive width */
     }
 
-    .search-bar {
-        font-size: 0.8rem; /* Smaller font size for search bars */
-        padding: 5px; /* Reduced padding */
+    .selected-items-container {
+        width: 100%; /* Match container width */
     }
 }
 
@@ -162,25 +135,25 @@ footer {
 /* Layout for the trader containers and sidebar */
 .trade-layout {
     display: flex;
-    gap: 20px; /* Keep consistent spacing between elements */
-    justify-content: space-between; /* Ensure equal spacing for elements */
-    align-items: flex-start; /* Vertically align items to the top */
-    width: 100%; /* Occupy full width */
-    max-width: 1400px; /* Prevent layout from expanding too much */
+    justify-content: space-between; /* Keep equal spacing between sidebars and center */
+    align-items: flex-start; /* Align items to the top */
+    width: 1200px; /* Fixed width for the entire layout */
+    max-width: 1200px; /* Prevent layout from growing */
     margin: 0 auto; /* Center the layout horizontally */
-    box-sizing: border-box; /* Include padding and borders in the width */
+    gap: 20px; /* Consistent gap between sections */
+    box-sizing: border-box; /* Include padding/border in width calculations */
 }
 
-    /* Sidebar Styling */
-    .item-list-sidebar-container {
-    flex: 0 1 250px; /* Fixed width for sidebars */
-    max-width: 250px; /* Prevent sidebars from growing too large */
-    padding: 10px; /* Consistent padding */
-    margin: 0; /* Remove any extra margins */
-    background: #333; /* Restore background color */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add subtle shadow */
-    box-sizing: border-box; /* Include padding in the width */
+/* Sidebar Styling */
+.item-list-sidebar-container {
+    width: 250px; /* Fixed width for both sidebars */
+    min-width: 250px; /* Prevent shrinking */
+    max-width: 250px; /* Prevent growing */
+    padding: 10px;
+    background: #333; /* Ensure background color remains consistent */
+    border-radius: 10px; /* Rounded corners for visual effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    box-sizing: border-box;
 }
 
 .item-list-sidebar {
@@ -203,22 +176,22 @@ footer {
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
     display: grid;
-    grid-template-columns: repeat(1, 1fr); /* Two equally sized containers */
-    gap: 20px; /* Consistent spacing between containers */
-    width: 100%; /* Occupy available width */
-    max-width: 900px; /* Prevent center containers from growing too large */
-    margin: 0 auto; /* Center the layout horizontally */
-    box-sizing: border-box; /* Include padding and borders */
+    grid-template-columns: repeat(2, 1fr); /* Two equal columns for Trader 1 and Trader 2 */
+    gap: 20px; /* Space between the two containers */
+    width: 700px; /* Fixed width for the center section */
+    max-width: 700px;
+    box-sizing: border-box;
+    margin: 0 auto;
 }
 
-.selected-items-container {
-    display: flex;
-    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
-    flex-direction: column; /* Stack panels vertically for each trader */
-    gap: 0px; /* Space between panels in the same trader container */
-    width: 50%; /* Each trader takes up half the width of the wrapper */
-    height: 460px;
-    background: none;
+
+.selected-items-container,
+.selected-items-panel {
+    background: #f4f4f4; /* Optional: light background for center containers */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    height: 455px; /* Match previous height */
 }
 
 #selected-items-container .item-frame:not(:first-child),
