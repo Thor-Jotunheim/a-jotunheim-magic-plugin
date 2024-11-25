@@ -135,26 +135,24 @@ footer {
 /* Layout for the trader containers and sidebar */
 .trade-layout {
     display: flex;
-    flex-wrap: nowrap; /* Prevent items from wrapping */
-    gap: 20px; /* Consistent spacing between sections */
-    justify-content: space-between; /* Keep elements spaced evenly */
-    align-items: flex-start; /* Align items at the top */
-    width: 100%; /* Full width of the layout */
-    max-width: 1200px; /* Prevent layout from stretching */
-    margin: 0 auto; /* Center the layout */
-    box-sizing: border-box; /* Include padding/borders in calculations */
-    overflow: hidden; /* Ensure no unintended wrapping or overflow */
+    justify-content: space-between; /* Keep equal spacing between sidebars and center */
+    align-items: flex-start; /* Align items to the top */
+    width: 1200px; /* Fixed width for the entire layout */
+    max-width: 1200px; /* Prevent layout from growing */
+    margin: 0 auto; /* Center the layout horizontally */
+    gap: 20px; /* Consistent gap between sections */
+    box-sizing: border-box; /* Include padding/border in width calculations */
 }
 
 /* Sidebar Styling */
 .item-list-sidebar-container {
-    flex: 0 0 250px; /* Fixed width, no shrinking or growing */
-    max-width: 250px; /* Ensure sidebars remain the same size */
-    min-width: 250px;
+    width: 250px; /* Fixed width for both sidebars */
+    min-width: 250px; /* Prevent shrinking */
+    max-width: 250px; /* Prevent growing */
     padding: 10px;
-    background: #333;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: #333; /* Ensure background color remains consistent */
+    border-radius: 10px; /* Rounded corners for visual effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
     box-sizing: border-box;
 }
 
