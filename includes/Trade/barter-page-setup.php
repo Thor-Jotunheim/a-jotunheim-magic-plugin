@@ -14,7 +14,7 @@ function jotunheim_barter_page_shortcode() {
 function jotunheim_barter_page_half_screenshortcode() {
     // Start output buffering
     ob_start();
-    include plugin_dir_path(__FILE__) . 'jotunheim-barter-page-half-screen.html';
+    include plugin_dir_path(__FILE__) . 'barter-page-half-screen.html';
     return ob_get_clean();
 }
 
