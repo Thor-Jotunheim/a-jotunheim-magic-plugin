@@ -196,7 +196,7 @@ function toggleAccordion(section) {
         const sectionRect = section.getBoundingClientRect();
         const offset = sectionRect.top - containerRect.top + container.scrollTop;
 
-        container.scrollTop = offset - 10; // Adjust with padding if needed
+        //container.scrollTop = offset - 10; // Adjust with padding if needed
     }
 
     // Adjust page height dynamically to account for expanded/collapsed content
