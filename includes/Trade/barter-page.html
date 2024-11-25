@@ -72,32 +72,38 @@ html, body {
     margin: 0;
     display: flex;
     flex-direction: column; /* Stack header, content, and footer vertically */
+    min-width: 1200px; /* Prevent shrinking below 1200px */
+    overflow-x: auto; /* Allow horizontal scrolling if the window is smaller */
 }
 
 #jotunheim-barter-page {
-    transform: scale(0.85);
     display: flex;
-    flex-direction: column; /* Stack child elements vertically */
-    align-items: center; /* Horizontally center */
-    justify-content: center; /* Vertically center */
-    height: 100%; /* Take up full height of the viewport */
-    margin: 0 auto; /* Center horizontally if necessary */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0 auto;
     box-sizing: border-box;
-    padding: 20px; /* Optional: Add some padding */
+    padding: 20px;
     width: 100%;
+    min-width: 1200px; /* Match the layout's minimum width */
+    overflow-x: hidden; /* Prevent unwanted overflow beyond the page */
 }
 
 /* Responsive adjustments */
-@media (max-width: 1400px) {
-    .trade-layout {
-        width: 100%;
-        max-width: 100%;
-        padding: 0 20px; /* Add padding to avoid edge collision */
-    }
-
-    .selected-items-wrapper {
-        width: 100%; /* Make center containers responsive */
-        max-width: 700px;
+@media (max-width: 1200px) {
+    body::after {
+        content: "Please enlarge your browser window for the best experience.";
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        z-index: 1000;
     }
 }
 
