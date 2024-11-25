@@ -10,8 +10,6 @@ async function fetchItems() {
             itemsData = data;
             populateItemList('item-list-accordion', '');
             populateItemList('item-list-accordion-2', '');
-            populateItemList('item-list-accordion-half-1', '');
-            populateItemList('item-list-accordion-half-22', '');
 
             // Add event listeners to search bars
             document.getElementById('search-bar-1').addEventListener('input', (event) => {
@@ -19,12 +17,6 @@ async function fetchItems() {
             });
             document.getElementById('search-bar-2').addEventListener('input', (event) => {
                 populateItemList('item-list-accordion-2', event.target.value);
-            });
-            document.getElementById('search-bar-1').addEventListener('input', (event) => {
-                populateItemList('item-list-accordion-half-1', event.target.value);
-            });
-            document.getElementById('search-bar-2').addEventListener('input', (event) => {
-                populateItemList('item-list-accordion-half-2', event.target.value);
             });
         } else {
             console.error("Error fetching items:", data.message || "Unexpected data format");
@@ -126,14 +118,6 @@ document.getElementById('item-search').addEventListener('input', () => {
 
 document.getElementById('item-search-2').addEventListener('input', () => {
     filterItems('item-list-accordion-2');
-});
-
-document.getElementById('item-search-half-1').addEventListener('input', () => {
-    filterItems('item-list-accordion-half-1');
-});
-
-document.getElementById('item-search-half-2').addEventListener('input', () => {
-    filterItems('item-list-accordion-half-2');
 });
 
 function filterItems(containerId) {
