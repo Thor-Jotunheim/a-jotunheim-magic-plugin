@@ -85,6 +85,68 @@ html, body {
     width: 100%;
 }
 
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .trade-layout {
+        gap: 10px; /* Reduce gaps between elements */
+    }
+
+    .item-list-sidebar-container {
+        min-width: 200px; /* Shrink sidebar minimum width */
+        max-width: 15%; /* Ensure sidebars shrink proportionally */
+    }
+
+    #selected-items-container, #selected-items-container-2 {
+        max-width: 300px; /* Adjust center container width */
+    }
+
+    .search-bar {
+        font-size: 0.9rem; /* Slightly smaller font for search bars */
+        padding: 8px; /* Reduce padding */
+    }
+}
+
+@media (max-width: 992px) {
+    .trade-layout {
+        gap: 5px; /* Further reduce gaps */
+    }
+
+    .item-list-sidebar-container {
+        min-width: 180px; /* Shrink sidebar minimum width further */
+        flex: 0 1 15%; /* Ensure it shrinks relative to other elements */
+    }
+
+    .selected-items-wrapper {
+        grid-template-columns: repeat(2, 1fr); /* Adjust grid layout */
+    }
+
+    #selected-items-container, #selected-items-container-2 {
+        max-width: 250px; /* Further reduce center container width */
+    }
+}
+
+@media (max-width: 768px) {
+    .trade-layout {
+        gap: 5px; /* Maintain layout with reduced gaps */
+        flex-wrap: wrap; /* Allow wrapping when space is too tight */
+    }
+
+    .item-list-sidebar-container {
+        flex: 0 1 auto; /* Allow sidebars to shrink freely */
+        min-width: 150px; /* Set a reasonable minimum width */
+    }
+
+    #selected-items-container, #selected-items-container-2 {
+        flex: 1 1 100%; /* Center containers take up remaining space */
+        max-width: 300px;
+    }
+
+    .search-bar {
+        font-size: 0.8rem; /* Smaller font size for search bars */
+        padding: 5px; /* Reduced padding */
+    }
+}
+
 footer {
     margin-top: auto; /* Push the footer to the bottom */
     width: 100%; /* Full width of the page */
@@ -93,36 +155,6 @@ footer {
     text-align: center;
     padding: 10px 0;
     box-sizing: border-box;
-}
-
-/* Media Query for Smaller Screens */
-@media (max-width: 768px) {
-    .trade-layout {
-        flex-direction: column; /* Stack sidebars and center containers vertically */
-        gap: 10px; /* Reduce gap for smaller screens */
-    }
-
-    .item-list-sidebar-container, .selected-items-wrapper {
-        width: 100%; /* Make them stack and take full width */
-    }
-
-    .search-bar {
-        width: auto; /* Let the search bar resize dynamically */
-    }
-
-    .selected-items-panel {
-        height: auto; /* Allow height to adjust dynamically */
-    }
-}
-
-/* General Fix for Overlapping */
-.trade-layout {
-    flex-wrap: wrap; /* Ensure content wraps to the next line if space is insufficient */
-}
-
-.item-list-sidebar-container {
-    flex-grow: 1; /* Allow the sidebar to grow/shrink as needed */
-    max-width: 100%; /* Prevent fixed widths from breaking layout */
 }
 
 /* Layout for the trader containers and sidebar */
@@ -195,7 +227,7 @@ footer {
     display: grid;
     grid-template-columns: repeat(1, 1fr); /* 1 items per row */
     gap: 5px;
-    width: 700px; /* Adjust width here to make the containers wider */
+    /* width: 700px; /* Adjust width here to make the containers wider */
     max-width: 700px; /* Prevent overflow */
     height: auto;
     padding: 5px;
@@ -209,7 +241,7 @@ footer {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4 items per row */
     gap: 5px; /* Space between items */
-    width: 100%; /* Full width of the trader container */
+    /* width: 100%; /* Full width of the trader container */
     height: 455px;
     background: url('/wp-content/uploads/Jotunheim-magic/icons/container-background.png') no-repeat center center;
     background-size: 800px, 550px; /* Ensure the background covers the panel */
