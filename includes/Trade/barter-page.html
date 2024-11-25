@@ -95,6 +95,36 @@ footer {
     box-sizing: border-box;
 }
 
+/* Media Query for Smaller Screens */
+@media (max-width: 768px) {
+    .trade-layout {
+        flex-direction: column; /* Stack sidebars and center containers vertically */
+        gap: 10px; /* Reduce gap for smaller screens */
+    }
+
+    .item-list-sidebar-container, .selected-items-wrapper {
+        width: 100%; /* Make them stack and take full width */
+    }
+
+    .search-bar {
+        width: auto; /* Let the search bar resize dynamically */
+    }
+
+    .selected-items-panel {
+        height: auto; /* Allow height to adjust dynamically */
+    }
+}
+
+/* General Fix for Overlapping */
+.trade-layout {
+    flex-wrap: wrap; /* Ensure content wraps to the next line if space is insufficient */
+}
+
+.item-list-sidebar-container {
+    flex-grow: 1; /* Allow the sidebar to grow/shrink as needed */
+    max-width: 100%; /* Prevent fixed widths from breaking layout */
+}
+
 /* Layout for the trader containers and sidebar */
 .trade-layout {
     transform: scale(0.85);
