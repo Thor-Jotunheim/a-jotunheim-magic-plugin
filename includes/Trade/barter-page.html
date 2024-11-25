@@ -162,24 +162,25 @@ footer {
 /* Layout for the trader containers and sidebar */
 .trade-layout {
     display: flex;
-    gap: 0; /* Ensure there's no extra space added between elements */
-    justify-content: space-between; /* Spread items evenly */
-    align-items: flex-start; /* Ensure vertical alignment at the top */
-    width: 100%; /* Ensure full-width usage of the container */
-    box-sizing: border-box; /* Prevent extra width from padding */
+    gap: 20px; /* Keep consistent spacing between elements */
+    justify-content: space-between; /* Ensure equal spacing for elements */
+    align-items: flex-start; /* Vertically align items to the top */
+    width: 100%; /* Occupy full width */
+    max-width: 1400px; /* Prevent layout from expanding too much */
+    margin: 0 auto; /* Center the layout horizontally */
+    box-sizing: border-box; /* Include padding and borders in the width */
 }
 
     /* Sidebar Styling */
-.item-list-sidebar-container {
-    flex: 0 1 auto;
-    min-width: 250px; /* Prevent sidebars from shrinking */
-    max-width: 20%;
-    overflow-y: visible;
-    padding: 10px;
-    background: #333;
-    border-radius: 10px;
-    color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    .item-list-sidebar-container {
+    flex: 0 1 250px; /* Fixed width for sidebars */
+    max-width: 250px; /* Prevent sidebars from growing too large */
+    padding: 10px; /* Consistent padding */
+    margin: 0; /* Remove any extra margins */
+    background: #333; /* Restore background color */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add subtle shadow */
+    box-sizing: border-box; /* Include padding in the width */
 }
 
 .item-list-sidebar {
@@ -201,11 +202,13 @@ footer {
 /* Trader containers */
 /* Wrapper to keep Trader 1 and Trader 2 side by side */
 .selected-items-wrapper {
-    flex: 1; /* Take up available space */
-    max-width: calc(100% - 400px); /* Adjust dynamically based on sidebar width */
-    margin: 0; /* Remove unnecessary margins */
-    padding: 0; /* Ensure no added padding */
-    box-sizing: border-box; /* Include padding/border in width calculations */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two equally sized containers */
+    gap: 20px; /* Consistent spacing between containers */
+    width: 100%; /* Occupy available width */
+    max-width: 900px; /* Prevent center containers from growing too large */
+    margin: 0 auto; /* Center the layout horizontally */
+    box-sizing: border-box; /* Include padding and borders */
 }
 
 .selected-items-container {
