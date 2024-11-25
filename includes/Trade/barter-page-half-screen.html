@@ -1,4 +1,4 @@
-<div id="jotunheim-barter-page">
+<div id="jotunheim_barter_page_half_screen">
     <h1>Jotunheim Barter Page</h1>
 <!-- Calculation Panel in the Center -->
 <div class="calculation-panel">
@@ -36,8 +36,8 @@
     <div class="trade-layout">
         <!-- Left Sidebar -->
         <div class="item-list-sidebar-container">
-            <input type="text" id="item-search" class="search-bar" placeholder="Search items..." oninput="filterItems('item-list-accordion')">
-            <div class="item-list-sidebar" id="item-list-accordion">
+            <input type="text" id="item-search-half-1" class="search-bar" placeholder="Search items..." oninput="filterItems('item-list-accordion-half-1')">
+            <div class="item-list-sidebar" id="item-list-accordion-half-1">
                 <!-- JavaScript will populate this accordion dynamically -->
             </div>
         </div>
@@ -55,8 +55,8 @@
 
         <!-- Right Sidebar -->
         <div class="item-list-sidebar-container">
-            <input type="text" id="item-search-2" class="search-bar" placeholder="Search items..." oninput="filterItems('item-list-accordion-2')">
-            <div class="item-list-sidebar" id="item-list-accordion-2">
+            <input type="text" id="item-search-half-2" class="search-bar" placeholder="Search items..." oninput="filterItems('item-list-accordion-half-2')">
+            <div class="item-list-sidebar" id="item-list-accordion-half-2">
                 <!-- JavaScript will populate this accordion dynamically -->
             </div>
         </div>
@@ -72,7 +72,7 @@ html, body {
     flex-direction: column; /* Stack header, content, and footer vertically */
 }
 
-#jotunheim-barter-page {
+#jotunheim_barter_page_half_screen {
     display: flex;
     flex-direction: column; /* Stack child elements vertically */
     align-items: center; /* Horizontally center */
