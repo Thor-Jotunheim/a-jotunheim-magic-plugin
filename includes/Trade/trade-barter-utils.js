@@ -10,7 +10,6 @@ export async function fetchItems() {
 
         console.log('Fetched Items:', data); // Log the fetched data
 
-        // Check if data is an array and process it
         if (Array.isArray(data)) {
             itemsData = data; // Populate the global variable
 
@@ -132,11 +131,14 @@ export function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-
-
 // Add item to a container
 export function addItemToContainer(item, containerId) {
     const wrapper = document.getElementById(containerId);
+    if (!wrapper) {
+        console.error(`Container with ID "${containerId}" not found.`);
+        return;
+    }
+
     let panels = wrapper.querySelectorAll('.selected-items-panel');
     let lastPanel = panels[panels.length - 1];
 
@@ -180,87 +182,87 @@ export function addItemToContainer(item, containerId) {
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    // Units Input Field
     const unitsInput = document.createElement('input');
     unitsInput.type = 'number';
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '60px';
-    unitsInput.style.height = '30px';
-    unitsInput.style.marginRight = '5px';
     unitsInput.addEventListener('input', updateTotals);
     inputContainer.appendChild(unitsInput);
 
-    // Stacks Input Field (only if stack_size > 1)
     if (item.stack_size > 1) {
         const stacksInput = document.createElement('input');
         stacksInput.type = 'number';
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '60px';
-        stacksInput.style.height = '30px';
         stacksInput.addEventListener('input', updateTotals);
         inputContainer.appendChild(stacksInput);
-    } else {
-        console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
     }
 
     itemFrame.appendChild(inputContainer);
-
-    // Dropdown and Discount Container
-    const dropdownContainer = document.createElement('div');
-    dropdownContainer.className = 'dropdown-container';
-    dropdownContainer.style.display = 'flex';
-    dropdownContainer.style.alignItems = 'center';
-
-    // Level dropdown
-    const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
-    if (hasLevelPrices) {
-        const levelDropdown = document.createElement('select');
-        levelDropdown.className = 'level-dropdown';
-        levelDropdown.style.fontSize = '11px';
-        levelDropdown.style.width = '60px';
-        levelDropdown.style.height = '30px';
-        levelDropdown.style.marginRight = '5px';
-
-        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0) {
-                const option = document.createElement('option');
-                option.value = index + 1;
-                option.textContent = `Level ${index + 1}`;
-                levelDropdown.appendChild(option);
-            }
-        });
-
-        levelDropdown.addEventListener('change', updateTotals);
-        dropdownContainer.appendChild(levelDropdown);
-    }
-
-    // Discount input field (only if undercut === 1)
-    if (parseInt(item.undercut) === 1) {
-        const discountInput = document.createElement('input');
-        discountInput.type = 'number';
-        discountInput.placeholder = 'Discount %';
-        discountInput.className = 'item-input discount-input';
-        discountInput.style.fontSize = '9px';
-        discountInput.style.width = '80px';
-        discountInput.style.height = '30px';
-        discountInput.min = 0;
-        discountInput.max = 40;
-        discountInput.addEventListener('input', () => {
-            if (discountInput.value > 40) {
-                discountInput.value = 40;
-            }
-            updateTotals();
-        });
-        dropdownContainer.appendChild(discountInput);
-    }
-
-    itemFrame.appendChild(dropdownContainer);
     lastPanel.appendChild(itemFrame);
 }
 
-// Initialize by fetching items
-fetchItems();
+// Function to update totals
+export function updateTotals() {
+    const trader1Container = document.getElementById('selected-items-container');
+    const trader2Container = document.getElementById('selected-items-container-2');
+
+    const calculateTotal = (container) => {
+        let totalCoins = 0;
+
+        const panels = container.querySelectorAll('.selected-items-panel');
+        panels.forEach((panel) => {
+            const items = panel.querySelectorAll('.item-frame');
+            items.forEach((itemFrame) => {
+                const units = parseInt(itemFrame.querySelector('.units-input')?.value) || 0;
+                const stacksInput = itemFrame.querySelector('.stacks-input');
+                const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+                const level = parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1);
+                const discount = parseFloat(itemFrame.querySelector('.discount-input')?.value) || 0;
+
+                const itemData = itemsData.find((data) => data.prefab_name === itemFrame.dataset.itemId);
+                if (itemData) {
+                    const priceKey = level === 1 ? 'unit_price' : `lv${level}_price`;
+                    const price = parseInt(itemData[priceKey]) || 0;
+                    const stackSize = parseInt(itemData.stack_size) || 1;
+
+                    const discountedPrice = price * ((100 - discount) / 100);
+
+                    totalCoins += units * discountedPrice;
+                    totalCoins += stacks * discountedPrice * stackSize;
+                }
+            });
+        });
+
+        return { totalCoins };
+    };
+
+    const convertToYmirFlesh = (coins) => {
+        const ymirFlesh = Math.floor(coins / 120);
+        const remainingCoins = coins % 120;
+        return { ymirFlesh, remainingCoins };
+    };
+
+    const trader1Totals = calculateTotal(trader1Container);
+    const trader2Totals = calculateTotal(trader2Container);
+
+    const trader1Ymir = convertToYmirFlesh(trader1Totals.totalCoins);
+    const trader2Ymir = convertToYmirFlesh(trader2Totals.totalCoins);
+
+    const formatTotals = (coins, ymirFlesh) => {
+        return `
+            <div style="text-align: center;">
+                ${coins.toFixed(2)} Coins<br>
+                <small>or</small><br>
+                ${ymirFlesh.ymirFlesh} Ymir Flesh & ${ymirFlesh.remainingCoins.toFixed(2)} Coins
+            </div>
+        `;
+    };
+
+    document.getElementById('trader1-total-display').innerHTML = formatTotals(trader1Totals.totalCoins, trader1Ymir);
+    document.getElementById('trader2-total-display').innerHTML = formatTotals(trader2Totals.totalCoins, trader2Ymir);
+
+    const diffCoins = trader1Totals.totalCoins - trader2Totals.totalCoins;
+    const diffYmir = convertToYmirFlesh(Math.abs(diffCoins));
+    document.getElementById('trade-difference').innerHTML = formatTotals(Math.abs(diffCoins), diffYmir);
+}
