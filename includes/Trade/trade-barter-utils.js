@@ -220,20 +220,18 @@ export function addItemToContainer(item, containerId) {
     const wrapper = document.getElementById(containerId);
     if (!wrapper) {
         console.error(`Container with ID "${containerId}" not found.`);
-        return; // Prevent further execution if the container doesn't exist
+        return;
     }
 
     let panels = wrapper.querySelectorAll('.selected-items-panel');
     let lastPanel = panels[panels.length - 1];
 
-    // Create a new panel if the last one is full or does not exist
     if (!lastPanel || lastPanel.children.length >= 8) {
         lastPanel = document.createElement('div');
         lastPanel.className = 'selected-items-panel';
         wrapper.appendChild(lastPanel);
     }
 
-    // Check if the item already exists in the container
     const existingItem = Array.from(wrapper.querySelectorAll('.item-frame')).find(
         (child) => child.dataset.itemId === item.prefab_name
     );
@@ -242,18 +240,15 @@ export function addItemToContainer(item, containerId) {
         return;
     }
 
-    // Create item frame
     const itemFrame = document.createElement('div');
     itemFrame.className = 'item-frame';
     itemFrame.dataset.itemId = item.prefab_name;
 
-    // Create image for the item
     const img = document.createElement('img');
     img.src = `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name}.png`;
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
-    // Create remove button
     const removeButton = document.createElement('button');
     removeButton.textContent = 'X';
     removeButton.className = 'remove-item';
@@ -263,13 +258,11 @@ export function addItemToContainer(item, containerId) {
     };
     itemFrame.appendChild(removeButton);
 
-    // Add item name
     const sanitizedItemName = sanitizeItemName(item.item_name || 'Unknown Item');
     const itemName = document.createElement('h3');
     itemName.textContent = sanitizedItemName;
     itemFrame.appendChild(itemName);
 
-    // Create input container for units and stacks
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
@@ -279,10 +272,14 @@ export function addItemToContainer(item, containerId) {
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
     unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '70px';
+    unitsInput.style.width = '60px';
     unitsInput.style.height = '30px';
     unitsInput.style.marginRight = '5px';
-    unitsInput.addEventListener('input', updateTotals);
+    unitsInput.min = 0; // Prevent negative values
+    unitsInput.addEventListener('input', (event) => {
+        if (event.target.value < 0) event.target.value = 0; // Reset to 0 if value is negative
+        updateTotals();
+    });
     inputContainer.appendChild(unitsInput);
 
     // Stacks Input Field (only if stack_size > 1)
@@ -292,9 +289,13 @@ export function addItemToContainer(item, containerId) {
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '70px';
+        stacksInput.style.width = '60px';
         stacksInput.style.height = '30px';
-        stacksInput.addEventListener('input', updateTotals);
+        stacksInput.min = 0; // Prevent negative values
+        stacksInput.addEventListener('input', (event) => {
+            if (event.target.value < 0) event.target.value = 0; // Reset to 0 if value is negative
+            updateTotals();
+        });
         inputContainer.appendChild(stacksInput);
     } else {
         console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
@@ -302,7 +303,7 @@ export function addItemToContainer(item, containerId) {
 
     itemFrame.appendChild(inputContainer);
 
-    // Create dropdown and discount container
+    // Dropdown and Discount Container
     const dropdownContainer = document.createElement('div');
     dropdownContainer.className = 'dropdown-container';
     dropdownContainer.style.display = 'flex';
@@ -314,11 +315,10 @@ export function addItemToContainer(item, containerId) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.fontSize = '11px';
-        levelDropdown.style.width = '80px';
+        levelDropdown.style.width = '60px';
         levelDropdown.style.height = '30px';
         levelDropdown.style.marginRight = '5px';
 
-        // Populate dropdown with available levels
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0) {
                 const option = document.createElement('option');
@@ -341,12 +341,11 @@ export function addItemToContainer(item, containerId) {
         discountInput.style.fontSize = '9px';
         discountInput.style.width = '80px';
         discountInput.style.height = '30px';
-        discountInput.min = 0;
+        discountInput.min = 0; // Prevent negative values
         discountInput.max = 40;
-        discountInput.addEventListener('input', () => {
-            if (discountInput.value > 40) {
-                discountInput.value = 40;
-            }
+        discountInput.addEventListener('input', (event) => {
+            if (event.target.value < 0) event.target.value = 0; // Reset to 0 if value is negative
+            if (event.target.value > 40) event.target.value = 40; // Reset to 40 if value exceeds max
             updateTotals();
         });
         dropdownContainer.appendChild(discountInput);
