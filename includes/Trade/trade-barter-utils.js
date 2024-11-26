@@ -338,27 +338,41 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(inputContainer);
 
     // Discount input field
-    if (parseInt(item.undercut) === 1) {
-        const discountInput = document.createElement('input');
-        discountInput.type = 'number';
-        discountInput.placeholder = 'Discount %';
-        discountInput.className = 'item-input discount-input';
-        discountInput.style.display = 'block'; // Makes the input take a full-width block
-        discountInput.style.margin = '0 auto'; // Centers the block within the container
-        discountInput.style.fontSize = '9px';
-        discountInput.style.width = '100px';
-        discountInput.style.height = '30px';
-        discountInput.min = 0;
-        discountInput.max = 40;
+if (parseInt(item.undercut) === 1) {
+    const discountInput = document.createElement('input');
+    discountInput.type = 'text'; // Changed to 'text' to handle numeric input and %
+    discountInput.placeholder = 'Discount %';
+    discountInput.className = 'item-input discount-input';
+    discountInput.style.display = 'block'; // Makes the input take a full-width block
+    discountInput.style.margin = '0 auto'; // Centers the block within the container
+    discountInput.style.fontSize = '9px';
+    discountInput.style.width = '100px';
+    discountInput.style.height = '30px';
 
-        discountInput.addEventListener('input', () => {
-            if (discountInput.value < 0) discountInput.value = 0; // Prevent negative values
-            if (discountInput.value > 40) discountInput.value = 40; // Cap discount at 40%
+    // Event listener to format input with %
+    discountInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace('%', '').trim(); // Remove any existing '%' for clean parsing
+        if (value === '' || isNaN(value)) {
+            e.target.value = ''; // Clear the field if input is not a number
+        } else {
+            let numericValue = parseFloat(value);
+            if (numericValue < 0) numericValue = 0; // Prevent negative values
+            if (numericValue > 40) numericValue = 40; // Cap discount at 40%
+            e.target.value = `${numericValue}%`; // Append the '%' symbol
             updateTotals();
-        });
+        }
+    });
 
-        itemFrame.appendChild(discountInput);
-    }
+    // Handle focus-out behavior (to format properly on blur)
+    discountInput.addEventListener('blur', (e) => {
+        const value = e.target.value.replace('%', '').trim();
+        if (value !== '' && !isNaN(value)) {
+            e.target.value = `${parseFloat(value)}%`; // Ensure formatting on blur
+        }
+    });
+
+    inputContainer.appendChild(discountInput);
+}
 
     lastPanel.appendChild(itemFrame);
     updateTotals();
