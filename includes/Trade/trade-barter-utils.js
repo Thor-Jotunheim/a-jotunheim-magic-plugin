@@ -26,11 +26,14 @@ export function populateItemList(containerId, itemsData, searchQuery, addItemCal
 
     const categories = {};
 
-    // Organize items by type, skipping untradable items
+    // Organize items by their type, skipping Untradable items
     itemsData.forEach(item => {
-        if (item.item_type?.toLowerCase() === 'untradable') return;
+        if (item.item_type?.toLowerCase() === 'untradable') {
+            console.log(`Skipping item: ${sanitizeItemName(item.item_name)} (Untradable)`); // Debugging
+            return; // Skip items marked as Untradable
+        }
 
-        if (!searchQuery || item.item_name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        if (!searchQuery || sanitizeItemName(item.item_name).toLowerCase().includes(searchQuery.toLowerCase())) {
             if (!categories[item.item_type]) {
                 categories[item.item_type] = [];
             }
@@ -38,30 +41,49 @@ export function populateItemList(containerId, itemsData, searchQuery, addItemCal
         }
     });
 
+    console.log('Filtered Categories:', categories); // Debugging
+
     // Populate accordion with categorized items
     Object.keys(categories).forEach(category => {
+        if (categories[category].length === 0) {
+            return; // Skip empty categories
+        }
+
         const section = document.createElement('div');
         section.className = 'accordion-section';
 
         const header = document.createElement('div');
         header.className = 'accordion-header';
-        header.textContent = category;
+        header.textContent = sanitizeItemName(category);
 
         const content = document.createElement('div');
         content.className = 'accordion-content';
 
+        // Add items to accordion content
         categories[category].forEach(item => {
+            const sanitizedItemName = sanitizeItemName(item.item_name);
+
             const itemButton = document.createElement('div');
             itemButton.className = 'item-button';
-            itemButton.textContent = item.item_name;
-            itemButton.onclick = () => addItemCallback(item);
+            itemButton.textContent = sanitizedItemName;
+            itemButton.onclick = () => addItemCallback(item); // Use callback to handle item addition
             content.appendChild(itemButton);
         });
+
+        // Expand section if it contains matching items and a search query exists
+        if (searchQuery && categories[category].length > 0) {
+            content.classList.add('active');
+            content.style.display = 'block'; // Show the content
+        } else {
+            content.classList.remove('active');
+            content.style.display = 'none'; // Collapse the content
+        }
 
         section.appendChild(header);
         section.appendChild(content);
         itemListAccordion.appendChild(section);
 
+        // Add click event to toggle accordion sections
         header.onclick = () => toggleAccordion(section);
     });
 }
