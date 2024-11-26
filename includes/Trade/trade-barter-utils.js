@@ -216,7 +216,7 @@ export function addItemToContainer(item, containerId) {
     const wrapper = document.getElementById(containerId);
     if (!wrapper) {
         console.error(`Container with ID "${containerId}" not found.`);
-        return;
+        return; // Prevent further execution if the container doesn't exist
     }
 
     let panels = wrapper.querySelectorAll('.selected-items-panel');
@@ -262,43 +262,6 @@ export function addItemToContainer(item, containerId) {
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    // Units Input Field
-    const unitsInput = document.createElement('input');
-    unitsInput.type = 'number';
-    unitsInput.placeholder = 'Units';
-    unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '9px';
-    unitsInput.style.width = '75px';
-    unitsInput.style.height = '30px';
-    unitsInput.style.marginRight = '5px';
-    unitsInput.min = 0; // Prevent negative values
-    unitsInput.addEventListener('input', (event) => {
-        if (event.target.value < 0) event.target.value = 0; // Reset to 0 if value is negative
-        updateTotals();
-    });
-    inputContainer.appendChild(unitsInput);
-
-    // Stacks Input Field (only if stack_size > 1)
-    if (item.stack_size > 1) {
-        const stacksInput = document.createElement('input');
-        stacksInput.type = 'number';
-        stacksInput.placeholder = 'Stacks';
-        stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '9px';
-        stacksInput.style.width = '75px';
-        stacksInput.style.height = '30px';
-        stacksInput.min = 0; // Prevent negative values
-        stacksInput.addEventListener('input', (event) => {
-            if (event.target.value < 0) event.target.value = 0; // Reset to 0 if value is negative
-            updateTotals();
-        });
-        inputContainer.appendChild(stacksInput);
-    } else {
-        console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
-    }
-
-    itemFrame.appendChild(inputContainer);
-
     // Dropdown and Discount Container
     const dropdownContainer = document.createElement('div');
     dropdownContainer.className = 'dropdown-container';
@@ -310,8 +273,8 @@ export function addItemToContainer(item, containerId) {
     if (hasLevelPrices) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
-        levelDropdown.style.fontSize = '9px';
-        levelDropdown.style.width = '75px';
+        levelDropdown.style.fontSize = '11px';
+        levelDropdown.style.width = '60px';
         levelDropdown.style.height = '30px';
         levelDropdown.style.marginRight = '5px';
 
@@ -325,8 +288,43 @@ export function addItemToContainer(item, containerId) {
         });
 
         levelDropdown.addEventListener('change', updateTotals);
-        dropdownContainer.appendChild(levelDropdown);
+        inputContainer.appendChild(levelDropdown); // Append dropdown first
     }
+
+    // Units Input Field
+    const unitsInput = document.createElement('input');
+    unitsInput.type = 'number';
+    unitsInput.placeholder = 'Units';
+    unitsInput.className = 'item-input units-input';
+    unitsInput.style.fontSize = '11px';
+    unitsInput.style.width = '60px';
+    unitsInput.style.height = '30px';
+    unitsInput.style.marginRight = '5px';
+    unitsInput.addEventListener('input', updateTotals);
+    unitsInput.addEventListener('input', (e) => {
+        if (e.target.value < 0) e.target.value = 0; // Prevent negative values
+    });
+    inputContainer.appendChild(unitsInput);
+
+    // Stacks Input Field (only if stack_size > 1)
+    if (item.stack_size > 1) {
+        const stacksInput = document.createElement('input');
+        stacksInput.type = 'number';
+        stacksInput.placeholder = 'Stacks';
+        stacksInput.className = 'item-input stacks-input';
+        stacksInput.style.fontSize = '11px';
+        stacksInput.style.width = '60px';
+        stacksInput.style.height = '30px';
+        stacksInput.addEventListener('input', updateTotals);
+        stacksInput.addEventListener('input', (e) => {
+            if (e.target.value < 0) e.target.value = 0; // Prevent negative values
+        });
+        inputContainer.appendChild(stacksInput);
+    } else {
+        console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
+    }
+
+    itemFrame.appendChild(inputContainer);
 
     // Discount input field (only if undercut === 1)
     if (parseInt(item.undercut) === 1) {
@@ -335,19 +333,18 @@ export function addItemToContainer(item, containerId) {
         discountInput.placeholder = 'Discount %';
         discountInput.className = 'item-input discount-input';
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '75px';
+        discountInput.style.width = '80px';
         discountInput.style.height = '30px';
-        discountInput.min = 0; // Prevent negative values
+        discountInput.min = 0;
         discountInput.max = 40;
-        discountInput.addEventListener('input', (event) => {
-            if (event.target.value < 0) event.target.value = 0; // Reset to 0 if value is negative
-            if (event.target.value > 40) event.target.value = 40; // Reset to 40 if value exceeds max
+        discountInput.addEventListener('input', () => {
+            if (discountInput.value < 0) discountInput.value = 0; // Prevent negative values
+            if (discountInput.value > 40) discountInput.value = 40; // Cap discount at 40%
             updateTotals();
         });
-        dropdownContainer.appendChild(discountInput);
+        inputContainer.appendChild(discountInput);
     }
 
-    itemFrame.appendChild(dropdownContainer);
     lastPanel.appendChild(itemFrame);
 }
 
