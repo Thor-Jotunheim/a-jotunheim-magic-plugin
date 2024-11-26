@@ -314,7 +314,10 @@ unitsInput.style.marginRight = '2px';
 
 // Highlight text on focus
 unitsInput.addEventListener('focus', (e) => {
-    e.target.select(); // Highlight all text in the field
+    // Timeout ensures `select()` works reliably after focusing
+    setTimeout(() => {
+        e.target.select();
+    }, 0);
 });
 
 // Update value with "unit(s)" on blur
@@ -342,7 +345,10 @@ if (item.stack_size > 1) {
 
     // Highlight text on focus
     stacksInput.addEventListener('focus', (e) => {
-        e.target.select(); // Highlight all text in the field
+        // Timeout ensures `select()` works reliably after focusing
+        setTimeout(() => {
+            e.target.select();
+        }, 0);
     });
 
     // Update value with "stack(s)" on blur
@@ -375,7 +381,10 @@ if (parseInt(item.undercut) === 1) {
 
     // Highlight text on focus
     discountInput.addEventListener('focus', (e) => {
-        e.target.select(); // Highlight all text in the field
+        // Timeout ensures `select()` works reliably after focusing
+        setTimeout(() => {
+            e.target.select();
+        }, 0);
     });
 
     // Update value with "%" on blur
