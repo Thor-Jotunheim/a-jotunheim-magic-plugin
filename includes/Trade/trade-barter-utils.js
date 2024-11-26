@@ -395,10 +395,13 @@ function addHighlightBehavior(inputField, type) {
             // Format stacks (allow decimals)
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseFloat(value).toFixed(2); // Ensure two decimal precision
-                e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
                 e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Save formatted value
+                e.target.value = e.target.dataset.previousValue; // Display formatted value
+            } else if (value === '') {
+                // If empty, revert to previous value or default to 0 stack
+                e.target.value = e.target.dataset.previousValue || '0 stack';
             } else {
-                // Default to 0 stack if the value is empty or invalid
+                // In case of invalid input, fallback to the last valid value or default
                 e.target.value = e.target.dataset.previousValue || '0 stack';
             }
         } else if (type === 'discount') {
