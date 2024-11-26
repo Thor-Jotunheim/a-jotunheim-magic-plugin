@@ -315,7 +315,7 @@ unitsInput.style.marginRight = '2px';
 // Event listeners for formatting
 unitsInput.addEventListener('focus', (e) => {
     const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for clean input
-    e.target.value = value; // Allow editing the value directly
+    if (!isNaN(value)) e.target.value = value; // Allow editing the value directly
 });
 
 unitsInput.addEventListener('blur', (e) => {
@@ -343,7 +343,7 @@ if (item.stack_size > 1) {
     // Event listeners for formatting
     stacksInput.addEventListener('focus', (e) => {
         const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for clean input
-        e.target.value = value; // Allow editing the value directly
+        if (!isNaN(value)) e.target.value = value; // Allow editing the value directly
     });
 
     stacksInput.addEventListener('blur', (e) => {
@@ -372,13 +372,11 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.fontSize = '9px';
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
-    discountInput.min = 0;
-    discountInput.max = 40;
 
     // Event listeners for formatting
     discountInput.addEventListener('focus', (e) => {
         const value = e.target.value.replace('%', '').trim(); // Remove "%" for clean input
-        e.target.value = value; // Allow editing the value directly
+        if (!isNaN(value)) e.target.value = value; // Allow editing the value directly
     });
 
     discountInput.addEventListener('blur', (e) => {
