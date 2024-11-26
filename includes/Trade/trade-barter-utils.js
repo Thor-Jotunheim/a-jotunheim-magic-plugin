@@ -340,10 +340,10 @@ function addHighlightBehavior(inputField, type) {
         } else if (type === 'discount') {
             // Format discount
             if (!isNaN(value) && value !== '') {
-                const numericValue = parseFloat(value.replace('%', '').trim());
+                const numericValue = parseFloat(value.replace('% Discount', '').trim());
                 e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}%`; // Clamp value between 0 and 40%
             } else {
-                e.target.value = e.target.dataset.previousValue || '0%'; // Default to 0%
+                e.target.value = e.target.dataset.previousValue || '0% Discount'; // Default to 0%
             }
         }
 
