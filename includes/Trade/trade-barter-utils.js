@@ -333,7 +333,7 @@ if (item.stack_size > 1) {
     stacksInput.style.fontSize = '11px';
     stacksInput.style.width = '120px'; // Take full width of container
     stacksInput.style.height = '25px';
-    stacksInput.style.marginBottom = '1px'; // No extra margin as it's the last field
+    stacksInput.style.marginBottom = '2px'; // No extra margin as it's the last field
 
     // Attach highlighting and blur behavior
     addHighlightBehavior(stacksInput, 'stacks');
