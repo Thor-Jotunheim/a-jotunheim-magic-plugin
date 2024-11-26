@@ -286,6 +286,8 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.fontSize = '11px';
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
+        levelDropdown.style.textAlign = 'center';
+
 
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0 && !existingLevels.includes(index + 1)) {
@@ -316,6 +318,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.style.fontSize = '11px';
     unitsInput.style.width = '120px';
     unitsInput.style.height = '25px';
+    unitsInput.style.textAlign = 'center';
 
     addHighlightBehavior(unitsInput, 'units');
     unitsInput.dataset.previousValue = '';
@@ -329,6 +332,7 @@ export function addItemToContainer(item, containerId) {
         stacksInput.style.fontSize = '11px';
         stacksInput.style.width = '120px';
         stacksInput.style.height = '25px';
+        stacksInput.style.textAlign = 'center';
 
         addHighlightBehavior(stacksInput, 'stacks');
         stacksInput.dataset.previousValue = '';
@@ -339,7 +343,6 @@ export function addItemToContainer(item, containerId) {
     inputContainer.style.flexDirection = 'column';
     inputContainer.style.alignItems = 'center';
     inputContainer.style.gap = '2px';
-    inputContainer.style.textAlign = 'center';
 
     if (parseInt(item.undercut) === 1) {
         const discountInput = document.createElement('input');
@@ -349,6 +352,7 @@ export function addItemToContainer(item, containerId) {
         discountInput.style.fontSize = '11px';
         discountInput.style.width = '120px';
         discountInput.style.height = '25px';
+        discountInput.style.textAlign = 'center';
 
         addHighlightBehavior(discountInput, 'discount');
         discountInput.dataset.previousValue = '';
