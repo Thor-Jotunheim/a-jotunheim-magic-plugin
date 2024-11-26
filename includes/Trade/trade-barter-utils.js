@@ -509,7 +509,7 @@ export function updateTotals() {
             items.forEach((itemFrame) => {
                 const units = parseInt(itemFrame.querySelector('.units-input')?.value) || 0;
                 const stacksInput = itemFrame.querySelector('.stacks-input');
-                const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+                const stacks = stacksInput ? parseFloat(stacksInput.value) || 0 : 0; // Use parseFloat for decimal handling
                 const level = parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1);
                 const discount = parseFloat(itemFrame.querySelector('.discount-input')?.value) || 0;
 
@@ -522,7 +522,7 @@ export function updateTotals() {
                     const discountedPrice = price * ((100 - discount) / 100);
 
                     totalCoins += units * discountedPrice;
-                    totalCoins += stacks * discountedPrice * stackSize;
+                    totalCoins += stacks * discountedPrice * stackSize; // Stacks now supports decimal values
                 }
             });
         });
