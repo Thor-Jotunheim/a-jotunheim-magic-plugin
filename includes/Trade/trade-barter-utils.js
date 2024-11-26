@@ -308,35 +308,41 @@ export function addItemToContainer(item, containerId) {
     }
 
     // Units Input Field
-    const unitsInput = document.createElement('input');
-    unitsInput.type = 'text'; // Allow appending text like "unit(s)"
-    unitsInput.placeholder = 'Units';
-    unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '9px';
-    unitsInput.style.width = '75px';
-    unitsInput.style.height = '30px';
-    unitsInput.style.marginRight = '2px';
+const unitsInput = document.createElement('input');
+unitsInput.type = 'text'; // Allow appending text like "unit(s)"
+unitsInput.placeholder = 'Units';
+unitsInput.className = 'item-input units-input';
+unitsInput.style.fontSize = '11px';
+unitsInput.style.width = '100%'; // Take full width of container
+unitsInput.style.height = '30px';
+unitsInput.style.marginBottom = '5px'; // Add spacing between stacked fields
+
+// Attach highlighting and blur behavior
+addHighlightBehavior(unitsInput, 'units');
+unitsInput.dataset.previousValue = ''; // Initialize the previous value
+inputContainer.appendChild(unitsInput);
+
+// Stacks Input Field (only if stack_size > 1)
+if (item.stack_size > 1) {
+    const stacksInput = document.createElement('input');
+    stacksInput.type = 'text'; // Allow appending text like "stack(s)"
+    stacksInput.placeholder = 'Stacks';
+    stacksInput.className = 'item-input stacks-input';
+    stacksInput.style.fontSize = '11px';
+    stacksInput.style.width = '100%'; // Take full width of container
+    stacksInput.style.height = '30px';
+    stacksInput.style.marginBottom = '0'; // No extra margin as it's the last field
 
     // Attach highlighting and blur behavior
-    addHighlightBehavior(unitsInput, 'units');
-    unitsInput.dataset.previousValue = ''; // Initialize the previous value
-    inputContainer.appendChild(unitsInput);
+    addHighlightBehavior(stacksInput, 'stacks');
+    stacksInput.dataset.previousValue = ''; // Initialize the previous value
+    inputContainer.appendChild(stacksInput);
+}
 
-    // Stacks Input Field (only if stack_size > 1)
-    if (item.stack_size > 1) {
-        const stacksInput = document.createElement('input');
-        stacksInput.type = 'text'; // Allow appending text like "stack(s)"
-        stacksInput.placeholder = 'Stacks';
-        stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '9px';
-        stacksInput.style.width = '75px';
-        stacksInput.style.height = '30px';
-
-        // Attach highlighting and blur behavior
-        addHighlightBehavior(stacksInput, 'stacks');
-        stacksInput.dataset.previousValue = ''; // Initialize the previous value
-        inputContainer.appendChild(stacksInput);
-    }
+// Adjust container styles to accommodate stacked layout
+inputContainer.style.display = 'flex';
+inputContainer.style.flexDirection = 'column'; // Stack children vertically
+inputContainer.style.alignItems = 'flex-start'; // Align fields to the left
 
     // Discount Input Field (only if undercut is enabled)
     if (parseInt(item.undercut) === 1) {
