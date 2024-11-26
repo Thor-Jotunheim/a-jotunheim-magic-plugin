@@ -339,6 +339,7 @@ export function addItemToContainer(item, containerId) {
     inputContainer.style.flexDirection = 'column';
     inputContainer.style.alignItems = 'center';
     inputContainer.style.gap = '2px';
+    inputContainer.style.textAlign: center;
 
     if (parseInt(item.undercut) === 1) {
         const discountInput = document.createElement('input');
