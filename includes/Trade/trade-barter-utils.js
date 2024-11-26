@@ -398,9 +398,8 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
                 e.target.dataset.previousValue = e.target.value; // Save formatted value
             } else if (value === '') {
+                // Only reset if there's no valid previous value
                 e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 0 stack
-            } else {
-                e.target.value = e.target.dataset.previousValue || '0 stack';
             }
         } else if (type === 'discount') {
             // Format discount
