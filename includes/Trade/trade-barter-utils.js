@@ -302,12 +302,42 @@ export function addItemToContainer(item, containerId) {
         itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
     }
 
-    // Helper function to handle highlighting behavior
-function handleFocusHighlight(inputField) {
+    // Helper function to handle highlighting behavior for a specific input field
+function addHighlightBehavior(inputField) {
     inputField.addEventListener('focus', (e) => {
+        // Use a small timeout to ensure the focus event processes correctly
         setTimeout(() => {
-            e.target.select(); // Ensure text is highlighted consistently
+            e.target.select(); // Highlight all text in the field
         }, 0);
+    });
+
+    inputField.addEventListener('blur', (e) => {
+        const value = e.target.value.trim();
+        if (inputField.classList.contains('units-input')) {
+            // Handle units formatting
+            if (!isNaN(value) && value !== '') {
+                const numericValue = parseInt(value, 10);
+                e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
+            } else {
+                e.target.value = ''; // Clear invalid input
+            }
+        } else if (inputField.classList.contains('stacks-input')) {
+            // Handle stacks formatting
+            if (!isNaN(value) && value !== '') {
+                const numericValue = parseInt(value, 10);
+                e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
+            } else {
+                e.target.value = ''; // Clear invalid input
+            }
+        } else if (inputField.classList.contains('discount-input')) {
+            // Handle discount formatting
+            const numericValue = parseFloat(value.replace('%', '').trim());
+            if (!isNaN(numericValue)) {
+                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}%`; // Cap between 0-40%
+            } else {
+                e.target.value = ''; // Clear invalid input
+            }
+        }
     });
 }
 
@@ -321,25 +351,8 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
-let previousUnitsValue = ''; // Track the previous value
-
-unitsInput.addEventListener('focus', (e) => {
-    previousUnitsValue = e.target.value; // Save the current value
-    handleFocusHighlight(unitsInput);
-});
-
-unitsInput.addEventListener('blur', (e) => {
-    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for parsing
-    if (value === '' && previousUnitsValue !== '') {
-        e.target.value = previousUnitsValue; // Restore the previous value if unchanged
-    } else if (!isNaN(value) && value !== '') {
-        const numericValue = parseInt(value, 10);
-        e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`; // Add appropriate suffix
-    } else {
-        e.target.value = ''; // Clear invalid input
-    }
-    previousUnitsValue = ''; // Reset the previous value
-});
+// Add highlighting behavior for the units input
+addHighlightBehavior(unitsInput);
 
 inputContainer.appendChild(unitsInput);
 
@@ -353,25 +366,8 @@ if (item.stack_size > 1) {
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
-    let previousStacksValue = ''; // Track the previous value
-
-    stacksInput.addEventListener('focus', (e) => {
-        previousStacksValue = e.target.value; // Save the current value
-        handleFocusHighlight(stacksInput);
-    });
-
-    stacksInput.addEventListener('blur', (e) => {
-        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for parsing
-        if (value === '' && previousStacksValue !== '') {
-            e.target.value = previousStacksValue; // Restore the previous value if unchanged
-        } else if (!isNaN(value) && value !== '') {
-            const numericValue = parseInt(value, 10);
-            e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Add appropriate suffix
-        } else {
-            e.target.value = ''; // Clear invalid input
-        }
-        previousStacksValue = ''; // Reset the previous value
-    });
+    // Add highlighting behavior for the stacks input
+    addHighlightBehavior(stacksInput);
 
     inputContainer.appendChild(stacksInput);
 }
@@ -379,7 +375,7 @@ if (item.stack_size > 1) {
 // Discount Input Field
 if (parseInt(item.undercut) === 1) {
     const discountInput = document.createElement('input');
-    discountInput.type = 'text'; // Allow appending % to numeric input
+    discountInput.type = 'text'; // Allow appending "%" to numeric input
     discountInput.placeholder = 'Discount %';
     discountInput.className = 'item-input discount-input';
     discountInput.style.display = 'block'; // Makes the input take a full-width block
@@ -388,27 +384,8 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
 
-    let previousDiscountValue = ''; // Track the previous value
-
-    discountInput.addEventListener('focus', (e) => {
-        previousDiscountValue = e.target.value; // Save the current value
-        handleFocusHighlight(discountInput);
-    });
-
-    discountInput.addEventListener('blur', (e) => {
-        const value = e.target.value.replace('%', '').trim(); // Remove "%" for parsing
-        if (value === '' && previousDiscountValue !== '') {
-            e.target.value = previousDiscountValue; // Restore the previous value if unchanged
-        } else if (!isNaN(value) && value !== '') {
-            let numericValue = parseFloat(value);
-            if (numericValue < 0) numericValue = 0; // Prevent negative values
-            if (numericValue > 40) numericValue = 40; // Cap at 40%
-            e.target.value = `${numericValue}%`; // Append "%" symbol
-        } else {
-            e.target.value = ''; // Clear invalid input
-        }
-        previousDiscountValue = ''; // Reset the previous value
-    });
+    // Add highlighting behavior for the discount input
+    addHighlightBehavior(discountInput);
 
     inputContainer.appendChild(discountInput);
 }
