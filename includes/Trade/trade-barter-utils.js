@@ -302,7 +302,16 @@ export function addItemToContainer(item, containerId) {
         itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
     }
 
-    // Units Input Field
+    // Helper function to handle highlighting behavior
+function handleFocusHighlight(inputField) {
+    inputField.addEventListener('focus', (e) => {
+        setTimeout(() => {
+            e.target.select(); // Ensure text is highlighted consistently
+        }, 0);
+    });
+}
+
+// Units Input Field
 const unitsInput = document.createElement('input');
 unitsInput.type = 'text'; // Allow appending text like "unit(s)"
 unitsInput.placeholder = 'Units';
@@ -312,18 +321,13 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
-// Track previous value to prevent unnecessary clearing
-let previousUnitsValue = '';
+let previousUnitsValue = ''; // Track the previous value
 
-// Highlight text on focus
 unitsInput.addEventListener('focus', (e) => {
-    previousUnitsValue = e.target.value; // Store the current value
-    setTimeout(() => {
-        e.target.select(); // Highlight all text reliably
-    }, 0);
+    previousUnitsValue = e.target.value; // Save the current value
+    handleFocusHighlight(unitsInput);
 });
 
-// Update value with "unit(s)" on blur
 unitsInput.addEventListener('blur', (e) => {
     const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for parsing
     if (value === '' && previousUnitsValue !== '') {
@@ -349,18 +353,13 @@ if (item.stack_size > 1) {
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
-    // Track previous value to prevent unnecessary clearing
-    let previousStacksValue = '';
+    let previousStacksValue = ''; // Track the previous value
 
-    // Highlight text on focus
     stacksInput.addEventListener('focus', (e) => {
-        previousStacksValue = e.target.value; // Store the current value
-        setTimeout(() => {
-            e.target.select(); // Highlight all text reliably
-        }, 0);
+        previousStacksValue = e.target.value; // Save the current value
+        handleFocusHighlight(stacksInput);
     });
 
-    // Update value with "stack(s)" on blur
     stacksInput.addEventListener('blur', (e) => {
         const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for parsing
         if (value === '' && previousStacksValue !== '') {
@@ -375,11 +374,9 @@ if (item.stack_size > 1) {
     });
 
     inputContainer.appendChild(stacksInput);
-} else {
-    console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
 }
 
-// Discount Input Field (only if undercut === 1)
+// Discount Input Field
 if (parseInt(item.undercut) === 1) {
     const discountInput = document.createElement('input');
     discountInput.type = 'text'; // Allow appending % to numeric input
@@ -391,18 +388,13 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
 
-    // Track previous value to prevent unnecessary clearing
-    let previousDiscountValue = '';
+    let previousDiscountValue = ''; // Track the previous value
 
-    // Highlight text on focus
     discountInput.addEventListener('focus', (e) => {
-        previousDiscountValue = e.target.value; // Store the current value
-        setTimeout(() => {
-            e.target.select(); // Highlight all text reliably
-        }, 0);
+        previousDiscountValue = e.target.value; // Save the current value
+        handleFocusHighlight(discountInput);
     });
 
-    // Update value with "%" on blur
     discountInput.addEventListener('blur', (e) => {
         const value = e.target.value.replace('%', '').trim(); // Remove "%" for parsing
         if (value === '' && previousDiscountValue !== '') {
