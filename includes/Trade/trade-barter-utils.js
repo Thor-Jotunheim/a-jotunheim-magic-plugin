@@ -45,6 +45,8 @@ export async function fetchItems() {
     }
 }
 
+import { addItemToContainer } from 'https://jotun.games/wp-content/plugins/a-jotunheim-magic-plugin/includes/Trade/trade-barter-utils.js';
+
 // Populate an accordion list with items
 export function populateItemList(containerId, itemsData, searchQuery, addItemCallback) {
     const itemListAccordion = document.getElementById(containerId);
@@ -81,8 +83,12 @@ export function populateItemList(containerId, itemsData, searchQuery, addItemCal
         categories[category].forEach(item => {
             const itemButton = document.createElement('div');
             itemButton.className = 'item-button';
-            itemButton.textContent = item.item_name;
-            itemButton.onclick = () => addItemCallback(item);
+            itemButton.textContent = sanitizeItemName(item.item_name);
+            itemButton.onclick = () =>
+                addItemToContainer(
+                    item,
+                    containerId.includes('2') ? 'selected-items-container-2' : 'selected-items-container'
+                );
             content.appendChild(itemButton);
         });
 
