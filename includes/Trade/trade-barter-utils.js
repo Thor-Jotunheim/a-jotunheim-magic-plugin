@@ -268,7 +268,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
     unitsInput.style.fontSize = '9px';
-    unitsInput.style.width = '70px';
+    unitsInput.style.width = '75px';
     unitsInput.style.height = '30px';
     unitsInput.style.marginRight = '5px';
     unitsInput.min = 0; // Prevent negative values
@@ -285,7 +285,7 @@ export function addItemToContainer(item, containerId) {
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '9px';
-        stacksInput.style.width = '85px';
+        stacksInput.style.width = '75px';
         stacksInput.style.height = '30px';
         stacksInput.min = 0; // Prevent negative values
         stacksInput.addEventListener('input', (event) => {
@@ -311,7 +311,7 @@ export function addItemToContainer(item, containerId) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.fontSize = '9px';
-        levelDropdown.style.width = '85px';
+        levelDropdown.style.width = '75px';
         levelDropdown.style.height = '30px';
         levelDropdown.style.marginRight = '5px';
 
