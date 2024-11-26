@@ -509,20 +509,20 @@ export function updateTotals() {
             items.forEach((itemFrame) => {
                 const units = parseInt(itemFrame.querySelector('.units-input')?.value) || 0;
                 const stacksInput = itemFrame.querySelector('.stacks-input');
-                const stacks = stacksInput ? parseFloat(stacksInput.value) || 0 : 0; // Use parseFloat for decimal handling
+                const stacks = stacksInput ? parseFloat(stacksInput.value) || 0 : 0; // Use parseFloat for decimal values
                 const level = parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1);
                 const discount = parseFloat(itemFrame.querySelector('.discount-input')?.value) || 0;
 
                 const itemData = itemsData.find((data) => data.prefab_name === itemFrame.dataset.itemId);
                 if (itemData) {
                     const priceKey = level === 1 ? 'unit_price' : `lv${level}_price`;
-                    const price = parseInt(itemData[priceKey]) || 0;
-                    const stackSize = parseInt(itemData.stack_size) || 1;
+                    const price = parseFloat(itemData[priceKey]) || 0; // Ensure price is treated as a float
+                    const stackSize = parseFloat(itemData.stack_size) || 1; // Ensure stack size is treated as a float
 
                     const discountedPrice = price * ((100 - discount) / 100);
 
                     totalCoins += units * discountedPrice;
-                    totalCoins += stacks * discountedPrice * stackSize; // Stacks now supports decimal values
+                    totalCoins += stacks * discountedPrice * stackSize; // Allow fractional stacks
                 }
             });
         });
