@@ -315,14 +315,14 @@ unitsInput.style.marginRight = '2px';
 // Event listeners for formatting
 unitsInput.addEventListener('focus', (e) => {
     const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for clean input
-    e.target.value = value;
+    e.target.value = value; // Allow editing the value directly
 });
 
 unitsInput.addEventListener('blur', (e) => {
-    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove any existing "unit(s)" for parsing
+    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Clean any suffix for parsing
     if (value !== '' && !isNaN(value)) {
-        const numericValue = parseInt(value);
-        e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`; // Append "unit" or "units"
+        const numericValue = parseInt(value, 10);
+        e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`; // Add appropriate suffix
     } else {
         e.target.value = ''; // Clear invalid input
     }
@@ -343,14 +343,14 @@ if (item.stack_size > 1) {
     // Event listeners for formatting
     stacksInput.addEventListener('focus', (e) => {
         const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for clean input
-        e.target.value = value;
+        e.target.value = value; // Allow editing the value directly
     });
 
     stacksInput.addEventListener('blur', (e) => {
-        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove any existing "stack(s)" for parsing
+        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Clean any suffix for parsing
         if (value !== '' && !isNaN(value)) {
-            const numericValue = parseInt(value);
-            e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Append "stack" or "stacks"
+            const numericValue = parseInt(value, 10);
+            e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Add appropriate suffix
         } else {
             e.target.value = ''; // Clear invalid input
         }
@@ -364,7 +364,7 @@ if (item.stack_size > 1) {
 // Discount Input Field (only if undercut === 1)
 if (parseInt(item.undercut) === 1) {
     const discountInput = document.createElement('input');
-    discountInput.type = 'number'; // Only allow numeric input
+    discountInput.type = 'text'; // Allow appending % to numeric input
     discountInput.placeholder = 'Discount %';
     discountInput.className = 'item-input discount-input';
     discountInput.style.display = 'block'; // Makes the input take a full-width block
@@ -375,14 +375,19 @@ if (parseInt(item.undercut) === 1) {
     discountInput.min = 0;
     discountInput.max = 40;
 
-    // Event listeners for validation
-    discountInput.addEventListener('input', (e) => {
+    // Event listeners for formatting
+    discountInput.addEventListener('focus', (e) => {
         const value = e.target.value.replace('%', '').trim(); // Remove "%" for clean input
+        e.target.value = value; // Allow editing the value directly
+    });
+
+    discountInput.addEventListener('blur', (e) => {
+        const value = e.target.value.replace('%', '').trim(); // Clean "%" for parsing
         if (value !== '' && !isNaN(value)) {
             let numericValue = parseFloat(value);
             if (numericValue < 0) numericValue = 0; // Prevent negative values
             if (numericValue > 40) numericValue = 40; // Cap at 40%
-            e.target.value = numericValue; // Just set the value as is
+            e.target.value = `${numericValue}%`; // Append "%" symbol
         } else {
             e.target.value = ''; // Clear invalid input
         }
