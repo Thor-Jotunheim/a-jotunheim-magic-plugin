@@ -1,5 +1,5 @@
 // Fetch items from the API
-async function fetchItems() {
+export async function fetchItems() {
     console.log('Fetching items from API...');
     try {
         const response = await fetch('https://jotun.games/wp-json/jotunheim-magic/v1/items');
