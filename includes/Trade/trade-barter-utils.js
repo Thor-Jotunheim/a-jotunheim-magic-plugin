@@ -211,7 +211,6 @@ export function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-// Add item to a container
 export function addItemToContainer(item, containerId) {
     const wrapper = document.getElementById(containerId);
     if (!wrapper) {
@@ -228,7 +227,6 @@ export function addItemToContainer(item, containerId) {
         wrapper.appendChild(lastPanel);
     }
 
-    // Gather existing levels for the current item
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
     const existingLevels = existingItems.map(itemFrame =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
@@ -247,34 +245,31 @@ export function addItemToContainer(item, containerId) {
     itemFrame.className = 'item-frame';
     itemFrame.dataset.itemId = item.prefab_name;
 
-    // Image
     const img = document.createElement('img');
     img.src = `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name}.png`;
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
-// Remove Button
-const removeButton = document.createElement('button');
-removeButton.textContent = 'X';
-removeButton.className = 'remove-item';
-removeButton.style.position = 'absolute'; // Position it relative to the parent
-removeButton.style.top = '5px'; // Adjust vertical position
-removeButton.style.right = '5px'; // Adjust horizontal position
-removeButton.style.width = '20px';
-removeButton.style.height = '20px';
-removeButton.style.border = 'none';
-removeButton.style.background = '#FF4C4C'; // Red background for visibility
-removeButton.style.color = 'white'; // White text
-removeButton.style.borderRadius = '50%'; // Circle shape
-removeButton.style.cursor = 'pointer';
-removeButton.onclick = () => {
-    itemFrame.remove();
-    updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals();
-};
-itemFrame.appendChild(removeButton);
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'X';
+    removeButton.className = 'remove-item';
+    removeButton.style.position = 'absolute';
+    removeButton.style.top = '5px';
+    removeButton.style.right = '5px';
+    removeButton.style.width = '20px';
+    removeButton.style.height = '20px';
+    removeButton.style.border = 'none';
+    removeButton.style.background = '#FF4C4C';
+    removeButton.style.color = 'white';
+    removeButton.style.borderRadius = '50%';
+    removeButton.style.cursor = 'pointer';
+    removeButton.onclick = () => {
+        itemFrame.remove();
+        updateLevelDropdowns(containerId, item.prefab_name);
+        updateTotals();
+    };
+    itemFrame.appendChild(removeButton);
 
-    // Item Name
     const itemName = document.createElement('h3');
     itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
@@ -282,7 +277,6 @@ itemFrame.appendChild(removeButton);
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    // Level Dropdown
     const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
     if (hasMultipleLevels) {
@@ -292,10 +286,7 @@ itemFrame.appendChild(removeButton);
         levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
-        levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
 
-
-        // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0 && !existingLevels.includes(index + 1)) {
                 const option = document.createElement('option');
@@ -318,67 +309,55 @@ itemFrame.appendChild(removeButton);
         inputContainer.appendChild(levelDropdown);
     }
 
-    // Units Input Field
-const unitsInput = document.createElement('input');
-unitsInput.type = 'text'; // Allow appending text like "unit(s)"
-unitsInput.placeholder = 'Units';
-unitsInput.className = 'item-input units-input';
-unitsInput.style.fontSize = '11px';
-unitsInput.style.width = '120px'; // Take full width of container
-unitsInput.style.height = '25px';
-unitsInput.style.marginTop = '1px'; // Add spacing between stacked fields
-unitsInput.style.marginBottom = '2px'; // Add spacing between stacked fields
+    const unitsInput = document.createElement('input');
+    unitsInput.type = 'text';
+    unitsInput.placeholder = 'Units';
+    unitsInput.className = 'item-input units-input';
+    unitsInput.style.fontSize = '11px';
+    unitsInput.style.width = '120px';
+    unitsInput.style.height = '25px';
 
-// Attach highlighting and blur behavior
-addHighlightBehavior(unitsInput, 'units');
-unitsInput.dataset.previousValue = ''; // Initialize the previous value
-inputContainer.appendChild(unitsInput);
+    addHighlightBehavior(unitsInput, 'units');
+    unitsInput.dataset.previousValue = '';
+    inputContainer.appendChild(unitsInput);
 
-// Stacks Input Field (only if stack_size > 1)
-if (item.stack_size > 1) {
-    const stacksInput = document.createElement('input');
-    stacksInput.type = 'text'; // Allow appending text like "stack(s)"
-    stacksInput.placeholder = 'Stacks';
-    stacksInput.className = 'item-input stacks-input';
-    stacksInput.style.fontSize = '11px';
-    stacksInput.style.width = '120px'; // Take full width of container
-    stacksInput.style.height = '25px';
-    stacksInput.style.marginBottom = '2px'; // No extra margin as it's the last field
+    if (item.stack_size > 1) {
+        const stacksInput = document.createElement('input');
+        stacksInput.type = 'text';
+        stacksInput.placeholder = 'Stacks';
+        stacksInput.className = 'item-input stacks-input';
+        stacksInput.style.fontSize = '11px';
+        stacksInput.style.width = '120px';
+        stacksInput.style.height = '25px';
 
-    // Attach highlighting and blur behavior
-    addHighlightBehavior(stacksInput, 'stacks');
-    stacksInput.dataset.previousValue = ''; // Initialize the previous value
-    inputContainer.appendChild(stacksInput);
-}
+        addHighlightBehavior(stacksInput, 'stacks');
+        stacksInput.dataset.previousValue = '';
+        inputContainer.appendChild(stacksInput);
+    }
 
-// Adjust container styles to accommodate stacked layout
-inputContainer.style.display = 'flex';
-inputContainer.style.flexDirection = 'column'; // Stack children vertically
-inputContainer.style.alignItems = 'flex-start'; // Align fields to the left
+    inputContainer.style.display = 'flex';
+    inputContainer.style.flexDirection = 'column';
+    inputContainer.style.alignItems = 'center';
+    inputContainer.style.gap = '8px';
 
-    // Discount Input Field (only if undercut is enabled)
     if (parseInt(item.undercut) === 1) {
         const discountInput = document.createElement('input');
-        discountInput.type = 'text'; // Allow appending "%" to numeric input
+        discountInput.type = 'text';
         discountInput.placeholder = 'Discount %';
         discountInput.className = 'item-input discount-input';
-        discountInput.style.display = 'block'; // Makes the input take a full-width block
         discountInput.style.fontSize = '9px';
         discountInput.style.width = '120px';
         discountInput.style.height = '25px';
 
-        // Attach highlighting and blur behavior
         addHighlightBehavior(discountInput, 'discount');
-        discountInput.dataset.previousValue = ''; // Initialize the previous value
-        inputContainer.appendChild(discountInput); // Append to the inputContainer
+        discountInput.dataset.previousValue = '';
+        inputContainer.appendChild(discountInput);
     }
 
-    // Ensure the inputContainer is properly appended
     if (!itemFrame.contains(inputContainer)) {
         itemFrame.appendChild(inputContainer);
     }
 
-    // Append the frame and update dropdowns/totals
     lastPanel.appendChild(itemFrame);
     updateLevelDropdowns(containerId, item.prefab_name);
     updateTotals();
