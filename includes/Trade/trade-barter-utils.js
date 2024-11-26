@@ -325,6 +325,7 @@ export function addItemToContainer(item, containerId) {
     // Stacks Input Field (only if stack_size > 1)
     if (item.stack_size > 1) {
         const stacksInput = document.createElement('input');
+        stacksInput.type = 'text'; // Allow appending text like "stack(s)"
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
