@@ -281,7 +281,7 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.display = 'block';
         levelDropdown.style.margin = '0 auto';
         levelDropdown.style.fontSize = '10px';
-        levelDropdown.style.width = '100px';
+        levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
         levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
 
@@ -315,7 +315,7 @@ unitsInput.type = 'text'; // Allow appending text like "unit(s)"
 unitsInput.placeholder = 'Units';
 unitsInput.className = 'item-input units-input';
 unitsInput.style.fontSize = '11px';
-unitsInput.style.width = '100px'; // Take full width of container
+unitsInput.style.width = '120px'; // Take full width of container
 unitsInput.style.height = '25px';
 unitsInput.style.marginBottom = '2px'; // Add spacing between stacked fields
 
@@ -331,7 +331,7 @@ if (item.stack_size > 1) {
     stacksInput.placeholder = 'Stacks';
     stacksInput.className = 'item-input stacks-input';
     stacksInput.style.fontSize = '11px';
-    stacksInput.style.width = '100px'; // Take full width of container
+    stacksInput.style.width = '120px'; // Take full width of container
     stacksInput.style.height = '25px';
     stacksInput.style.marginBottom = '1px'; // No extra margin as it's the last field
 
@@ -354,7 +354,7 @@ inputContainer.style.alignItems = 'flex-start'; // Align fields to the left
         discountInput.className = 'item-input discount-input';
         discountInput.style.display = 'block'; // Makes the input take a full-width block
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '100px';
+        discountInput.style.width = '120px';
         discountInput.style.height = '25px';
 
         // Attach highlighting and blur behavior
