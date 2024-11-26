@@ -27,3 +27,11 @@
     <script src="trade-scripts.js"></script>
 </body>
 </html>
+<script type="module">
+    import { fetchItems } from 'https://jotun.games/includes/Trade/trade-barter-utils.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Initializing barter page...');
+        fetchItems();
+    });
+</script>
