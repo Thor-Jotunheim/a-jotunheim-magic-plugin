@@ -332,7 +332,6 @@ export function addItemToContainer(item, containerId) {
         stacksInput.style.fontSize = '11px';
         stacksInput.style.width = '75px';
         stacksInput.style.height = '30px';
-        stacksInput.step = '0.01'; // Allow fractional stacks like 1.25
 
         // Attach highlighting and blur behavior
         addHighlightBehavior(stacksInput, 'stacks');
