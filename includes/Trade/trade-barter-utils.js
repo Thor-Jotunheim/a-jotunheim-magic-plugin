@@ -395,8 +395,11 @@ function addHighlightBehavior(inputField, type) {
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseFloat(value); // Parse as float for decimal values
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
+            } else if (value === '') {
+                // Default if no value is entered
+                e.target.value = '0 stack';
             } else {
-                e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 0 stack
+                e.target.value = e.target.dataset.previousValue || '0 stack';
             }
         } else if (type === 'discount') {
             // Format discount
