@@ -302,40 +302,58 @@ export function addItemToContainer(item, containerId) {
         itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
     }
 
-    // Helper function to handle highlighting behavior for a specific input field
-function addHighlightBehavior(inputField) {
+    // Helper function to handle highlighting and preserving values
+function addHighlightBehavior(inputField, type) {
     inputField.addEventListener('focus', (e) => {
-        // Use a small timeout to ensure the focus event processes correctly
+        // Highlight the text when the field is focused
         setTimeout(() => {
-            e.target.select(); // Highlight all text in the field
+            e.target.select(); // Highlight all text
         }, 0);
     });
 
     inputField.addEventListener('blur', (e) => {
         const value = e.target.value.trim();
-        if (inputField.classList.contains('units-input')) {
-            // Handle units formatting
+        if (type === 'units') {
+            // Preserve or format units
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseInt(value, 10);
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
-            } else {
-                e.target.value = ''; // Clear invalid input
+            } else if (!value) {
+                e.target.value = e.target.dataset.previousValue || ''; // Revert to the previous value if empty
             }
-        } else if (inputField.classList.contains('stacks-input')) {
-            // Handle stacks formatting
+        } else if (type === 'stacks') {
+            // Preserve or format stacks
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseInt(value, 10);
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
-            } else {
-                e.target.value = ''; // Clear invalid input
+            } else if (!value) {
+                e.target.value = e.target.dataset.previousValue || ''; // Revert to the previous value if empty
             }
-        } else if (inputField.classList.contains('discount-input')) {
-            // Handle discount formatting
-            const numericValue = parseFloat(value.replace('%', '').trim());
-            if (!isNaN(numericValue)) {
-                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}%`; // Cap between 0-40%
-            } else {
-                e.target.value = ''; // Clear invalid input
+        } else if (type === 'discount') {
+            // Preserve or format discount
+            if (!isNaN(value)) {
+                const numericValue = parseFloat(value.replace('%', '').trim());
+                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}%`; // Clamp value between 0 and 40%
+            } else if (!value) {
+                e.target.value = e.target.dataset.previousValue || ''; // Revert to the previous value if empty
+            }
+        }
+
+        // Save the valid value for the next blur
+        e.target.dataset.previousValue = e.target.value;
+    });
+
+    inputField.addEventListener('input', (e) => {
+        if (type === 'units' || type === 'stacks') {
+            // Prevent non-numeric values for units and stacks
+            if (isNaN(e.target.value)) {
+                e.target.value = e.target.dataset.previousValue || '';
+            }
+        } else if (type === 'discount') {
+            // Prevent non-numeric values for discount
+            const cleanValue = e.target.value.replace('%', '').trim();
+            if (isNaN(cleanValue)) {
+                e.target.value = e.target.dataset.previousValue || '';
             }
         }
     });
@@ -351,9 +369,9 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
-// Add highlighting behavior for the units input
-addHighlightBehavior(unitsInput);
-
+// Attach highlighting and blur behavior
+addHighlightBehavior(unitsInput, 'units');
+unitsInput.dataset.previousValue = ''; // Initialize the previous value
 inputContainer.appendChild(unitsInput);
 
 // Stacks Input Field (only if stack_size > 1)
@@ -366,9 +384,9 @@ if (item.stack_size > 1) {
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
-    // Add highlighting behavior for the stacks input
-    addHighlightBehavior(stacksInput);
-
+    // Attach highlighting and blur behavior
+    addHighlightBehavior(stacksInput, 'stacks');
+    stacksInput.dataset.previousValue = ''; // Initialize the previous value
     inputContainer.appendChild(stacksInput);
 }
 
@@ -384,9 +402,9 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
 
-    // Add highlighting behavior for the discount input
-    addHighlightBehavior(discountInput);
-
+    // Attach highlighting and blur behavior
+    addHighlightBehavior(discountInput, 'discount');
+    discountInput.dataset.previousValue = ''; // Initialize the previous value
     inputContainer.appendChild(discountInput);
 }
 
