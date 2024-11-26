@@ -17,7 +17,7 @@ function jotunheim_enqueue_trade_scripts() {
     if (isset($post->post_content) && has_shortcode($post->post_content, 'jotunheim_trade_page')) {
         wp_enqueue_script(
             'jotunheim-trade-script',
-            plugin_dir_url(__FILE__) . 'trade-interface.js',
+            plugin_dir_url(__FILE__) . 'trade-barter-utils.js',
             array('trade-barter-utils'), // Dependency on shared utility
             null,
             true
