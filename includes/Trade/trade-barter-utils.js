@@ -400,10 +400,10 @@ if (item.stack_size > 1) {
     inputContainer.appendChild(stacksInput);
 }
 
-// Discount Input Field
+// Discount input field
 if (parseInt(item.undercut) === 1) {
     const discountInput = document.createElement('input');
-    discountInput.type = 'text'; // Allow appending "%" to numeric input
+    discountInput.type = 'number';
     discountInput.placeholder = 'Discount %';
     discountInput.className = 'item-input discount-input';
     discountInput.style.display = 'block'; // Makes the input take a full-width block
@@ -411,15 +411,35 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.fontSize = '9px';
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
+    discountInput.min = 0;
+    discountInput.max = 40;
 
-    // Attach highlighting and blur behavior
-    addHighlightBehavior(discountInput, 'discount');
-    discountInput.dataset.previousValue = ''; // Initialize the previous value
+    // Event listener to format input with %
+    discountInput.addEventListener('blur', (e) => {
+        const value = e.target.value.replace('%', '').trim(); // Remove any existing '%' for clean parsing
+        if (value === '' || isNaN(value)) {
+            e.target.value = '0%'; // Default to 0% if invalid input
+        } else {
+            let numericValue = parseFloat(value);
+            numericValue = Math.min(Math.max(numericValue, 0), 40); // Clamp value between 0 and 40
+            e.target.value = `${numericValue}%`; // Format as a percentage
+        }
+        updateTotals();
+    });
+
+    discountInput.addEventListener('focus', (e) => {
+        setTimeout(() => e.target.select(), 0); // Ensure text is highlighted on focus
+    });
+
+    discountInput.addEventListener('input', (e) => {
+        const cleanValue = e.target.value.replace('%', '').trim(); // Strip out any '%' during input
+        if (isNaN(cleanValue)) {
+            e.target.value = ''; // Reset to empty if invalid input
+        }
+    });
+
     inputContainer.appendChild(discountInput);
 }
-
-// Append the inputContainer to the itemFrame
-itemFrame.appendChild(inputContainer);
 
     lastPanel.appendChild(itemFrame);
     updateTotals();
