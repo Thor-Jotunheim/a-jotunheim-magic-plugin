@@ -280,7 +280,7 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.display = 'block';
         levelDropdown.style.margin = '0 auto';
-        levelDropdown.style.fontSize = '11px';
+        levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '100px';
         levelDropdown.style.height = '25px';
 
@@ -312,7 +312,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.type = 'text'; // Allow appending text like "unit(s)"
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '11px';
+    unitsInput.style.fontSize = '10px';
     unitsInput.style.width = '75px';
     unitsInput.style.height = '30px';
     unitsInput.style.marginRight = '2px';
@@ -328,7 +328,7 @@ export function addItemToContainer(item, containerId) {
         stacksInput.type = 'text'; // Allow appending text like "stack(s)"
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '11px';
+        stacksInput.style.fontSize = '10px';
         stacksInput.style.width = '75px';
         stacksInput.style.height = '30px';
 
