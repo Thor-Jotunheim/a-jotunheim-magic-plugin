@@ -371,20 +371,20 @@ export function addItemToContainer(item, containerId) {
 
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
 function addHighlightBehavior(inputField, type) {
-    // Function to handle highlighting consistently
+    // Highlight text on focus
     const highlightText = (e) => {
         setTimeout(() => {
-            e.target.select(); // Select all text in the field
-        }, 0); // Ensures it happens after focus
+            e.target.select(); // Select all text after focus
+        }, 0);
     };
 
     inputField.addEventListener('focus', highlightText);
 
     inputField.addEventListener('blur', (e) => {
-        const value = e.target.value.trim();
+        let value = e.target.value.trim();
 
         if (type === 'units') {
-            // Format units
+            // Format units (integer values only)
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseInt(value, 10);
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
@@ -392,20 +392,20 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = e.target.dataset.previousValue || '1 unit'; // Default to 1 unit
             }
         } else if (type === 'stacks') {
-            // Format stacks (allow decimals)
+            // Format stacks (decimal values allowed)
             if (!isNaN(value) && value !== '') {
-                const numericValue = parseFloat(value); // Parse as float for decimal values
+                const numericValue = parseFloat(value); // Handle decimals
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
             } else if (value === '') {
                 e.target.value = '0 stack'; // Default to 0 stack
             } else {
-                e.target.value = e.target.dataset.previousValue || '0 stack';
+                e.target.value = e.target.dataset.previousValue || '0 stack'; // Revert to previous valid value
             }
         } else if (type === 'discount') {
-            // Format discount
+            // Format discount (clamp values between 0 and 40)
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseFloat(value.replace('% Discount', '').trim());
-                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}% Discount`; // Clamp value between 0 and 40%
+                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}% Discount`;
             } else {
                 e.target.value = e.target.dataset.previousValue || '0% Discount'; // Default to 0% Discount
             }
@@ -414,46 +414,46 @@ function addHighlightBehavior(inputField, type) {
         // Save the valid value for the next blur
         e.target.dataset.previousValue = e.target.value;
 
-        // Trigger totals update immediately
+        // Update totals immediately
         updateTotals();
     });
 
     inputField.addEventListener('input', (e) => {
         const rawValue = e.target.value.trim();
+
         if (type === 'units') {
-            // Prevent non-numeric values for units
+            // Allow only numeric values for units
             if (isNaN(rawValue)) {
                 e.target.value = e.target.dataset.previousValue || '1';
             } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-                updateTotals(); // Trigger totals update dynamically
+                e.target.dataset.previousValue = rawValue; // Save immediately
+                updateTotals();
             }
         } else if (type === 'stacks') {
             // Allow decimals for stacks
             if (isNaN(rawValue)) {
                 e.target.value = e.target.dataset.previousValue || '0';
             } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-                updateTotals(); // Trigger totals update dynamically
+                e.target.dataset.previousValue = rawValue; // Save immediately
+                updateTotals();
             }
         } else if (type === 'discount') {
-            // Prevent non-numeric values for discount
+            // Allow only numeric values for discount
             const cleanValue = rawValue.replace('% Discount', '').trim();
             if (isNaN(cleanValue)) {
                 e.target.value = e.target.dataset.previousValue || '0% Discount';
             } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-                updateTotals(); // Trigger totals update dynamically
+                e.target.dataset.previousValue = rawValue; // Save immediately
+                updateTotals();
             }
         }
     });
 
-    // Ensure proper behavior on mousedown (for rapid clicking)
     inputField.addEventListener('mousedown', (e) => {
         e.preventDefault(); // Prevent default cursor placement
         setTimeout(() => {
-            inputField.select(); // Ensure all text is selected
-        }, 0); // Execute after other events
+            inputField.select(); // Highlight all text
+        }, 0);
     });
 }
 
