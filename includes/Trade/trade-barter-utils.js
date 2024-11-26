@@ -273,13 +273,11 @@ export function addItemToContainer(item, containerId) {
     if (hasLevelPrices) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
-        levelDropdown.style.marginRight = '5px';
         levelDropdown.style.display = 'block'; // Makes the input take a full-width block
         levelDropdown.style.margin = '0 auto'; // Centers the block within the container
         levelDropdown.style.fontSize = '11px';
         levelDropdown.style.width = '75px';
         levelDropdown.style.height = '25px';
-        levelDropdown.style.marginRight = '5px';
 
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0) {
