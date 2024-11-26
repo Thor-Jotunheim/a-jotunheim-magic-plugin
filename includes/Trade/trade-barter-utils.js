@@ -283,12 +283,16 @@ export function addItemToContainer(item, containerId) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.display = 'block';
-        levelDropdown.style.fontSize = '11px';
+        levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
-        levelDropdown.style.textAlign = 'center';
-
-
+        levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
+    
+        // Center the text inside the dropdown
+        levelDropdown.style.textAlign = 'center'; // Center the text alignment for the dropdown
+        levelDropdown.style.textAlignLast = 'center'; // Ensure the selected option is centered
+    
+        // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0 && !existingLevels.includes(index + 1)) {
                 const option = document.createElement('option');
@@ -297,17 +301,17 @@ export function addItemToContainer(item, containerId) {
                 levelDropdown.appendChild(option);
             }
         });
-
+    
         if (!levelDropdown.options.length) {
             console.warn(`No available levels for "${item.item_name}".`);
             return;
         }
-
+    
         levelDropdown.addEventListener('change', () => {
             updateLevelDropdowns(containerId, item.prefab_name);
             updateTotals();
         });
-
+    
         inputContainer.appendChild(levelDropdown);
     }
 
