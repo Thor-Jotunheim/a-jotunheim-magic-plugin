@@ -60,7 +60,8 @@ include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-add-new-
 
 // Include Trade and Barter files
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-api-get.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Trade/barter-page-setup.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/trade/barter-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/trade/trade-interface.php');
 
 
 // Include ledger files

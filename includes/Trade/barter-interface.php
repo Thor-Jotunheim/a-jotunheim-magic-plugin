@@ -1,28 +1,15 @@
 <?php
-// Prevent direct access
 if (!defined('ABSPATH')) exit;
 
 // Shortcode function to output Barter Page HTML
 function jotunheim_barter_page_shortcode() {
-    // Start output buffering
     ob_start();
     include plugin_dir_path(__FILE__) . 'barter-page.html';
     return ob_get_clean();
 }
-
-// Shortcode function to output Barter Page HTML
-function jotunheim_barter_page_half_screenshortcode() {
-    // Start output buffering
-    ob_start();
-    include plugin_dir_path(__FILE__) . 'jotunheim-barter-page-half-screen.html';
-    return ob_get_clean();
-}
-
-// Register Barter Page shortcode
 add_shortcode('jotunheim_barter_page', 'jotunheim_barter_page_shortcode');
-add_shortcode('jotunheim_barter_page_half_screen', 'jotunheim_barter_page_half_screenshortcode');
 
-// Conditionally enqueue the JavaScript file for the Barter Page
+// Conditionally enqueue the Barter Page scripts
 function jotunheim_enqueue_barter_scripts() {
     global $post;
 
@@ -31,7 +18,7 @@ function jotunheim_enqueue_barter_scripts() {
         wp_enqueue_script(
             'jotunheim-barter-script',
             plugin_dir_url(__FILE__) . 'barter-interface.js',
-            array(),
+            array('trade-barter-utils'), // Dependency on shared utility
             null,
             true
         );
