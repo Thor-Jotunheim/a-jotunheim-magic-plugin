@@ -274,33 +274,37 @@ export function addItemToContainer(item, containerId) {
     dropdownContainer.style.alignItems = 'center';
 
     // Level dropdown
-    if (hasLevelPrices) {
-        const levelDropdown = document.createElement('select');
-        levelDropdown.className = 'level-dropdown';
-        levelDropdown.style.display = 'block'; // Makes the input take a full-width block
-        levelDropdown.style.margin = '0 auto'; // Centers the block within the container
-        levelDropdown.style.fontSize = '11px';
-        levelDropdown.style.width = '100px';
-        levelDropdown.style.height = '25px';
+    // Check if the item has multiple valid levels
+const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
-        // Populate the level dropdown, excluding already selected levels
-        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
-                const option = document.createElement('option');
-                option.value = index + 1;
-                option.textContent = `Level ${index + 1}`;
-                levelDropdown.appendChild(option);
-            }
-        });
+if (hasMultipleLevels) {
+    const levelDropdown = document.createElement('select');
+    levelDropdown.className = 'level-dropdown';
+    levelDropdown.style.display = 'block'; // Makes the input take a full-width block
+    levelDropdown.style.margin = '0 auto'; // Centers the block within the container
+    levelDropdown.style.fontSize = '11px';
+    levelDropdown.style.width = '100px';
+    levelDropdown.style.height = '25px';
 
-        if (!levelDropdown.options.length) {
-            console.warn(`No available levels for "${item.item_name}".`);
-            return;
+    // Populate the level dropdown, excluding already selected levels
+    ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
+        if (item[key] > 0 && !existingLevels.includes(index + 1)) {
+            const option = document.createElement('option');
+            option.value = index + 1;
+            option.textContent = `Level ${index + 1}`;
+            levelDropdown.appendChild(option);
         }
+    });
 
-        levelDropdown.addEventListener('change', updateTotals);
-        itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
+    // If no options were added, skip rendering the dropdown
+    if (!levelDropdown.options.length) {
+        console.warn(`No available levels for "${item.item_name}".`);
+        return;
     }
+
+    levelDropdown.addEventListener('change', updateTotals);
+    itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
+}
 
     // Helper function to handle highlighting and preserving values
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
