@@ -303,39 +303,74 @@ export function addItemToContainer(item, containerId) {
     }
 
     // Units Input Field
-    const unitsInput = document.createElement('input');
-    unitsInput.type = 'number';
-    unitsInput.placeholder = 'Units';
-    unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '75px';
-    unitsInput.style.height = '30px';
-    unitsInput.style.marginRight = '2px';
-    unitsInput.addEventListener('input', updateTotals);
-    unitsInput.addEventListener('input', (e) => {
-        if (e.target.value < 0) e.target.value = 0; // Prevent negative values
-    });
-    inputContainer.appendChild(unitsInput);
+const unitsInput = document.createElement('input');
+unitsInput.type = 'text'; // Change to 'text' to allow appending text
+unitsInput.placeholder = 'Units';
+unitsInput.className = 'item-input units-input';
+unitsInput.style.fontSize = '11px';
+unitsInput.style.width = '75px';
+unitsInput.style.height = '30px';
+unitsInput.style.marginRight = '2px';
 
-    // Stacks Input Field (only if stack_size > 1)
-    if (item.stack_size > 1) {
-        const stacksInput = document.createElement('input');
-        stacksInput.type = 'number';
-        stacksInput.placeholder = 'Stacks';
-        stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '75px';
-        stacksInput.style.height = '30px';
-        stacksInput.addEventListener('input', updateTotals);
-        stacksInput.addEventListener('input', (e) => {
-            if (e.target.value < 0) e.target.value = 0; // Prevent negative values
-        });
-        inputContainer.appendChild(stacksInput);
+// Add event listener for formatting input
+unitsInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/unit\(s\)/i, '').trim(); // Remove "unit(s)" for clean parsing
+    if (value === '' || isNaN(value)) {
+        e.target.value = ''; // Clear the field if input is not a number
     } else {
-        console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
+        let numericValue = parseInt(value);
+        if (numericValue < 0) numericValue = 0; // Prevent negative values
+        e.target.value = `${numericValue} unit(s)`; // Append "unit(s)"
+        updateTotals();
     }
+});
 
-    itemFrame.appendChild(inputContainer);
+// Format properly on blur
+unitsInput.addEventListener('blur', (e) => {
+    let value = e.target.value.replace(/unit\(s\)/i, '').trim();
+    if (value !== '' && !isNaN(value)) {
+        e.target.value = `${parseInt(value)} unit(s)`; // Ensure proper formatting on blur
+    }
+});
+inputContainer.appendChild(unitsInput);
+
+// Stacks Input Field (only if stack_size > 1)
+if (item.stack_size > 1) {
+    const stacksInput = document.createElement('input');
+    stacksInput.type = 'text'; // Change to 'text' to allow appending text
+    stacksInput.placeholder = 'Stacks';
+    stacksInput.className = 'item-input stacks-input';
+    stacksInput.style.fontSize = '11px';
+    stacksInput.style.width = '75px';
+    stacksInput.style.height = '30px';
+
+    // Add event listener for formatting input
+    stacksInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/stack\(s\)/i, '').trim(); // Remove "stack(s)" for clean parsing
+        if (value === '' || isNaN(value)) {
+            e.target.value = ''; // Clear the field if input is not a number
+        } else {
+            let numericValue = parseInt(value);
+            if (numericValue < 0) numericValue = 0; // Prevent negative values
+            e.target.value = `${numericValue} stack(s)`; // Append "stack(s)"
+            updateTotals();
+        }
+    });
+
+    // Format properly on blur
+    stacksInput.addEventListener('blur', (e) => {
+        let value = e.target.value.replace(/stack\(s\)/i, '').trim();
+        if (value !== '' && !isNaN(value)) {
+            e.target.value = `${parseInt(value)} stack(s)`; // Ensure proper formatting on blur
+        }
+    });
+
+    inputContainer.appendChild(stacksInput);
+} else {
+    console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
+}
+
+itemFrame.appendChild(inputContainer);
 
     // Discount input field
 if (parseInt(item.undercut) === 1) {
