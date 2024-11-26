@@ -384,30 +384,34 @@ function addHighlightBehavior(inputField, type) {
         let value = e.target.value.trim();
 
         if (type === 'units') {
-            // Format units (integer values only)
+            // Format units
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseInt(value, 10);
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
+            } else if (value === '') {
+                e.target.value = '1 unit'; // Default to 1 unit
             } else {
-                e.target.value = e.target.dataset.previousValue || '1 unit'; // Default to 1 unit
+                e.target.value = e.target.dataset.previousValue || '1 unit'; // Fallback to last valid value
             }
         } else if (type === 'stacks') {
             // Format stacks (allow decimals)
             if (!isNaN(value) && value !== '') {
-                const numericValue = parseFloat(value).toFixed(2); // Allow up to 2 decimal places
+                const numericValue = parseFloat(value).toFixed(2); // Ensure 2 decimal places
                 e.target.value = `${numericValue} ${numericValue == 1 ? 'stack' : 'stacks'}`;
             } else if (value === '') {
                 e.target.value = '0 stack'; // Default to 0 stack
             } else {
-                e.target.value = e.target.dataset.previousValue || '0 stack';
+                e.target.value = e.target.dataset.previousValue || '0 stack'; // Fallback to last valid value
             }
         } else if (type === 'discount') {
             // Format discount
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseFloat(value.replace('% Discount', '').trim());
-                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}% Discount`; // Clamp value between 0 and 40%
+                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}% Discount`; // Clamp between 0 and 40%
+            } else if (value === '') {
+                e.target.value = '0% Discount'; // Default to 0% Discount
             } else {
-                e.target.value = e.target.dataset.previousValue || '0% Discount'; // Default to 0% Discount
+                e.target.value = e.target.dataset.previousValue || '0% Discount'; // Fallback to last valid value
             }
         }
 
@@ -422,12 +426,12 @@ function addHighlightBehavior(inputField, type) {
         const rawValue = e.target.value.trim();
 
         if (type === 'units') {
-            // Allow only numeric values for units
+            // Allow only integer values for units
             if (isNaN(rawValue)) {
                 e.target.value = e.target.dataset.previousValue || '1';
             } else {
                 e.target.dataset.previousValue = rawValue; // Save immediately
-                updateTotals();
+                updateTotals(); // Trigger totals update dynamically
             }
         } else if (type === 'stacks') {
             // Allow decimals for stacks
@@ -435,7 +439,7 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = e.target.dataset.previousValue || '0';
             } else {
                 e.target.dataset.previousValue = rawValue; // Save immediately
-                updateTotals();
+                updateTotals(); // Trigger totals update dynamically
             }
         } else if (type === 'discount') {
             // Allow only numeric values for discount
@@ -444,11 +448,12 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = e.target.dataset.previousValue || '0% Discount';
             } else {
                 e.target.dataset.previousValue = rawValue; // Save immediately
-                updateTotals();
+                updateTotals(); // Trigger totals update dynamically
             }
         }
     });
 
+    // Prevent cursor placement on mousedown (ensures full highlight)
     inputField.addEventListener('mousedown', (e) => {
         e.preventDefault(); // Prevent default cursor placement
         setTimeout(() => {
