@@ -330,7 +330,7 @@ function addHighlightBehavior(inputField, type) {
                 const numericValue = parseInt(value, 10);
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
             } else {
-                e.target.value = e.target.dataset.previousValue || '1 stack'; // Default to 1 stack
+                e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 1 stack
             }
         } else if (type === 'discount') {
             // Format discount
