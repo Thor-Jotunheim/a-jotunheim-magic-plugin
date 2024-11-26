@@ -303,61 +303,71 @@ export function addItemToContainer(item, containerId) {
     }
 
     // Helper function to handle highlighting and preserving values
-function addHighlightBehavior(inputField, type) {
-    inputField.addEventListener('focus', (e) => {
-        // Highlight the text when the field is focused
-        setTimeout(() => {
-            e.target.select(); // Highlight all text
-        }, 0);
-    });
-
-    inputField.addEventListener('blur', (e) => {
-        const value = e.target.value.trim();
-        if (type === 'units') {
-            // Preserve or format units
-            if (!isNaN(value) && value !== '') {
-                const numericValue = parseInt(value, 10);
-                e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
-            } else if (!value) {
-                e.target.value = e.target.dataset.previousValue || ''; // Revert to the previous value if empty
+    function addHighlightBehavior(inputField, type) {
+        // Function to handle highlighting consistently
+        const highlightText = (e) => {
+            setTimeout(() => {
+                e.target.select(); // Select all text in the field
+            }, 0); // Ensures it happens after focus
+        };
+    
+        inputField.addEventListener('focus', highlightText);
+    
+        inputField.addEventListener('blur', (e) => {
+            const value = e.target.value.trim();
+            if (type === 'units') {
+                // Format units
+                if (!isNaN(value) && value !== '') {
+                    const numericValue = parseInt(value, 10);
+                    e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
+                } else if (!value) {
+                    e.target.value = e.target.dataset.previousValue || ''; // Revert to previous value
+                }
+            } else if (type === 'stacks') {
+                // Format stacks
+                if (!isNaN(value) && value !== '') {
+                    const numericValue = parseInt(value, 10);
+                    e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
+                } else if (!value) {
+                    e.target.value = e.target.dataset.previousValue || ''; // Revert to previous value
+                }
+            } else if (type === 'discount') {
+                // Format discount
+                if (!isNaN(value)) {
+                    const numericValue = parseFloat(value.replace('%', '').trim());
+                    e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}%`; // Clamp value between 0 and 40%
+                } else if (!value) {
+                    e.target.value = e.target.dataset.previousValue || ''; // Revert to previous value
+                }
             }
-        } else if (type === 'stacks') {
-            // Preserve or format stacks
-            if (!isNaN(value) && value !== '') {
-                const numericValue = parseInt(value, 10);
-                e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
-            } else if (!value) {
-                e.target.value = e.target.dataset.previousValue || ''; // Revert to the previous value if empty
+    
+            // Save the valid value for the next blur
+            e.target.dataset.previousValue = e.target.value;
+        });
+    
+        inputField.addEventListener('input', (e) => {
+            if (type === 'units' || type === 'stacks') {
+                // Prevent non-numeric values for units and stacks
+                if (isNaN(e.target.value)) {
+                    e.target.value = e.target.dataset.previousValue || '';
+                }
+            } else if (type === 'discount') {
+                // Prevent non-numeric values for discount
+                const cleanValue = e.target.value.replace('%', '').trim();
+                if (isNaN(cleanValue)) {
+                    e.target.value = e.target.dataset.previousValue || '';
+                }
             }
-        } else if (type === 'discount') {
-            // Preserve or format discount
-            if (!isNaN(value)) {
-                const numericValue = parseFloat(value.replace('%', '').trim());
-                e.target.value = `${Math.min(Math.max(numericValue, 0), 40)}%`; // Clamp value between 0 and 40%
-            } else if (!value) {
-                e.target.value = e.target.dataset.previousValue || ''; // Revert to the previous value if empty
-            }
-        }
-
-        // Save the valid value for the next blur
-        e.target.dataset.previousValue = e.target.value;
-    });
-
-    inputField.addEventListener('input', (e) => {
-        if (type === 'units' || type === 'stacks') {
-            // Prevent non-numeric values for units and stacks
-            if (isNaN(e.target.value)) {
-                e.target.value = e.target.dataset.previousValue || '';
-            }
-        } else if (type === 'discount') {
-            // Prevent non-numeric values for discount
-            const cleanValue = e.target.value.replace('%', '').trim();
-            if (isNaN(cleanValue)) {
-                e.target.value = e.target.dataset.previousValue || '';
-            }
-        }
-    });
-}
+        });
+    
+        // Ensure proper behavior on mousedown (for rapid clicking)
+        inputField.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // Prevent default cursor placement
+            setTimeout(() => {
+                inputField.select(); // Ensure all text is selected
+            }, 0); // Execute after other events
+        });
+    }
 
 // Units Input Field
 const unitsInput = document.createElement('input');
