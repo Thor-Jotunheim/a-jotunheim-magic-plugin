@@ -273,8 +273,9 @@ export function addItemToContainer(item, containerId) {
     if (hasLevelPrices) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
+        levelDropdown.style.marginRight = '5px';
         levelDropdown.style.fontSize = '11px';
-        levelDropdown.style.width = '60px';
+        levelDropdown.style.width = '75px';
         levelDropdown.style.height = '30px';
         levelDropdown.style.marginRight = '5px';
 
@@ -297,7 +298,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
     unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '60px';
+    unitsInput.style.width = '75px';
     unitsInput.style.height = '30px';
     unitsInput.style.marginRight = '5px';
     unitsInput.addEventListener('input', updateTotals);
@@ -313,7 +314,7 @@ export function addItemToContainer(item, containerId) {
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '60px';
+        stacksInput.style.width = '75px';
         stacksInput.style.height = '30px';
         stacksInput.addEventListener('input', updateTotals);
         stacksInput.addEventListener('input', (e) => {
@@ -331,9 +332,10 @@ export function addItemToContainer(item, containerId) {
         const discountInput = document.createElement('input');
         discountInput.type = 'number';
         discountInput.placeholder = 'Discount %';
+        discountInput.style.marginRight = '5px';
         discountInput.className = 'item-input discount-input';
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '80px';
+        discountInput.style.width = '75px';
         discountInput.style.height = '30px';
         discountInput.min = 0;
         discountInput.max = 40;
