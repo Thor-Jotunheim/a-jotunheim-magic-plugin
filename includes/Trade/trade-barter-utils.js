@@ -253,16 +253,26 @@ export function addItemToContainer(item, containerId) {
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
-    // Remove Button
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'X';
-    removeButton.className = 'remove-item';
-    removeButton.onclick = () => {
-        itemFrame.remove();
-        updateLevelDropdowns(containerId, item.prefab_name);
-        updateTotals();
-    };
-    itemFrame.appendChild(removeButton);
+// Remove Button
+const removeButton = document.createElement('button');
+removeButton.textContent = 'X';
+removeButton.className = 'remove-item';
+removeButton.style.position = 'absolute'; // Position it relative to the parent
+removeButton.style.top = '5px'; // Adjust vertical position
+removeButton.style.right = '5px'; // Adjust horizontal position
+removeButton.style.width = '20px';
+removeButton.style.height = '20px';
+removeButton.style.border = 'none';
+removeButton.style.background = '#FF4C4C'; // Red background for visibility
+removeButton.style.color = 'white'; // White text
+removeButton.style.borderRadius = '50%'; // Circle shape
+removeButton.style.cursor = 'pointer';
+removeButton.onclick = () => {
+    itemFrame.remove();
+    updateLevelDropdowns(containerId, item.prefab_name);
+    updateTotals();
+};
+itemFrame.appendChild(removeButton);
 
     // Item Name
     const itemName = document.createElement('h3');
