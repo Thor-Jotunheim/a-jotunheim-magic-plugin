@@ -381,7 +381,7 @@ function addHighlightBehavior(inputField, type) {
     inputField.addEventListener('focus', highlightText);
 
     inputField.addEventListener('blur', (e) => {
-        let value = e.target.value.trim();
+        const value = e.target.value.trim();
 
         if (type === 'units') {
             // Format units
