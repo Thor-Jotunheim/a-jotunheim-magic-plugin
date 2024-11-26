@@ -326,6 +326,7 @@ unitsInput.className = 'item-input units-input';
 unitsInput.style.fontSize = '11px';
 unitsInput.style.width = '120px'; // Take full width of container
 unitsInput.style.height = '25px';
+unitsInput.style.marginTop = '1px'; // Add spacing between stacked fields
 unitsInput.style.marginBottom = '2px'; // Add spacing between stacked fields
 
 // Attach highlighting and blur behavior
