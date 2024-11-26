@@ -303,6 +303,7 @@ export function addItemToContainer(item, containerId) {
     }
 
     // Helper function to handle highlighting and preserving values
+// Helper function to handle highlighting, preserving values, and updating totals dynamically
 function addHighlightBehavior(inputField, type) {
     // Function to handle highlighting consistently
     const highlightText = (e) => {
@@ -344,6 +345,9 @@ function addHighlightBehavior(inputField, type) {
 
         // Save the valid value for the next blur
         e.target.dataset.previousValue = e.target.value;
+
+        // Trigger totals update immediately
+        updateTotals();
     });
 
     inputField.addEventListener('input', (e) => {
@@ -352,12 +356,18 @@ function addHighlightBehavior(inputField, type) {
             // Prevent non-numeric values for units and stacks
             if (isNaN(rawValue)) {
                 e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
+            } else {
+                e.target.dataset.previousValue = e.target.value; // Save valid value immediately
+                updateTotals(); // Trigger totals update dynamically
             }
         } else if (type === 'discount') {
             // Prevent non-numeric values for discount
             const cleanValue = rawValue.replace('%', '').trim();
             if (isNaN(cleanValue)) {
-                e.target.value = e.target.dataset.previousValue || '0%'; // Default to 0%
+                e.target.value = e.target.dataset.previousValue || '0%';
+            } else {
+                e.target.dataset.previousValue = e.target.value; // Save valid value immediately
+                updateTotals(); // Trigger totals update dynamically
             }
         }
     });
