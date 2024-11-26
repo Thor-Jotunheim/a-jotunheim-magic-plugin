@@ -1,16 +1,19 @@
 // Fetch items from the API
-export async function fetchItems(apiUrl) {
+async function fetchItems(apiUrl) {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        if (!Array.isArray(data)) {
-            throw new Error("Unexpected data format");
-        }
+        console.log('API Response:', data); // Log API response
 
-        return data; // Return the fetched items
+        if (Array.isArray(data)) {
+            return data;
+        } else {
+            console.error('Unexpected data format:', data);
+            return [];
+        }
     } catch (error) {
-        console.error("Error fetching items:", error);
+        console.error('Error fetching items:', error);
         return [];
     }
 }
