@@ -306,6 +306,64 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
     }
 
+// Units Input Field
+const unitsInput = document.createElement('input');
+unitsInput.type = 'text'; // Allow appending text like "unit(s)"
+unitsInput.placeholder = 'Units';
+unitsInput.className = 'item-input units-input';
+unitsInput.style.fontSize = '11px';
+unitsInput.style.width = '75px';
+unitsInput.style.height = '30px';
+unitsInput.style.marginRight = '2px';
+
+// Attach highlighting and blur behavior
+addHighlightBehavior(unitsInput, 'units');
+unitsInput.dataset.previousValue = ''; // Initialize the previous value
+inputContainer.appendChild(unitsInput);
+
+// Stacks Input Field (only if stack_size > 1)
+if (item.stack_size > 1) {
+    const stacksInput = document.createElement('input');
+    stacksInput.type = 'text'; // Allow appending text like "stack(s)"
+    stacksInput.placeholder = 'Stacks';
+    stacksInput.className = 'item-input stacks-input';
+    stacksInput.style.fontSize = '11px';
+    stacksInput.style.width = '75px';
+    stacksInput.style.height = '30px';
+
+    // Attach highlighting and blur behavior
+    addHighlightBehavior(stacksInput, 'stacks');
+    stacksInput.dataset.previousValue = ''; // Initialize the previous value
+    inputContainer.appendChild(stacksInput);
+}
+
+// Check if the item requires a discount input
+if (parseInt(item.undercut) === 1) {
+    const discountInput = document.createElement('input');
+    discountInput.type = 'text'; // Allow appending "%" to numeric input
+    discountInput.placeholder = 'Discount %';
+    discountInput.className = 'item-input discount-input';
+    discountInput.style.display = 'block'; // Makes the input take a full-width block
+    discountInput.style.margin = '0 auto'; // Centers the block within the container
+    discountInput.style.fontSize = '9px';
+    discountInput.style.width = '100px';
+    discountInput.style.height = '30px';
+
+    // Attach highlighting and blur behavior
+    addHighlightBehavior(discountInput, 'discount');
+    discountInput.dataset.previousValue = ''; // Initialize the previous value
+    inputContainer.appendChild(discountInput); // Append to the inputContainer
+}
+
+// Ensure the inputContainer is properly appended
+if (!itemFrame.contains(inputContainer)) {
+    itemFrame.appendChild(inputContainer);
+}
+
+    lastPanel.appendChild(itemFrame);
+    updateTotals();
+}
+
 // Helper function to handle highlighting and preserving values
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
 function addHighlightBehavior(inputField, type) {
@@ -383,64 +441,6 @@ function addHighlightBehavior(inputField, type) {
             inputField.select(); // Ensure all text is selected
         }, 0); // Execute after other events
     });
-}
-
-// Units Input Field
-const unitsInput = document.createElement('input');
-unitsInput.type = 'text'; // Allow appending text like "unit(s)"
-unitsInput.placeholder = 'Units';
-unitsInput.className = 'item-input units-input';
-unitsInput.style.fontSize = '11px';
-unitsInput.style.width = '75px';
-unitsInput.style.height = '30px';
-unitsInput.style.marginRight = '2px';
-
-// Attach highlighting and blur behavior
-addHighlightBehavior(unitsInput, 'units');
-unitsInput.dataset.previousValue = ''; // Initialize the previous value
-inputContainer.appendChild(unitsInput);
-
-// Stacks Input Field (only if stack_size > 1)
-if (item.stack_size > 1) {
-    const stacksInput = document.createElement('input');
-    stacksInput.type = 'text'; // Allow appending text like "stack(s)"
-    stacksInput.placeholder = 'Stacks';
-    stacksInput.className = 'item-input stacks-input';
-    stacksInput.style.fontSize = '11px';
-    stacksInput.style.width = '75px';
-    stacksInput.style.height = '30px';
-
-    // Attach highlighting and blur behavior
-    addHighlightBehavior(stacksInput, 'stacks');
-    stacksInput.dataset.previousValue = ''; // Initialize the previous value
-    inputContainer.appendChild(stacksInput);
-}
-
-// Check if the item requires a discount input
-if (parseInt(item.undercut) === 1) {
-    const discountInput = document.createElement('input');
-    discountInput.type = 'text'; // Allow appending "%" to numeric input
-    discountInput.placeholder = 'Discount %';
-    discountInput.className = 'item-input discount-input';
-    discountInput.style.display = 'block'; // Makes the input take a full-width block
-    discountInput.style.margin = '0 auto'; // Centers the block within the container
-    discountInput.style.fontSize = '9px';
-    discountInput.style.width = '100px';
-    discountInput.style.height = '30px';
-
-    // Attach highlighting and blur behavior
-    addHighlightBehavior(discountInput, 'discount');
-    discountInput.dataset.previousValue = ''; // Initialize the previous value
-    inputContainer.appendChild(discountInput); // Append to the inputContainer
-}
-
-// Ensure the inputContainer is properly appended
-if (!itemFrame.contains(inputContainer)) {
-    itemFrame.appendChild(inputContainer);
-}
-
-    lastPanel.appendChild(itemFrame);
-    updateTotals();
 }
 
 // Function to update totals
