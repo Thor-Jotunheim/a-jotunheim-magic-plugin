@@ -132,14 +132,11 @@ export function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+
+
 // Add item to a container
 export function addItemToContainer(item, containerId) {
     const wrapper = document.getElementById(containerId);
-    if (!wrapper) {
-        console.error(`Container with ID "${containerId}" not found.`);
-        return; // Prevent further execution if the container doesn't exist
-    }
-
     let panels = wrapper.querySelectorAll('.selected-items-panel');
     let lastPanel = panels[panels.length - 1];
 
