@@ -106,6 +106,32 @@ export function adjustPageHeight(pageId) {
 
 // Toggle accordion sections
 export function toggleAccordion(section) {
+    // Ensure the section is a valid accordion section
+    if (!section || !section.classList.contains('accordion-section')) {
+        console.error("Invalid section passed to toggleAccordion");
+        return;
+    }
+
+    // Get the container that holds the accordion
+    const container = section.closest('.item-list-sidebar');
+    if (!container) {
+        console.error("Container not found for the given section");
+        return;
+    }
+
+    // Get all accordion content sections within the container
+    const allSections = container.querySelectorAll('.accordion-section');
+
+    // Close all sections except the one being clicked
+    allSections.forEach((s) => {
+        const content = s.querySelector('.accordion-content');
+        if (s !== section) {
+            content.classList.remove('active');
+            content.style.display = 'none'; // Ensure it's hidden
+        }
+    });
+
+    // Toggle the clicked section
     const content = section.querySelector('.accordion-content');
     if (content.classList.contains('active')) {
         content.classList.remove('active');
@@ -113,7 +139,17 @@ export function toggleAccordion(section) {
     } else {
         content.classList.add('active');
         content.style.display = 'block';
+
+        // Scroll the container to bring the section into view
+        const containerRect = container.getBoundingClientRect();
+        const sectionRect = section.getBoundingClientRect();
+        const offset = sectionRect.top - containerRect.top + container.scrollTop;
+
+        container.scrollTop = offset - 10; // Adjust for padding if needed
     }
+
+    // Adjust page height dynamically to account for expanded/collapsed content
+    adjustPageHeight('jotunheim-barter-page');
 }
 
 // Sanitize item names
