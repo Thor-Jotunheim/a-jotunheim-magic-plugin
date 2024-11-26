@@ -314,8 +314,8 @@ unitsInput.placeholder = 'Units';
 unitsInput.className = 'item-input units-input';
 unitsInput.style.fontSize = '11px';
 unitsInput.style.width = '100px'; // Take full width of container
-unitsInput.style.height = '30px';
-unitsInput.style.marginBottom = '5px'; // Add spacing between stacked fields
+unitsInput.style.height = '25px';
+unitsInput.style.marginBottom = '2px'; // Add spacing between stacked fields
 
 // Attach highlighting and blur behavior
 addHighlightBehavior(unitsInput, 'units');
@@ -330,8 +330,8 @@ if (item.stack_size > 1) {
     stacksInput.className = 'item-input stacks-input';
     stacksInput.style.fontSize = '11px';
     stacksInput.style.width = '100px'; // Take full width of container
-    stacksInput.style.height = '30px';
-    stacksInput.style.marginBottom = '0'; // No extra margin as it's the last field
+    stacksInput.style.height = '25px';
+    stacksInput.style.marginBottom = '2'; // No extra margin as it's the last field
 
     // Attach highlighting and blur behavior
     addHighlightBehavior(stacksInput, 'stacks');
