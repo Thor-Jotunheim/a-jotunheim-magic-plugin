@@ -300,7 +300,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.style.fontSize = '11px';
     unitsInput.style.width = '75px';
     unitsInput.style.height = '30px';
-    unitsInput.style.marginRight = '5px';
+    //unitsInput.style.marginRight = '5px';
     unitsInput.addEventListener('input', updateTotals);
     unitsInput.addEventListener('input', (e) => {
         if (e.target.value < 0) e.target.value = 0; // Prevent negative values
