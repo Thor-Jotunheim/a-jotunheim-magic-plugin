@@ -345,7 +345,7 @@ export function addItemToContainer(item, containerId) {
         discountInput.type = 'text';
         discountInput.placeholder = 'Discount %';
         discountInput.className = 'item-input discount-input';
-        discountInput.style.fontSize = '9px';
+        discountInput.style.fontSize = '11px';
         discountInput.style.width = '120px';
         discountInput.style.height = '25px';
 
