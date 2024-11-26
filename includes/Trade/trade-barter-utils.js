@@ -313,7 +313,7 @@ unitsInput.type = 'text'; // Allow appending text like "unit(s)"
 unitsInput.placeholder = 'Units';
 unitsInput.className = 'item-input units-input';
 unitsInput.style.fontSize = '11px';
-unitsInput.style.width = '100%'; // Take full width of container
+unitsInput.style.width = '100px'; // Take full width of container
 unitsInput.style.height = '30px';
 unitsInput.style.marginBottom = '5px'; // Add spacing between stacked fields
 
@@ -329,7 +329,7 @@ if (item.stack_size > 1) {
     stacksInput.placeholder = 'Stacks';
     stacksInput.className = 'item-input stacks-input';
     stacksInput.style.fontSize = '11px';
-    stacksInput.style.width = '100%'; // Take full width of container
+    stacksInput.style.width = '100px'; // Take full width of container
     stacksInput.style.height = '30px';
     stacksInput.style.marginBottom = '0'; // No extra margin as it's the last field
 
