@@ -288,9 +288,10 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.height = '25px';
         levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
     
-        // Center the text inside the dropdown
-        levelDropdown.style.textAlign = 'center'; // Center the text alignment for the dropdown
-        levelDropdown.style.textAlignLast = 'center'; // Ensure the selected option is centered
+        // Center the text while accounting for the arrow
+        levelDropdown.style.textAlign = 'center'; // Center the text
+        levelDropdown.style.textAlignLast = 'center'; // Center selected option
+        levelDropdown.style.paddingRight = '20px'; // Add padding to account for the arrow
     
         // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
