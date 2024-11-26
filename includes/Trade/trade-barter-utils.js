@@ -325,8 +325,6 @@ export function addItemToContainer(item, containerId) {
     // Stacks Input Field (only if stack_size > 1)
     if (item.stack_size > 1) {
         const stacksInput = document.createElement('input');
-        stacksInput.type = 'number'; // Correct type for numeric input
-        stacksInput.step = '0.01';   // Allow decimal precision
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
