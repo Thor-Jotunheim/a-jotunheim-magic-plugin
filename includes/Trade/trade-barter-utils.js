@@ -96,6 +96,7 @@ export function populateItemList(containerId, searchQuery) {
         header.onclick = () => toggleAccordion(section);
     });
 
+    
 // Adjust page height dynamically
 export function adjustPageHeight(pageId) {
     const page = document.getElementById(pageId);
