@@ -351,13 +351,21 @@ export function addItemToContainer(item, containerId) {
         discountInput.min = 0;
         discountInput.max = 40;
 
-        discountInput.addEventListener('input', () => {
-            if (discountInput.value < 0) discountInput.value = 0; // Prevent negative values
-            if (discountInput.value > 40) discountInput.value = 40; // Cap discount at 40%
+        // Event listener to format input with %
+        discountInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace('%', '').trim(); // Remove any existing '%' for clean parsing
+        if (value === '' || isNaN(value)) {
+            e.target.value = ''; // Clear the field if input is not a number
+        } else {
+            let numericValue = parseFloat(value);
+            if (numericValue < 0) numericValue = 0; // Prevent negative values
+            if (numericValue > 40) numericValue = 40; // Cap discount at 40%
+            e.target.value = `${numericValue}%`; // Append the '%' symbol
             updateTotals();
+        }
         });
 
-        itemFrame.appendChild(discountInput);
+        inputContainer.appendChild(discountInput);
     }
 
     lastPanel.appendChild(itemFrame);
