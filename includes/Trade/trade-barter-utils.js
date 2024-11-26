@@ -394,12 +394,12 @@ function addHighlightBehavior(inputField, type) {
         } else if (type === 'stacks') {
             // Format stacks (allow decimals)
             if (!isNaN(value) && value !== '') {
-                const numericValue = parseFloat(value); // Parse as float for decimal values
+                const numericValue = parseFloat(value).toFixed(2); // Ensure two decimal precision
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
-                e.target.dataset.previousValue = e.target.value; // Save formatted value
-            } else if (value === '') {
-                // Only reset if there's no valid previous value
-                e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 0 stack
+                e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Save formatted value
+            } else {
+                // Default to 0 stack if the value is empty or invalid
+                e.target.value = e.target.dataset.previousValue || '0 stack';
             }
         } else if (type === 'discount') {
             // Format discount
