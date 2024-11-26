@@ -325,12 +325,13 @@ export function addItemToContainer(item, containerId) {
     // Stacks Input Field (only if stack_size > 1)
     if (item.stack_size > 1) {
         const stacksInput = document.createElement('input');
-        stacksInput.type = 'text'; // Allow appending text like "stack(s)"
+        stacksInput.type = 'number'; // Use 'number' type to allow decimals
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
         stacksInput.style.width = '75px';
         stacksInput.style.height = '30px';
+        stacksInput.step = '0.01'; // Allow fractional stacks like 1.25
 
         // Attach highlighting and blur behavior
         addHighlightBehavior(stacksInput, 'stacks');
