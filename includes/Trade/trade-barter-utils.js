@@ -274,6 +274,8 @@ export function addItemToContainer(item, containerId) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.marginRight = '5px';
+        levelDropdown.style.display = 'block'; // Makes the input take a full-width block
+        levelDropdown.style.margin = '0 auto'; // Centers the block within the container
         levelDropdown.style.fontSize = '11px';
         levelDropdown.style.width = '75px';
         levelDropdown.style.height = '25px';
@@ -338,7 +340,7 @@ export function addItemToContainer(item, containerId) {
         discountInput.style.display = 'block'; // Makes the input take a full-width block
         discountInput.style.margin = '0 auto'; // Centers the block within the container
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '75px';
+        discountInput.style.width = '85px';
         discountInput.style.height = '25px';
         discountInput.min = 0;
         discountInput.max = 40;
