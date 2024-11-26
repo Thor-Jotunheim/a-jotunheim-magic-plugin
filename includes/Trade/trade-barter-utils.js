@@ -104,6 +104,50 @@ export function adjustPageHeight(pageId) {
     document.body.style.minHeight = `${totalHeight}px`; // Adjust the body height dynamically
 }
 
+export function filterItems(containerId) {
+    const searchInput = document.getElementById(containerId === 'item-list-accordion' ? 'item-search' : 'item-search-2');
+    if (!searchInput) {
+        console.error(`Search input not found for container "${containerId}"`);
+        return;
+    }
+
+    const query = searchInput.value.toLowerCase();
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Accordion container with ID "${containerId}" not found.`);
+        return;
+    }
+
+    const sections = container.querySelectorAll('.accordion-section');
+
+    sections.forEach(section => {
+        const content = section.querySelector('.accordion-content');
+        const items = content.querySelectorAll('.item-button');
+
+        // Check if any items in the section match the query
+        let hasMatch = false;
+        items.forEach(item => {
+            if (item.textContent.toLowerCase().includes(query)) {
+                item.style.display = ''; // Show item
+                hasMatch = true;
+            } else {
+                item.style.display = 'none'; // Hide item
+            }
+        });
+
+        // Show or hide the section based on whether it has matches
+        if (hasMatch) {
+            section.style.display = ''; // Show section
+            content.classList.add('active'); // Expand section
+            content.style.display = 'block'; // Ensure content is visible
+        } else {
+            section.style.display = 'none'; // Hide section
+            content.classList.remove('active'); // Collapse section
+            content.style.display = 'none'; // Ensure content is hidden
+        }
+    });
+}
+
 // Toggle accordion sections
 export function toggleAccordion(section) {
     // Ensure the section is a valid accordion section
@@ -231,7 +275,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
     unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '60px';
+    unitsInput.style.width = '70px';
     unitsInput.style.height = '30px';
     unitsInput.style.marginRight = '5px';
     unitsInput.addEventListener('input', updateTotals);
@@ -244,7 +288,7 @@ export function addItemToContainer(item, containerId) {
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '60px';
+        stacksInput.style.width = '70px';
         stacksInput.style.height = '30px';
         stacksInput.addEventListener('input', updateTotals);
         inputContainer.appendChild(stacksInput);
@@ -266,7 +310,7 @@ export function addItemToContainer(item, containerId) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.fontSize = '11px';
-        levelDropdown.style.width = '60px';
+        levelDropdown.style.width = '80px';
         levelDropdown.style.height = '30px';
         levelDropdown.style.marginRight = '5px';
 
