@@ -304,7 +304,7 @@ export function addItemToContainer(item, containerId) {
 
     // Units Input Field
 const unitsInput = document.createElement('input');
-unitsInput.type = 'text'; // Change to 'text' to allow appending text
+unitsInput.type = 'text'; // Use 'text' instead of 'number' to allow appending text like "unit(s)"
 unitsInput.placeholder = 'Units';
 unitsInput.className = 'item-input units-input';
 unitsInput.style.fontSize = '11px';
@@ -312,98 +312,69 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
-// Add event listener for formatting input
-unitsInput.addEventListener('input', (e) => {
-    let value = e.target.value.replace(/unit\(s\)/i, '').trim(); // Remove "unit(s)" for clean parsing
-    if (value === '' || isNaN(value)) {
-        e.target.value = ''; // Clear the field if input is not a number
-    } else {
-        let numericValue = parseInt(value);
-        if (numericValue < 0) numericValue = 0; // Prevent negative values
-        e.target.value = `${numericValue} unit(s)`; // Append "unit(s)"
-        updateTotals();
+unitsInput.addEventListener('blur', (e) => {
+    let value = e.target.value.replace(/ unit\(s\)/i, '').trim(); // Remove "unit(s)" if already present
+    if (value !== '' && !isNaN(value)) {
+        e.target.value = `${parseInt(value)} unit(s)`; // Format value with "unit(s)"
     }
 });
 
-// Format properly on blur
-unitsInput.addEventListener('blur', (e) => {
-    let value = e.target.value.replace(/unit\(s\)/i, '').trim();
-    if (value !== '' && !isNaN(value)) {
-        e.target.value = `${parseInt(value)} unit(s)`; // Ensure proper formatting on blur
-    }
+unitsInput.addEventListener('focus', (e) => {
+    e.target.value = e.target.value.replace(/ unit\(s\)/i, '').trim(); // Remove "unit(s)" when focused
 });
+
 inputContainer.appendChild(unitsInput);
 
 // Stacks Input Field (only if stack_size > 1)
 if (item.stack_size > 1) {
     const stacksInput = document.createElement('input');
-    stacksInput.type = 'text'; // Change to 'text' to allow appending text
+    stacksInput.type = 'text'; // Use 'text' instead of 'number' to allow appending text like "stack(s)"
     stacksInput.placeholder = 'Stacks';
     stacksInput.className = 'item-input stacks-input';
     stacksInput.style.fontSize = '11px';
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
-    // Add event listener for formatting input
-    stacksInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/stack\(s\)/i, '').trim(); // Remove "stack(s)" for clean parsing
-        if (value === '' || isNaN(value)) {
-            e.target.value = ''; // Clear the field if input is not a number
-        } else {
-            let numericValue = parseInt(value);
-            if (numericValue < 0) numericValue = 0; // Prevent negative values
-            e.target.value = `${numericValue} stack(s)`; // Append "stack(s)"
-            updateTotals();
+    stacksInput.addEventListener('blur', (e) => {
+        let value = e.target.value.replace(/ stack\(s\)/i, '').trim(); // Remove "stack(s)" if already present
+        if (value !== '' && !isNaN(value)) {
+            e.target.value = `${parseInt(value)} stack(s)`; // Format value with "stack(s)"
         }
     });
 
-    // Format properly on blur
-    stacksInput.addEventListener('blur', (e) => {
-        let value = e.target.value.replace(/stack\(s\)/i, '').trim();
-        if (value !== '' && !isNaN(value)) {
-            e.target.value = `${parseInt(value)} stack(s)`; // Ensure proper formatting on blur
-        }
+    stacksInput.addEventListener('focus', (e) => {
+        e.target.value = e.target.value.replace(/ stack\(s\)/i, '').trim(); // Remove "stack(s)" when focused
     });
 
     inputContainer.appendChild(stacksInput);
-} else {
-    console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
 }
 
-itemFrame.appendChild(inputContainer);
-
-    // Discount input field
+// Discount Input Field
 if (parseInt(item.undercut) === 1) {
     const discountInput = document.createElement('input');
-    discountInput.type = 'text'; // Changed to 'text' to handle numeric input and %
+    discountInput.type = 'text'; // Use 'text' to allow appending the '%' symbol
     discountInput.placeholder = 'Discount %';
     discountInput.className = 'item-input discount-input';
-    discountInput.style.display = 'block'; // Makes the input take a full-width block
-    discountInput.style.margin = '0 auto'; // Centers the block within the container
+    discountInput.style.display = 'block';
+    discountInput.style.margin = '0 auto';
     discountInput.style.fontSize = '9px';
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
+    discountInput.min = 0;
+    discountInput.max = 40;
 
-    // Event listener to format input with %
-    discountInput.addEventListener('input', (e) => {
-        const value = e.target.value.replace('%', '').trim(); // Remove any existing '%' for clean parsing
-        if (value === '' || isNaN(value)) {
-            e.target.value = ''; // Clear the field if input is not a number
-        } else {
+    discountInput.addEventListener('blur', (e) => {
+        let value = e.target.value.replace('%', '').trim(); // Remove '%' if already present
+        if (value !== '' && !isNaN(value)) {
             let numericValue = parseFloat(value);
             if (numericValue < 0) numericValue = 0; // Prevent negative values
-            if (numericValue > 40) numericValue = 40; // Cap discount at 40%
-            e.target.value = `${numericValue}%`; // Append the '%' symbol
-            updateTotals();
+            if (numericValue > 40) numericValue = 40; // Cap at 40%
+            e.target.value = `${numericValue}%`; // Format value with "%"
         }
     });
 
-    // Handle focus-out behavior (to format properly on blur)
-    discountInput.addEventListener('blur', (e) => {
-        const value = e.target.value.replace('%', '').trim();
-        if (value !== '' && !isNaN(value)) {
-            e.target.value = `${parseFloat(value)}%`; // Ensure formatting on blur
-        }
+    discountInput.addEventListener('focus', (e) => {
+        e.target.value = e.target.value.replace('%', '').trim(); // Remove "%" when focused
     });
 
     inputContainer.appendChild(discountInput);
