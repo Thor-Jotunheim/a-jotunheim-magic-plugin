@@ -254,8 +254,8 @@ export function addItemToContainer(item, containerId) {
     removeButton.textContent = 'X';
     removeButton.className = 'remove-item';
     removeButton.style.position = 'absolute';
-    removeButton.style.top = '5px';
-    removeButton.style.right = '5px';
+    removeButton.style.top = '10px';
+    removeButton.style.right = '10px';
     removeButton.style.width = '20px';
     removeButton.style.height = '20px';
     removeButton.style.border = 'none';
