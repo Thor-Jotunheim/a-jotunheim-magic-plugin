@@ -228,11 +228,16 @@ export function addItemToContainer(item, containerId) {
         wrapper.appendChild(lastPanel);
     }
 
-    const existingItem = Array.from(wrapper.querySelectorAll('.item-frame')).find(
-        (child) => child.dataset.itemId === item.prefab_name
+    // Gather existing levels for the current item
+    const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
+    const existingLevels = existingItems.map(itemFrame =>
+        parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
     );
-    if (existingItem) {
-        console.warn(`Item "${item.item_name}" already exists in the container.`);
+
+    const hasLevelPrices = ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+
+    if (hasLevelPrices && existingLevels.length >= 5) {
+        console.warn(`All levels for "${item.item_name}" are already in the container.`);
         return;
     }
 
@@ -269,7 +274,6 @@ export function addItemToContainer(item, containerId) {
     dropdownContainer.style.alignItems = 'center';
 
     // Level dropdown
-    const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
     if (hasLevelPrices) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
@@ -279,8 +283,9 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.width = '100px';
         levelDropdown.style.height = '25px';
 
+        // Populate the level dropdown, excluding already selected levels
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0) {
+            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
                 const option = document.createElement('option');
                 option.value = index + 1;
                 option.textContent = `Level ${index + 1}`;
@@ -288,8 +293,13 @@ export function addItemToContainer(item, containerId) {
             }
         });
 
+        if (!levelDropdown.options.length) {
+            console.warn(`No available levels for "${item.item_name}".`);
+            return;
+        }
+
         levelDropdown.addEventListener('change', updateTotals);
-        inputContainer.appendChild(levelDropdown); // Append dropdown first
+        itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
     }
 
     // Units Input Field
@@ -300,7 +310,6 @@ export function addItemToContainer(item, containerId) {
     unitsInput.style.fontSize = '11px';
     unitsInput.style.width = '75px';
     unitsInput.style.height = '30px';
-    //unitsInput.style.marginRight = '5px';
     unitsInput.addEventListener('input', updateTotals);
     unitsInput.addEventListener('input', (e) => {
         if (e.target.value < 0) e.target.value = 0; // Prevent negative values
@@ -327,14 +336,12 @@ export function addItemToContainer(item, containerId) {
 
     itemFrame.appendChild(inputContainer);
 
-    // Discount input field (only if undercut === 1)
+    // Discount input field
     if (parseInt(item.undercut) === 1) {
         const discountInput = document.createElement('input');
         discountInput.type = 'number';
         discountInput.placeholder = 'Discount %';
         discountInput.className = 'item-input discount-input';
-        
-        // Updated styling for centering
         discountInput.style.display = 'block'; // Makes the input take a full-width block
         discountInput.style.margin = '0 auto'; // Centers the block within the container
         discountInput.style.fontSize = '9px';
@@ -349,10 +356,11 @@ export function addItemToContainer(item, containerId) {
             updateTotals();
         });
 
-        inputContainer.appendChild(discountInput);
+        itemFrame.appendChild(discountInput);
     }
 
     lastPanel.appendChild(itemFrame);
+    updateTotals();
 }
 
 // Function to update totals
