@@ -1,11 +1,13 @@
 // Fetch items from the API
 async function fetchItems() {
+    console.log('Fetching items from API...');
     try {
         const response = await fetch('https://jotun.games/wp-json/jotunheim-magic/v1/items');
         const data = await response.json();
 
-        console.log('API Response:', data); // Debugging the fetched data
+        console.log('Fetched Items:', data); // Log the fetched data
 
+        // Check if data is an array and process it
         if (Array.isArray(data)) {
             itemsData = data; // Populate the global variable
 
@@ -14,8 +16,8 @@ async function fetchItems() {
             populateItemList('item-list-accordion-2', itemsData, '', addItemToContainer);
 
             // Add event listeners for search functionality
-            const searchBar1 = document.getElementById('search-bar-1');
-            const searchBar2 = document.getElementById('search-bar-2');
+            const searchBar1 = document.getElementById('item-search');
+            const searchBar2 = document.getElementById('item-search-2');
 
             if (searchBar1) {
                 searchBar1.addEventListener('input', (event) => {
