@@ -312,14 +312,14 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
-// Event listeners for formatting
+// Highlight text on focus
 unitsInput.addEventListener('focus', (e) => {
-    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for clean input
-    if (!isNaN(value)) e.target.value = value; // Allow editing the value directly
+    e.target.select(); // Highlight all text in the field
 });
 
+// Update value with "unit(s)" on blur
 unitsInput.addEventListener('blur', (e) => {
-    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Clean any suffix for parsing
+    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for parsing
     if (value !== '' && !isNaN(value)) {
         const numericValue = parseInt(value, 10);
         e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`; // Add appropriate suffix
@@ -340,14 +340,14 @@ if (item.stack_size > 1) {
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
-    // Event listeners for formatting
+    // Highlight text on focus
     stacksInput.addEventListener('focus', (e) => {
-        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for clean input
-        if (!isNaN(value)) e.target.value = value; // Allow editing the value directly
+        e.target.select(); // Highlight all text in the field
     });
 
+    // Update value with "stack(s)" on blur
     stacksInput.addEventListener('blur', (e) => {
-        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Clean any suffix for parsing
+        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for parsing
         if (value !== '' && !isNaN(value)) {
             const numericValue = parseInt(value, 10);
             e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Add appropriate suffix
@@ -373,14 +373,14 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
 
-    // Event listeners for formatting
+    // Highlight text on focus
     discountInput.addEventListener('focus', (e) => {
-        const value = e.target.value.replace('%', '').trim(); // Remove "%" for clean input
-        if (!isNaN(value)) e.target.value = value; // Allow editing the value directly
+        e.target.select(); // Highlight all text in the field
     });
 
+    // Update value with "%" on blur
     discountInput.addEventListener('blur', (e) => {
-        const value = e.target.value.replace('%', '').trim(); // Clean "%" for parsing
+        const value = e.target.value.replace('%', '').trim(); // Remove "%" for parsing
         if (value !== '' && !isNaN(value)) {
             let numericValue = parseFloat(value);
             if (numericValue < 0) numericValue = 0; // Prevent negative values
