@@ -18,8 +18,12 @@ export async function fetchItems() {
             populateItemList('item-list-accordion-2', itemsData, '', addItemToContainer);
 
             // Add event listeners for search functionality
-            const searchBar1 = document.getElementById('item-search');
-            const searchBar2 = document.getElementById('item-search-2');
+            const searchBar1 = document.getElementById('item-search').addEventListener('input', () => {
+                filterItems('item-list-accordion');
+            });
+            const searchBar2 = document.getElementById('item-search-2').addEventListener('input', () => {
+                filterItems('item-list-accordion-2');
+            });
 
             if (searchBar1) {
                 searchBar1.addEventListener('input', (event) => {
