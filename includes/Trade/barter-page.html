@@ -365,3 +365,10 @@ footer {
 }
 
 </style>
+<script type="module">
+    import { fetchItems } from './utils.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchItems(); // Ensure items are fetched on page load
+    });
+</script>
