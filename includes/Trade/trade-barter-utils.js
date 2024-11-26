@@ -283,7 +283,7 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '100px';
         levelDropdown.style.height = '25px';
-        levelDropdown.style.marginBottom = '2px'; // Add spacing between stacked fields
+        levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
 
 
         // Populate dropdown options
