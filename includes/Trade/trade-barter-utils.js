@@ -380,7 +380,7 @@ function addHighlightBehavior(inputField, type) {
     inputField.addEventListener('focus', highlightText);
 
     inputField.addEventListener('blur', (e) => {
-        const value = e.target.value.trim();
+        let value = e.target.value.trim();
 
         if (type === 'units') {
             // Format units
@@ -396,8 +396,7 @@ function addHighlightBehavior(inputField, type) {
                 const numericValue = parseFloat(value); // Parse as float for decimal values
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
             } else if (value === '') {
-                // Default if no value is entered
-                e.target.value = '0 stack';
+                e.target.value = '0 stack'; // Default to 0 stack
             } else {
                 e.target.value = e.target.dataset.previousValue || '0 stack';
             }
@@ -425,16 +424,15 @@ function addHighlightBehavior(inputField, type) {
             if (isNaN(rawValue)) {
                 e.target.value = e.target.dataset.previousValue || '1';
             } else {
-                e.target.dataset.previousValue = e.target.value; // Save valid value immediately
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
                 updateTotals(); // Trigger totals update dynamically
             }
         } else if (type === 'stacks') {
-            // Prevent non-numeric values for stacks (allow decimals)
-            const cleanValue = rawValue;
-            if (isNaN(cleanValue)) {
+            // Allow decimals for stacks
+            if (isNaN(rawValue)) {
                 e.target.value = e.target.dataset.previousValue || '0';
             } else {
-                e.target.dataset.previousValue = e.target.value; // Save valid value immediately
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
                 updateTotals(); // Trigger totals update dynamically
             }
         } else if (type === 'discount') {
@@ -443,7 +441,7 @@ function addHighlightBehavior(inputField, type) {
             if (isNaN(cleanValue)) {
                 e.target.value = e.target.dataset.previousValue || '0% Discount';
             } else {
-                e.target.dataset.previousValue = e.target.value; // Save valid value immediately
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
                 updateTotals(); // Trigger totals update dynamically
             }
         }
