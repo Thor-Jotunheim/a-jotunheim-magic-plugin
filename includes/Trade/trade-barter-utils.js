@@ -212,11 +212,12 @@ export function escapeHtml(unsafe) {
 }
 
 // Add item to a container
+// Add item to a container
 export function addItemToContainer(item, containerId) {
     const wrapper = document.getElementById(containerId);
     if (!wrapper) {
         console.error(`Container with ID "${containerId}" not found.`);
-        return; // Prevent further execution if the container doesn't exist
+        return;
     }
 
     let panels = wrapper.querySelectorAll('.selected-items-panel');
@@ -230,7 +231,7 @@ export function addItemToContainer(item, containerId) {
 
     // Gather existing levels for the current item
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
-    const existingLevels = existingItems.map(itemFrame =>
+    const existingLevels = existingItems.map((itemFrame) =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
     );
 
@@ -255,6 +256,7 @@ export function addItemToContainer(item, containerId) {
     removeButton.className = 'remove-item';
     removeButton.onclick = () => {
         itemFrame.remove();
+        updateLevelDropdowns(containerId, item.prefab_name);
         updateTotals();
     };
     itemFrame.appendChild(removeButton);
@@ -267,46 +269,114 @@ export function addItemToContainer(item, containerId) {
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    // Dropdown and Discount Container
-    const dropdownContainer = document.createElement('div');
-    dropdownContainer.className = 'dropdown-container';
-    dropdownContainer.style.display = 'flex';
-    dropdownContainer.style.alignItems = 'center';
-
     // Level dropdown
-    // Check if the item has multiple valid levels
-const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
-if (hasMultipleLevels) {
-    const levelDropdown = document.createElement('select');
-    levelDropdown.className = 'level-dropdown';
-    levelDropdown.style.display = 'block'; // Makes the input take a full-width block
-    levelDropdown.style.margin = '0 auto'; // Centers the block within the container
-    levelDropdown.style.fontSize = '11px';
-    levelDropdown.style.width = '100px';
-    levelDropdown.style.height = '25px';
+    if (hasMultipleLevels) {
+        const levelDropdown = document.createElement('select');
+        levelDropdown.className = 'level-dropdown';
+        levelDropdown.style.display = 'block';
+        levelDropdown.style.margin = '0 auto';
+        levelDropdown.style.fontSize = '11px';
+        levelDropdown.style.width = '100px';
+        levelDropdown.style.height = '25px';
 
-    // Populate the level dropdown, excluding already selected levels
-    ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-        if (item[key] > 0 && !existingLevels.includes(index + 1)) {
-            const option = document.createElement('option');
-            option.value = index + 1;
-            option.textContent = `Level ${index + 1}`;
-            levelDropdown.appendChild(option);
+        // Populate the level dropdown, excluding already selected levels
+        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
+            const level = index + 1;
+
+            // Exclude levels already selected, except the current value
+            if (item[key] > 0 && !existingLevels.includes(level)) {
+                const option = document.createElement('option');
+                option.value = level;
+                option.textContent = `Level ${level}`;
+                levelDropdown.appendChild(option);
+            }
+        });
+
+        if (!levelDropdown.options.length) {
+            console.warn(`No available levels for "${item.item_name}".`);
+            return;
         }
-    });
 
-    // If no options were added, skip rendering the dropdown
-    if (!levelDropdown.options.length) {
-        console.warn(`No available levels for "${item.item_name}".`);
-        return;
+        levelDropdown.addEventListener('change', () => {
+            updateLevelDropdowns(containerId, item.prefab_name);
+            updateTotals();
+        });
+        inputContainer.appendChild(levelDropdown);
     }
 
-    levelDropdown.addEventListener('change', updateTotals);
-    itemFrame.appendChild(levelDropdown); // Add the level dropdown to the frame
+    // Units Input Field
+    const unitsInput = document.createElement('input');
+    unitsInput.type = 'text';
+    unitsInput.placeholder = 'Units';
+    unitsInput.className = 'item-input units-input';
+    addHighlightBehavior(unitsInput, 'units');
+    inputContainer.appendChild(unitsInput);
+
+    // Stacks Input Field (only if stack_size > 1)
+    if (item.stack_size > 1) {
+        const stacksInput = document.createElement('input');
+        stacksInput.type = 'text';
+        stacksInput.placeholder = 'Stacks';
+        stacksInput.className = 'item-input stacks-input';
+        addHighlightBehavior(stacksInput, 'stacks');
+        inputContainer.appendChild(stacksInput);
+    }
+
+    // Discount Input Field (only if undercut === 1)
+    if (parseInt(item.undercut) === 1) {
+        const discountInput = document.createElement('input');
+        discountInput.type = 'text';
+        discountInput.placeholder = 'Discount %';
+        discountInput.className = 'item-input discount-input';
+        addHighlightBehavior(discountInput, 'discount');
+        inputContainer.appendChild(discountInput);
+    }
+
+    itemFrame.appendChild(inputContainer);
+    lastPanel.appendChild(itemFrame);
+
+    // Update dropdown options dynamically after adding the new item
+    updateLevelDropdowns(containerId, item.prefab_name);
+    updateTotals();
 }
 
-    // Helper function to handle highlighting and preserving values
+// Function to update level dropdowns dynamically
+function updateLevelDropdowns(containerId, prefabName) {
+    const container = document.getElementById(containerId);
+    const frames = Array.from(container.querySelectorAll(`.item-frame[data-item-id="${prefabName}"]`));
+
+    // Gather all selected levels
+    const selectedLevels = frames.map((frame) => {
+        const levelDropdown = frame.querySelector('.level-dropdown');
+        return parseInt(levelDropdown?.value || 1);
+    });
+
+    frames.forEach((frame) => {
+        const levelDropdown = frame.querySelector('.level-dropdown');
+        if (!levelDropdown) return;
+
+        const currentValue = parseInt(levelDropdown.value || 1);
+
+        // Clear and repopulate dropdown options
+        levelDropdown.innerHTML = '';
+        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
+            const level = index + 1;
+
+            // Exclude levels already selected, except the current value
+            if (selectedLevels.includes(level) && level !== currentValue) return;
+
+            const option = document.createElement('option');
+            option.value = level;
+            option.textContent = `Level ${level}`;
+            if (level === currentValue) option.selected = true;
+            levelDropdown.appendChild(option);
+        });
+    });
+}
+
+// Helper function to handle highlighting and preserving values
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
 function addHighlightBehavior(inputField, type) {
     // Function to handle highlighting consistently
@@ -383,7 +453,6 @@ function addHighlightBehavior(inputField, type) {
             inputField.select(); // Ensure all text is selected
         }, 0); // Execute after other events
     });
-}
 
 // Units Input Field
 const unitsInput = document.createElement('input');
