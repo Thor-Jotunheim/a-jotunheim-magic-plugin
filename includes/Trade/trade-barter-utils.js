@@ -230,32 +230,41 @@ export function addItemToContainer(item, containerId) {
 
     // Gather existing levels for the current item
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
-    const existingLevels = existingItems.map((itemFrame) =>
+    const existingLevels = existingItems.map(itemFrame =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
     );
 
-    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+    const hasLevelPrices = ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some(
+        (key) => item[key] > 0
+    );
 
-    // Create the item frame
+    if (hasLevelPrices && existingLevels.length >= 5) {
+        console.warn(`All levels for "${item.item_name}" are already in the container.`);
+        return;
+    }
+
     const itemFrame = document.createElement('div');
     itemFrame.className = 'item-frame';
     itemFrame.dataset.itemId = item.prefab_name;
 
+    // Image
     const img = document.createElement('img');
     img.src = `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name}.png`;
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
+    // Remove Button
     const removeButton = document.createElement('button');
     removeButton.textContent = 'X';
     removeButton.className = 'remove-item';
     removeButton.onclick = () => {
         itemFrame.remove();
-        updateLevelDropdowns(containerId, item.prefab_name); // Update dropdowns dynamically
+        updateLevelDropdowns(containerId, item.prefab_name);
         updateTotals();
     };
     itemFrame.appendChild(removeButton);
 
+    // Item Name
     const itemName = document.createElement('h3');
     itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
@@ -263,7 +272,9 @@ export function addItemToContainer(item, containerId) {
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    // Add level dropdown if applicable
+    // Level Dropdown
+    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+
     if (hasMultipleLevels) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
@@ -273,7 +284,7 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.width = '100px';
         levelDropdown.style.height = '25px';
 
-        // Populate level dropdown with available levels
+        // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0 && !existingLevels.includes(index + 1)) {
                 const option = document.createElement('option');
@@ -289,45 +300,69 @@ export function addItemToContainer(item, containerId) {
         }
 
         levelDropdown.addEventListener('change', () => {
-            updateLevelDropdowns(containerId, item.prefab_name); // Update dropdowns dynamically
+            updateLevelDropdowns(containerId, item.prefab_name);
             updateTotals();
         });
 
         inputContainer.appendChild(levelDropdown);
     }
 
-    // Add units input
+    // Units Input Field
     const unitsInput = document.createElement('input');
-    unitsInput.type = 'text';
+    unitsInput.type = 'text'; // Allow appending text like "unit(s)"
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'item-input units-input';
+    unitsInput.style.fontSize = '11px';
+    unitsInput.style.width = '75px';
+    unitsInput.style.height = '30px';
+    unitsInput.style.marginRight = '2px';
+
+    // Attach highlighting and blur behavior
     addHighlightBehavior(unitsInput, 'units');
+    unitsInput.dataset.previousValue = ''; // Initialize the previous value
     inputContainer.appendChild(unitsInput);
 
-    // Add stacks input if stack_size > 1
+    // Stacks Input Field (only if stack_size > 1)
     if (item.stack_size > 1) {
         const stacksInput = document.createElement('input');
-        stacksInput.type = 'text';
+        stacksInput.type = 'text'; // Allow appending text like "stack(s)"
         stacksInput.placeholder = 'Stacks';
         stacksInput.className = 'item-input stacks-input';
+        stacksInput.style.fontSize = '11px';
+        stacksInput.style.width = '75px';
+        stacksInput.style.height = '30px';
+
+        // Attach highlighting and blur behavior
         addHighlightBehavior(stacksInput, 'stacks');
+        stacksInput.dataset.previousValue = ''; // Initialize the previous value
         inputContainer.appendChild(stacksInput);
     }
 
-    // Add discount input if undercut is enabled
+    // Discount Input Field (only if undercut is enabled)
     if (parseInt(item.undercut) === 1) {
         const discountInput = document.createElement('input');
-        discountInput.type = 'text';
+        discountInput.type = 'text'; // Allow appending "%" to numeric input
         discountInput.placeholder = 'Discount %';
         discountInput.className = 'item-input discount-input';
+        discountInput.style.display = 'block'; // Makes the input take a full-width block
+        discountInput.style.margin = '0 auto'; // Centers the block within the container
+        discountInput.style.fontSize = '9px';
+        discountInput.style.width = '100px';
+        discountInput.style.height = '30px';
+
+        // Attach highlighting and blur behavior
         addHighlightBehavior(discountInput, 'discount');
-        inputContainer.appendChild(discountInput);
+        discountInput.dataset.previousValue = ''; // Initialize the previous value
+        inputContainer.appendChild(discountInput); // Append to the inputContainer
     }
 
-    itemFrame.appendChild(inputContainer);
-    lastPanel.appendChild(itemFrame);
+    // Ensure the inputContainer is properly appended
+    if (!itemFrame.contains(inputContainer)) {
+        itemFrame.appendChild(inputContainer);
+    }
 
-    // Update dropdown options dynamically after adding the new item
+    // Append the frame and update dropdowns/totals
+    lastPanel.appendChild(itemFrame);
     updateLevelDropdowns(containerId, item.prefab_name);
     updateTotals();
 }
