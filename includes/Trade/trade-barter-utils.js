@@ -332,18 +332,23 @@ export function addItemToContainer(item, containerId) {
         const discountInput = document.createElement('input');
         discountInput.type = 'number';
         discountInput.placeholder = 'Discount %';
-        discountInput.style.marginRight = '5px';
         discountInput.className = 'item-input discount-input';
+        
+        // Updated styling for centering
+        discountInput.style.display = 'block'; // Makes the input take a full-width block
+        discountInput.style.margin = '0 auto'; // Centers the block within the container
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '75px';
+        discountInput.style.width = '80px';
         discountInput.style.height = '30px';
         discountInput.min = 0;
         discountInput.max = 40;
+
         discountInput.addEventListener('input', () => {
             if (discountInput.value < 0) discountInput.value = 0; // Prevent negative values
             if (discountInput.value > 40) discountInput.value = 40; // Cap discount at 40%
             updateTotals();
         });
+
         inputContainer.appendChild(discountInput);
     }
 
