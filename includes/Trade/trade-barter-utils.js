@@ -1,3 +1,6 @@
+// Global variable to hold items data
+let itemsData = [];
+
 // Fetch items from the API
 export async function fetchItems() {
     console.log('Fetching items from API...');
