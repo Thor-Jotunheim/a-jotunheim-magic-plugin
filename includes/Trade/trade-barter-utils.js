@@ -304,7 +304,7 @@ export function addItemToContainer(item, containerId) {
 
     // Units Input Field
 const unitsInput = document.createElement('input');
-unitsInput.type = 'text'; // Use 'text' instead of 'number' to allow appending text like "unit(s)"
+unitsInput.type = 'text'; // Allow appending text like "unit(s)"
 unitsInput.placeholder = 'Units';
 unitsInput.className = 'item-input units-input';
 unitsInput.style.fontSize = '11px';
@@ -312,15 +312,20 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
-unitsInput.addEventListener('blur', (e) => {
-    let value = e.target.value.replace(/ unit\(s\)/i, '').trim(); // Remove "unit(s)" if already present
-    if (value !== '' && !isNaN(value)) {
-        e.target.value = `${parseInt(value)} unit(s)`; // Format value with "unit(s)"
-    }
+// Event listeners for formatting
+unitsInput.addEventListener('focus', (e) => {
+    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for clean input
+    e.target.value = value;
 });
 
-unitsInput.addEventListener('focus', (e) => {
-    e.target.value = e.target.value.replace(/ unit\(s\)/i, '').trim(); // Remove "unit(s)" when focused
+unitsInput.addEventListener('blur', (e) => {
+    const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove any existing "unit(s)" for parsing
+    if (value !== '' && !isNaN(value)) {
+        const numericValue = parseInt(value);
+        e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`; // Append "unit" or "units"
+    } else {
+        e.target.value = ''; // Clear invalid input
+    }
 });
 
 inputContainer.appendChild(unitsInput);
@@ -328,57 +333,66 @@ inputContainer.appendChild(unitsInput);
 // Stacks Input Field (only if stack_size > 1)
 if (item.stack_size > 1) {
     const stacksInput = document.createElement('input');
-    stacksInput.type = 'text'; // Use 'text' instead of 'number' to allow appending text like "stack(s)"
+    stacksInput.type = 'text'; // Allow appending text like "stack(s)"
     stacksInput.placeholder = 'Stacks';
     stacksInput.className = 'item-input stacks-input';
     stacksInput.style.fontSize = '11px';
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
+    // Event listeners for formatting
+    stacksInput.addEventListener('focus', (e) => {
+        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for clean input
+        e.target.value = value;
+    });
+
     stacksInput.addEventListener('blur', (e) => {
-        let value = e.target.value.replace(/ stack\(s\)/i, '').trim(); // Remove "stack(s)" if already present
+        const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove any existing "stack(s)" for parsing
         if (value !== '' && !isNaN(value)) {
-            e.target.value = `${parseInt(value)} stack(s)`; // Format value with "stack(s)"
+            const numericValue = parseInt(value);
+            e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Append "stack" or "stacks"
+        } else {
+            e.target.value = ''; // Clear invalid input
         }
     });
 
-    stacksInput.addEventListener('focus', (e) => {
-        e.target.value = e.target.value.replace(/ stack\(s\)/i, '').trim(); // Remove "stack(s)" when focused
-    });
-
     inputContainer.appendChild(stacksInput);
+} else {
+    console.log(`Hiding Stacks field for item "${item.item_name}" because stack_size is 1.`);
 }
 
-// Discount Input Field
+// Discount Input Field (only if undercut === 1)
 if (parseInt(item.undercut) === 1) {
     const discountInput = document.createElement('input');
-    discountInput.type = 'text'; // Use 'text' to allow appending the '%' symbol
+    discountInput.type = 'number'; // Only allow numeric input
     discountInput.placeholder = 'Discount %';
     discountInput.className = 'item-input discount-input';
-    discountInput.style.display = 'block';
-    discountInput.style.margin = '0 auto';
+    discountInput.style.display = 'block'; // Makes the input take a full-width block
+    discountInput.style.margin = '0 auto'; // Centers the block within the container
     discountInput.style.fontSize = '9px';
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
     discountInput.min = 0;
     discountInput.max = 40;
 
-    discountInput.addEventListener('blur', (e) => {
-        let value = e.target.value.replace('%', '').trim(); // Remove '%' if already present
+    // Event listeners for validation
+    discountInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace('%', '').trim(); // Remove "%" for clean input
         if (value !== '' && !isNaN(value)) {
             let numericValue = parseFloat(value);
             if (numericValue < 0) numericValue = 0; // Prevent negative values
             if (numericValue > 40) numericValue = 40; // Cap at 40%
-            e.target.value = `${numericValue}%`; // Format value with "%"
+            e.target.value = numericValue; // Just set the value as is
+        } else {
+            e.target.value = ''; // Clear invalid input
         }
-    });
-
-    discountInput.addEventListener('focus', (e) => {
-        e.target.value = e.target.value.replace('%', '').trim(); // Remove "%" when focused
     });
 
     inputContainer.appendChild(discountInput);
 }
+
+// Append the inputContainer to the itemFrame
+itemFrame.appendChild(inputContainer);
 
     lastPanel.appendChild(itemFrame);
     updateTotals();
