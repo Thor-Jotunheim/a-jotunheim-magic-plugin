@@ -45,7 +45,7 @@ export async function fetchItems() {
     }
 }
 
-import { fetchItems, populateItemList, addItemToContainer } from 'https://jotun.games/wp-content/plugins/a-jotunheim-magic-plugin/includes/Trade/trade-barter-utils.js';
+import { populateItemList, addItemToContainer } from 'https://jotun.games/wp-content/plugins/a-jotunheim-magic-plugin/includes/Trade/trade-barter-utils.js';
 
 // Populate an accordion list with items
 export function populateItemList(containerId, itemsData, searchQuery, addItemCallback) {
