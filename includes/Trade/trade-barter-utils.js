@@ -1,20 +1,42 @@
 // Fetch items from the API
-async function fetchItems(apiUrl) {
+async function fetchItems() {
     try {
-        const response = await fetch(apiUrl);
+        const response = await fetch('https://jotun.games/wp-json/jotunheim-magic/v1/items');
         const data = await response.json();
 
-        console.log('API Response:', data); // Log API response
+        console.log('API Response:', data); // Debugging the fetched data
 
         if (Array.isArray(data)) {
-            return data;
+            itemsData = data; // Populate the global variable
+
+            // Populate the accordion lists
+            populateItemList('item-list-accordion', itemsData, '', addItemToContainer);
+            populateItemList('item-list-accordion-2', itemsData, '', addItemToContainer);
+
+            // Add event listeners for search functionality
+            const searchBar1 = document.getElementById('search-bar-1');
+            const searchBar2 = document.getElementById('search-bar-2');
+
+            if (searchBar1) {
+                searchBar1.addEventListener('input', (event) => {
+                    populateItemList('item-list-accordion', itemsData, event.target.value, addItemToContainer);
+                });
+            } else {
+                console.error('Search bar 1 not found.');
+            }
+
+            if (searchBar2) {
+                searchBar2.addEventListener('input', (event) => {
+                    populateItemList('item-list-accordion-2', itemsData, event.target.value, addItemToContainer);
+                });
+            } else {
+                console.error('Search bar 2 not found.');
+            }
         } else {
-            console.error('Unexpected data format:', data);
-            return [];
+            console.error('Error fetching items: Unexpected data format or empty response', data);
         }
     } catch (error) {
         console.error('Error fetching items:', error);
-        return [];
     }
 }
 
