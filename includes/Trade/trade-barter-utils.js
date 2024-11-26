@@ -330,7 +330,7 @@ function addHighlightBehavior(inputField, type) {
                 const numericValue = parseInt(value, 10);
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
             } else {
-                e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 1 stack
+                e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 0 stack
             }
         } else if (type === 'discount') {
             // Format discount
@@ -351,7 +351,7 @@ function addHighlightBehavior(inputField, type) {
         if (type === 'units' || type === 'stacks') {
             // Prevent non-numeric values for units and stacks
             if (isNaN(rawValue)) {
-                e.target.value = e.target.dataset.previousValue || '1'; // Default to 1
+                e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
             }
         } else if (type === 'discount') {
             // Prevent non-numeric values for discount
@@ -369,7 +369,7 @@ function addHighlightBehavior(inputField, type) {
             inputField.select(); // Ensure all text is selected
         }, 0); // Execute after other events
     });
-    }
+}
 
 // Units Input Field
 const unitsInput = document.createElement('input');
