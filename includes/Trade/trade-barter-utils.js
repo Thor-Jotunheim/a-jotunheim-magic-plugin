@@ -283,6 +283,8 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '100px';
         levelDropdown.style.height = '25px';
+        levelDropdown.style.marginBottom = '2px'; // Add spacing between stacked fields
+
 
         // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
@@ -354,7 +356,7 @@ inputContainer.style.alignItems = 'flex-start'; // Align fields to the left
         discountInput.style.margin = '0 auto'; // Centers the block within the container
         discountInput.style.fontSize = '9px';
         discountInput.style.width = '100px';
-        discountInput.style.height = '30px';
+        discountInput.style.height = '25px';
 
         // Attach highlighting and blur behavior
         addHighlightBehavior(discountInput, 'discount');
