@@ -368,7 +368,6 @@ export function addItemToContainer(item, containerId) {
     updateTotals();
 }
 
-// Helper function to handle highlighting and preserving values
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
 function addHighlightBehavior(inputField, type) {
     // Function to handle highlighting consistently
@@ -392,9 +391,9 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = e.target.dataset.previousValue || '1 unit'; // Default to 1 unit
             }
         } else if (type === 'stacks') {
-            // Format stacks
+            // Format stacks (allow decimals)
             if (!isNaN(value) && value !== '') {
-                const numericValue = parseInt(value, 10);
+                const numericValue = parseFloat(value); // Parse as float for decimal values
                 e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`;
             } else {
                 e.target.value = e.target.dataset.previousValue || '0 stack'; // Default to 0 stack
@@ -418,10 +417,19 @@ function addHighlightBehavior(inputField, type) {
 
     inputField.addEventListener('input', (e) => {
         const rawValue = e.target.value.trim();
-        if (type === 'units' || type === 'stacks') {
-            // Prevent non-numeric values for units and stacks
+        if (type === 'units') {
+            // Prevent non-numeric values for units
             if (isNaN(rawValue)) {
-                e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
+                e.target.value = e.target.dataset.previousValue || '1';
+            } else {
+                e.target.dataset.previousValue = e.target.value; // Save valid value immediately
+                updateTotals(); // Trigger totals update dynamically
+            }
+        } else if (type === 'stacks') {
+            // Prevent non-numeric values for stacks (allow decimals)
+            const cleanValue = rawValue;
+            if (isNaN(cleanValue)) {
+                e.target.value = e.target.dataset.previousValue || '0';
             } else {
                 e.target.dataset.previousValue = e.target.value; // Save valid value immediately
                 updateTotals(); // Trigger totals update dynamically
