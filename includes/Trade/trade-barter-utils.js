@@ -4,44 +4,28 @@ async function fetchItems() {
         const response = await fetch('https://jotun.games/wp-json/jotunheim-magic/v1/items');
         const data = await response.json();
 
-        console.log('API Response:', data); // Debugging the fetched data
-
         if (Array.isArray(data)) {
-            itemsData = data; // Populate the global variable
+            itemsData = data;
+            populateItemList('item-list-accordion', '');
+            populateItemList('item-list-accordion-2', '');
 
-            // Populate the accordion lists
-            populateItemList('item-list-accordion', itemsData, '', addItemToContainer);
-            populateItemList('item-list-accordion-2', itemsData, '', addItemToContainer);
-
-            // Add event listeners for search functionality
-            const searchBar1 = document.getElementById('search-bar-1');
-            const searchBar2 = document.getElementById('search-bar-2');
-
-            if (searchBar1) {
-                searchBar1.addEventListener('input', (event) => {
-                    populateItemList('item-list-accordion', itemsData, event.target.value, addItemToContainer);
-                });
-            } else {
-                console.error('Search bar 1 not found.');
-            }
-
-            if (searchBar2) {
-                searchBar2.addEventListener('input', (event) => {
-                    populateItemList('item-list-accordion-2', itemsData, event.target.value, addItemToContainer);
-                });
-            } else {
-                console.error('Search bar 2 not found.');
-            }
+            // Add event listeners to search bars
+            document.getElementById('search-bar-1').addEventListener('input', (event) => {
+                populateItemList('item-list-accordion', event.target.value);
+            });
+            document.getElementById('search-bar-2').addEventListener('input', (event) => {
+                populateItemList('item-list-accordion-2', event.target.value);
+            });
         } else {
-            console.error('Error fetching items: Unexpected data format or empty response', data);
+            console.error("Error fetching items:", data.message || "Unexpected data format");
         }
     } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error("Error fetching items:", error);
     }
 }
 
 // Populate an accordion list with items
-export function populateItemList(containerId, itemsData, searchQuery, addItemCallback) {
+export function populateItemList(containerId, searchQuery) {
     const itemListAccordion = document.getElementById(containerId);
     if (!itemListAccordion) {
         console.error(`Accordion container with ID "${containerId}" not found.`);
@@ -91,7 +75,7 @@ export function populateItemList(containerId, itemsData, searchQuery, addItemCal
             const itemButton = document.createElement('div');
             itemButton.className = 'item-button';
             itemButton.textContent = sanitizedItemName;
-            itemButton.onclick = () => addItemCallback(item); // Use callback to handle item addition
+            itemButton.onclick = () => addItemToContainer(item, containerId.includes('2') ? 'selected-items-container-2' : 'selected-items-container');
             content.appendChild(itemButton);
         });
 
@@ -111,7 +95,6 @@ export function populateItemList(containerId, itemsData, searchQuery, addItemCal
         // Add click event to toggle accordion sections
         header.onclick = () => toggleAccordion(section);
     });
-}
 
 // Adjust page height dynamically
 export function adjustPageHeight(pageId) {
