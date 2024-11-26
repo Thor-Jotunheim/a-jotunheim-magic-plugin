@@ -310,7 +310,7 @@ export function addItemToContainer(item, containerId) {
     if (hasLevelPrices) {
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
-        levelDropdown.style.fontSize = '7px';
+        levelDropdown.style.fontSize = '6px';
         levelDropdown.style.width = '70px';
         levelDropdown.style.height = '30px';
         levelDropdown.style.marginRight = '5px';
