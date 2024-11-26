@@ -291,8 +291,7 @@ export function addItemToContainer(item, containerId) {
         // Center the text while accounting for the arrow
         levelDropdown.style.textAlign = 'center'; // Center the text
         levelDropdown.style.textAlignLast = 'center'; // Center selected option
-        levelDropdown.style.textIndent = '50px'; // Add space on the left for proper alignment
-    
+            
         // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0 && !existingLevels.includes(index + 1)) {
