@@ -338,7 +338,7 @@ export function addItemToContainer(item, containerId) {
         discountInput.style.display = 'block'; // Makes the input take a full-width block
         discountInput.style.margin = '0 auto'; // Centers the block within the container
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '80px';
+        discountInput.style.width = '75px';
         discountInput.style.height = '25px';
         discountInput.min = 0;
         discountInput.max = 40;
