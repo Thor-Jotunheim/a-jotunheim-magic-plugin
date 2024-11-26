@@ -366,9 +366,9 @@ function addHighlightBehavior(inputField, type) {
             }
         } else if (type === 'discount') {
             // Prevent non-numeric values for discount
-            const cleanValue = rawValue.replace('%', '').trim();
+            const cleanValue = rawValue.replace('% Discount', '').trim();
             if (isNaN(cleanValue)) {
-                e.target.value = e.target.dataset.previousValue || '0%';
+                e.target.value = e.target.dataset.previousValue || '0% Discount';
             } else {
                 e.target.dataset.previousValue = e.target.value; // Save valid value immediately
                 updateTotals(); // Trigger totals update dynamically
