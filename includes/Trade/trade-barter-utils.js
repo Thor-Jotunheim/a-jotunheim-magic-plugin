@@ -18,16 +18,12 @@ export async function fetchItems() {
             populateItemList('item-list-accordion-2', itemsData, '', addItemToContainer);
 
             // Add event listeners for search functionality
-            const searchBar1 = document.getElementById('item-search').addEventListener('input', () => {
-                filterItems('item-list-accordion');
-            });
-            const searchBar2 = document.getElementById('item-search-2').addEventListener('input', () => {
-                filterItems('item-list-accordion-2');
-            });
+            const searchBar1 = document.getElementById('item-search');
+            const searchBar2 = document.getElementById('item-search-2');
 
             if (searchBar1) {
                 searchBar1.addEventListener('input', (event) => {
-                    populateItemList('item-list-accordion', itemsData, event.target.value, addItemToContainer);
+                    filterItems('item-list-accordion');
                 });
             } else {
                 console.error('Search bar 1 not found.');
@@ -35,7 +31,7 @@ export async function fetchItems() {
 
             if (searchBar2) {
                 searchBar2.addEventListener('input', (event) => {
-                    populateItemList('item-list-accordion-2', itemsData, event.target.value, addItemToContainer);
+                    filterItems('item-list-accordion-2');
                 });
             } else {
                 console.error('Search bar 2 not found.');
