@@ -289,11 +289,10 @@ itemFrame.appendChild(removeButton);
         const levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.display = 'block';
-        levelDropdown.style.margin = '0 auto';
         levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
-        levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
+        levelDropdown.style.marginBottom = '2px'; // Add spacing between stacked fields
 
 
         // Populate dropdown options
