@@ -276,7 +276,7 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.display = 'block'; // Makes the input take a full-width block
         levelDropdown.style.margin = '0 auto'; // Centers the block within the container
         levelDropdown.style.fontSize = '11px';
-        levelDropdown.style.width = '75px';
+        levelDropdown.style.width = '100px';
         levelDropdown.style.height = '25px';
 
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
@@ -299,7 +299,7 @@ export function addItemToContainer(item, containerId) {
     unitsInput.className = 'item-input units-input';
     unitsInput.style.fontSize = '11px';
     unitsInput.style.width = '75px';
-    unitsInput.style.height = '25px';
+    unitsInput.style.height = '30px';
     //unitsInput.style.marginRight = '5px';
     unitsInput.addEventListener('input', updateTotals);
     unitsInput.addEventListener('input', (e) => {
@@ -315,7 +315,7 @@ export function addItemToContainer(item, containerId) {
         stacksInput.className = 'item-input stacks-input';
         stacksInput.style.fontSize = '11px';
         stacksInput.style.width = '75px';
-        stacksInput.style.height = '25px';
+        stacksInput.style.height = '30px';
         stacksInput.addEventListener('input', updateTotals);
         stacksInput.addEventListener('input', (e) => {
             if (e.target.value < 0) e.target.value = 0; // Prevent negative values
@@ -338,8 +338,8 @@ export function addItemToContainer(item, containerId) {
         discountInput.style.display = 'block'; // Makes the input take a full-width block
         discountInput.style.margin = '0 auto'; // Centers the block within the container
         discountInput.style.fontSize = '9px';
-        discountInput.style.width = '85px';
-        discountInput.style.height = '25px';
+        discountInput.style.width = '100px';
+        discountInput.style.height = '30px';
         discountInput.min = 0;
         discountInput.max = 40;
 
