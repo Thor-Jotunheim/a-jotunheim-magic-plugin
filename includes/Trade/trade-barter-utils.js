@@ -312,20 +312,29 @@ unitsInput.style.width = '75px';
 unitsInput.style.height = '30px';
 unitsInput.style.marginRight = '2px';
 
+// Track previous value to prevent unnecessary clearing
+let previousUnitsValue = '';
+
 // Highlight text on focus
 unitsInput.addEventListener('focus', (e) => {
-    e.target.select(); // Highlight all text in the field
+    previousUnitsValue = e.target.value; // Store the current value
+    setTimeout(() => {
+        e.target.select(); // Highlight all text reliably
+    }, 0);
 });
 
 // Update value with "unit(s)" on blur
 unitsInput.addEventListener('blur', (e) => {
     const value = e.target.value.replace(/ unit\(s\)/, '').trim(); // Remove "unit(s)" for parsing
-    if (value !== '' && !isNaN(value)) {
+    if (value === '' && previousUnitsValue !== '') {
+        e.target.value = previousUnitsValue; // Restore the previous value if unchanged
+    } else if (!isNaN(value) && value !== '') {
         const numericValue = parseInt(value, 10);
         e.target.value = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`; // Add appropriate suffix
     } else {
         e.target.value = ''; // Clear invalid input
     }
+    previousUnitsValue = ''; // Reset the previous value
 });
 
 inputContainer.appendChild(unitsInput);
@@ -340,20 +349,29 @@ if (item.stack_size > 1) {
     stacksInput.style.width = '75px';
     stacksInput.style.height = '30px';
 
+    // Track previous value to prevent unnecessary clearing
+    let previousStacksValue = '';
+
     // Highlight text on focus
     stacksInput.addEventListener('focus', (e) => {
-        e.target.select(); // Highlight all text in the field
+        previousStacksValue = e.target.value; // Store the current value
+        setTimeout(() => {
+            e.target.select(); // Highlight all text reliably
+        }, 0);
     });
 
     // Update value with "stack(s)" on blur
     stacksInput.addEventListener('blur', (e) => {
         const value = e.target.value.replace(/ stack\(s\)/, '').trim(); // Remove "stack(s)" for parsing
-        if (value !== '' && !isNaN(value)) {
+        if (value === '' && previousStacksValue !== '') {
+            e.target.value = previousStacksValue; // Restore the previous value if unchanged
+        } else if (!isNaN(value) && value !== '') {
             const numericValue = parseInt(value, 10);
             e.target.value = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Add appropriate suffix
         } else {
             e.target.value = ''; // Clear invalid input
         }
+        previousStacksValue = ''; // Reset the previous value
     });
 
     inputContainer.appendChild(stacksInput);
@@ -373,15 +391,23 @@ if (parseInt(item.undercut) === 1) {
     discountInput.style.width = '100px';
     discountInput.style.height = '30px';
 
+    // Track previous value to prevent unnecessary clearing
+    let previousDiscountValue = '';
+
     // Highlight text on focus
     discountInput.addEventListener('focus', (e) => {
-        e.target.select(); // Highlight all text in the field
+        previousDiscountValue = e.target.value; // Store the current value
+        setTimeout(() => {
+            e.target.select(); // Highlight all text reliably
+        }, 0);
     });
 
     // Update value with "%" on blur
     discountInput.addEventListener('blur', (e) => {
         const value = e.target.value.replace('%', '').trim(); // Remove "%" for parsing
-        if (value !== '' && !isNaN(value)) {
+        if (value === '' && previousDiscountValue !== '') {
+            e.target.value = previousDiscountValue; // Restore the previous value if unchanged
+        } else if (!isNaN(value) && value !== '') {
             let numericValue = parseFloat(value);
             if (numericValue < 0) numericValue = 0; // Prevent negative values
             if (numericValue > 40) numericValue = 40; // Cap at 40%
@@ -389,6 +415,7 @@ if (parseInt(item.undercut) === 1) {
         } else {
             e.target.value = ''; // Clear invalid input
         }
+        previousDiscountValue = ''; // Reset the previous value
     });
 
     inputContainer.appendChild(discountInput);
