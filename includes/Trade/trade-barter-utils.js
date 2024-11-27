@@ -235,10 +235,10 @@ export function addItemToContainer(item, containerId) {
         return;
     }
 
-    // Prevent exceeding 5 levels for items with multiple levels
     const existingLevels = existingItems.map(itemFrame =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
     );
+
     if (hasLevelPrices && existingLevels.length >= 5) {
         console.warn(`All levels for "${item.item_name}" are already in the container.`);
         return;
@@ -274,17 +274,8 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(removeButton);
 
     const itemName = document.createElement('h3');
-    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
+    itemName.textContent = `${sanitizeItemName(item.item_name || 'Unknown Item')} (Cost: ${item.unit_price || 0} Coins)`;
     itemFrame.appendChild(itemName);
-
-    // Create the cost display below the item name
-    const costDisplay = document.createElement('p');
-    costDisplay.textContent = `Cost: ${item.unit_price || 0} Coins`;
-    costDisplay.style.fontSize = '12px';
-    costDisplay.style.color = '#333';
-    costDisplay.style.textAlign = 'center';
-    costDisplay.style.marginTop = '5px';
-    itemFrame.appendChild(costDisplay);
 
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
@@ -301,12 +292,22 @@ export function addItemToContainer(item, containerId) {
 
         // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0) {
+            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
                 const option = document.createElement('option');
                 option.value = index + 1;
                 option.textContent = `Level ${index + 1}`;
                 levelDropdown.appendChild(option);
             }
+        });
+
+        if (!levelDropdown.options.length) {
+            console.warn(`No available levels for "${item.item_name}".`);
+            return;
+        }
+
+        levelDropdown.addEventListener('change', () => {
+            updateLevelDropdowns(containerId, item.prefab_name);
+            updateTotals();
         });
 
         inputContainer.appendChild(levelDropdown);
@@ -365,34 +366,140 @@ export function addItemToContainer(item, containerId) {
     }
 
     lastPanel.appendChild(itemFrame);
+    updateLevelDropdowns(containerId, item.prefab_name);
+    updateTotals();
+}
 
-    // Function to update the cost based on user input
-    const updateCostDisplay = () => {
-        const level = parseInt(levelDropdown?.value || 1);
-        const units = parseInt(unitsInput?.value || 1);
-        const stacks = parseFloat(stacksInput?.value || 0);
-        const discount = parseFloat(discountInput?.value || 0);
-
-        const priceKey = level === 1 ? 'unit_price' : `lv${level}_price`;
-        const price = parseFloat(item[priceKey]) || 0;
-        const stackSize = parseFloat(item.stack_size) || 1;
-
-        const discountedPrice = price * ((100 - discount) / 100);
-        const totalCost = (units * discountedPrice) + (stacks * stackSize * discountedPrice);
-
-        // Update the cost in the item frame
-        costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
+// Helper function to handle highlighting, preserving values, and updating totals dynamically
+function addHighlightBehavior(inputField, type) {
+    // Function to handle highlighting consistently
+    const highlightText = (e) => {
+        setTimeout(() => {
+            e.target.select(); // Select all text in the field
+        }, 0); // Ensures it happens after focus
     };
 
-    // Update cost when input changes
-    levelDropdown?.addEventListener('change', updateCostDisplay);
-    unitsInput?.addEventListener('input', updateCostDisplay);
-    stacksInput?.addEventListener('input', updateCostDisplay);
-    discountInput?.addEventListener('input', updateCostDisplay);
+    inputField.addEventListener('focus', highlightText);
 
-    // Trigger updates for totals
-    updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals(); // Recalculate totals after item cost updates
+    inputField.addEventListener('blur', (e) => {
+        let value = e.target.value.trim();
+
+        if (type === 'units') {
+            // Format units
+            if (value.startsWith('.')) {
+                value = '0' + value; // Add leading zero for decimals
+            }
+            if (!isNaN(value) && value !== '') {
+                const numericValue = parseInt(value, 10);
+                e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
+                e.target.value = e.target.dataset.previousValue; // Display formatted value
+            } else {
+                // Revert to previous value or default
+                e.target.value = e.target.dataset.previousValue || '1 unit';
+            }
+        } else if (type === 'stacks') {
+            // Format stacks (allow decimals)
+            if (value.startsWith('.')) {
+                value = '0' + value; // Add leading zero for decimals
+            }
+            if (!isNaN(value) && value !== '') {
+                const numericValue = parseFloat(value).toFixed(2); // Ensure two decimal precision
+                e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Save formatted value
+                e.target.value = e.target.dataset.previousValue; // Display formatted value
+            } else if (value === '') {
+                // If empty, revert to previous value or default to 0 stack
+                e.target.value = e.target.dataset.previousValue || '0 stack';
+            } else {
+                // In case of invalid input, fallback to the last valid value or default
+                e.target.value = e.target.dataset.previousValue || '0 stack';
+            }
+        } else if (type === 'discount') {
+            // Format discount
+            if (value.startsWith('.')) {
+                value = '0' + value; // Add leading zero for decimals
+            }
+            if (!isNaN(value) && value !== '') {
+                const numericValue = Math.min(Math.max(parseInt(value, 10), 0), 40); // Clamp between 0 and 40
+                e.target.dataset.previousValue = `${numericValue}% Discount`;
+                e.target.value = e.target.dataset.previousValue; // Display formatted value
+            } else {
+                // Revert to previous value or default
+                e.target.value = e.target.dataset.previousValue || '0% Discount';
+            }
+        }
+
+        // Trigger totals update immediately
+        updateTotals();
+    });
+
+    inputField.addEventListener('input', (e) => {
+        let rawValue = e.target.value.trim();
+        if (rawValue.startsWith('.')) {
+            rawValue = '0' + rawValue; // Add leading zero for decimals
+        }
+        if (type === 'units' || type === 'stacks') {
+            // Prevent non-numeric values
+            if (isNaN(rawValue)) {
+                e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
+            } else {
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
+                updateTotals(); // Trigger totals update dynamically
+            }
+        } else if (type === 'discount') {
+            // Prevent non-numeric values
+            const cleanValue = rawValue.replace('% Discount', '').trim();
+            if (isNaN(cleanValue)) {
+                e.target.value = e.target.dataset.previousValue || '0% Discount';
+            } else {
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
+                updateTotals(); // Trigger totals update dynamically
+            }
+        }
+    });
+
+    // Ensure proper behavior on mousedown (for rapid clicking)
+    inputField.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // Prevent default cursor placement
+        setTimeout(() => {
+            inputField.select(); // Ensure all text is selected
+        }, 0); // Execute after other events
+    });
+}
+
+function updateLevelDropdowns(containerId, prefabName) {
+    const container = document.getElementById(containerId);
+    const frames = Array.from(container.querySelectorAll(`.item-frame[data-item-id="${prefabName}"]`));
+
+    // Gather all selected levels
+    const selectedLevels = frames.map((frame) => {
+        const levelDropdown = frame.querySelector('.level-dropdown');
+        return parseInt(levelDropdown?.value || 1);
+    });
+
+    frames.forEach((frame) => {
+        const levelDropdown = frame.querySelector('.level-dropdown');
+        if (!levelDropdown) return;
+
+        const currentValue = parseInt(levelDropdown.value || 1);
+
+        // Clear and repopulate dropdown options
+        levelDropdown.innerHTML = '';
+
+        // Iterate through levels and add only valid ones
+        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
+            const level = index + 1;
+            const itemData = itemsData.find((item) => item.prefab_name === prefabName);
+
+            // Ensure the level has a valid price and is not already selected
+            if (itemData && itemData[key] > 0 && (!selectedLevels.includes(level) || level === currentValue)) {
+                const option = document.createElement('option');
+                option.value = level;
+                option.textContent = `Level ${level}`;
+                if (level === currentValue) option.selected = true;
+                levelDropdown.appendChild(option);
+            }
+        });
+    });
 }
 
 // Function to update totals
