@@ -290,9 +290,9 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
 
-        // Populate dropdown options
+        // Populate dropdown options with valid prices
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
+            if (item[key] > 0) { // Include only levels with a valid price
                 const option = document.createElement('option');
                 option.value = index + 1;
                 option.textContent = `Level ${index + 1}`;
