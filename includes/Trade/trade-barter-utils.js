@@ -361,26 +361,23 @@ export function addItemToContainer(item, containerId) {
     };
 
     // Add event listeners to inputs to dynamically update cost
-    levelDropdown?.addEventListener('change', updateCostDisplay);
-    unitsInput?.addEventListener('input', updateCostDisplay);
-    stacksInput?.addEventListener('input', updateCostDisplay);
-    discountInput?.addEventListener('input', updateCostDisplay);
+    levelDropdown.addEventListener('change', updateCostDisplay);
+    unitsInput.addEventListener('input', updateCostDisplay);
+    stacksInput.addEventListener('input', updateCostDisplay);
+    discountInput.addEventListener('input', updateCostDisplay);
 
     // Trigger updates for totals
     updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals(); // Recalculate totals
+    updateTotals(); // Recalculate totals after item cost updates
 }
 
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
 function addHighlightBehavior(inputField, type) {
-    // Function to handle highlighting consistently
-    const highlightText = (e) => {
+    inputField.addEventListener('focus', (e) => {
         setTimeout(() => {
             e.target.select(); // Select all text in the field
         }, 0); // Ensures it happens after focus
-    };
-
-    inputField.addEventListener('focus', highlightText);
+    });
 
     inputField.addEventListener('blur', (e) => {
         let value = e.target.value.trim();
