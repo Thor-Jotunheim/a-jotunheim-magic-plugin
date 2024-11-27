@@ -125,7 +125,16 @@ export function filterItems(containerId) {
         return;
     }
 
-    const query = searchInput.value.toLowerCase();
+    let query = searchInput.value.trim();
+    const isExactMatch = query.startsWith('"') && query.endsWith('"');
+
+    if (isExactMatch) {
+        // Remove the quotes from the query for exact matching
+        query = query.substring(1, query.length - 1).toLowerCase();
+    } else {
+        query = query.toLowerCase();
+    }
+
     const container = document.getElementById(containerId);
     if (!container) {
         console.error(`Accordion container with ID "${containerId}" not found.`);
@@ -141,11 +150,22 @@ export function filterItems(containerId) {
         // Check if any items in the section match the query
         let hasMatch = false;
         items.forEach(item => {
-            if (item.textContent.toLowerCase().includes(query)) {
-                item.style.display = ''; // Show item
-                hasMatch = true;
+            const itemName = item.textContent.toLowerCase();
+
+            if (isExactMatch) {
+                if (itemName === query) {
+                    item.style.display = ''; // Show item
+                    hasMatch = true;
+                } else {
+                    item.style.display = 'none'; // Hide item
+                }
             } else {
-                item.style.display = 'none'; // Hide item
+                if (itemName.includes(query)) {
+                    item.style.display = ''; // Show item
+                    hasMatch = true;
+                } else {
+                    item.style.display = 'none'; // Hide item
+                }
             }
         });
 
