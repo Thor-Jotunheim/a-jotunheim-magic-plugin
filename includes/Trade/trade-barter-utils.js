@@ -274,7 +274,7 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(removeButton);
 
     const itemName = document.createElement('h3');
-    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
+    itemName.textContent = `${sanitizeItemName(item.item_name || 'Unknown Item')} (Cost: ${item.unit_price || 0} Coins)`;
     itemFrame.appendChild(itemName);
 
     const inputContainer = document.createElement('div');
