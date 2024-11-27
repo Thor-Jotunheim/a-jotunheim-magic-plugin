@@ -444,6 +444,65 @@ function addHighlightBehavior(inputField, type, updateCostDisplay) {
     inputField.addEventListener('focus', highlightText);
 
     inputField.addEventListener('blur', (e) => {
+        processInputValue(e, type, updateCostDisplay);
+    });
+
+    inputField.addEventListener('input', (e) => {
+        let rawValue = e.target.value.trim();
+        if (rawValue.startsWith('.')) {
+            rawValue = '0' + rawValue; // Add leading zero for decimals
+        }
+        if (type === 'units' || type === 'stacks') {
+            // Prevent non-numeric values
+            if (isNaN(rawValue)) {
+                e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
+            } else {
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
+
+                // Call updateCostDisplay after adjusting the value
+                if (typeof updateCostDisplay === 'function') {
+                    updateCostDisplay();
+                }
+
+                updateTotals(); // Trigger totals update dynamically
+            }
+        } else if (type === 'discount') {
+            // Prevent non-numeric values
+            const cleanValue = rawValue.replace('% Discount', '').trim();
+            if (isNaN(cleanValue)) {
+                e.target.value = e.target.dataset.previousValue || '0% Discount';
+            } else {
+                e.target.dataset.previousValue = rawValue; // Save valid value immediately
+
+                // Call updateCostDisplay after adjusting the value
+                if (typeof updateCostDisplay === 'function') {
+                    updateCostDisplay();
+                }
+
+                updateTotals(); // Trigger totals update dynamically
+            }
+        }
+    });
+
+    // Handle Enter key press
+    inputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault(); // Prevent default behavior, like form submission
+            processInputValue(e, type, updateCostDisplay);
+            inputField.blur(); // Optionally, remove focus from the input field
+        }
+    });
+
+    // Ensure proper behavior on mousedown (for rapid clicking)
+    inputField.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // Prevent default cursor placement
+        setTimeout(() => {
+            inputField.select(); // Ensure all text is selected
+        }, 0); // Execute after other events
+    });
+
+    // Helper function to process input value
+    function processInputValue(e, type, updateCostDisplay) {
         let value = e.target.value.trim();
 
         if (type === 'units') {
@@ -497,52 +556,7 @@ function addHighlightBehavior(inputField, type, updateCostDisplay) {
 
         // Trigger totals update immediately
         updateTotals();
-    });
-
-    inputField.addEventListener('input', (e) => {
-        let rawValue = e.target.value.trim();
-        if (rawValue.startsWith('.')) {
-            rawValue = '0' + rawValue; // Add leading zero for decimals
-        }
-        if (type === 'units' || type === 'stacks') {
-            // Prevent non-numeric values
-            if (isNaN(rawValue)) {
-                e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
-            } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-
-                // Call updateCostDisplay after adjusting the value
-                if (typeof updateCostDisplay === 'function') {
-                    updateCostDisplay();
-                }
-
-                updateTotals(); // Trigger totals update dynamically
-            }
-        } else if (type === 'discount') {
-            // Prevent non-numeric values
-            const cleanValue = rawValue.replace('% Discount', '').trim();
-            if (isNaN(cleanValue)) {
-                e.target.value = e.target.dataset.previousValue || '0% Discount';
-            } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-
-                // Call updateCostDisplay after adjusting the value
-                if (typeof updateCostDisplay === 'function') {
-                    updateCostDisplay();
-                }
-
-                updateTotals(); // Trigger totals update dynamically
-            }
-        }
-    });
-
-    // Ensure proper behavior on mousedown (for rapid clicking)
-    inputField.addEventListener('mousedown', (e) => {
-        e.preventDefault(); // Prevent default cursor placement
-        setTimeout(() => {
-            inputField.select(); // Ensure all text is selected
-        }, 0); // Execute after other events
-    });
+    }
 }
 
 function updateLevelDropdowns(containerId, prefabName) {
