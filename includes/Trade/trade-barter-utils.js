@@ -182,19 +182,43 @@ export function filterItems(containerId) {
     });
 }
 
-function handleEnterKey(accordionId, containerId) {
+function handleEnterKey(accordionId, containerId, searchInputId) {
     const accordion = document.getElementById(accordionId);
+    const searchInput = document.getElementById(searchInputId);
+
     if (!accordion) {
         console.error(`Accordion with ID "${accordionId}" not found.`);
         return;
     }
 
+    if (!searchInput) {
+        console.error(`Search input with ID "${searchInputId}" not found.`);
+        return;
+    }
+
+    // Get the search query
+    let query = searchInput.value.trim().toLowerCase();
+
     // Get all visible item buttons
     const visibleItems = accordion.querySelectorAll('.item-button:not([style*="display: none"])');
 
-    if (visibleItems.length === 1) {
+    // Try to find an exact match among visible items
+    let exactMatchItem = null;
+    visibleItems.forEach(item => {
+        const itemName = item.textContent.trim().toLowerCase();
+        if (itemName === query) {
+            exactMatchItem = item;
+        }
+    });
+
+    if (exactMatchItem) {
+        // Simulate a click on the exact match item
+        exactMatchItem.click();
+    } else if (visibleItems.length === 1) {
         // Simulate a click on the only visible item
         visibleItems[0].click();
+    } else {
+        // Do nothing
     }
 }
 
