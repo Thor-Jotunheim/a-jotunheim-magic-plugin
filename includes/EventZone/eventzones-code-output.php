@@ -120,7 +120,8 @@ function generate_eventzones_code_output() {
             $shape = isset($zone['shape']) && $zone['shape'] === 'Circle' ? 'ZoneShape.Circle' : 'ZoneShape.Square';
 
             // Start of Zone definition
-            echo "Zone $name = new Zone(\"$name\", $priority, $radius, $location, $shape)\n{\n";
+            $string_name = $zone['string_name'] ?? $name; // Use string_name if available, fallback to name
+            echo "Zone $name = new Zone(\"$string_name\", $priority, $radius, $location, $shape)\n{\n";
 
             // Optional attributes (display these first)
             if (!empty($zone['enterText'])) echo "    enterText = \"{$zone['enterText']}\",\n";
