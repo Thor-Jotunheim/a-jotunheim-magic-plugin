@@ -28,9 +28,9 @@ export async function fetchItems() {
 
                 // Add keydown event listener for Enter key
                 searchBar1.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.keyCode === 13) {
-                    handleEnterKey('item-list-accordion', 'selected-items-container');
-                }
+                    if (event.key === 'Enter' || event.keyCode === 13) {
+                        handleEnterKey('item-list-accordion', 'selected-items-container', 'item-search');
+                    }
                 });
                 } else {
                     console.error('Search bar 1 not found.');
@@ -44,7 +44,7 @@ export async function fetchItems() {
                     // Add keydown event listener for Enter key
                     searchBar2.addEventListener('keydown', (event) => {
                         if (event.key === 'Enter' || event.keyCode === 13) {
-                            handleEnterKey('item-list-accordion-2', 'selected-items-container-2');
+                            handleEnterKey('item-list-accordion-2', 'selected-items-container-2', 'item-search-2');
                         }
                     });
                 } else {
