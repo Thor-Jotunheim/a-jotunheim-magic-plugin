@@ -230,7 +230,6 @@ export function addItemToContainer(item, containerId) {
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
     const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
-    // Prevent duplicate items without multiple levels
     if (!hasLevelPrices && existingItems.length > 0) {
         console.warn(`Item "${item.item_name}" already exists and cannot be added multiple times.`);
         return;
@@ -376,7 +375,6 @@ export function addItemToContainer(item, containerId) {
         itemFrame.appendChild(inputContainer);
     }
 
-    // Add the item frame to the panel
     lastPanel.appendChild(itemFrame);
 
     // Function to update the cost based on user input
@@ -393,6 +391,7 @@ export function addItemToContainer(item, containerId) {
         const discountedPrice = price * ((100 - discount) / 100);
         const totalCost = (units * discountedPrice) + (stacks * stackSize * discountedPrice);
 
+        // Update the cost in the item frame
         costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
     };
 
