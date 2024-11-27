@@ -253,26 +253,6 @@ export function addItemToContainer(item, containerId) {
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'X';
-    removeButton.className = 'remove-item';
-    removeButton.style.position = 'absolute';
-    removeButton.style.top = '10px';
-    removeButton.style.right = '10px';
-    removeButton.style.width = '20px';
-    removeButton.style.height = '20px';
-    removeButton.style.border = 'none';
-    removeButton.style.background = '#FF4C4C';
-    removeButton.style.color = 'white';
-    removeButton.style.borderRadius = '50%';
-    removeButton.style.cursor = 'pointer';
-    removeButton.onclick = () => {
-        itemFrame.remove();
-        updateLevelDropdowns(containerId, item.prefab_name);
-        updateTotals();
-    };
-    itemFrame.appendChild(removeButton);
-
     const itemName = document.createElement('h3');
     itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
@@ -395,7 +375,7 @@ export function addItemToContainer(item, containerId) {
         costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
     };
 
-    // Update cost when input changes
+    // Add event listeners to inputs to dynamically update cost
     levelDropdown?.addEventListener('change', updateCostDisplay);
     unitsInput?.addEventListener('input', updateCostDisplay);
     stacksInput?.addEventListener('input', updateCostDisplay);
