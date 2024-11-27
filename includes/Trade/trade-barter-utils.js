@@ -253,6 +253,26 @@ export function addItemToContainer(item, containerId) {
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'X';
+    removeButton.className = 'remove-item';
+    removeButton.style.position = 'absolute';
+    removeButton.style.top = '10px';
+    removeButton.style.right = '10px';
+    removeButton.style.width = '20px';
+    removeButton.style.height = '20px';
+    removeButton.style.border = 'none';
+    removeButton.style.background = '#FF4C4C';
+    removeButton.style.color = 'white';
+    removeButton.style.borderRadius = '50%';
+    removeButton.style.cursor = 'pointer';
+    removeButton.onclick = () => {
+        itemFrame.remove();
+        updateLevelDropdowns(containerId, item.prefab_name);
+        updateTotals();
+    };
+    itemFrame.appendChild(removeButton);
+
     const itemName = document.createElement('h3');
     itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
@@ -269,24 +289,39 @@ export function addItemToContainer(item, containerId) {
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    const levelDropdown = document.createElement('select');
-    levelDropdown.className = 'level-dropdown';
-    levelDropdown.style.display = 'block';
-    levelDropdown.style.fontSize = '10px';
-    levelDropdown.style.width = '120px';
-    levelDropdown.style.height = '25px';
+    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
-    // Populate dropdown options
-    ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-        if (item[key] > 0) {
-            const option = document.createElement('option');
-            option.value = index + 1;
-            option.textContent = `Level ${index + 1}`;
-            levelDropdown.appendChild(option);
+    if (hasMultipleLevels) {
+        const levelDropdown = document.createElement('select');
+        levelDropdown.className = 'level-dropdown';
+        levelDropdown.style.display = 'block';
+        levelDropdown.style.fontSize = '10px';
+        levelDropdown.style.width = '120px';
+        levelDropdown.style.height = '25px';
+
+        // Populate dropdown options
+        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
+            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = `Level ${index + 1}`;
+                levelDropdown.appendChild(option);
+            }
+        });
+
+        if (!levelDropdown.options.length) {
+            console.warn(`No available levels for "${item.item_name}".`);
+            return;
         }
-    });
 
-    inputContainer.appendChild(levelDropdown);
+        levelDropdown.addEventListener('change', () => {
+            updateCostDisplay(); // Update cost when level changes
+            updateLevelDropdowns(containerId, item.prefab_name);
+            updateTotals(); // Recalculate totals when level changes
+        });
+
+        inputContainer.appendChild(levelDropdown);
+    }
 
     const unitsInput = document.createElement('input');
     unitsInput.type = 'text';
@@ -360,7 +395,7 @@ export function addItemToContainer(item, containerId) {
         costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
     };
 
-    // Add event listeners to inputs to dynamically update cost
+    // Update cost when input changes
     levelDropdown?.addEventListener('change', updateCostDisplay);
     unitsInput?.addEventListener('input', updateCostDisplay);
     stacksInput?.addEventListener('input', updateCostDisplay);
