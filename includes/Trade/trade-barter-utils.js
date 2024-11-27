@@ -261,27 +261,6 @@ export function addItemToContainer(item, containerId) {
     itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
 
-    // Add a remove button
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'X';
-    removeButton.className = 'remove-item';
-    removeButton.style.position = 'absolute';
-    removeButton.style.top = '10px';
-    removeButton.style.right = '10px';
-    removeButton.style.width = '20px';
-    removeButton.style.height = '20px';
-    removeButton.style.border = 'none';
-    removeButton.style.background = '#FF4C4C';
-    removeButton.style.color = 'white';
-    removeButton.style.borderRadius = '50%';
-    removeButton.style.cursor = 'pointer';
-    removeButton.onclick = () => {
-        itemFrame.remove();
-        updateLevelDropdowns(containerId, item.prefab_name);
-        updateTotals();
-    };
-    itemFrame.appendChild(removeButton);
-
     // Add cost display
     const costDisplay = document.createElement('p');
     costDisplay.textContent = `Cost: ${item.unit_price || 0} Coins`;
@@ -289,6 +268,7 @@ export function addItemToContainer(item, containerId) {
     costDisplay.style.color = '#333';
     costDisplay.style.textAlign = 'center';
     costDisplay.style.marginTop = '5px';
+    costDisplay.className = 'cost-display';
     itemFrame.appendChild(costDisplay);
 
     // Add level, units, stacks, and discount inputs
@@ -305,7 +285,6 @@ export function addItemToContainer(item, containerId) {
             levelDropdown.appendChild(option);
         }
     });
-    levelDropdown.addEventListener('change', updateTotals);
     inputContainer.appendChild(levelDropdown);
 
     const unitsInput = document.createElement('input');
@@ -313,7 +292,6 @@ export function addItemToContainer(item, containerId) {
     unitsInput.placeholder = 'Units';
     unitsInput.className = 'units-input';
     unitsInput.value = 1;
-    unitsInput.addEventListener('input', updateTotals);
     inputContainer.appendChild(unitsInput);
 
     const stacksInput = document.createElement('input');
@@ -321,7 +299,6 @@ export function addItemToContainer(item, containerId) {
     stacksInput.placeholder = 'Stacks';
     stacksInput.className = 'stacks-input';
     stacksInput.value = 0;
-    stacksInput.addEventListener('input', updateTotals);
     inputContainer.appendChild(stacksInput);
 
     const discountInput = document.createElement('input');
@@ -329,7 +306,6 @@ export function addItemToContainer(item, containerId) {
     discountInput.placeholder = 'Discount %';
     discountInput.className = 'discount-input';
     discountInput.value = 0;
-    discountInput.addEventListener('input', updateTotals);
     inputContainer.appendChild(discountInput);
 
     inputContainer.style.display = 'flex';
@@ -338,10 +314,48 @@ export function addItemToContainer(item, containerId) {
     inputContainer.style.gap = '5px';
     itemFrame.appendChild(inputContainer);
 
+    // Function to update the cost dynamically within the .item-frame
+    const updateCostDisplay = () => {
+        const level = parseInt(levelDropdown?.value || 1);
+        const units = parseInt(unitsInput?.value || 1);
+        const stacks = parseFloat(stacksInput?.value || 0);
+        const discount = parseFloat(discountInput?.value || 0);
+
+        const priceKey = level === 1 ? 'unit_price' : `lv${level}_price`;
+        const price = parseFloat(item[priceKey]) || 0;
+        const stackSize = parseFloat(item.stack_size) || 1;
+
+        const discountedPrice = price * ((100 - discount) / 100);
+        const totalCost = (units * discountedPrice) + (stacks * stackSize * discountedPrice);
+
+        costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
+    };
+
+    // Add event listeners to inputs to dynamically update cost
+    levelDropdown.addEventListener('change', () => {
+        updateCostDisplay();
+        updateTotals(); // Update overall totals
+    });
+
+    unitsInput.addEventListener('input', () => {
+        updateCostDisplay();
+        updateTotals(); // Update overall totals
+    });
+
+    stacksInput.addEventListener('input', () => {
+        updateCostDisplay();
+        updateTotals(); // Update overall totals
+    });
+
+    discountInput.addEventListener('input', () => {
+        updateCostDisplay();
+        updateTotals(); // Update overall totals
+    });
+
     // Append the item frame to the panel
     lastPanel.appendChild(itemFrame);
 
-    // Trigger updates
+    // Trigger updates for totals
     updateLevelDropdowns(containerId, item.prefab_name);
     updateTotals();
 }
