@@ -228,9 +228,7 @@ export function addItemToContainer(item, containerId) {
     }
 
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
-    const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some(
-        (key) => item[key] !== null && item[key] !== undefined && item[key] > 0
-    );
+    const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
     if (!hasLevelPrices && existingItems.length > 0) {
         console.warn(`Item "${item.item_name}" already exists and cannot be added multiple times.`);
@@ -282,9 +280,7 @@ export function addItemToContainer(item, containerId) {
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some(
-        (key) => item[key] !== null && item[key] !== undefined && item[key] > 0
-    );
+    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
     if (hasMultipleLevels) {
         const levelDropdown = document.createElement('select');
@@ -294,9 +290,9 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
 
-        // Populate dropdown options with valid prices
+        // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] !== null && item[key] !== undefined && item[key] > 0) { // Include only levels with a valid price > 0
+            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
                 const option = document.createElement('option');
                 option.value = index + 1;
                 option.textContent = `Level ${index + 1}`;
