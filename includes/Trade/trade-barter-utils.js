@@ -25,23 +25,37 @@ export async function fetchItems() {
                 searchBar1.addEventListener('input', (event) => {
                     filterItems('item-list-accordion');
                 });
-            } else {
-                console.error('Search bar 1 not found.');
-            }
 
-            if (searchBar2) {
-                searchBar2.addEventListener('input', (event) => {
-                    filterItems('item-list-accordion-2');
+                // Add keydown event listener for Enter key
+                searchBar1.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.keyCode === 13) {
+                    handleEnterKey('item-list-accordion', 'selected-items-container');
+                }
                 });
-            } else {
-                console.error('Search bar 2 not found.');
+                } else {
+                    console.error('Search bar 1 not found.');
+                }
+
+                if (searchBar2) {
+                    searchBar2.addEventListener('input', (event) => {
+                        filterItems('item-list-accordion-2');
+                    });
+
+                    // Add keydown event listener for Enter key
+                    searchBar2.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' || event.keyCode === 13) {
+                            handleEnterKey('item-list-accordion-2', 'selected-items-container-2');
+                        }
+                    });
+                } else {
+                    console.error('Search bar 2 not found.');
+                }
+                } else {
+                    console.error('Error fetching items: Unexpected data format or empty response', data);
+                }
+            } catch (error) {
+                console.error('Error fetching items:', error);
             }
-        } else {
-            console.error('Error fetching items: Unexpected data format or empty response', data);
-        }
-    } catch (error) {
-        console.error('Error fetching items:', error);
-    }
 }
 
 // Populate an accordion list with items
@@ -146,6 +160,22 @@ export function filterItems(containerId) {
             content.style.display = 'none'; // Ensure content is hidden
         }
     });
+}
+
+function handleEnterKey(accordionId, containerId) {
+    const accordion = document.getElementById(accordionId);
+    if (!accordion) {
+        console.error(`Accordion with ID "${accordionId}" not found.`);
+        return;
+    }
+
+    // Get all visible item buttons
+    const visibleItems = accordion.querySelectorAll('.item-button:not([style*="display: none"])');
+
+    if (visibleItems.length === 1) {
+        // Simulate a click on the only visible item
+        visibleItems[0].click();
+    }
 }
 
 // Toggle accordion sections
