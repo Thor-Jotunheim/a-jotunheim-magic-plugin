@@ -230,29 +230,38 @@ export function addItemToContainer(item, containerId) {
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
     const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
+    // Prevent duplicate items without multiple levels
     if (!hasLevelPrices && existingItems.length > 0) {
         console.warn(`Item "${item.item_name}" already exists and cannot be added multiple times.`);
         return;
     }
 
+    // Prevent exceeding 5 levels for items with multiple levels
     const existingLevels = existingItems.map(itemFrame =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
     );
-
     if (hasLevelPrices && existingLevels.length >= 5) {
         console.warn(`All levels for "${item.item_name}" are already in the container.`);
         return;
     }
 
+    // Create the item frame
     const itemFrame = document.createElement('div');
     itemFrame.className = 'item-frame';
     itemFrame.dataset.itemId = item.prefab_name;
 
+    // Add item image
     const img = document.createElement('img');
     img.src = `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name}.png`;
     img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(img);
 
+    // Add item name
+    const itemName = document.createElement('h3');
+    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
+    itemFrame.appendChild(itemName);
+
+    // Add a remove button
     const removeButton = document.createElement('button');
     removeButton.textContent = 'X';
     removeButton.className = 'remove-item';
@@ -273,99 +282,66 @@ export function addItemToContainer(item, containerId) {
     };
     itemFrame.appendChild(removeButton);
 
-    const itemName = document.createElement('h3');
-    itemName.textContent = `${sanitizeItemName(item.item_name || 'Unknown Item')} (Cost: ${item.unit_price || 0} Coins)`;
-    itemFrame.appendChild(itemName);
+    // Add cost display
+    const costDisplay = document.createElement('p');
+    costDisplay.textContent = `Cost: ${item.unit_price || 0} Coins`;
+    costDisplay.style.fontSize = '12px';
+    costDisplay.style.color = '#333';
+    costDisplay.style.textAlign = 'center';
+    costDisplay.style.marginTop = '5px';
+    itemFrame.appendChild(costDisplay);
 
+    // Add level, units, stacks, and discount inputs
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
 
-    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
-
-    if (hasMultipleLevels) {
-        const levelDropdown = document.createElement('select');
-        levelDropdown.className = 'level-dropdown';
-        levelDropdown.style.display = 'block';
-        levelDropdown.style.fontSize = '10px';
-        levelDropdown.style.width = '120px';
-        levelDropdown.style.height = '25px';
-
-        // Populate dropdown options
-        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
-                const option = document.createElement('option');
-                option.value = index + 1;
-                option.textContent = `Level ${index + 1}`;
-                levelDropdown.appendChild(option);
-            }
-        });
-
-        if (!levelDropdown.options.length) {
-            console.warn(`No available levels for "${item.item_name}".`);
-            return;
+    const levelDropdown = document.createElement('select');
+    levelDropdown.className = 'level-dropdown';
+    ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
+        if (item[key] > 0) {
+            const option = document.createElement('option');
+            option.value = index + 1;
+            option.textContent = `Level ${index + 1}`;
+            levelDropdown.appendChild(option);
         }
-
-        levelDropdown.addEventListener('change', () => {
-            updateLevelDropdowns(containerId, item.prefab_name);
-            updateTotals();
-        });
-
-        inputContainer.appendChild(levelDropdown);
-    }
+    });
+    levelDropdown.addEventListener('change', updateTotals);
+    inputContainer.appendChild(levelDropdown);
 
     const unitsInput = document.createElement('input');
-    unitsInput.type = 'text';
+    unitsInput.type = 'number';
     unitsInput.placeholder = 'Units';
-    unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '120px';
-    unitsInput.style.height = '25px';
-    unitsInput.style.textAlign = 'center';
-
-    addHighlightBehavior(unitsInput, 'units');
-    unitsInput.dataset.previousValue = '';
+    unitsInput.className = 'units-input';
+    unitsInput.value = 1;
+    unitsInput.addEventListener('input', updateTotals);
     inputContainer.appendChild(unitsInput);
 
-    if (item.stack_size > 1) {
-        const stacksInput = document.createElement('input');
-        stacksInput.type = 'text';
-        stacksInput.placeholder = 'Stacks';
-        stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '120px';
-        stacksInput.style.height = '25px';
-        stacksInput.style.textAlign = 'center';
+    const stacksInput = document.createElement('input');
+    stacksInput.type = 'number';
+    stacksInput.placeholder = 'Stacks';
+    stacksInput.className = 'stacks-input';
+    stacksInput.value = 0;
+    stacksInput.addEventListener('input', updateTotals);
+    inputContainer.appendChild(stacksInput);
 
-        addHighlightBehavior(stacksInput, 'stacks');
-        stacksInput.dataset.previousValue = '';
-        inputContainer.appendChild(stacksInput);
-    }
+    const discountInput = document.createElement('input');
+    discountInput.type = 'number';
+    discountInput.placeholder = 'Discount %';
+    discountInput.className = 'discount-input';
+    discountInput.value = 0;
+    discountInput.addEventListener('input', updateTotals);
+    inputContainer.appendChild(discountInput);
 
     inputContainer.style.display = 'flex';
     inputContainer.style.flexDirection = 'column';
     inputContainer.style.alignItems = 'center';
-    inputContainer.style.gap = '2px';
+    inputContainer.style.gap = '5px';
+    itemFrame.appendChild(inputContainer);
 
-    if (parseInt(item.undercut) === 1) {
-        const discountInput = document.createElement('input');
-        discountInput.type = 'text';
-        discountInput.placeholder = 'Discount %';
-        discountInput.className = 'item-input discount-input';
-        discountInput.style.fontSize = '11px';
-        discountInput.style.width = '120px';
-        discountInput.style.height = '25px';
-        discountInput.style.textAlign = 'center';
-
-        addHighlightBehavior(discountInput, 'discount');
-        discountInput.dataset.previousValue = '';
-        inputContainer.appendChild(discountInput);
-    }
-
-    if (!itemFrame.contains(inputContainer)) {
-        itemFrame.appendChild(inputContainer);
-    }
-
+    // Append the item frame to the panel
     lastPanel.appendChild(itemFrame);
+
+    // Trigger updates
     updateLevelDropdowns(containerId, item.prefab_name);
     updateTotals();
 }
