@@ -333,7 +333,18 @@ export function addItemToContainer(item, containerId) {
     unitsInput.style.height = '25px';
     unitsInput.style.textAlign = 'center';
 
-    addHighlightBehavior(unitsInput, 'units');
+    // For unitsInput
+        addHighlightBehavior(unitsInput, 'units', updateCostDisplay);
+
+        // For stacksInput (if it exists)
+        if (stacksInput) {
+            addHighlightBehavior(stacksInput, 'stacks', updateCostDisplay);
+        }
+
+        // For discountInput (if it exists)
+        if (discountInput) {
+            addHighlightBehavior(discountInput, 'discount', updateCostDisplay);
+        }
     unitsInput.dataset.previousValue = '';
     inputContainer.appendChild(unitsInput);
 
