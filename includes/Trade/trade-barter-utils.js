@@ -274,7 +274,7 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(removeButton);
 
     const itemName = document.createElement('h3');
-    itemName.textContent = `${sanitizeItemName(item.item_name || 'Unknown Item')} (Cost: ${item.unit_price || 0} Coins)`;
+    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
 
     const inputContainer = document.createElement('div');
@@ -484,20 +484,17 @@ function updateLevelDropdowns(containerId, prefabName) {
 
         // Clear and repopulate dropdown options
         levelDropdown.innerHTML = '';
-
-        // Iterate through levels and add only valid ones
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             const level = index + 1;
-            const itemData = itemsData.find((item) => item.prefab_name === prefabName);
 
-            // Ensure the level has a valid price and is not already selected
-            if (itemData && itemData[key] > 0 && (!selectedLevels.includes(level) || level === currentValue)) {
-                const option = document.createElement('option');
-                option.value = level;
-                option.textContent = `Level ${level}`;
-                if (level === currentValue) option.selected = true;
-                levelDropdown.appendChild(option);
-            }
+            // Exclude levels already selected, except the current value
+            if (selectedLevels.includes(level) && level !== currentValue) return;
+
+            const option = document.createElement('option');
+            option.value = level;
+            option.textContent = `Level ${level}`;
+            if (level === currentValue) option.selected = true;
+            levelDropdown.appendChild(option);
         });
     });
 }
