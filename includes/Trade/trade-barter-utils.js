@@ -274,8 +274,18 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(removeButton);
 
     const itemName = document.createElement('h3');
-    itemName.textContent = `${sanitizeItemName(item.item_name || 'Unknown Item')} (Cost: ${item.unit_price || 0} Coins)`;
+    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
+
+    // Add a cost display below the item name
+    const costDisplay = document.createElement('p');
+    costDisplay.textContent = `Total: ${item.unit_price || 0} Coins`;
+    costDisplay.style.fontSize = '12px';
+    costDisplay.style.color = '#333';
+    costDisplay.style.textAlign = 'center';
+    costDisplay.style.marginTop = '5px';
+    costDisplay.className = 'cost-display';
+    itemFrame.appendChild(costDisplay);
 
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
@@ -306,6 +316,7 @@ export function addItemToContainer(item, containerId) {
         }
 
         levelDropdown.addEventListener('change', () => {
+            updateCost();
             updateLevelDropdowns(containerId, item.prefab_name);
             updateTotals();
         });
@@ -364,6 +375,29 @@ export function addItemToContainer(item, containerId) {
     if (!itemFrame.contains(inputContainer)) {
         itemFrame.appendChild(inputContainer);
     }
+
+    // Function to update the cost dynamically
+    const updateCost = () => {
+        const level = parseInt(levelDropdown?.value || 1);
+        const units = parseInt(unitsInput?.value || 1);
+        const stacks = parseInt(stacksInput?.value || 0);
+        const discount = parseFloat(discountInput?.value || 0);
+
+        const priceKey = level === 1 ? 'unit_price' : `lv${level}_price`;
+        const price = parseFloat(item[priceKey]) || 0;
+        const stackSize = parseFloat(item.stack_size) || 1;
+
+        const discountedPrice = price * ((100 - discount) / 100);
+        const total = (units * discountedPrice) + (stacks * stackSize * discountedPrice);
+
+        costDisplay.textContent = `Total: ${total.toFixed(2)} Coins`;
+    };
+
+    // Add event listeners to update cost dynamically
+    levelDropdown?.addEventListener('change', updateCost);
+    unitsInput?.addEventListener('input', updateCost);
+    stacksInput?.addEventListener('input', updateCost);
+    discountInput?.addEventListener('input', updateCost);
 
     lastPanel.appendChild(itemFrame);
     updateLevelDropdowns(containerId, item.prefab_name);
