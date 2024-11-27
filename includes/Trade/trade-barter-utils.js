@@ -235,10 +235,10 @@ export function addItemToContainer(item, containerId) {
         return;
     }
 
+    // Prevent exceeding 5 levels for items with multiple levels
     const existingLevels = existingItems.map(itemFrame =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
     );
-
     if (hasLevelPrices && existingLevels.length >= 5) {
         console.warn(`All levels for "${item.item_name}" are already in the container.`);
         return;
@@ -274,8 +274,17 @@ export function addItemToContainer(item, containerId) {
     itemFrame.appendChild(removeButton);
 
     const itemName = document.createElement('h3');
-    itemName.textContent = `${sanitizeItemName(item.item_name || 'Unknown Item')} (Cost: ${item.unit_price || 0} Coins)`;
+    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
     itemFrame.appendChild(itemName);
+
+    // Create the cost display below the item name
+    const costDisplay = document.createElement('p');
+    costDisplay.textContent = `Cost: ${item.unit_price || 0} Coins`;
+    costDisplay.style.fontSize = '12px';
+    costDisplay.style.color = '#333';
+    costDisplay.style.textAlign = 'center';
+    costDisplay.style.marginTop = '5px';
+    itemFrame.appendChild(costDisplay);
 
     const inputContainer = document.createElement('div');
     inputContainer.className = 'input-container';
@@ -306,8 +315,9 @@ export function addItemToContainer(item, containerId) {
         }
 
         levelDropdown.addEventListener('change', () => {
+            updateCostDisplay(); // Update cost when level changes
             updateLevelDropdowns(containerId, item.prefab_name);
-            updateTotals();
+            updateTotals(); // Recalculate totals when level changes
         });
 
         inputContainer.appendChild(levelDropdown);
@@ -366,8 +376,34 @@ export function addItemToContainer(item, containerId) {
     }
 
     lastPanel.appendChild(itemFrame);
+
+    // Function to update the cost based on user input
+    const updateCostDisplay = () => {
+        const level = parseInt(levelDropdown?.value || 1);
+        const units = parseInt(unitsInput?.value || 1);
+        const stacks = parseFloat(stacksInput?.value || 0);
+        const discount = parseFloat(discountInput?.value || 0);
+
+        const priceKey = level === 1 ? 'unit_price' : `lv${level}_price`;
+        const price = parseFloat(item[priceKey]) || 0;
+        const stackSize = parseFloat(item.stack_size) || 1;
+
+        const discountedPrice = price * ((100 - discount) / 100);
+        const totalCost = (units * discountedPrice) + (stacks * stackSize * discountedPrice);
+
+        // Update the cost in the item frame
+        costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
+    };
+
+    // Update cost when input changes
+    levelDropdown?.addEventListener('change', updateCostDisplay);
+    unitsInput?.addEventListener('input', updateCostDisplay);
+    stacksInput?.addEventListener('input', updateCostDisplay);
+    discountInput?.addEventListener('input', updateCostDisplay);
+
+    // Trigger updates for totals
     updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals();
+    updateTotals(); // Recalculate totals
 }
 
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
