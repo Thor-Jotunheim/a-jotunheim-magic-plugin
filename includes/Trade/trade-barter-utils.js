@@ -228,12 +228,15 @@ export function addItemToContainer(item, containerId) {
     }
 
     const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
+    const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+
+    if (!hasLevelPrices && existingItems.length > 0) {
+        console.warn(`Item "${item.item_name}" already exists and cannot be added multiple times.`);
+        return;
+    }
+
     const existingLevels = existingItems.map(itemFrame =>
         parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
-    );
-
-    const hasLevelPrices = ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some(
-        (key) => item[key] > 0
     );
 
     if (hasLevelPrices && existingLevels.length >= 5) {
@@ -286,12 +289,7 @@ export function addItemToContainer(item, containerId) {
         levelDropdown.style.fontSize = '10px';
         levelDropdown.style.width = '120px';
         levelDropdown.style.height = '25px';
-        levelDropdown.style.marginBottom = '1px'; // Add spacing between stacked fields
-    
-        // Center the text while accounting for the arrow
-        levelDropdown.style.textAlign = 'center'; // Center the text
-        levelDropdown.style.textAlignLast = 'center'; // Center selected option
-            
+
         // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
             if (item[key] > 0 && !existingLevels.includes(index + 1)) {
@@ -301,17 +299,17 @@ export function addItemToContainer(item, containerId) {
                 levelDropdown.appendChild(option);
             }
         });
-    
+
         if (!levelDropdown.options.length) {
             console.warn(`No available levels for "${item.item_name}".`);
             return;
         }
-    
+
         levelDropdown.addEventListener('change', () => {
             updateLevelDropdowns(containerId, item.prefab_name);
             updateTotals();
         });
-    
+
         inputContainer.appendChild(levelDropdown);
     }
 
@@ -388,6 +386,9 @@ function addHighlightBehavior(inputField, type) {
 
         if (type === 'units') {
             // Format units
+            if (value.startsWith('.')) {
+                value = '0' + value; // Add leading zero for decimals
+            }
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseInt(value, 10);
                 e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
@@ -398,6 +399,9 @@ function addHighlightBehavior(inputField, type) {
             }
         } else if (type === 'stacks') {
             // Format stacks (allow decimals)
+            if (value.startsWith('.')) {
+                value = '0' + value; // Add leading zero for decimals
+            }
             if (!isNaN(value) && value !== '') {
                 const numericValue = parseFloat(value).toFixed(2); // Ensure two decimal precision
                 e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Save formatted value
@@ -411,6 +415,9 @@ function addHighlightBehavior(inputField, type) {
             }
         } else if (type === 'discount') {
             // Format discount
+            if (value.startsWith('.')) {
+                value = '0' + value; // Add leading zero for decimals
+            }
             if (!isNaN(value) && value !== '') {
                 const numericValue = Math.min(Math.max(parseInt(value, 10), 0), 40); // Clamp between 0 and 40
                 e.target.dataset.previousValue = `${numericValue}% Discount`;
@@ -426,7 +433,10 @@ function addHighlightBehavior(inputField, type) {
     });
 
     inputField.addEventListener('input', (e) => {
-        const rawValue = e.target.value.trim();
+        let rawValue = e.target.value.trim();
+        if (rawValue.startsWith('.')) {
+            rawValue = '0' + rawValue; // Add leading zero for decimals
+        }
         if (type === 'units' || type === 'stacks') {
             // Prevent non-numeric values
             if (isNaN(rawValue)) {
