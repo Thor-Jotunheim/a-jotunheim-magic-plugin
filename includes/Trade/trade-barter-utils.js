@@ -209,90 +209,90 @@ export function escapeHtml(unsafe) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-}
-
-export function addItemToContainer(item, containerId) {
-    const wrapper = document.getElementById(containerId);
-    if (!wrapper) {
-        console.error(`Container with ID "${containerId}" not found.`);
-        return;
     }
 
-    let panels = wrapper.querySelectorAll('.selected-items-panel');
-    let lastPanel = panels[panels.length - 1];
+    export function addItemToContainer(item, containerId) {
+        const wrapper = document.getElementById(containerId);
+        if (!wrapper) {
+            console.error(`Container with ID "${containerId}" not found.`);
+            return;
+        }
 
-    if (!lastPanel || lastPanel.children.length >= 8) {
-        lastPanel = document.createElement('div');
-        lastPanel.className = 'selected-items-panel';
-        wrapper.appendChild(lastPanel);
-    }
+        let panels = wrapper.querySelectorAll('.selected-items-panel');
+        let lastPanel = panels[panels.length - 1];
 
-    const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
-    const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+        if (!lastPanel || lastPanel.children.length >= 8) {
+            lastPanel = document.createElement('div');
+            lastPanel.className = 'selected-items-panel';
+            wrapper.appendChild(lastPanel);
+        }
 
-    if (!hasLevelPrices && existingItems.length > 0) {
-        console.warn(`Item "${item.item_name}" already exists and cannot be added multiple times.`);
-        return;
-    }
+        const existingItems = Array.from(wrapper.querySelectorAll(`.item-frame[data-item-id="${item.prefab_name}"]`));
+        const hasLevelPrices = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
 
-    const existingLevels = existingItems.map(itemFrame =>
-        parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
-    );
+        if (!hasLevelPrices && existingItems.length > 0) {
+            console.warn(`Item "${item.item_name}" already exists and cannot be added multiple times.`);
+            return;
+        }
 
-    if (hasLevelPrices && existingLevels.length >= 5) {
-        console.warn(`All levels for "${item.item_name}" are already in the container.`);
-        return;
-    }
+        const existingLevels = existingItems.map(itemFrame =>
+            parseInt(itemFrame.querySelector('.level-dropdown')?.value || 1)
+        );
 
-    const itemFrame = document.createElement('div');
-    itemFrame.className = 'item-frame';
-    itemFrame.dataset.itemId = item.prefab_name;
+        if (hasLevelPrices && existingLevels.length >= 5) {
+            console.warn(`All levels for "${item.item_name}" are already in the container.`);
+            return;
+        }
 
-    const img = document.createElement('img');
-    img.src = `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name}.png`;
-    img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
-    itemFrame.appendChild(img);
+        const itemFrame = document.createElement('div');
+        itemFrame.className = 'item-frame';
+        itemFrame.dataset.itemId = item.prefab_name;
 
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'X';
-    removeButton.className = 'remove-item';
-    removeButton.style.position = 'absolute';
-    removeButton.style.top = '10px';
-    removeButton.style.right = '10px';
-    removeButton.style.width = '20px';
-    removeButton.style.height = '20px';
-    removeButton.style.border = 'none';
-    removeButton.style.background = '#FF4C4C';
-    removeButton.style.color = 'white';
-    removeButton.style.borderRadius = '50%';
-    removeButton.style.cursor = 'pointer';
-    removeButton.onclick = () => {
-        itemFrame.remove();
-        updateLevelDropdowns(containerId, item.prefab_name);
-        updateTotals();
-    };
-    itemFrame.appendChild(removeButton);
+        const img = document.createElement('img');
+        img.src = `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name}.png`;
+        img.alt = sanitizeItemName(item.item_name || 'Unknown Item');
+        itemFrame.appendChild(img);
 
-    const itemName = document.createElement('h3');
-    itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
-    itemFrame.appendChild(itemName);
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'X';
+        removeButton.className = 'remove-item';
+        removeButton.style.position = 'absolute';
+        removeButton.style.top = '10px';
+        removeButton.style.right = '10px';
+        removeButton.style.width = '20px';
+        removeButton.style.height = '20px';
+        removeButton.style.border = 'none';
+        removeButton.style.background = '#FF4C4C';
+        removeButton.style.color = 'white';
+        removeButton.style.borderRadius = '50%';
+        removeButton.style.cursor = 'pointer';
+        removeButton.onclick = () => {
+            itemFrame.remove();
+            updateLevelDropdowns(containerId, item.prefab_name);
+            updateTotals();
+        };
+        itemFrame.appendChild(removeButton);
 
-    // Create the cost display below the item name
-    const costDisplay = document.createElement('p');
-    costDisplay.textContent = `Cost: ${item.unit_price || 0} Coins`;
-    costDisplay.style.fontSize = '12px';
-    costDisplay.style.color = '#333';
-    costDisplay.style.textAlign = 'center';
-    costDisplay.style.marginTop = '5px';
-    itemFrame.appendChild(costDisplay);
+        const itemName = document.createElement('h3');
+        itemName.textContent = sanitizeItemName(item.item_name || 'Unknown Item');
+        itemFrame.appendChild(itemName);
 
-    const inputContainer = document.createElement('div');
-    inputContainer.className = 'input-container';
+        // Create the cost display below the item name
+        const costDisplay = document.createElement('p');
+        costDisplay.textContent = `Cost: ${item.unit_price || 0} Coins`;
+        costDisplay.style.fontSize = '12px';
+        costDisplay.style.color = '#333';
+        costDisplay.style.textAlign = 'center';
+        costDisplay.style.marginTop = '5px';
+        itemFrame.appendChild(costDisplay);
 
-    const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+        const inputContainer = document.createElement('div');
+        inputContainer.className = 'input-container';
 
-    let levelDropdown;
-    if (hasMultipleLevels) {
+        const hasMultipleLevels = ['lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].some((key) => item[key] > 0);
+
+        let levelDropdown;
+        if (hasMultipleLevels) {
         levelDropdown = document.createElement('select');
         levelDropdown.className = 'level-dropdown';
         levelDropdown.style.display = 'block';
@@ -322,71 +322,57 @@ export function addItemToContainer(item, containerId) {
         });
 
         inputContainer.appendChild(levelDropdown);
-    }
-
-    const unitsInput = document.createElement('input');
-    unitsInput.type = 'text';
-    unitsInput.placeholder = 'Units';
-    unitsInput.className = 'item-input units-input';
-    unitsInput.style.fontSize = '11px';
-    unitsInput.style.width = '120px';
-    unitsInput.style.height = '25px';
-    unitsInput.style.textAlign = 'center';
-
-    // For unitsInput
-        addHighlightBehavior(unitsInput, 'units', updateCostDisplay);
-
-        // For stacksInput (if it exists)
-        if (stacksInput) {
-            addHighlightBehavior(stacksInput, 'stacks', updateCostDisplay);
         }
 
-        // For discountInput (if it exists)
-        if (discountInput) {
-            addHighlightBehavior(discountInput, 'discount', updateCostDisplay);
+        const unitsInput = document.createElement('input');
+        unitsInput.type = 'text';
+        unitsInput.placeholder = 'Units';
+        unitsInput.className = 'item-input units-input';
+        unitsInput.style.fontSize = '11px';
+        unitsInput.style.width = '120px';
+        unitsInput.style.height = '25px';
+        unitsInput.style.textAlign = 'center';
+
+        unitsInput.dataset.previousValue = '';
+        inputContainer.appendChild(unitsInput);
+
+        let stacksInput;
+        if (item.stack_size > 1) {
+            stacksInput = document.createElement('input');
+            stacksInput.type = 'text';
+            stacksInput.placeholder = 'Stacks';
+            stacksInput.className = 'item-input stacks-input';
+            stacksInput.style.fontSize = '11px';
+            stacksInput.style.width = '120px';
+            stacksInput.style.height = '25px';
+            stacksInput.style.textAlign = 'center';
+
+            stacksInput.dataset.previousValue = '';
+            inputContainer.appendChild(stacksInput);
         }
-    unitsInput.dataset.previousValue = '';
-    inputContainer.appendChild(unitsInput);
 
-    let stacksInput;
-    if (item.stack_size > 1) {
-        stacksInput = document.createElement('input');
-        stacksInput.type = 'text';
-        stacksInput.placeholder = 'Stacks';
-        stacksInput.className = 'item-input stacks-input';
-        stacksInput.style.fontSize = '11px';
-        stacksInput.style.width = '120px';
-        stacksInput.style.height = '25px';
-        stacksInput.style.textAlign = 'center';
+        inputContainer.style.display = 'flex';
+        inputContainer.style.flexDirection = 'column';
+        inputContainer.style.alignItems = 'center';
+        inputContainer.style.gap = '2px';
 
-        addHighlightBehavior(stacksInput, 'stacks');
-        stacksInput.dataset.previousValue = '';
-        inputContainer.appendChild(stacksInput);
-    }
+        let discountInput;
+        if (parseInt(item.undercut) === 1) {
+            discountInput = document.createElement('input');
+            discountInput.type = 'text';
+            discountInput.placeholder = 'Discount %';
+            discountInput.className = 'item-input discount-input';
+            discountInput.style.fontSize = '11px';
+            discountInput.style.width = '120px';
+            discountInput.style.height = '25px';
+            discountInput.style.textAlign = 'center';
 
-    inputContainer.style.display = 'flex';
-    inputContainer.style.flexDirection = 'column';
-    inputContainer.style.alignItems = 'center';
-    inputContainer.style.gap = '2px';
+            discountInput.dataset.previousValue = '';
+            inputContainer.appendChild(discountInput);
+        }
 
-    let discountInput;
-    if (parseInt(item.undercut) === 1) {
-        discountInput = document.createElement('input');
-        discountInput.type = 'text';
-        discountInput.placeholder = 'Discount %';
-        discountInput.className = 'item-input discount-input';
-        discountInput.style.fontSize = '11px';
-        discountInput.style.width = '120px';
-        discountInput.style.height = '25px';
-        discountInput.style.textAlign = 'center';
-
-        addHighlightBehavior(discountInput, 'discount');
-        discountInput.dataset.previousValue = '';
-        inputContainer.appendChild(discountInput);
-    }
-
-    if (!itemFrame.contains(inputContainer)) {
-        itemFrame.appendChild(inputContainer);
+        if (!itemFrame.contains(inputContainer)) {
+            itemFrame.appendChild(inputContainer);
     }
 
     // Function to update the cost display based on user input
@@ -408,37 +394,46 @@ export function addItemToContainer(item, containerId) {
         costDisplay.textContent = `Cost: ${totalCost.toFixed(2)} Coins`;
     }
 
-    // Attach event listeners to input fields to update cost display
-    unitsInput.addEventListener('input', () => {
-        updateTotals();
+        // Attach event listeners to input fields to update cost display
+        unitsInput.addEventListener('input', () => {
+            updateTotals();
+            updateCostDisplay();
+        });
+
+        stacksInput?.addEventListener('input', () => {
+            updateTotals();
+            updateCostDisplay();
+        });
+
+        discountInput?.addEventListener('input', () => {
+            updateTotals();
+            updateCostDisplay();
+        });
+
+        levelDropdown?.addEventListener('change', () => {
+            updateTotals();
+            updateCostDisplay();
+        });
+
+        // Add highlight behavior with updateCostDisplay callback
+        addHighlightBehavior(unitsInput, 'units', updateCostDisplay);
+        if (stacksInput) {
+            addHighlightBehavior(stacksInput, 'stacks', updateCostDisplay);
+        }
+        if (discountInput) {
+            addHighlightBehavior(discountInput, 'discount', updateCostDisplay);
+        }
+
+        // Initial call to update cost display
         updateCostDisplay();
-    });
 
-    stacksInput?.addEventListener('input', () => {
+        lastPanel.appendChild(itemFrame);
+        updateLevelDropdowns(containerId, item.prefab_name);
         updateTotals();
-        updateCostDisplay();
-    });
-
-    discountInput?.addEventListener('input', () => {
-        updateTotals();
-        updateCostDisplay();
-    });
-
-    levelDropdown?.addEventListener('change', () => {
-        updateTotals();
-        updateCostDisplay();
-    });
-
-    // Initial call to update cost display
-    updateCostDisplay();
-
-    lastPanel.appendChild(itemFrame);
-    updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals();
-}
+    }
 
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
-function addHighlightBehavior(inputField, type) {
+function addHighlightBehavior(inputField, type, updateCostDisplay) {
     // Function to handle highlighting consistently
     const highlightText = (e) => {
         setTimeout(() => {
@@ -495,6 +490,11 @@ function addHighlightBehavior(inputField, type) {
             }
         }
 
+        // Call updateCostDisplay after adjusting the value
+        if (typeof updateCostDisplay === 'function') {
+            updateCostDisplay();
+        }
+
         // Trigger totals update immediately
         updateTotals();
     });
@@ -510,6 +510,12 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
             } else {
                 e.target.dataset.previousValue = rawValue; // Save valid value immediately
+
+                // Call updateCostDisplay after adjusting the value
+                if (typeof updateCostDisplay === 'function') {
+                    updateCostDisplay();
+                }
+
                 updateTotals(); // Trigger totals update dynamically
             }
         } else if (type === 'discount') {
@@ -519,6 +525,12 @@ function addHighlightBehavior(inputField, type) {
                 e.target.value = e.target.dataset.previousValue || '0% Discount';
             } else {
                 e.target.dataset.previousValue = rawValue; // Save valid value immediately
+
+                // Call updateCostDisplay after adjusting the value
+                if (typeof updateCostDisplay === 'function') {
+                    updateCostDisplay();
+                }
+
                 updateTotals(); // Trigger totals update dynamically
             }
         }
