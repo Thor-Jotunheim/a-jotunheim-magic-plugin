@@ -315,9 +315,9 @@ export function addItemToContainer(item, containerId) {
         }
 
         levelDropdown.addEventListener('change', () => {
-            updateCostDisplay();
+            updateCostDisplay(); // Update cost when level changes
             updateLevelDropdowns(containerId, item.prefab_name);
-            updateTotals();
+            updateTotals(); // Recalculate totals when level changes
         });
 
         inputContainer.appendChild(levelDropdown);
@@ -403,7 +403,7 @@ export function addItemToContainer(item, containerId) {
 
     // Trigger updates for totals
     updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals();
+    updateTotals(); // Recalculate totals
 }
 
 // Helper function to handle highlighting, preserving values, and updating totals dynamically
