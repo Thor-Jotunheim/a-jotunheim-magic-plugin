@@ -301,23 +301,12 @@ export function addItemToContainer(item, containerId) {
 
         // Populate dropdown options
         ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            if (item[key] > 0 && !existingLevels.includes(index + 1)) {
+            if (item[key] > 0) {
                 const option = document.createElement('option');
                 option.value = index + 1;
                 option.textContent = `Level ${index + 1}`;
                 levelDropdown.appendChild(option);
             }
-        });
-
-        if (!levelDropdown.options.length) {
-            console.warn(`No available levels for "${item.item_name}".`);
-            return;
-        }
-
-        levelDropdown.addEventListener('change', () => {
-            updateCostDisplay(); // Update cost when level changes
-            updateLevelDropdowns(containerId, item.prefab_name);
-            updateTotals(); // Recalculate totals when level changes
         });
 
         inputContainer.appendChild(levelDropdown);
@@ -403,139 +392,7 @@ export function addItemToContainer(item, containerId) {
 
     // Trigger updates for totals
     updateLevelDropdowns(containerId, item.prefab_name);
-    updateTotals(); // Recalculate totals
-}
-
-// Helper function to handle highlighting, preserving values, and updating totals dynamically
-function addHighlightBehavior(inputField, type) {
-    // Function to handle highlighting consistently
-    const highlightText = (e) => {
-        setTimeout(() => {
-            e.target.select(); // Select all text in the field
-        }, 0); // Ensures it happens after focus
-    };
-
-    inputField.addEventListener('focus', highlightText);
-
-    inputField.addEventListener('blur', (e) => {
-        let value = e.target.value.trim();
-
-        if (type === 'units') {
-            // Format units
-            if (value.startsWith('.')) {
-                value = '0' + value; // Add leading zero for decimals
-            }
-            if (!isNaN(value) && value !== '') {
-                const numericValue = parseInt(value, 10);
-                e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'unit' : 'units'}`;
-                e.target.value = e.target.dataset.previousValue; // Display formatted value
-            } else {
-                // Revert to previous value or default
-                e.target.value = e.target.dataset.previousValue || '1 unit';
-            }
-        } else if (type === 'stacks') {
-            // Format stacks (allow decimals)
-            if (value.startsWith('.')) {
-                value = '0' + value; // Add leading zero for decimals
-            }
-            if (!isNaN(value) && value !== '') {
-                const numericValue = parseFloat(value).toFixed(2); // Ensure two decimal precision
-                e.target.dataset.previousValue = `${numericValue} ${numericValue === 1 ? 'stack' : 'stacks'}`; // Save formatted value
-                e.target.value = e.target.dataset.previousValue; // Display formatted value
-            } else if (value === '') {
-                // If empty, revert to previous value or default to 0 stack
-                e.target.value = e.target.dataset.previousValue || '0 stack';
-            } else {
-                // In case of invalid input, fallback to the last valid value or default
-                e.target.value = e.target.dataset.previousValue || '0 stack';
-            }
-        } else if (type === 'discount') {
-            // Format discount
-            if (value.startsWith('.')) {
-                value = '0' + value; // Add leading zero for decimals
-            }
-            if (!isNaN(value) && value !== '') {
-                const numericValue = Math.min(Math.max(parseInt(value, 10), 0), 40); // Clamp between 0 and 40
-                e.target.dataset.previousValue = `${numericValue}% Discount`;
-                e.target.value = e.target.dataset.previousValue; // Display formatted value
-            } else {
-                // Revert to previous value or default
-                e.target.value = e.target.dataset.previousValue || '0% Discount';
-            }
-        }
-
-        // Trigger totals update immediately
-        updateTotals();
-    });
-
-    inputField.addEventListener('input', (e) => {
-        let rawValue = e.target.value.trim();
-        if (rawValue.startsWith('.')) {
-            rawValue = '0' + rawValue; // Add leading zero for decimals
-        }
-        if (type === 'units' || type === 'stacks') {
-            // Prevent non-numeric values
-            if (isNaN(rawValue)) {
-                e.target.value = e.target.dataset.previousValue || (type === 'units' ? '1' : '0');
-            } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-                updateTotals(); // Trigger totals update dynamically
-            }
-        } else if (type === 'discount') {
-            // Prevent non-numeric values
-            const cleanValue = rawValue.replace('% Discount', '').trim();
-            if (isNaN(cleanValue)) {
-                e.target.value = e.target.dataset.previousValue || '0% Discount';
-            } else {
-                e.target.dataset.previousValue = rawValue; // Save valid value immediately
-                updateTotals(); // Trigger totals update dynamically
-            }
-        }
-    });
-
-    // Ensure proper behavior on mousedown (for rapid clicking)
-    inputField.addEventListener('mousedown', (e) => {
-        e.preventDefault(); // Prevent default cursor placement
-        setTimeout(() => {
-            inputField.select(); // Ensure all text is selected
-        }, 0); // Execute after other events
-    });
-}
-
-function updateLevelDropdowns(containerId, prefabName) {
-    const container = document.getElementById(containerId);
-    const frames = Array.from(container.querySelectorAll(`.item-frame[data-item-id="${prefabName}"]`));
-
-    // Gather all selected levels
-    const selectedLevels = frames.map((frame) => {
-        const levelDropdown = frame.querySelector('.level-dropdown');
-        return parseInt(levelDropdown?.value || 1);
-    });
-
-    frames.forEach((frame) => {
-        const levelDropdown = frame.querySelector('.level-dropdown');
-        if (!levelDropdown) return;
-
-        const currentValue = parseInt(levelDropdown.value || 1);
-
-        // Clear and repopulate dropdown options
-        levelDropdown.innerHTML = '';
-
-        // Iterate through levels and add only valid ones
-        ['unit_price', 'lv2_price', 'lv3_price', 'lv4_price', 'lv5_price'].forEach((key, index) => {
-            const level = index + 1;
-            const itemData = itemsData.find((item) => item.prefab_name === prefabName);
-
-            // Ensure the level has a valid price and is not already selected
-            if (itemData && itemData[key] > 0 && (!selectedLevels.includes(level) || level === currentValue)) {
-                const option = document.createElement('option');
-                option.value = level;
-                option.textContent = `Level ${level}`;
-                if (level === currentValue) option.selected = true;
-                levelDropdown.appendChild(option);
-            }
-        });
-    });
+    updateTotals(); // Recalculate totals after item cost updates
 }
 
 // Function to update totals
