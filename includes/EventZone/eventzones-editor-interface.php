@@ -214,7 +214,7 @@ function generateEditZoneForm(zone, columns) {
     columns.forEach(column => {
         const field_name = column.Field;
 
-        if (field_name === 'id') return;
+        if (['id', 'string_name'].includes(field_name)) return;  // Skip ID and string_name fields
 
         formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
                         <label for='${field_name}' style='flex: 1; font-weight: bold;'>${capitalizeEditorFirstLetter(field_name.replace('_', ' '))}:</label>

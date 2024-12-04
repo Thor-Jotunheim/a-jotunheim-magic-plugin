@@ -25,8 +25,8 @@ function jotunheim_magic_add_new_zone_interface() {
                     $field_name = $column->Field;
                     $field_type = $column->Type;
 
-                    // Skip 'id' field as it's usually the primary key and auto-incremented
-                    if ($field_name == 'id') continue;
+                    // Skip 'id' and 'string_name' fields
+                    if (in_array($field_name, ['id', 'string_name'])) continue;
 
                     echo "<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='$field_name'>";
                     echo "<label for='$field_name' style='flex: 1; font-weight: bold;'>".ucfirst(str_replace('_', ' ', $field_name)).":</label>";
