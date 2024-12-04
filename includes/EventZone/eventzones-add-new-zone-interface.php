@@ -100,11 +100,10 @@ function jotunheim_magic_add_new_zone_interface() {
                 $('[data-field="respawnLocation"]').toggle(isChecked);
             });
 
-            // When OnlyLeaveViaTeleport is checked, automatically check RespawnAtLocation without changing its visibility control
+            // Keep respawn location fields visible when "onlyLeaveViaTeleport" is checked
             $('#onlyLeaveViaTeleport').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#respawnAtLocation').prop('checked', true).trigger('change'); // Check and trigger change on RespawnAtLocation
-                }
+            const isChecked = $(this).is(':checked');
+            $('[data-field="respawnLocation"]').toggle(isChecked);
             });
 
             // AJAX call to add new event zone with proper checkbox values
