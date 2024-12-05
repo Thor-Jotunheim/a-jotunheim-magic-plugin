@@ -56,6 +56,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-code-out
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-editor-scripts.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-editor-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-add-new-zone-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-goto-output.php');
 //include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-interface-shortcodes.php');
 
 // Include Trade and Barter files
