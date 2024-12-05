@@ -75,7 +75,7 @@ function generate_eventzones_code_output() {
         $grouped_zones[$zone_type][] = $zone;
     
         // Add the zone name to the list of enabled zones
-        $enabled_zone_names[] = $zone;
+        $enabled_zone_names[] = $zone['name'];
     }
     
     // Sort zones within each group by their names, ensuring 'spawn' is always first
