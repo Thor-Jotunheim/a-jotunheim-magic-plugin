@@ -13,25 +13,30 @@ function generate_eventzone_goto_output() {
     <style>
         .zone-output {
             font-family: monospace;
-            margin-bottom: 10px;
-            cursor: pointer;
-            background: #f4f4f4;
-            padding: 5px;
+            margin-bottom: 15px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            cursor: pointer;
         }
         .zone-output:hover {
-            background: #e0e0e0;
+            background: #f4f4f4;
+        }
+        .zone-name {
+            font-weight: bold;
+        }
+        .goto-command {
+            color: #555;
         }
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".zone-output").forEach(function (element) {
+            document.querySelectorAll(".goto-command").forEach(function (element) {
                 element.addEventListener("click", function () {
                     navigator.clipboard.writeText(this.innerText).then(function () {
-                        alert("Copied to clipboard: " + element.innerText);
+                        // Copy success - no popup
                     }).catch(function (error) {
-                        alert("Failed to copy text: " + error);
+                        console.error("Failed to copy text: ", error);
                     });
                 });
             });
@@ -80,7 +85,7 @@ function generate_eventzone_goto_output() {
     }
     unset($zones); // Break reference after sorting
 
-    // Output the "goto" commands
+    // Output the "goto" commands in single column format
     foreach ($grouped_zones as $zone_type => $zones) {
         foreach ($zones as $zone) {
             $string_name = $zone['string_name'] ?? $zone['name'] ?? 'Unknown';
@@ -96,7 +101,10 @@ function generate_eventzone_goto_output() {
             }
 
             // Output string name and position in the desired format
-            echo "<div class='zone-output'>goto $position</div>";
+            echo "<div class='zone-output'>
+                    <div class='zone-name'>$string_name</div>
+                    <div class='goto-command'>goto $position</div>
+                  </div>";
         }
     }
 
