@@ -75,8 +75,16 @@ function generate_eventzones_code_output() {
         $grouped_zones[$zone_type][] = $zone;
     
         // Add the zone name to the list of enabled zones
-        $enabled_zone_names[] = $zone['name'];
+        $enabled_zone_names[] = $zone;
     }
+    
+    // Sort zones within each group by their names
+    foreach ($grouped_zones as $zone_type => &$zones) {
+        usort($zones, function ($a, $b) {
+            return strcasecmp($a['name'] ?? '', $b['name'] ?? '');
+        });
+    }
+    unset($zones); // Break reference after sorting
     
     // Define header width
     $header_width = 60; // Fixed width for headers
