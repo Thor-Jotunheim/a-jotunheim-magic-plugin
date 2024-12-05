@@ -78,10 +78,18 @@ function generate_eventzones_code_output() {
         $enabled_zone_names[] = $zone;
     }
     
-    // Sort zones within each group by their names
+    // Sort zones within each group by their names, ensuring 'spawn' is always first
     foreach ($grouped_zones as $zone_type => &$zones) {
         usort($zones, function ($a, $b) {
-            return strcasecmp($a['name'] ?? '', $b['name'] ?? '');
+            $nameA = strtolower($a['name'] ?? '');
+            $nameB = strtolower($b['name'] ?? '');
+
+            // Ensure 'spawn' comes first
+            if ($nameA === 'spawn') return -1;
+            if ($nameB === 'spawn') return 1;
+
+            // Otherwise, sort alphabetically
+            return strcasecmp($nameA, $nameB);
         });
     }
     unset($zones); // Break reference after sorting
