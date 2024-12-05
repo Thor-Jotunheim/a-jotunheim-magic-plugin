@@ -66,15 +66,18 @@ function generate_eventzones_code_output() {
     $enabled_zone_names = []; // To store names of enabled zones
 
     foreach ($zones as $zone) {
-        $zone_type = $zone['zone_type'] ?? 'Unknown'; // Default to 'Unknown' if not set
-        $grouped_zones[$zone_type][] = $zone;
-
-        // If the zone is enabled, add it to the list of enabled zones
-        if (isset($zone['eventzone_status']) && $zone['eventzone_status'] === 'enabled') {
-            $enabled_zone_names[] = $zone['name'];
+        // Skip zones that are not enabled
+        if (!isset($zone['eventzone_status']) || $zone['eventzone_status'] !== 'enabled') {
+            continue;
         }
+    
+        $zone_type = $zone['zone_type'] ?? 'Unknown';
+        $grouped_zones[$zone_type][] = $zone;
+    
+        // Add the zone name to the list of enabled zones
+        $enabled_zone_names[] = $zone['name'];
     }
-
+    
     // Define header width
     $header_width = 60; // Fixed width for headers
     echo "<pre><code class='language-csharp'>\n";
