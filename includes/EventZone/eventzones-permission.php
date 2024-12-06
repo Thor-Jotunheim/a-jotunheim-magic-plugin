@@ -35,8 +35,8 @@ function can_manage_eventzones($request) {
         return false; // Invalid API key
     }
 
-    // Unified to use edit_posts instead of edit_pages
-    if (!current_user_can('edit_posts')) {
+    // Check if the user has the 'administrator' or 'editor' role
+    if (!current_user_can('edit_pages')) {
         error_log('Permission denied: User does not have the required capabilities.');
         return false;
     }
@@ -56,7 +56,7 @@ function can_edit_eventzones($request) {
         return false; // Invalid API key
     }
 
-    // Unified to use edit_posts
+    // Check if the user has the 'editor' capability or higher
     if (!current_user_can('edit_posts')) {
         error_log('Permission denied: User does not have the required capabilities.');
         return false;
@@ -73,5 +73,15 @@ function can_edit_eventzones($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_view_eventzones($request) {
-    return validate_eventzones_api_key($request);
+    if (!validate_eventzones_api_key($request)) {
+        return false; // Invalid API key
+    }
+
+    // Allow all logged-in users to view if API key is valid
+    if (!is_user_logged_in()) {
+        error_log('Permission denied: User is not logged in.');
+        return false;
+    }
+
+    return true;
 }
