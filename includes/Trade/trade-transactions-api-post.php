@@ -45,6 +45,6 @@ add_action('rest_api_init', function () {
     register_rest_route('trade/v1', '/transactions', [
         'methods' => 'POST',
         'callback' => 'handle_trade_transactions_post',
-        'permission_callback' => 'validate_api_key',
+        'permission_callback' => 'validate_trade_api_key',
     ]);
 });

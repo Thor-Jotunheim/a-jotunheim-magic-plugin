@@ -28,6 +28,6 @@ add_action('rest_api_init', function () {
     register_rest_route('trade/v1', '/shop-items', [
         'methods' => 'GET',
         'callback' => 'handle_trade_shop_items_get',
-        'permission_callback' => 'validate_api_key',
+        'permission_callback' => 'validate_trade_api_key',
     ]);
 });

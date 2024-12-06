@@ -10,8 +10,8 @@ Author: Your Name
 if (!defined('ABSPATH')) exit;
 
 // Function to validate API key (API key should be set in wp-config.php)
-if (!function_exists('validate_api_key')) {
-    function validate_api_key($request) {
+if (!function_exists('validate_trade_api_key')) {
+    function validate_trade_api_key($request) {
         $api_key = $request->get_header('x-api-key');
         if (!defined('TRADE_API_KEY') || $api_key !== TRADE_API_KEY) {
             return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
@@ -121,7 +121,7 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/items/name/(?P<name>[a-zA-Z0-9_-]+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_item_by_name_rest',
-        'permission_callback' => 'validate_api_key', // Requires API key
+        'permission_callback' => 'validate_trade_api_key', // Requires API key
         'args' => array(
             'name' => array(
                 'required' => true,
