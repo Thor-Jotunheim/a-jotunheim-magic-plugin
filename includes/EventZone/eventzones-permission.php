@@ -36,7 +36,7 @@ function can_manage_eventzones($request) {
     }
 
     // Ensure the user has at least 'editor' capabilities
-    if (!current_user_can('edit_posts')) {
+    if (!current_user_can('edit_pages')) {
         error_log('Permission denied: User does not have the required capabilities.');
         return false;
     }
@@ -57,7 +57,7 @@ function can_edit_eventzones($request) {
     }
 
     // Ensure the user has at least 'editor' capabilities
-    if (!current_user_can('edit_posts')) {
+    if (!current_user_can('edit_pages')) {
         error_log('Permission denied: User does not have the required capabilities.');
         return false;
     }
