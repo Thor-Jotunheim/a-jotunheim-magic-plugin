@@ -63,7 +63,6 @@ include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-goto-out
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-api-get.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/barter-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-interface.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shop-cleanup.php');
 
 // Include Trade APIs
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-permissions.php');
