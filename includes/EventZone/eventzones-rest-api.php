@@ -67,7 +67,7 @@ add_action('rest_api_init', function () {
 
 
 // Function to validate API key directly from wp-config.php
-function validate_trade_api_key($request) {
+function validate_api_key($request) {
     // Retrieve the API key from the request headers
     $api_key = $request->get_header('x-api-key');
     
