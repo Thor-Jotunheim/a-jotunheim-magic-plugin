@@ -5,10 +5,10 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Verifies if the API request includes a valid API key in the headers.
+ * Verifies if the API request includes a valid API key and maps it to a user ID.
  * 
  * @param WP_REST_Request $request The incoming REST request.
- * @return bool True if the API key is valid, false otherwise.
+ * @return int|false The user ID if the API key is valid, or false otherwise.
  */
 function validate_eventzones_api_key($request) {
     // Retrieve the API key from headers
@@ -20,68 +20,63 @@ function validate_eventzones_api_key($request) {
         return false;
     }
 
-    return true;
+    // Optionally map the API key to a specific user ID
+    $user = get_user_by('login', 'admin'); // Replace 'admin' with the username linked to the API key
+    if ($user) {
+        return $user->ID;
+    }
+
+    error_log('Permission denied: No user associated with the API key.');
+    return false;
+}
+
+/**
+ * Ensures the user is logged in based on the API key and sets the session if needed.
+ * 
+ * @param WP_REST_Request $request The incoming REST request.
+ * @return bool True if the user is authenticated, false otherwise.
+ */
+function ensure_user_authenticated($request) {
+    $user_id = validate_eventzones_api_key($request);
+
+    if ($user_id) {
+        if (get_current_user_id() !== $user_id) {
+            // Set the user session if not already logged in
+            wp_set_current_user($user_id);
+            wp_set_auth_cookie($user_id);
+        }
+        return true;
+    }
+
+    return false;
 }
 
 /**
  * Permission callback for managing (create/update) event zones.
- * Ensures a valid API key is present and the user has administrator or editor capabilities.
  * 
  * @param WP_REST_Request $request The incoming REST request.
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_manage_eventzones($request) {
-    if (!validate_eventzones_api_key($request)) {
-        return false; // Invalid API key
-    }
-
-    // Check if the user has the 'administrator' or 'editor' role
-    if (!current_user_can('edit_pages')) {
-        error_log('Permission denied: User does not have the required capabilities.');
-        return false;
-    }
-
-    return true;
+    return ensure_user_authenticated($request);
 }
 
 /**
  * Permission callback for editing event zones.
- * Ensures a valid API key is present and the user has at least editor capabilities.
  * 
  * @param WP_REST_Request $request The incoming REST request.
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_edit_eventzones($request) {
-    if (!validate_eventzones_api_key($request)) {
-        return false; // Invalid API key
-    }
-
-    // Check if the user has the 'editor' capability or higher
-    if (!current_user_can('edit_posts')) {
-        error_log('Permission denied: User does not have the required capabilities.');
-        return false;
-    }
-
-    return true;
+    return ensure_user_authenticated($request);
 }
 
 /**
  * Permission callback for viewing event zones.
- * Ensures a valid API key is present.
  * 
  * @param WP_REST_Request $request The incoming REST request.
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_view_eventzones($request) {
-    if (!validate_eventzones_api_key($request)) {
-        return false; // Invalid API key
-    }
-
-    // Allow all logged-in users to view if API key is valid
-    if (!is_user_logged_in()) {
-        error_log('Permission denied: User is not logged in.');
-        return false;
-    }
-
-    return true;
+    return validate_eventzones_api_key($request);
 }
