@@ -36,7 +36,7 @@ function can_manage_eventzones($request) {
     }
 
     // Check if the user has the 'administrator' or 'editor' role
-    if (!current_user_can('edit_pages')) {
+    if (!current_user_can('edit_posts')) {
         error_log('Permission denied: User does not have the required capabilities.');
         return false;
     }
