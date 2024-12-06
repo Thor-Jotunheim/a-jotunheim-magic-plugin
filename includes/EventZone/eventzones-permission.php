@@ -31,17 +31,15 @@ function validate_eventzones_api_key($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_manage_eventzones($request) {
-    if (!validate_eventzones_api_key($request)) {
-        return false; // Invalid API key
-    }
-
-    // Check if the user has the 'administrator' or 'editor' role
-    if (!current_user_can('edit_posts')) {
-        error_log('Permission denied: User does not have the required capabilities.');
+    $user_id = validate_eventzones_api_key($request);
+    if ($user_id) {
+        // Log in the user
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id);
+        return true;
+    } else {
         return false;
     }
-
-    return true;
 }
 
 /**
@@ -52,17 +50,15 @@ function can_manage_eventzones($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_edit_eventzones($request) {
-    if (!validate_eventzones_api_key($request)) {
-        return false; // Invalid API key
-    }
-
-    // Check if the user has the 'editor' capability or higher
-    if (!current_user_can('edit_posts')) {
-        error_log('Permission denied: User does not have the required capabilities.');
+    $user_id = validate_eventzones_api_key($request);
+    if ($user_id) {
+        // Log in the user
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id);
+        return true;
+    } else {
         return false;
     }
-
-    return true;
 }
 
 /**
@@ -73,15 +69,5 @@ function can_edit_eventzones($request) {
  * @return bool True if the request is authorized, false otherwise.
  */
 function can_view_eventzones($request) {
-    if (!validate_eventzones_api_key($request)) {
-        return false; // Invalid API key
-    }
-
-    // Allow all logged-in users to view if API key is valid
-    if (!is_user_logged_in()) {
-        error_log('Permission denied: User is not logged in.');
-        return false;
-    }
-
-    return true;
+    return validate_eventzones_api_key($request);
 }
