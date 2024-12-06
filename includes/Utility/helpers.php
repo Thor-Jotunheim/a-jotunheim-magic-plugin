@@ -25,3 +25,28 @@ function has_permission($capability = 'read') {
 
     return true;
 }
+
+// Unified function to validate API keys (keys should be set in wp-config.php)
+function validate_api_key($request) {
+    // Retrieve the API key from the request headers
+    $api_key = $request->get_header('x-api-key');
+
+    // Define the valid API keys (add more keys as needed)
+    $valid_keys = [
+        'TRADE_API_KEY'      => defined('TRADE_API_KEY') ? TRADE_API_KEY : null,
+        'EVENTZONES_API_KEY' => defined('EVENTZONES_API_KEY') ? EVENTZONES_API_KEY : null,
+        'PREFAB_API_KEY' => defined('PREFAB_API_KEY') ? PREFAB_API_KEY : null,
+        // Add more keys here as needed
+    ];
+
+    // Check if the API key matches any valid key
+    if (!in_array($api_key, $valid_keys)) {
+        error_log('Invalid API key provided: ' . $api_key);
+        return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
+    }
+
+    // Set a bypass flag for the current request
+    define('API_KEY_BYPASS', true);
+
+    return true;
+}

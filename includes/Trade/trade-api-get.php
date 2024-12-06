@@ -121,7 +121,7 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/items/name/(?P<name>[a-zA-Z0-9_-]+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_item_by_name_rest',
-        'permission_callback' => 'validate_trade_api_key', // Requires API key
+        'permission_callback' => 'validate_api_key', // Requires API key
         'args' => array(
             'name' => array(
                 'required' => true,

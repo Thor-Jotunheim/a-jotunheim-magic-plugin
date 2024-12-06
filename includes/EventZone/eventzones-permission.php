@@ -5,53 +5,28 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Verifies if the API request includes a valid API key in the headers.
- * 
+ * Permission callback for managing event zones (create, update, delete).
+ * Ensures a valid API key is present OR the user has administrator or editor capabilities.
+ *
  * @param WP_REST_Request $request The incoming REST request.
- * @return bool True if the API key is valid, false otherwise.
- */
-function validate_eventzones_api_key($request) {
-    // Retrieve the API key from headers
-    $api_key = $request->get_header('x-api-key'); // Use a custom header to store the API key
-
-    // Check if the API key is valid
-    if ($api_key !== EVENTZONES_API_KEY) {
-        error_log('Permission denied: Invalid API key.');
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * Permission callback for managing (create/update) event zones.
- * Ensures a valid API key is present and the user has administrator or editor capabilities.
- * 
- * @param WP_REST_Request $request The incoming REST request.
- * @return bool True if the request is authorized, false otherwise.
+ * @return bool|WP_Error True if the request is authorized, WP_Error otherwise.
  */
 function can_manage_eventzones($request) {
-    return validate_eventzones_api_key($request);
-}
+    // Validate API key
+    if (validate_api_key($request)) {
+        // If a valid API key is provided, bypass role checks
+        return true;
+    }
 
-/**
- * Permission callback for editing event zones.
- * Ensures a valid API key is present and the user has at least editor capabilities.
- * 
- * @param WP_REST_Request $request The incoming REST request.
- * @return bool True if the request is authorized, false otherwise.
- */
-function can_edit_eventzones($request) {
-    return validate_eventzones_api_key($request);
-}
+    // Check user capabilities if no valid API key is provided
+    if (is_user_logged_in() && (current_user_can('editor') || current_user_can('administrator'))) {
+        return true;
+    }
 
-/**
- * Permission callback for viewing event zones.
- * Ensures a valid API key is present.
- * 
- * @param WP_REST_Request $request The incoming REST request.
- * @return bool True if the request is authorized, false otherwise.
- */
-function can_view_eventzones($request) {
-    return validate_eventzones_api_key($request);
+    // If neither API key nor valid user role is present, deny access
+    return new WP_Error(
+        'rest_forbidden',
+        __('You do not have permission to manage event zones.'),
+        array('status' => 403)
+    );
 }
