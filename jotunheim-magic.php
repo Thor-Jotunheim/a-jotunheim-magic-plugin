@@ -65,6 +65,18 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Trade/barter-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shop-cleanup.php');
 
+// Include Trade APIs
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-permissions.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-post.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-rest.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-cleanup.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-post.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-rest.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-post.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-rest.php');
 
 // Include ledger files
 include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-rest-api.php';
