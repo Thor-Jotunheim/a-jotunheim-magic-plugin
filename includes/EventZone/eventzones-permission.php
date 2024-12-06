@@ -12,18 +12,30 @@ if (!defined('ABSPATH')) exit;
  */
 function validate_eventzones_api_key($request) {
     // Retrieve the API key from headers
-    $api_key = $request->get_header('x-api-key'); // Use a custom header to store the API key
+    $api_key = $request->get_header('x-api-key');
 
-    // Check if the API key is valid
-    if ($api_key !== EVENTZONES_API_KEY) {
+    // Check if the API key exists and matches the defined constant
+    if (empty($api_key) || $api_key !== EVENTZONES_API_KEY) {
         error_log('Permission denied: Invalid API key.');
         return false;
     }
 
-    // Optionally map the API key to a specific user ID
-    $user = get_user_by('login', 'admin'); // Replace 'admin' with the username linked to the API key
-    if ($user) {
-        return $user->ID;
+    // Map API key to a WordPress user (e.g., Editor role)
+    $user_query = new WP_User_Query([
+        'role__in' => ['Administrator', 'Editor'], // Allow both Administrators and Editors
+        'meta_query' => [
+            [
+                'key' => 'eventzones_api_key',
+                'value' => $api_key,
+                'compare' => '='
+            ]
+        ]
+    ]);
+
+    $users = $user_query->get_results();
+
+    if (!empty($users)) {
+        return $users[0]->ID; // Return the first matching user ID
     }
 
     error_log('Permission denied: No user associated with the API key.');
