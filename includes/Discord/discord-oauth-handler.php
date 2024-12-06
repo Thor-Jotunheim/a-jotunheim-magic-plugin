@@ -24,6 +24,7 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
             'grant_type' => 'authorization_code',
             'code' => $code,
             'redirect_uri' => $redirect_uri,
+            'scope' => 'identify email guilds.members.read'
         ),
     ));
 
