@@ -26,18 +26,18 @@ function verify_prefab_api_key($request) {
 
 function get_jotun_prefabs() {
     global $wpdb;
-    $prefab_table = 'jotun_prefab'; // Hardcoded table name
+    $prefab_table = 'jotun_prefablist'; // Hardcoded table name
 
     // Check if the table exists
     if($wpdb->get_var("SHOW TABLES LIKE '$prefab_table'") != $prefab_table) {
-        return new WP_Error('no_table', 'The jotun_prefab table does not exist.', array('status' => 500));
+        return new WP_Error('no_table', 'The jotun_prefablist table does not exist.', array('status' => 500));
     }
 
-    // Fetch data from the jotun_prefab table
+    // Fetch data from the jotun_prefablist table
     $results = $wpdb->get_results("SELECT * FROM $prefab_table");
 
     if (empty($results)) {
-        return new WP_Error('no_data', 'No data found in the jotun_prefab table.', array('status' => 404));
+        return new WP_Error('no_data', 'No data found in the jotun_prefablist table.', array('status' => 404));
     }
 
     // Process results to include the full icon URL
