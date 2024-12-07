@@ -108,7 +108,7 @@ function render_eventzone_editor_page() {
 // Add Event Zone Page (Shortcode Render)
 function render_add_event_zone_page() {
     echo '<h1>Add Event Zone</h1>';
-    echo do_shortcode('[eventzones_add_new_zone]'); // Replace with your actual shortcode
+    echo do_shortcode('[jotunheim_add_new_zone]'); // Replace with your actual shortcode
 }
 
 // Trade Page (Shortcode Render)
