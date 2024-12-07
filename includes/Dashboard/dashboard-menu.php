@@ -36,8 +36,8 @@ function jotunheim_magic_plugin_menu() {
            'prefab-image-import',                // Menu slug
            'render_prefab_image_import_page'     // Callback function
        );
-    })
-    
+    });
+
     // Add more submenu pages as needed
 }
 
