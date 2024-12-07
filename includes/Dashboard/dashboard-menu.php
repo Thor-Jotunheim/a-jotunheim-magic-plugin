@@ -26,6 +26,12 @@ function jotunheim_magic_plugin_menu() {
             'callback'    => 'render_prefab_image_import_page',
         ],
         [
+            'title'       => 'Itemlist Image Import',
+            'menu_title'  => 'Itemlist Image Import',
+            'slug'        => 'itemlist_image_import',
+            'callback'    => 'render_itemlist_image_import_page',
+        ],
+        [
             'title'       => 'ItemList Editor',
             'menu_title'  => 'ItemList Editor',
             'slug'        => 'itemlist_editor',
@@ -83,6 +89,14 @@ function jotunheim_magic_dashboard() {
 function render_prefab_image_import_page() {
     echo '<h1>Prefab Image Import</h1>';
     echo '<p>Use this tool to import prefab images for the plugin.</p>';
+    echo do_shortcode('[prefabdb_image_import]'); // Replace with your actual shortcode
+}
+
+// Image Import Page
+function render_itemlist_image_import_page() {
+    echo '<h1>Itemlist Image Import</h1>';
+    echo '<p>Use this tool to import itemlist images.</p>';
+    echo do_shortcode('[image_import_shortcode]'); // Replace with your actual shortcode
 }
 
 // ItemList Editor Page (Shortcode Render)
