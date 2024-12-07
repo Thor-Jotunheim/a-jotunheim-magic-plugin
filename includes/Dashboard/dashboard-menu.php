@@ -26,22 +26,22 @@ function jotunheim_magic_plugin_menu() {
             'callback'    => 'render_prefab_image_import_page',
         ],
         [
-            'title'       => 'ItemList Editor',
-            'menu_title'  => 'ItemList Editor',
-            'slug'        => 'itemlist_editor',
-            'callback'    => 'render_itemlist_editor_page',
+            'title'       => 'Item List Editor',
+            'menu_title'  => 'Item List Editor',
+            'slug'        => 'item list_editor',
+            'callback'    => 'render_item_list_editor_page',
         ],
         [
-            'title'       => 'ItemList Add New Item',
-            'menu_title'  => 'ItemList Add New Item',
-            'slug'        => 'itemlist_add_new_item',
-            'callback'    => 'render_itemlist_add_new_item_page',
+            'title'       => 'Item List Add New Item',
+            'menu_title'  => 'Item List Add New Item',
+            'slug'        => 'item list_add_new_item',
+            'callback'    => 'render_item_list_add_new_item_page',
         ],
         [
             'title'       => 'EventZone Editor',
             'menu_title'  => 'EventZone Editor',
             'slug'        => 'eventzone_editor',
-            'callback'    => 'render_eventzone_editor_page',
+            'callback'    => 'render_event_zone_editor_page',
         ],
         [
             'title'       => 'Add Event Zone',
@@ -93,20 +93,20 @@ function render_prefab_image_import_page() {
 }
 
 // ItemList Editor Page (Shortcode Render)
-function render_itemlist_editor_page() {
-    echo '<h1>ItemList Editor</h1>';
+function render_item_list_editor_page() {
+    echo '<h1>Item List Editor</h1>';
     echo do_shortcode('[itemlist_editor]');
 }
 
 // ItemList Editor Page (Shortcode Render)
-function render_itemlist_add_new_item_page() {
-    echo '<h1>ItemList Editor</h1>';
+function render_item_list_add_new_item_page() {
+    echo '<h1>Item List Editor</h1>';
     echo do_shortcode('[jotunheim_add_new_item]');
 }
 
 // EventZone Editor Page (Shortcode Render)
-function render_eventzone_editor_page() {
-    echo '<h1>EventZone Editor</h1>';
+function render_event_zone_editor_page() {
+    echo '<h1>Event Zone Editor</h1>';
     echo do_shortcode('[eventzones_editor]');
 }
 
