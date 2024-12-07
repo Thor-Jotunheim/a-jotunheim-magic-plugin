@@ -17,65 +17,57 @@ function jotunheim_magic_plugin_menu() {
         6                               // Position in the menu order
     );
 
-    // Submenu for Prefab Image Import
-    add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
-        'Prefab Image Import',          // Page title
-        'Prefab Image Import',          // Menu title
-        'manage_options',               // Capability required
-        'prefab_image_import',          // Submenu slug
-        'render_prefab_image_import_page' // Callback function for the page
-    );
+    // Define submenu items and their callback functions
+    $submenus = [
+        [
+            'title'       => 'Prefab Image Import',
+            'menu_title'  => 'Prefab Image Import',
+            'slug'        => 'prefab_image_import',
+            'callback'    => 'render_prefab_image_import_page',
+        ],
+        [
+            'title'       => 'ItemList Editor',
+            'menu_title'  => 'ItemList Editor',
+            'slug'        => 'itemlist_editor',
+            'callback'    => 'render_itemlist_editor_page',
+        ],
+        [
+            'title'       => 'EventZone Editor',
+            'menu_title'  => 'EventZone Editor',
+            'slug'        => 'eventzone_editor',
+            'callback'    => 'render_eventzone_editor_page',
+        ],
+        [
+            'title'       => 'Add Event Zone',
+            'menu_title'  => 'Add Event Zone',
+            'slug'        => 'add_event_zone',
+            'callback'    => 'render_add_event_zone_page',
+        ],
+        [
+            'title'       => 'Trade',
+            'menu_title'  => 'Trade',
+            'slug'        => 'trade',
+            'callback'    => 'render_trade_page',
+        ],
+        [
+            'title'       => 'Barter',
+            'menu_title'  => 'Barter',
+            'slug'        => 'barter',
+            'callback'    => 'render_barter_page',
+        ],
+    ];
 
-    // Submenu for ItemList Editor
-    add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
-        'ItemList Editor',              // Page title
-        'ItemList Editor',              // Menu title
-        'manage_options',               // Capability required
-        'itemlist_editor',              // Submenu slug
-        'render_itemlist_editor_page'   // Callback function for the page
-    );
-
-    // Submenu for EventZone Editor
-    add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
-        'EventZone Editor',             // Page title
-        'EventZone Editor',             // Menu title
-        'manage_options',               // Capability required
-        'eventzone_editor',             // Submenu slug
-        'render_eventzone_editor_page'  // Callback function for the page
-    );
-
-    // Submenu for Add Event Zone
-    add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
-        'Add Event Zone',               // Page title
-        'Add Event Zone',               // Menu title
-        'manage_options',               // Capability required
-        'add_event_zone',               // Submenu slug
-        'render_add_event_zone_page'    // Callback function for the page
-    );
-
-    // Submenu for Trade
-    add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
-        'Trade',                       // Page title
-        'Trade',                       // Menu title
-        'manage_options',               // Capability required
-        'Trade',                       // Submenu slug
-        'render_trade_page'            // Callback function for the page
-    );
-
-    // Submenu for Barter
-    add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
-        'Barter',                       // Page title
-        'Barter',                       // Menu title
-        'manage_options',               // Capability required
-        'barter',                       // Submenu slug
-        'render_barter_page'            // Callback function for the page
-    );
+    // Register each submenu
+    foreach ($submenus as $submenu) {
+        add_submenu_page(
+            'jotunheim_magic_plugin',   // Parent slug
+            $submenu['title'],          // Page title
+            $submenu['menu_title'],     // Menu title
+            'manage_options',           // Capability required
+            $submenu['slug'],           // Submenu slug
+            $submenu['callback']        // Callback function
+        );
+    }
 
     // Remove the default submenu created by WordPress
     remove_submenu_page('jotunheim_magic_plugin', 'jotunheim_magic_plugin');
