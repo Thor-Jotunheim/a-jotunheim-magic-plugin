@@ -55,7 +55,18 @@ function jotunheim_magic_staff_page_access() {
     $user_id = get_current_user_id();
     $discord_roles = get_user_meta($user_id, 'discord_roles', true);
 
-    error_log("User ID: " . $user_id);
+    // Fetch user data based on the user ID
+    $user_data = get_userdata($user_id);
+
+    if ($user_data) {
+        // Log the username and display name
+        error_log("Username: " . $user_data->user_login);
+        error_log("Display Name: " . $user_data->display_name);
+    } else {
+        error_log("Error: Unable to retrieve user data for User ID: " . $user_id);
+    }
+
+    // Log the Discord roles retrieved from user meta
     error_log("Discord roles retrieved from user meta: " . print_r($discord_roles, true));
 
     // Define mappings for pages to required roles
