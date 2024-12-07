@@ -17,7 +17,7 @@ function jotunheim_magic_plugin_menu() {
         6                               // Position in the menu order
     );
 
-    // Submenu for Image Import
+    // Submenu for Prefab Image Import
     add_submenu_page(
         'jotunheim_magic_plugin',       // Parent slug
         'Prefab Image Import',          // Page title
@@ -25,6 +25,16 @@ function jotunheim_magic_plugin_menu() {
         'manage_options',               // Capability required
         'prefab_image_import',          // Submenu slug
         'render_prefab_image_import_page' // Callback function for the page
+    );
+
+    // Submenu for another feature (e.g., Image Import)
+    add_submenu_page(
+        'jotunheim_magic_plugin',       // Parent slug
+        'Image Import',                 // Page title
+        'Image Import',                 // Menu title
+        'manage_options',               // Capability required
+        'image_import',                 // Submenu slug
+        'render_image_import_page'      // Callback function for the page
     );
 
     // Add more submenu pages as needed
@@ -40,6 +50,12 @@ function jotunheim_magic_dashboard() {
 function render_prefab_image_import_page() {
     echo '<h1>Prefab Image Import</h1>';
     echo '<p>Use this tool to import prefab images for the plugin.</p>';
+}
+
+// Image Import Page
+function render_image_import_page() {
+    echo '<h1>Image Import</h1>';
+    echo '<p>Use this tool to import general images for the plugin.</p>';
 }
 
 // Hook the menu function to WordPress admin menu
