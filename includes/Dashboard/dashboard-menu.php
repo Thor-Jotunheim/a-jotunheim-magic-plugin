@@ -38,9 +38,9 @@ function jotunheim_magic_plugin_menu() {
             'callback'    => 'render_item_list_add_new_item_page',
         ],
         [
-            'title'       => 'EventZone Editor',
-            'menu_title'  => 'EventZone Editor',
-            'slug'        => 'eventzone_editor',
+            'title'       => 'Event Zone Editor',
+            'menu_title'  => 'Event Zone Editor',
+            'slug'        => 'event_zone_editor',
             'callback'    => 'render_event_zone_editor_page',
         ],
         [
