@@ -40,7 +40,7 @@ function user_has_access($user_roles, $required_role) {
  */
 function jotunheim_magic_staff_page_access() {
     if (!is_user_logged_in()) {
-        error_log("User is not logged in.");
+        //error_log("User is not logged in.");
         return; // Only logged-in users are checked
     }
 

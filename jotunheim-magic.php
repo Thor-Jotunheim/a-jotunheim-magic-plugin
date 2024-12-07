@@ -110,7 +110,7 @@ function jotunheim_magic_assign_capabilities() {
             error_log("Role '{$role_name}' does not exist.");
         }
     }
-    error_log('Capabilities check complete for administrator and editor.');
+    //error_log('Capabilities check complete for administrator and editor.');
 }
 
 register_activation_hook(__FILE__, 'jotunheim_magic_assign_capabilities');
