@@ -26,16 +26,16 @@ function jotunheim_magic_plugin_menu() {
             'callback'    => 'render_prefab_image_import_page',
         ],
         [
-            'title'       => 'Itemlist Image Import',
-            'menu_title'  => 'Itemlist Image Import',
-            'slug'        => 'itemlist_image_import',
-            'callback'    => 'render_itemlist_image_import_page',
-        ],
-        [
             'title'       => 'ItemList Editor',
             'menu_title'  => 'ItemList Editor',
             'slug'        => 'itemlist_editor',
             'callback'    => 'render_itemlist_editor_page',
+        ],
+        [
+            'title'       => 'ItemList Add New Item',
+            'menu_title'  => 'ItemList Add New Item',
+            'slug'        => 'itemlist_add_new_item',
+            'callback'    => 'render_itemlist_add_new_item_page',
         ],
         [
             'title'       => 'EventZone Editor',
@@ -85,48 +85,47 @@ function jotunheim_magic_dashboard() {
     echo '<p>Use the available tools to manage the plugin functionalities.</p>';
 }
 
-// Prefab Image Import Page
+// Prefab Icon Image Import Page
 function render_prefab_image_import_page() {
     echo '<h1>Prefab Image Import</h1>';
     echo '<p>Use this tool to import prefab images for the plugin.</p>';
-    echo do_shortcode('[prefabdb_image_import]'); // Replace with your actual shortcode
-}
-
-// Image Import Page
-function render_itemlist_image_import_page() {
-    echo '<h1>Itemlist Image Import</h1>';
-    echo '<p>Use this tool to import itemlist images.</p>';
-    echo do_shortcode('[image_import_shortcode]'); // Replace with your actual shortcode
+    echo do_shortcode('[prefabdb_image_import]');
 }
 
 // ItemList Editor Page (Shortcode Render)
 function render_itemlist_editor_page() {
     echo '<h1>ItemList Editor</h1>';
-    echo do_shortcode('[itemlist_editor]'); // Replace with your actual shortcode
+    echo do_shortcode('[itemlist_editor]');
+}
+
+// ItemList Editor Page (Shortcode Render)
+function render_itemlist_add_new_item_page() {
+    echo '<h1>ItemList Editor</h1>';
+    echo do_shortcode('[jotunheim_add_new_item]');
 }
 
 // EventZone Editor Page (Shortcode Render)
 function render_eventzone_editor_page() {
     echo '<h1>EventZone Editor</h1>';
-    echo do_shortcode('[eventzones_editor]'); // Replace with your actual shortcode
+    echo do_shortcode('[eventzones_editor]');
 }
 
 // Add Event Zone Page (Shortcode Render)
 function render_add_event_zone_page() {
     echo '<h1>Add Event Zone</h1>';
-    echo do_shortcode('[jotunheim_add_new_zone]'); // Replace with your actual shortcode
+    echo do_shortcode('[jotunheim_add_new_zone]');
 }
 
 // Trade Page (Shortcode Render)
 function render_trade_page() {
     echo '<h1>Trade</h1>';
-    echo do_shortcode('[jotunheim_trade_page]'); // Replace with your actual shortcode
+    echo do_shortcode('[jotunheim_trade_page]');
 }
 
 // Barter Page (Shortcode Render)
 function render_barter_page() {
     echo '<h1>Barter</h1>';
-    echo do_shortcode('[jotunheim_barter_page]'); // Replace with your actual shortcode
+    echo do_shortcode('[jotunheim_barter_page]');
 }
 
 // Hook the menu function to WordPress admin menu
