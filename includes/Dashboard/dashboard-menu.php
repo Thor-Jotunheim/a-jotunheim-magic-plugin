@@ -9,7 +9,7 @@ function jotunheim_magic_plugin_menu() {
     // Main Menu Page for Jotunheim Magic Plugin
     add_menu_page(
         'Jotunheim Magic Plugin',       // Page title
-        'Jotunheim Magic Plugin',       // Menu title in admin sidebar
+        //'Jotunheim Magic Plugin',       // Menu title in admin sidebar
         'manage_options',               // Capability required
         'jotunheim_magic_plugin',       // Menu slug
         'jotunheim_magic_dashboard',    // Callback function for main page
@@ -19,7 +19,7 @@ function jotunheim_magic_plugin_menu() {
 
     // Submenu for Prefab Image Import
     add_submenu_page(
-        //'jotunheim_magic_plugin',       // Parent slug
+        'jotunheim_magic_plugin',       // Parent slug
         'Prefab Image Import',          // Page title
         'Prefab Image Import',          // Menu title
         'manage_options',               // Capability required
