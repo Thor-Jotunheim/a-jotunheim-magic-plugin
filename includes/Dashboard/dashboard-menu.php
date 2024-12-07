@@ -27,7 +27,7 @@ function jotunheim_magic_plugin_menu() {
         'render_prefab_image_import_page' // Callback function for the page
     );
 
-    // Submenu for another feature (e.g., Image Import)
+    // Submenu for Image Import
     add_submenu_page(
         'jotunheim_magic_plugin',       // Parent slug
         'Image Import',                 // Page title
@@ -37,7 +37,8 @@ function jotunheim_magic_plugin_menu() {
         'render_image_import_page'      // Callback function for the page
     );
 
-    // Add more submenu pages as needed
+    // Remove the default submenu created by WordPress
+    remove_submenu_page('jotunheim_magic_plugin', 'jotunheim_magic_plugin');
 }
 
 // Main dashboard page for Jotunheim Magic Plugin
