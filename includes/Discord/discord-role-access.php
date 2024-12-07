@@ -60,7 +60,6 @@ function jotunheim_magic_staff_page_access() {
 
     if ($user_data) {
         // Log the username and display name
-        error_log("Username: " . $user_data->user_login);
         error_log("Display Name: " . $user_data->display_name);
     } else {
         error_log("Error: Unable to retrieve user data for User ID: " . $user_id);
