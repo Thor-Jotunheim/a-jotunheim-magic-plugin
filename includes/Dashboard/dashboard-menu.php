@@ -19,7 +19,7 @@ function jotunheim_magic_plugin_menu() {
 
     // Submenu for Prefab Image Import
     add_submenu_page(
-        'jotunheim_magic_plugin',       // Parent slug
+        //'jotunheim_magic_plugin',       // Parent slug
         'Prefab Image Import',          // Page title
         'Prefab Image Import',          // Menu title
         'manage_options',               // Capability required
