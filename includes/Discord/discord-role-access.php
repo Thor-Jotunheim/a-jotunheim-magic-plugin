@@ -80,7 +80,7 @@ function jotunheim_magic_staff_page_access() {
             error_log("Access denied to page: " . $post->post_name);
         }
     } else {
-        error_log("Page " . $post->post_name . " does not require special access.");
+        //error_log("Page " . $post->post_name . " does not require special access.");
     }
 }
 
