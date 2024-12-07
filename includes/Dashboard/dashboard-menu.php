@@ -43,7 +43,7 @@ function jotunheim_magic_plugin_menu() {
         'EventZone Editor',             // Page title
         'EventZone Editor',             // Menu title
         'manage_options',               // Capability required
-        'eventzone_editor',             // Submenu slug
+        'eventzones_editor',             // Submenu slug
         'render_eventzone_editor_page'  // Callback function for the page
     );
 
@@ -102,7 +102,7 @@ function render_itemlist_editor_page() {
 // EventZone Editor Page (Shortcode Render)
 function render_eventzone_editor_page() {
     echo '<h1>EventZone Editor</h1>';
-    echo do_shortcode('[eventzone_editor]'); // Replace with your actual shortcode
+    echo do_shortcode('[eventzones_editor]'); // Replace with your actual shortcode
 }
 
 // Add Event Zone Page (Shortcode Render)
