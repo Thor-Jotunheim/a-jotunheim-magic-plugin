@@ -129,31 +129,7 @@ function run_prefab_image_import($batch_size = 100) {
     ob_end_flush();
 }
 
-/**
- * Admin Page Callback - Displays the Image Import Admin Page
- */
-function render_prefab_image_import_page() {
-    echo "<h1>Prefab Image Import Page</h1>";
-    echo "<p>Here you can run the image import process manually.</p>";
-    echo do_shortcode('[prefabdb_image_import]');
-}
-
-/**
- * Register the Admin Page for Image Import
- */
-add_action('admin_menu', function() {
-    add_menu_page(
-        'Prefab Image Import',                // Page title
-        'Prefab Import',                      // Menu title
-        'manage_options',                     // Capability
-        'prefab-image-import',                // Menu slug
-        'render_prefab_image_import_page'     // Callback function
-    );
-});
-
-/**
- * Shortcode to trigger the image import process.
- */
+//Shortcode to trigger the image import process.
 function prefabdb_image_import_shortcode() {
     run_prefab_image_import();
 }
