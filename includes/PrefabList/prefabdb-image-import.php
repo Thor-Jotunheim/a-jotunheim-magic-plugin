@@ -13,7 +13,7 @@ function run_prefab_image_import($batch_size = 100) {
     echo "Starting image import process...<br>";
 
     // Define the table name without any prefix
-    $table_name = 'prefab';
+    $table_name = 'prefablist';
     $offset = 0;
 
     // Define upload directory for Jotunheim-magic icons
