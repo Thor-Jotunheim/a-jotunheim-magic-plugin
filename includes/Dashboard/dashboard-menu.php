@@ -43,7 +43,7 @@ function jotunheim_magic_plugin_menu() {
         'EventZone Editor',             // Page title
         'EventZone Editor',             // Menu title
         'manage_options',               // Capability required
-        'eventzones_editor',             // Submenu slug
+        'eventzone_editor',             // Submenu slug
         'render_eventzone_editor_page'  // Callback function for the page
     );
 
