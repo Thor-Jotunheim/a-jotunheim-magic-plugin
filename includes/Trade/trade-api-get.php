@@ -10,8 +10,8 @@ Author: Your Name
 if (!defined('ABSPATH')) exit;
 
 // Function to validate API key (API key should be set in wp-config.php)
-if (!function_exists('validate_api_key')) {
-    function validate_api_key($request) {
+if (!function_exists('validate_trade_api_key')) {
+    function validate_trade_api_key($request) {
         $api_key = $request->get_header('x-api-key');
         if (!defined('TRADE_API_KEY') || $api_key !== TRADE_API_KEY) {
             return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));

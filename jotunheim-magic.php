@@ -11,6 +11,9 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
+// File: jotunheim-magic.php
+require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
+
 // Include Utility files
 include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
 
@@ -22,7 +25,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-rest-api.ph
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-add-new-item-interface.php');
 
 // Include prefablist files
-require_once plugin_dir_path( __FILE__ ) . 'includes/PrefabList/prefablist-api-get.php';
+require_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefablist-api-get.php');
 
 // Include pricelist file
 include_once(plugin_dir_path(__FILE__) . 'includes/PriceList/pricelist.php');
@@ -37,7 +40,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefabdb-image-imp
 //include_once plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-generate-jwt-token.php';
 
 // Include the custom Discord OAuth API endpoint
-include_once plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-api.php';
+include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-api.php');
 
 // Include the Discord OAuth handler files
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-handler.php');
@@ -53,20 +56,33 @@ include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-code-out
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-editor-scripts.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-editor-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-add-new-zone-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-goto-output.php');
 //include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-interface-shortcodes.php');
 
 // Include Trade and Barter files
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-api-get.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Trade/barter-page-setup.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/barter-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-interface.php');
 
+// Include Trade APIs
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-permissions.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-post.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-rest.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-cleanup.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-post.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-rest.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-post.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-rest.php');
 
 // Include ledger files
-include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-rest-api.php';
-include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-get.php';
-include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-put.php';
-include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-claim.php';
-include_once plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-player.php';
-
+include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-rest-api.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-get.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-put.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-claim.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-player.php');
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');

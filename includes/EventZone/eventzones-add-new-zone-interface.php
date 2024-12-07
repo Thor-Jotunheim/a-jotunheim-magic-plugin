@@ -25,8 +25,8 @@ function jotunheim_magic_add_new_zone_interface() {
                     $field_name = $column->Field;
                     $field_type = $column->Type;
 
-                    // Skip 'id' field as it's usually the primary key and auto-incremented
-                    if ($field_name == 'id') continue;
+                    // Skip 'id' and 'string_name' fields
+                    if (in_array($field_name, ['id', 'string_name'])) continue;
 
                     echo "<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='$field_name'>";
                     echo "<label for='$field_name' style='flex: 1; font-weight: bold;'>".ucfirst(str_replace('_', ' ', $field_name)).":</label>";
@@ -100,11 +100,10 @@ function jotunheim_magic_add_new_zone_interface() {
                 $('[data-field="respawnLocation"]').toggle(isChecked);
             });
 
-            // When OnlyLeaveViaTeleport is checked, automatically check RespawnAtLocation without changing its visibility control
+            // Keep respawn location fields visible when "onlyLeaveViaTeleport" is checked
             $('#onlyLeaveViaTeleport').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#respawnAtLocation').prop('checked', true).trigger('change'); // Check and trigger change on RespawnAtLocation
-                }
+            const isChecked = $(this).is(':checked');
+            $('[data-field="respawnLocation"]').toggle(isChecked);
             });
 
             // AJAX call to add new event zone with proper checkbox values

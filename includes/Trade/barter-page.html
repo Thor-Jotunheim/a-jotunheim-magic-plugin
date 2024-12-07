@@ -1,5 +1,4 @@
 <div id="jotunheim-barter-page">
-    <h1>Jotunheim Barter Page</h1>
 <!-- Calculation Panel in the Center -->
 <div class="calculation-panel">
     <div class="trader-total trader1-total">
@@ -45,10 +44,12 @@
         <!-- Center: Selected Items -->
         <div class="selected-items-wrapper">
             <div id="selected-items-container" class="selected-items-panel">
+                <div>Trader 1:</div>
                 <!-- Trader 1's items will go here dynamically -->
             </div>
  
             <div id="selected-items-container-2" class="selected-items-panel">
+                <div>Trader 2:</div>
                 <!-- Trader 2's items will go here dynamically -->
             </div>
         </div>
@@ -70,18 +71,39 @@ html, body {
     margin: 0;
     display: flex;
     flex-direction: column; /* Stack header, content, and footer vertically */
+    min-width: 1200px; /* Prevent shrinking below 1200px */
+    overflow-x: auto; /* Allow horizontal scrolling if the window is smaller */
 }
 
 #jotunheim-barter-page {
     display: flex;
-    flex-direction: column; /* Stack child elements vertically */
-    align-items: center; /* Horizontally center */
-    justify-content: center; /* Vertically center */
-    height: 100%; /* Take up full height of the viewport */
-    margin: 0 auto; /* Center horizontally if necessary */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0 auto;
     box-sizing: border-box;
-    padding: 20px; /* Optional: Add some padding */
+    padding: 20px;
     width: 100%;
+    min-width: 1200px; /* Match the layout's minimum width */
+    overflow-x: hidden; /* Prevent unwanted overflow beyond the page */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    body::after {
+        content: "Please enlarge your browser window for the best experience.";
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        z-index: 1000;
+    }
 }
 
 footer {
@@ -95,161 +117,161 @@ footer {
 }
 
 /* Layout for the trader containers and sidebar */
-.trade-layout {
-    display: flex;
-    gap: 20px; /* Space between sidebars and containers */
-    justify-content: center; /* Distribute items evenly */
-    align-items: flex-start;
-    width: 100%; /* Ensure it uses full width */
-}
-
-    /* Sidebar Styling */
-.item-list-sidebar-container {
-    flex: 1;
-    min-width: 250px; /* Prevent sidebars from shrinking */
-    max-width: 20%;
-    overflow-y: visible;
-    padding: 10px;
-    background: #333;
-    border-radius: 10px;
-    color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.item-list-sidebar {
-    min-height: 150px; /* Minimum height when collapsed */
-    max-height: 100%; /* Allow full expansion */
-    overflow-y: auto; /* Enable scrolling for long content */
-}
-
-.search-bar {
-    width: 100%; /* Full width */
-    padding: 10px;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-
-/* Trader containers */
-/* Wrapper to keep Trader 1 and Trader 2 side by side */
-.selected-items-wrapper {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 items per row */
-    gap: 5px; /* Space between the two trader containers */
-    width: 100%; /* Full width of the wrapper */
-    height: 460px
-}
-
-.selected-items-container {
-    display: flex;
-    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
-    flex-direction: column; /* Stack panels vertically for each trader */
-    gap: 0px; /* Space between panels in the same trader container */
-    width: 50%; /* Each trader takes up half the width of the wrapper */
-    height: 460px;
-    background: none;
-}
-
-#selected-items-container .item-frame:not(:first-child),
-#selected-items-container-2 .item-frame:not(:first-child) {
-    margin-left: 5;
-}
-
-#selected-items-container,
-#selected-items-container-2 {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr); /* 1 items per row */
-    gap: 5px;
-    width: 700px; /* Adjust width here to make the containers wider */
-    max-width: 700px; /* Prevent overflow */
-    height: auto;
-    padding: 5px;
-    border-radius: 10px;
-    box-sizing: border-box;
-    background: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-    
-.selected-items-panel {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
-    gap: 5px; /* Space between items */
-    width: 100%; /* Full width of the trader container */
-    height: 455px;
-    background: url('/wp-content/uploads/Jotunheim-magic/icons/container-background.png') no-repeat center center;
-    background-size: 800px, 550px; /* Ensure the background covers the panel */
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-
-    /* Item Frame Styling */
-.item-frame {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative; /* Enable positioning for children */
-    gap: 5px; /* Space between elements */
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 150px; /* Adjusted width for wider frames */
-    height: 210px; /* Frame height remains consistent */
-    overflow: hidden; /* Prevent overflow */
-}
-
-    .item-frame img {
-        max-width: 70px;
-        max-height: 70px;
-        margin-bottom: 5px;
+    .trade-layout {
+        display: flex;
+        justify-content: space-between; /* Keep equal spacing between sidebars and center */
+        align-items: flex-start; /* Align items to the top */
+        width: 1200px; /* Fixed width for the entire layout */
+        max-width: 1200px; /* Prevent layout from growing */
+        margin: 0 auto; /* Center the layout horizontally */
+        gap: 20px; /* Consistent gap between sections */
+        box-sizing: border-box; /* Include padding/border in width calculations */
     }
 
-.item-frame h3 {
-    font-size: 12px; /* Increase font size for wider frames */
-    margin: 0;
-    text-align: center;
-}
+/* Trader containers */
+    /* Wrapper to keep Trader 1 and Trader 2 side by side */
+    .selected-items-wrapper {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr); /* Two equal columns for Trader 1 and Trader 2 */
+        gap: 20px; /* Space between the two containers */
+        width: 700px; /* Fixed width for the center section */
+        max-width: 700px;
+        box-sizing: border-box;
+        margin: 0 auto;
+    }
 
+    .selected-items-container {
+        display: flex;
+        grid-template-columns: repeat(4, 1fr); /* 4 items per row */
+        flex-direction: column; /* Stack panels vertically for each trader */
+        gap: 0px; /* Space between panels in the same trader container */
+        width: 50%; /* Each trader takes up half the width of the wrapper */
+        height: 530px;
+        background: none;
+    }
 
-.item-frame .item-input,
-.item-frame .level-dropdown {
-    width: 80%; /* Ensure inputs fit well within the wider frame */
-}
+    #selected-items-container .item-frame:not(:first-child),
+    #selected-items-container-2 .item-frame:not(:first-child) {
+        margin-left: 5;
+    }
 
-.item-input {
-    width: 45%; /* Make each input take up half of the container width */
-    padding: 5px;
-    font-size: 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-align: center;
-}
+    #selected-items-container,
+    #selected-items-container-2 {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr); /* 1 items per row */
+        gap: 5px;
+        width: 700px; /* Adjust width here to make the containers wider */
+        max-width: 700px; /* Prevent overflow */
+        height: auto;
+        padding: 5px;
+        border-radius: 10px;
+        box-sizing: border-box;
+        background: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .selected-items-panel {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 items per row */
+        gap: 5px; /* Space between items */
+        /* width: 100%; /* Full width of the trader container */
+        height: 540px;
+        background: url('/wp-content/uploads/Jotunheim-magic/icons/container-background.png') no-repeat center center;
+        background-size: 140%, 125%; /* Ensure the background covers the panel */
+        padding: 5px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 
+/* Item Frame Styling */
+    .item-frame {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative; /* Enable positioning for children */
+        background: #ffffffe0;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 0px;
+        margin-left: 2px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 160px; /* Adjusted width for wider frames */
+        height: 260px; /* Frame height remains consistent */
+        overflow: hidden; /* Prevent overflow */
+    }
+
+    .item-frame img {
+        max-width: 100px;
+        max-height: 100px;
+        margin-bottom: 5px;
+        margin-top: 5px;
+        background: #ffffffbb;
+        border: 3px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-frame h3 {
+        font-size: 12px; /* Increase font size for wider frames */
+        margin: 0;
+        text-align: center;
+        color: rgb(0, 0, 0);
+    }
+
+    .item-frame .item-input,
+    .item-frame .level-dropdown {
+        width: 80%; /* Ensure inputs fit well within the wider frame */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
 
     .item-frame:hover {
         transform: scale(1.05);
     }
 
-.item-frame .remove-item {
-    position: absolute;
-    top: 0; /* Place the button at the top */
-    right: 0; /* Align it to the right edge */
-    transform: translate(50%, -50%); /* Slight adjustment for centering */
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 50%; /* Make it circular */
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-    cursor: pointer;
-    z-index: 10; /* Ensure it appears above the image */
-}
+    .item-frame .remove-item {
+        position: absolute;
+        top: 0; /* Place the button at the top */
+        right: 0; /* Align it to the right edge */
+        transform: translate(50%, -50%); /* Slight adjustment for centering */
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 50%; /* Make it circular */
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 10; /* Ensure it appears above the image */
+    }
+
+/* Sidebar Styling */
+    .item-list-sidebar-container {
+        width: 250px; /* Fixed width for both sidebars */
+        min-width: 250px; /* Prevent shrinking */
+        max-width: 250px; /* Prevent growing */
+        padding: 10px;
+        background: #333; /* Ensure background color remains consistent */
+        border-radius: 10px; /* Rounded corners for visual effect */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        box-sizing: border-box;
+    }
+
+    .item-list-sidebar {
+        min-height: 150px; /* Minimum height when collapsed */
+        max-height: 100%; /* Allow full expansion */
+        overflow-y: auto; /* Enable scrolling for long content */
+    }
+
+    .search-bar {
+        width: 100%; /* Full width */
+        padding: 10px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
 
     /* Accordion styling for item list */
     .item-list-sidebar .accordion-section {
@@ -291,7 +313,7 @@ footer {
         background: #666;
     }
 
-    /* Totals Section */
+/* Totals Section */
     .totals-container {
         margin-top: 20px;
         font-size: 1.2rem;
@@ -304,10 +326,12 @@ footer {
     .calculation-panel {
     display: flex;
     justify-content: space-between; /* Spread items across the row */
-    align-items: center; /* Vertically center the items */
+    align-items: flex-start; /* Vertically center the items */
     margin: 20px 0; /* Add spacing around the panel */
-    width: 1400px;
+    margin-left: 40px;
+    width: 1230px;
     padding: 10px;
+    padding-left: 10px;
     background-color: #f4f4f4; /* Optional: light background for visibility */
     border-radius: 8px; /* Rounded corners */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
@@ -320,11 +344,21 @@ footer {
 
 .trader1-total, .trader2-total {
     flex: 1; /* Allow trader totals to take equal space */
+    color: rgb(0, 0, 0);
 }
 
 .trade-difference {
     flex: 0.5; /* Allow the difference to take less space */
     font-weight: bold; /* Highlight the difference */
+    color: rgb(0, 0, 0);
 }
 
 </style>
+<script type="module">
+    import { fetchItems, filterItems, populateItemList, addItemToContainer, adjustPageHeight, toggleAccordion, sanitizeItemName, escapeHtml } from 'https://jotun.games/wp-content/plugins/a-jotunheim-magic-plugin/includes/Trade/trade-barter-utils.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Initializing barter page...');
+        fetchItems();
+    });
+</script>
