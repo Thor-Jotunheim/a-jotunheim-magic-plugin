@@ -8,10 +8,10 @@ if (!defined('ABSPATH')) {
 function jotunheim_magic_plugin_menu() {
     // Main Menu Page for Jotunheim Magic Plugin
     add_menu_page(
-        'Jotunheim Magic Plugin',       // Page title
-        'Jotunheim Magic Plugin',       // Menu title in admin sidebar
+        'Jotunheim Magic',              // Page title
+        'Jotunheim Magic',              // Menu title in admin sidebar
         'manage_options',               // Capability required
-        'jotunheim_magic_plugin',       // Menu slug
+        'jotunheim_magic',              // Menu slug
         'jotunheim_magic_dashboard',    // Callback function for main page
         'dashicons-hammer',             // Icon URL or Dashicon (hammer for example)
         6                               // Position in the menu order
@@ -66,7 +66,7 @@ function jotunheim_magic_plugin_menu() {
     // Register each submenu
     foreach ($submenus as $submenu) {
         add_submenu_page(
-            'jotunheim_magic_plugin',   // Parent slug
+            'jotunheim_magic',   // Parent slug
             $submenu['title'],          // Page title
             $submenu['menu_title'],     // Menu title
             'manage_options',           // Capability required
@@ -76,7 +76,7 @@ function jotunheim_magic_plugin_menu() {
     }
 
     // Remove the default submenu created by WordPress
-    remove_submenu_page('jotunheim_magic_plugin', 'jotunheim_magic_plugin');
+    remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
 }
 
 // Main dashboard page for Jotunheim Magic Plugin
@@ -129,5 +129,5 @@ function render_barter_page() {
 }
 
 // Hook the menu function to WordPress admin menu
-add_action('admin_menu', 'jotunheim_magic_plugin_menu');
+add_action('admin_menu', 'jotunheim_magic_menu');
 ?>
