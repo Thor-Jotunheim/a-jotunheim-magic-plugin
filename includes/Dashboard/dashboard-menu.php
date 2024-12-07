@@ -129,5 +129,5 @@ function render_barter_page() {
 }
 
 // Hook the menu function to WordPress admin menu
-add_action('admin_menu', 'jotunheim_magic_menu');
+add_action('admin_menu', 'jotunheim_magic_plugin_menu');
 ?>
