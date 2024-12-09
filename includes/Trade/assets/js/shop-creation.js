@@ -1,5 +1,10 @@
-jQuery(document).ready(function ($) {
-    const shopFormHTML = `
+import { fetchItems, populateItemList } from './trade-barter-utils.js';
+
+document.addEventListener("DOMContentLoaded", () => {
+    const shopCreationUI = document.getElementById("shop-creation-ui");
+
+    // Render the shop creation form
+    shopCreationUI.innerHTML = `
         <div class="barter-container">
             <form id="shop-creation-form">
                 <div class="barter-header">
@@ -24,74 +29,56 @@ jQuery(document).ready(function ($) {
         </div>
     `;
 
-    $("#shop-creation-ui").html(shopFormHTML);
-
-    // Fetch and populate items in the accordion
-    function fetchItemsForAccordion() {
-        $.ajax({
-            url: jotunShopData.ajax_url,
-            method: "GET",
-            data: {
-                action: "jotun_fetch_items",
-                nonce: jotunShopData.api_nonce,
-            },
-            success: function (response) {
-                if (response.success) {
-                    populateItemList(response.data.items);
-                } else {
-                    $("#item-list-accordion").html(`<p>Error loading items: ${response.data.message}</p>`);
-                }
-            },
+    // Fetch items and populate the accordion
+    fetchItems()
+        .then(() => {
+            populateItemList("item-list-accordion", itemsData, "", addSelectedItemToForm);
+        })
+        .catch((error) => {
+            console.error("Error fetching items:", error);
+            document.getElementById("item-list-accordion").innerHTML = `<p>Failed to load items.</p>`;
         });
+
+    // Add selected items to the form
+    function addSelectedItemToForm(item) {
+        const selectedItemsContainer = document.getElementById("selected-items-container");
+        selectedItemsContainer.innerHTML += `
+            <div>
+                <input type="checkbox" name="items[]" value="${item.id}" />
+                ${item.name} - ${item.price} credits
+            </div>
+        `;
     }
-
-    function populateItemList(items) {
-        const itemListHTML = items
-            .map(item => `
-                <div class="accordion-section">
-                    <div class="accordion-header">${escapeHtml(item.name)} - ${item.price} credits</div>
-                    <div class="accordion-content">
-                        <label>
-                            <input type="checkbox" name="items[]" value="${item.id}" />
-                            Add to Shop
-                        </label>
-                    </div>
-                </div>
-            `)
-            .join("");
-
-        $("#item-list-accordion").html(itemListHTML);
-
-        // Enable accordion behavior
-        $(".accordion-header").on("click", function () {
-            $(this).next(".accordion-content").toggleClass("active");
-        });
-    }
-
-    // Initialize item fetch
-    fetchItemsForAccordion();
 
     // Handle form submission
-    $("#shop-creation-form").on("submit", function (e) {
+    document.getElementById("shop-creation-form").addEventListener("submit", (e) => {
         e.preventDefault();
 
-        const formData = $(this).serialize();
-        $.ajax({
-            url: jotunShopData.ajax_url,
+        const formData = new FormData(e.target);
+
+        fetch(jotunShopData.ajax_url, {
             method: "POST",
-            data: {
+            body: JSON.stringify({
                 action: "jotun_create_shop_with_items",
                 nonce: jotunShopData.api_nonce,
-                form_data: formData,
+                form_data: Object.fromEntries(formData.entries()),
+            }),
+            headers: {
+                "Content-Type": "application/json",
             },
-            success: function (response) {
-                if (response.success) {
-                    $("#shop-feedback").html(`<p>Shop created successfully!</p>`);
-                    $("#shop-creation-form")[0].reset();
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    document.getElementById("shop-feedback").innerHTML = `<p>Shop created successfully!</p>`;
+                    e.target.reset();
                 } else {
-                    $("#shop-feedback").html(`<p>Error: ${response.data.message}</p>`);
+                    document.getElementById("shop-feedback").innerHTML = `<p>Error: ${data.message}</p>`;
                 }
-            },
-        });
+            })
+            .catch((error) => {
+                console.error("Error creating shop:", error);
+                document.getElementById("shop-feedback").innerHTML = `<p>Failed to create shop.</p>`;
+            });
     });
 });
