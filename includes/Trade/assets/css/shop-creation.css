@@ -1,23 +1,69 @@
-#shop-creation-form {
-    max-width: 600px;
+/* Container styling (reusing barter container) */
+.barter-container {
+    max-width: 800px;
     margin: auto;
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
     background: #f9f9f9;
 }
-#shop-creation-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+
+.barter-header h2 {
+    text-align: center;
+    margin-bottom: 20px;
 }
-#shop-creation-form input, #shop-creation-form textarea {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-}
-#shop-feedback {
+
+.barter-items {
     margin-top: 20px;
-    font-weight: bold;
-    color: green;
+}
+
+/* Accordion styling */
+.accordion {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.accordion-item {
+    border-bottom: 1px solid #ddd;
+}
+
+.accordion-button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    background: #f1f1f1;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.accordion-button:hover {
+    background: #e1e1e1;
+}
+
+.accordion-content {
+    padding: 10px;
+    display: none;
+    background: #fff;
+}
+
+.accordion-content.active {
+    display: block;
+}
+
+.barter-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #0073aa;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.barter-button:hover {
+    background: #005f8a;
 }
