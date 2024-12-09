@@ -11,10 +11,10 @@ jQuery(document).ready(function ($) {
                 <label for="shop-description">Description:</label>
                 <textarea id="shop-description" name="shop_description"></textarea>
 
-                <div class="barter-items">
-                    <h3>Select Items for Your Shop</h3>
-                    <div id="shop-items" class="accordion">
-                        <p>Loading items...</p>
+                <div class="item-list-sidebar-container">
+                    <input type="text" id="item-search" class="search-bar" placeholder="Search items..." />
+                    <div id="item-list-accordion" class="item-list-sidebar">
+                        <!-- Accordion content populated dynamically -->
                     </div>
                 </div>
 
@@ -26,8 +26,8 @@ jQuery(document).ready(function ($) {
 
     $("#shop-creation-ui").html(shopFormHTML);
 
-    // Fetch items and render as accordion
-    function fetchItems() {
+    // Fetch and populate items in the accordion
+    function fetchItemsForAccordion() {
         $.ajax({
             url: jotunShopData.ajax_url,
             method: "GET",
@@ -37,33 +37,41 @@ jQuery(document).ready(function ($) {
             },
             success: function (response) {
                 if (response.success) {
-                    const itemsHTML = response.data.items
-                        .map(item => `
-                            <div class="accordion-item">
-                                <button class="accordion-button">${item.name} - ${item.price} credits</button>
-                                <div class="accordion-content">
-                                    <input type="checkbox" name="items[]" value="${item.id}" />
-                                    <label for="item-${item.id}">Include this item</label>
-                                </div>
-                            </div>
-                        `)
-                        .join("");
-                    $("#shop-items").html(itemsHTML);
-
-                    // Activate accordion functionality
-                    $(".accordion-button").on("click", function () {
-                        const content = $(this).next(".accordion-content");
-                        content.toggleClass("active");
-                    });
+                    populateItemList(response.data.items);
                 } else {
-                    $("#shop-items").html(`<p>Error loading items: ${response.data.message}</p>`);
+                    $("#item-list-accordion").html(`<p>Error loading items: ${response.data.message}</p>`);
                 }
             },
         });
     }
-    fetchItems();
 
-    // Submit shop creation form
+    function populateItemList(items) {
+        const itemListHTML = items
+            .map(item => `
+                <div class="accordion-section">
+                    <div class="accordion-header">${escapeHtml(item.name)} - ${item.price} credits</div>
+                    <div class="accordion-content">
+                        <label>
+                            <input type="checkbox" name="items[]" value="${item.id}" />
+                            Add to Shop
+                        </label>
+                    </div>
+                </div>
+            `)
+            .join("");
+
+        $("#item-list-accordion").html(itemListHTML);
+
+        // Enable accordion behavior
+        $(".accordion-header").on("click", function () {
+            $(this).next(".accordion-content").toggleClass("active");
+        });
+    }
+
+    // Initialize item fetch
+    fetchItemsForAccordion();
+
+    // Handle form submission
     $("#shop-creation-form").on("submit", function (e) {
         e.preventDefault();
 

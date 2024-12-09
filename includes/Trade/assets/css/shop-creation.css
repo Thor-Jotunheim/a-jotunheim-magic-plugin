@@ -67,3 +67,27 @@
 .barter-button:hover {
     background: #005f8a;
 }
+
+.accordion-section {
+    margin-bottom: 10px;
+}
+
+.accordion-header {
+    cursor: pointer;
+    padding: 10px;
+    background: #444;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+}
+
+.accordion-content {
+    margin-top: 5px;
+    padding-left: 10px;
+    display: none;
+}
+
+.accordion-content.active {
+    display: block;
+}
