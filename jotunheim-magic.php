@@ -77,6 +77,10 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-put.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-transactions-api-rest.php');
 
+// Shops
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/shop-creation-ui.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-ajax-handlers.php');
+
 // Include ledger files
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-rest-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-get.php');

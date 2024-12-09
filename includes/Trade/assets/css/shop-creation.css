@@ -1,0 +1,23 @@
+#shop-creation-form {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+#shop-creation-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+#shop-creation-form input, #shop-creation-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+}
+#shop-feedback {
+    margin-top: 20px;
+    font-weight: bold;
+    color: green;
+}
