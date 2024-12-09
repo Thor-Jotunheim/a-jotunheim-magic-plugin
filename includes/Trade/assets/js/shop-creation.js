@@ -9,7 +9,7 @@ jQuery(document).ready(function ($) {
 
             <label for="shop-items">Items:</label>
             <div id="shop-items">
-                <!-- Items loaded dynamically -->
+                <p>Loading items...</p>
             </div>
 
             <button type="submit">Create Shop</button>
@@ -19,7 +19,7 @@ jQuery(document).ready(function ($) {
 
     $("#shop-creation-ui").html(shopFormHTML);
 
-    // Fetch items from API
+    // Fetch items for selection
     function fetchItems() {
         $.ajax({
             url: jotunShopData.ajax_url,
@@ -40,14 +40,14 @@ jQuery(document).ready(function ($) {
                         .join("");
                     $("#shop-items").html(itemsHTML);
                 } else {
-                    $("#shop-items").html(`<p>Error loading items.</p>`);
+                    $("#shop-items").html(`<p>Error loading items: ${response.data.message}</p>`);
                 }
             },
         });
     }
     fetchItems();
 
-    // Submit form
+    // Submit shop creation form
     $("#shop-creation-form").on("submit", function (e) {
         e.preventDefault();
 
@@ -56,7 +56,7 @@ jQuery(document).ready(function ($) {
             url: jotunShopData.ajax_url,
             method: "POST",
             data: {
-                action: "jotun_create_shop",
+                action: "jotun_create_shop_with_items",
                 nonce: jotunShopData.api_nonce,
                 form_data: formData,
             },
