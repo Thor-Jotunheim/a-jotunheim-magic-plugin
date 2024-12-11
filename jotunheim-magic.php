@@ -88,6 +88,10 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-put.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-claim.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-player.php');
 
+// Include UniversalUI components
+require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-add-item.php';
+require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-api.php';
+
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
 
