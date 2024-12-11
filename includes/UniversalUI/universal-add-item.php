@@ -36,7 +36,6 @@ function jotunheim_magic_universal_add_item_interface() {
             </form>
         </div>    
     </div>
-
     <script type="text/javascript">
         jQuery(document).ready(function($) {
             // Fetch columns dynamically when a table is selected
