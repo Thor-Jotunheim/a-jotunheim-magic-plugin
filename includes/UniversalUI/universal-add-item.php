@@ -1,13 +1,13 @@
 <?php
-// File: universal-add-item-interface.php
+// File: universal-add-item.php
 
 function jotunheim_magic_universal_add_item_interface() {
     global $wpdb;
 
     ob_start(); // Start output buffering
 
-    // Fetch all tables in the database
-    $tables = $wpdb->get_col("SHOW TABLES");
+    // Fetch tables starting with jotun_
+    $tables = $wpdb->get_col("SHOW TABLES LIKE 'jotun_%'");
 
     ?>
     <div class="universal-edit-section" style="width: 100%; max-width: 1000px; margin: auto;">
@@ -17,7 +17,7 @@ function jotunheim_magic_universal_add_item_interface() {
             <select id="table-selector" name="table_name" style="width: 100%; padding: 10px; margin-bottom: 20px;">
                 <option value="">-- Select a Table --</option>
                 <?php foreach ($tables as $table): ?>
-                    <option value="<?php echo $table; ?>"><?php echo $table; ?></option>
+                    <option value="<?php echo esc_attr($table); ?>"><?php echo esc_html($table); ?></option>
                 <?php endforeach; ?>
             </select>
 
@@ -35,7 +35,7 @@ function jotunheim_magic_universal_add_item_interface() {
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // Handle table selection
+            // Fetch columns dynamically when a table is selected
             $('#table-selector').change(function() {
                 const selectedTable = $(this).val();
 
@@ -49,12 +49,17 @@ function jotunheim_magic_universal_add_item_interface() {
                             const container = $('#form-fields-container');
                             container.empty();
 
-                            response.columns.forEach(column => {
-                                const field = createField(column);
-                                container.append(field);
-                            });
+                            if (response.columns && response.columns.length > 0) {
+                                response.columns.forEach(column => {
+                                    const field = createField(column);
+                                    container.append(field);
+                                });
 
-                            $('#add-item-btn').prop('disabled', false);
+                                $('#add-item-btn').prop('disabled', false);
+                            } else {
+                                container.html('<p>No fields found for this table.</p>');
+                                $('#add-item-btn').prop('disabled', true);
+                            }
                         },
                         error: function(error) {
                             alert('Failed to fetch columns');
@@ -67,7 +72,7 @@ function jotunheim_magic_universal_add_item_interface() {
                 }
             });
 
-            // Submit form
+            // Submit form dynamically via AJAX
             $('#add-item-btn').click(function() {
                 const formData = $('#universal-add-item-form').serializeArray();
                 const data = {};
@@ -92,10 +97,10 @@ function jotunheim_magic_universal_add_item_interface() {
                 });
             });
 
-            // Helper function to create fields dynamically
+            // Helper function to dynamically create input fields for columns
             function createField(column) {
-                const fieldName = column.name;
-                const fieldType = column.type;
+                const fieldName = column.Field;
+                const fieldType = column.Type;
                 const isCheckbox = fieldType.includes('tinyint(1)');
                 const inputType = isCheckbox ? 'checkbox' : 'text';
 
@@ -108,8 +113,9 @@ function jotunheim_magic_universal_add_item_interface() {
     </script>
     <?php
 
-    return ob_get_clean(); // Return the content
+    return ob_get_clean(); // Return the generated content
 }
 
-// Shortcode to display the universal form
+// Register the shortcode to display the universal form
 add_shortcode('jotunheim_universal_add_item', 'jotunheim_magic_universal_add_item_interface');
+?>
