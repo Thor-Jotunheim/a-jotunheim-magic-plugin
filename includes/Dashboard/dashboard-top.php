@@ -66,14 +66,10 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     }
 }, 100);
 
-// Optional: Add custom CSS to adjust the menu order
-add_action('admin_head', function () {
-    echo '<style>
-        #wp-admin-bar-admin-magic {
-            order: 2;
-        }
-        #wp-admin-bar-moderator-magic {
-            order: 3;
-        }
-    </style>';
-});
+// Hide unwanted sections in the admin bar
+add_action('admin_bar_menu', function ($wp_admin_bar) {
+    // Remove Gutenverse sections
+    $wp_admin_bar->remove_node('gutenverse');
+    $wp_admin_bar->remove_node('gutenverse-pro');
+    $wp_admin_bar->remove_node('upgrade-plus');
+}, 999);
