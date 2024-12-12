@@ -1,0 +1,36 @@
+name: Disable Mod and Deploy with WPPusher
+
+on:
+  push:
+    branches:
+      - main  # Adjust if your deployment branch is different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Disable the Mod
+      - name: Disable Mod
+        run: |
+          curl -X GET "${{ secrets.DISABLE_MOD_URL }}"
+
+      # Step 3: Wait for the Mod to Disable
+      - name: Wait for Mod to Disable
+        run: sleep 10  # Adjust the wait time if necessary
+
+      # Step 4: Trigger WPPusher Deployment
+      - name: Trigger WPPusher Deployment
+        run: |
+          curl -X POST "${{ secrets.WPPUSHER_PAYLOAD_URL }}" \
+          -H "Content-Type: application/json" \
+          --data '{"trigger": "deploy"}'
+
+      # Step 5: Re-enable the Mod After Deployment
+      - name: Re-enable Mod
+        run: |
+          curl -X GET "${{ secrets.START_MOD_URL }}"
