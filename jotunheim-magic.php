@@ -32,6 +32,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/PriceList/pricelist.php');
 
 // Include the dashboard menu file
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
 
 // Include PrefabList file(s)
 include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefabdb-image-import.php');
