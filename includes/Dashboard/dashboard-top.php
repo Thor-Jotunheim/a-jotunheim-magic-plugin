@@ -66,8 +66,10 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     }
 }, 100);
 
-// Hide unwanted sections in the admin bar
-add_action('admin_bar_menu', function ($wp_admin_bar) {
+// Forcefully hide unwanted sections in the admin bar
+add_action('wp_before_admin_bar_render', function () {
+    global $wp_admin_bar;
+
     // Remove specific nodes by their exact IDs
     $nodes_to_remove = [
         'gutenverse',            // Gutenverse
@@ -78,7 +80,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     foreach ($nodes_to_remove as $node_id) {
         $wp_admin_bar->remove_node($node_id);
     }
-}, 999);
+}, 0); // Ensures this runs very early
 
 // Enforce hiding unwanted sections with CSS
 add_action('admin_head', function () {
