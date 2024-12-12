@@ -66,8 +66,8 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     }
 }, 100);
 
-// Forcefully hide unwanted sections in the admin bar
-add_action('wp_before_admin_bar_render', function () {
+// Hide unwanted sections in the admin bar
+add_action('wp_after_admin_bar_render', function () {
     global $wp_admin_bar;
 
     // Remove specific nodes by their exact IDs
@@ -80,7 +80,15 @@ add_action('wp_before_admin_bar_render', function () {
     foreach ($nodes_to_remove as $node_id) {
         $wp_admin_bar->remove_node($node_id);
     }
-}, 0); // Ensures this runs very early
+}, PHP_INT_MAX); // Ensures this runs very late
+
+// Debug admin bar structure (Optional: Comment out after verifying)
+add_action('wp_after_admin_bar_render', function () {
+    global $wp_admin_bar;
+    echo '<pre>';
+    print_r($wp_admin_bar->get_nodes());
+    echo '</pre>';
+}, PHP_INT_MAX);
 
 // Enforce hiding unwanted sections with CSS
 add_action('admin_head', function () {
@@ -91,23 +99,4 @@ add_action('admin_head', function () {
             display: none !important;
         }
     </style>';
-});
-
-// Enforce hiding unwanted sections with JavaScript
-add_action('admin_footer', function () {
-    echo '<script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var unwantedNodes = [
-                "wp-admin-bar-gutenverse",
-                "wp-admin-bar-gutenverse-pro",
-                "wp-admin-bar-updraft_admin_node"
-            ];
-            unwantedNodes.forEach(function(id) {
-                var node = document.getElementById(id);
-                if (node) {
-                    node.remove();
-                }
-            });
-        });
-    </script>';
 });
