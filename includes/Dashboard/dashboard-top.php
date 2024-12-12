@@ -25,7 +25,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'id'     => 'item-list-editor',
             'parent' => 'admin-magic',
             'title'  => 'Item List Editor',
-            'href'   => admin_url('admin.php?page=itemlist-editor'), // Replace with the actual link
+            'href'   => admin_url('admin.php?page=item_list-editor'), // Replace with the actual link
         ]);
 
         // Add Item List Add New submenu
@@ -33,7 +33,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'id'     => 'item-list-add-new',
             'parent' => 'admin-magic',
             'title'  => 'Item List Add New Item',
-            'href'   => admin_url('admin.php?page=itemlist-add-new'), // Replace with the actual link
+            'href'   => admin_url('admin.php?page=item_list-add-new'), // Replace with the actual link
         ]);
 
         // Add Event Zone Editor submenu
@@ -41,7 +41,15 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'id'     => 'event-zone-editor',
             'parent' => 'admin-magic',
             'title'  => 'Event Zone Editor',
-            'href'   => admin_url('admin.php?page=eventzone-editor'), // Replace with the actual link
+            'href'   => admin_url('admin.php?page=event_zone-editor'), // Replace with the actual link
+        ]);
+
+         // Add Add Event Zone Editor submenu
+         $wp_admin_bar->add_node([
+            'id'     => 'event-zone-editor',
+            'parent' => 'admin-magic',
+            'title'  => 'Event Zone Editor',
+            'href'   => admin_url('admin.php?page=add_event_zone'), // Replace with the actual link
         ]);
     }
 
