@@ -56,7 +56,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             ],
         ]);
 
-        // Add a placeholder submenu for Moderator Magic section
+        // Add a placeholder submenu for Moderator Magic
         $wp_admin_bar->add_node([
             'id'     => 'moderator-placeholder',
             'parent' => 'moderator-magic',
