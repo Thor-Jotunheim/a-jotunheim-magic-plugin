@@ -46,7 +46,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     }
 
     // Ensure both Moderator and Administrator roles can access Moderator Magic
-    if (array_intersect($roles, ['administrator', 'moderator'])) {
+    if (array_intersect($roles, ['administrator', 'editor', 'moderator'])) {
         $wp_admin_bar->add_node([
             'id'    => 'moderator-magic',
             'title' => 'Moderator Magic',
@@ -68,15 +68,25 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
 
 // Hide unwanted sections in the admin bar
 add_action('admin_bar_menu', function ($wp_admin_bar) {
-    // Remove specific nodes from the admin bar
+    // Remove specific nodes by their exact IDs
     $nodes_to_remove = [
-        'gutenverse',       // Gutenverse
-        'gutenverse-pro',   // Gutenverse PRO
-        'upgrade-plus',     // UpgradePlus
-        'updraft_admin_node' // UpdraftPlus (adjust if different ID)
+        'gutenverse',            // Gutenverse
+        'gutenverse-pro',        // Gutenverse PRO
+        'updraft_admin_node',    // UpdraftPlus
     ];
 
     foreach ($nodes_to_remove as $node_id) {
         $wp_admin_bar->remove_node($node_id);
     }
 }, 999);
+
+// Optional: Add custom CSS to ensure hidden elements aren't displayed
+add_action('admin_head', function () {
+    echo '<style>
+        #wp-admin-bar-gutenverse,
+        #wp-admin-bar-gutenverse-pro,
+        #wp-admin-bar-updraft_admin_node {
+            display: none !important;
+        }
+    </style>';
+});
