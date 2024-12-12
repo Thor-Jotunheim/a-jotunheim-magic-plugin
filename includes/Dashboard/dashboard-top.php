@@ -80,7 +80,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     }
 }, 999);
 
-// Optional: Add custom CSS to ensure hidden elements aren't displayed
+// Enforce hiding unwanted sections with CSS
 add_action('admin_head', function () {
     echo '<style>
         #wp-admin-bar-gutenverse,
@@ -89,4 +89,23 @@ add_action('admin_head', function () {
             display: none !important;
         }
     </style>';
+});
+
+// Enforce hiding unwanted sections with JavaScript
+add_action('admin_footer', function () {
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var unwantedNodes = [
+                "wp-admin-bar-gutenverse",
+                "wp-admin-bar-gutenverse-pro",
+                "wp-admin-bar-updraft_admin_node"
+            ];
+            unwantedNodes.forEach(function(id) {
+                var node = document.getElementById(id);
+                if (node) {
+                    node.remove();
+                }
+            });
+        });
+    </script>';
 });
