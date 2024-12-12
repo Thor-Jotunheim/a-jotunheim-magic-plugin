@@ -9,8 +9,8 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
     $user = wp_get_current_user();
     $roles = $user->roles;
 
-    // Add Admin Magic menu for Editor role and above
-    if (in_array('editor', $roles) || in_array('administrator', $roles)) {
+    // Ensure both Editor and Administrator roles can access Admin Magic
+    if (array_intersect($roles, ['administrator', 'editor'])) {
         $wp_admin_bar->add_node([
             'id'    => 'admin-magic',
             'title' => 'Admin Magic',
@@ -45,8 +45,8 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
         ]);
     }
 
-    // Add Moderator Magic menu for Moderator role and above
-    if (in_array('moderator', $roles) || in_array('administrator', $roles)) {
+    // Ensure both Moderator and Administrator roles can access Moderator Magic
+    if (array_intersect($roles, ['administrator', 'moderator'])) {
         $wp_admin_bar->add_node([
             'id'    => 'moderator-magic',
             'title' => 'Moderator Magic',
@@ -68,8 +68,15 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
 
 // Hide unwanted sections in the admin bar
 add_action('admin_bar_menu', function ($wp_admin_bar) {
-    // Remove Gutenverse sections
-    $wp_admin_bar->remove_node('gutenverse');
-    $wp_admin_bar->remove_node('gutenverse-pro');
-    $wp_admin_bar->remove_node('upgrade-plus');
+    // Remove specific nodes from the admin bar
+    $nodes_to_remove = [
+        'gutenverse',       // Gutenverse
+        'gutenverse-pro',   // Gutenverse PRO
+        'upgrade-plus',     // UpgradePlus
+        'updraft_admin_node' // UpdraftPlus (adjust if different ID)
+    ];
+
+    foreach ($nodes_to_remove as $node_id) {
+        $wp_admin_bar->remove_node($node_id);
+    }
 }, 999);
