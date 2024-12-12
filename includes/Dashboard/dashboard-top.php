@@ -45,7 +45,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
         ]);
     }
 
-    // Ensure both Moderator and Administrator roles can access Moderator Magic
+    // Ensure Administrator, Editor, and Moderator roles can access Moderator Magic
     if (array_intersect($roles, ['administrator', 'editor', 'moderator'])) {
         $wp_admin_bar->add_node([
             'id'    => 'moderator-magic',
