@@ -173,5 +173,5 @@ function jotunheim_magic_universal_editor_interface() {
 }
 
 // Shortcode to display the universal editor form
-add_shortcode('universal_editor_ui', 'jotunheim_magic_universal_editor_interface');
+add_shortcode('magic_universal_editor_ui', 'jotunheim_magic_universal_editor_interface');
 ?>

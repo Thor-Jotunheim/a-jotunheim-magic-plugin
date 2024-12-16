@@ -126,5 +126,5 @@ function jotunheim_magic_universal_add_item_interface() {
 }
 
 // Shortcode to display the universal form
-add_shortcode('universal_add_ui', 'jotunheim_magic_universal_add_item_interface');
+add_shortcode('magic_universal_add_ui', 'jotunheim_magic_universal_add_item_interface');
 ?>
