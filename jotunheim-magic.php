@@ -92,8 +92,8 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-pla
 // Include UniversalUI components
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-ui-scripts.php';
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-editor-ui.php';
-require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-add-ui.php';
-require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-api.php';
+//require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-add-ui.php';
+//require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-api.php';
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
