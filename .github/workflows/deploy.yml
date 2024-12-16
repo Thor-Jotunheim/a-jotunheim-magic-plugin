@@ -31,6 +31,6 @@ jobs:
           --data '{"trigger": "deploy"}'
 
       # Step 5: Re-enable the Mod After Deployment
-      - name: Re-enable Mod
-        run: |
-          curl -X GET "${{ secrets.START_MOD_URL }}"
+      # - name: Re-enable Mod
+      #   run: |
+      #     curl -X GET "${{ secrets.START_MOD_URL }}"
