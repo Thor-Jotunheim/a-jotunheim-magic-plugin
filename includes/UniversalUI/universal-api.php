@@ -23,6 +23,20 @@ if ($action === 'get_table_schema') {
     $table = isset($_POST['table']) ? sanitize_text_field($_POST['table']) : '';
     if (!empty($table)) {
         $schema = $wpdb->get_results("DESCRIBE `$table`", ARRAY_A);
+
+        // Add logic to adapt schema for form generation
+        foreach ($schema as &$column) {
+            if (stripos($column['Type'], 'int') !== false) {
+                $column['FieldType'] = 'number';
+            } elseif (stripos($column['Type'], 'text') !== false || stripos($column['Type'], 'varchar') !== false) {
+                $column['FieldType'] = 'text';
+            } elseif (stripos($column['Type'], 'date') !== false) {
+                $column['FieldType'] = 'date';
+            } else {
+                $column['FieldType'] = 'text'; // Default field type
+            }
+        }
+        
         echo json_encode($schema);
         exit;
     } else {
