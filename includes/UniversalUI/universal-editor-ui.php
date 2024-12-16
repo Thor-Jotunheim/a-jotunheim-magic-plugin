@@ -7,6 +7,10 @@ function jotunheim_magic_universal_editor_interface() {
     // Fetch tables starting with jotun_
     $tables = $wpdb->get_col("SHOW TABLES LIKE 'jotun_%'");
 
+    if (empty($tables)) {
+        return '<p>No tables found starting with the prefix "jotun_".</p>';
+    }
+
     ob_start(); // Start output buffering
     ?>
     <div class="universal-editor-section" style="width: 100%; max-width: 1000px; margin: auto; background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bhmpics.com%2Fdownloads%2FValheim-Wallpapers%2F77.3-mistlands-teaser-1bb74b243f7219098476.jpg&f=1&nofb=1&ipt=45065e8b7cc5ca3ae8824364501250a2b5b4cf1428e93cd817bd8671ce697ec2&ipo=images') no-repeat fixed center; background-size: cover; padding: 5px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; gap: 20px; height: auto; min-height: calc(110vh - 50px);">
@@ -173,5 +177,5 @@ function jotunheim_magic_universal_editor_interface() {
 }
 
 // Shortcode to display the universal editor form
-add_shortcode('magic_universal_editor_ui', 'jotunheim_magic_universal_editor_interface');
+add_shortcode('universal_editor_ui', 'jotunheim_magic_universal_editor_interface');
 ?>
