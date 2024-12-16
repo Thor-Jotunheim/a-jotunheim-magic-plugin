@@ -4,74 +4,82 @@ header('Content-Type: application/json');
 
 global $wpdb;
 
-// Get action from request
-$action = isset($_POST['action']) ? sanitize_text_field($_POST['action']) : '';
+$action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
+$table = isset($_REQUEST['table']) ? sanitize_text_field($_REQUEST['table']) : '';
 $response = [];
 
-// Fetch available tables with prefix `jotun_`
-if ($action === 'get_tables') {
-    $tables = $wpdb->get_results("SHOW TABLES LIKE 'jotun_%'", ARRAY_N);
-    foreach ($tables as $table) {
-        $response[] = $table[0];
-    }
-    echo json_encode($response);
+// List records from a table
+if ($action === 'list_records' && !empty($table)) {
+    $records = $wpdb->get_results("SELECT * FROM `$table`", ARRAY_A);
+    echo json_encode($records);
     exit;
 }
 
-// Fetch table schema for a specific table
-if ($action === 'get_table_schema') {
-    $table = isset($_POST['table']) ? sanitize_text_field($_POST['table']) : '';
-    if (!empty($table)) {
-        $schema = $wpdb->get_results("DESCRIBE `$table`", ARRAY_A);
-
-        // Add logic to adapt schema for form generation
-        foreach ($schema as &$column) {
-            if (stripos($column['Type'], 'int') !== false) {
-                $column['FieldType'] = 'number';
-            } elseif (stripos($column['Type'], 'text') !== false || stripos($column['Type'], 'varchar') !== false) {
-                $column['FieldType'] = 'text';
-            } elseif (stripos($column['Type'], 'date') !== false) {
-                $column['FieldType'] = 'date';
-            } else {
-                $column['FieldType'] = 'text'; // Default field type
-            }
-        }
-        
-        echo json_encode($schema);
-        exit;
-    } else {
-        echo json_encode(['error' => 'Table name is required.']);
-        exit;
-    }
+// Fetch details of a single record
+if ($action === 'get_record' && !empty($table) && isset($_REQUEST['id'])) {
+    $id = intval($_REQUEST['id']);
+    $record = $wpdb->get_row($wpdb->prepare("SELECT * FROM `$table` WHERE id = %d", $id), ARRAY_A);
+    echo json_encode($record);
+    exit;
 }
 
-// Save data to a specific table
-if ($action === 'save') {
-    $table = isset($_GET['table']) ? sanitize_text_field($_GET['table']) : '';
-    if (!empty($table)) {
-        $data = [];
-        foreach ($_POST as $key => $value) {
-            if ($key !== 'action') {
-                $data[sanitize_text_field($key)] = sanitize_text_field($value);
-            }
+// Add a new record
+if ($action === 'add_record' && !empty($table)) {
+    $data = [];
+    foreach ($_POST as $key => $value) {
+        if ($key !== 'action' && $key !== 'table') {
+            $data[sanitize_text_field($key)] = sanitize_text_field($value);
         }
+    }
 
-        if (!empty($data)) {
-            $inserted = $wpdb->insert($table, $data);
-            if ($inserted !== false) {
-                echo json_encode(['success' => true, 'message' => 'Data saved successfully.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error saving data.']);
-            }
+    if (!empty($data)) {
+        $inserted = $wpdb->insert($table, $data);
+        if ($inserted !== false) {
+            echo json_encode(['success' => true, 'message' => 'Record added successfully.']);
         } else {
-            echo json_encode(['error' => 'No data provided to save.']);
+            echo json_encode(['success' => false, 'message' => 'Error adding record.']);
         }
     } else {
-        echo json_encode(['error' => 'Table name is required.']);
+        echo json_encode(['success' => false, 'message' => 'No data provided to add.']);
+    }
+    exit;
+}
+
+// Update an existing record
+if ($action === 'update_record' && !empty($table) && isset($_REQUEST['id'])) {
+    $id = intval($_REQUEST['id']);
+    $data = [];
+    foreach ($_POST as $key => $value) {
+        if ($key !== 'action' && $key !== 'table') {
+            $data[sanitize_text_field($key)] = sanitize_text_field($value);
+        }
+    }
+
+    if (!empty($data)) {
+        $updated = $wpdb->update($table, $data, ['id' => $id]);
+        if ($updated !== false) {
+            echo json_encode(['success' => true, 'message' => 'Record updated successfully.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error updating record.']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'No data provided to update.']);
+    }
+    exit;
+}
+
+// Delete a record
+if ($action === 'delete_record' && !empty($table) && isset($_REQUEST['id'])) {
+    $id = intval($_REQUEST['id']);
+    $deleted = $wpdb->delete($table, ['id' => $id]);
+    if ($deleted !== false) {
+        echo json_encode(['success' => true, 'message' => 'Record deleted successfully.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Error deleting record.']);
     }
     exit;
 }
 
 // Default response if no valid action
-echo json_encode(['error' => 'Invalid action.']);
+echo json_encode(['error' => 'Invalid action or missing parameters.']);
 exit;
