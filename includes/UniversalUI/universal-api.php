@@ -1,35 +1,63 @@
 <?php
-// File: universal-api.php
+header('Content-Type: application/json');
+// WordPress environment is assumed to be loaded via jotunheim-magic.php
 
-add_action('rest_api_init', function () {
-    // Endpoint to fetch columns
-    register_rest_route('jotunheim-magic/v1', '/get-columns', array(
-        'methods' => 'POST',
-        'callback' => function (WP_REST_Request $request) {
-            global $wpdb;
-            $table = sanitize_text_field($request->get_param('table'));
+global $wpdb;
 
-            if (strpos($table, 'jotun_') !== 0) {
-                return new WP_REST_Response(['error' => 'Invalid table selected.'], 400);
+// Get action from request
+$action = isset($_POST['action']) ? sanitize_text_field($_POST['action']) : '';
+$response = [];
+
+// Fetch available tables with prefix `jotun_`
+if ($action === 'get_tables') {
+    $tables = $wpdb->get_results("SHOW TABLES LIKE 'jotun_%'", ARRAY_N);
+    foreach ($tables as $table) {
+        $response[] = $table[0];
+    }
+    echo json_encode($response);
+    exit;
+}
+
+// Fetch table schema for a specific table
+if ($action === 'get_table_schema') {
+    $table = isset($_POST['table']) ? sanitize_text_field($_POST['table']) : '';
+    if (!empty($table)) {
+        $schema = $wpdb->get_results("DESCRIBE `$table`", ARRAY_A);
+        echo json_encode($schema);
+        exit;
+    } else {
+        echo json_encode(['error' => 'Table name is required.']);
+        exit;
+    }
+}
+
+// Save data to a specific table
+if ($action === 'save') {
+    $table = isset($_GET['table']) ? sanitize_text_field($_GET['table']) : '';
+    if (!empty($table)) {
+        $data = [];
+        foreach ($_POST as $key => $value) {
+            if ($key !== 'action') {
+                $data[sanitize_text_field($key)] = sanitize_text_field($value);
             }
+        }
 
-            $columns = $wpdb->get_results("DESCRIBE $table");
-            return new WP_REST_Response(['columns' => $columns], 200);
-        },
-        'permission_callback' => '__return_true',
-    ));
-});
+        if (!empty($data)) {
+            $inserted = $wpdb->insert($table, $data);
+            if ($inserted !== false) {
+                echo json_encode(['success' => true, 'message' => 'Data saved successfully.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Error saving data.']);
+            }
+        } else {
+            echo json_encode(['error' => 'No data provided to save.']);
+        }
+    } else {
+        echo json_encode(['error' => 'Table name is required.']);
+    }
+    exit;
+}
 
-// Endpoint to fetch table names starting with 'jotun_'
-add_action('rest_api_init', function () {
-    register_rest_route('jotunheim-magic/v1', '/get-tables', array(
-        'methods' => 'GET',
-        'callback' => function () {
-            global $wpdb;
-            $tables = $wpdb->get_col("SHOW TABLES LIKE 'jotun_%'");
-            return new WP_REST_Response(['tables' => $tables], 200);
-        },
-        'permission_callback' => '__return_true',
-    ));
-});
-?>
+// Default response if no valid action
+echo json_encode(['error' => 'Invalid action.']);
+exit;
