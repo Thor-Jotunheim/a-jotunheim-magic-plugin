@@ -1,6 +1,5 @@
 <?php
 // File: universal-add-ui.php
-
 function jotunheim_magic_universal_add_item_interface() {
     global $wpdb;
 
