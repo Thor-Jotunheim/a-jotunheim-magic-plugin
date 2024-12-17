@@ -1,164 +1,97 @@
 jQuery(document).ready(function ($) {
-    // Fetch tables dynamically
-    function fetchTables(callback) {
-        $.ajax({
-            url: JotunheimAPI.root + 'get-tables',
-            method: 'POST',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-WP-Nonce', JotunheimAPI.nonce);
-            },
-            success: function (response) {
-                if (response.success && response.data.tables) {
-                    callback(response.data.tables);
-                } else {
-                    alert('Failed to fetch tables.');
-                }
-            },
-            error: function (err) {
-                console.error('Error fetching tables:', err);
-            }
-        });
-    }
+    const apiKey = JotunheimEditor.apiKey;
+    const apiEndpoints = JSON.parse(JotunheimEditor.apiEndpoints);
 
-    // Populate table selector
-    $('#table-selector').on('change', function () {
+    // DOM Elements
+    const tableSelector = $('#table-selector');
+    const recordsContainer = $('#records-list-container');
+    const formContainer = $('#form-fields-container');
+    const searchField = $('#record-search');
+    const clearBtn = $('#clear-records-btn');
+    const loadBtn = $('#load-records-btn');
+
+    // Event: Table Selection Changes
+    tableSelector.on('change', function () {
         const selectedTable = $(this).val();
-        if (selectedTable) {
-            fetchRecords(selectedTable);
+        if (!selectedTable) {
+            resetUI();
+            return;
         }
+        fetchRecords(selectedTable);
     });
 
-    // Fetch records dynamically
+    // Fetch Records for a Selected Table
     function fetchRecords(table) {
+        recordsContainer.html('<p>Loading records...</p>');
+
         $.ajax({
-            url: JotunheimAPI.root + 'get-records',
+            url: apiEndpoints['list_records'].full_url,
             method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ table }),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-WP-Nonce', JotunheimAPI.nonce);
-            },
+            headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+            data: JSON.stringify({ table: table }),
             success: function (response) {
-                const recordsContainer = $('#records-list-container');
                 recordsContainer.empty();
-                if (response.success && response.data.records.length > 0) {
-                    response.data.records.forEach(record => {
-                        recordsContainer.append(
-                            `<div class="record-row" data-id="${record.id}" style="cursor: pointer;">
-                                ${record.name || `Record ${record.id}`}
-                            </div>`
-                        );
+                if (response && response.length > 0) {
+                    response.forEach(record => {
+                        const recordButton = `
+                            <button class="record-btn" data-id="${record.id}" style="width: 100%; margin-bottom: 5px; padding: 8px; background: #0073aa; color: #fff; border-radius: 5px; text-align: left;">
+                                ${record.name || `Record ID: ${record.id}`}
+                            </button>`;
+                        recordsContainer.append(recordButton);
                     });
                 } else {
-                    recordsContainer.html('<p>No records found for this table.</p>');
+                    recordsContainer.html('<p>No records found.</p>');
                 }
             },
             error: function (err) {
                 console.error('Error fetching records:', err);
+                recordsContainer.html('<p>Failed to load records.</p>');
             }
         });
     }
 
-    // Fetch record details dynamically
-    $('#records-list-container').on('click', '.record-row', function () {
+    // Event: Record Click to Fetch Details
+    recordsContainer.on('click', '.record-btn', function () {
         const recordId = $(this).data('id');
-        const table = $('#table-selector').val();
+        const selectedTable = tableSelector.val();
 
-        if (recordId) {
-            $.ajax({
-                url: JotunheimAPI.root + 'get-record',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ table, id: recordId }),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', JotunheimAPI.nonce);
-                },
-                success: function (response) {
-                    const formFieldsContainer = $('#form-fields-container');
-                    formFieldsContainer.empty();
-                    if (response.success && response.data.record) {
-                        for (const [key, value] of Object.entries(response.data.record)) {
-                            formFieldsContainer.append(
-                                `<div class="field-row">
-                                    <label for="${key}">${key}:</label>
-                                    <input type="text" id="${key}" name="${key}" value="${value}">
-                                </div>`
-                            );
-                        }
-                        $('#update-item-btn, #delete-item-btn').prop('disabled', false);
-                    } else {
-                        formFieldsContainer.html('<p>No fields found for this record.</p>');
-                        $('#update-item-btn, #delete-item-btn').prop('disabled', true);
-                    }
-                },
-                error: function (err) {
-                    console.error('Error fetching record details:', err);
-                }
-            });
-        }
-    });
-
-    // Update record
-    $('#update-item-btn').on('click', function () {
-        const table = $('#table-selector').val();
-        const recordId = $('#form-fields-container input[name="id"]').val();
-        const formData = $('#universal-editor-form').serializeArray();
-        const recordData = { id: recordId };
-
-        formData.forEach(field => {
-            recordData[field.name] = field.value;
-        });
+        formContainer.html('<p>Loading record...</p>');
 
         $.ajax({
-            url: JotunheimAPI.root + 'update-record',
+            url: apiEndpoints['get_record'].full_url,
             method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ table, record: recordData }),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-WP-Nonce', JotunheimAPI.nonce);
-            },
+            headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+            data: JSON.stringify({ table: selectedTable, id: recordId }),
             success: function (response) {
-                if (response.success) {
-                    alert('Record updated successfully.');
-                    fetchRecords(table);
+                formContainer.empty();
+                if (response && Object.keys(response).length > 0) {
+                    for (const [key, value] of Object.entries(response)) {
+                        formContainer.append(`
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
+                                <input type="text" name="${key}" value="${value}" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #666;">
+                            </div>
+                        `);
+                    }
                 } else {
-                    alert('Failed to update record.');
+                    formContainer.html('<p>No fields found for this record.</p>');
                 }
             },
             error: function (err) {
-                console.error('Error updating record:', err);
+                console.error('Error fetching record details:', err);
+                formContainer.html('<p>Failed to load record details.</p>');
             }
         });
     });
 
-    // Delete record
-    $('#delete-item-btn').on('click', function () {
-        const table = $('#table-selector').val();
-        const recordId = $('#form-fields-container input[name="id"]').val();
-
-        if (confirm('Are you sure you want to delete this record?')) {
-            $.ajax({
-                url: JotunheimAPI.root + 'delete-record',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ table, id: recordId }),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', JotunheimAPI.nonce);
-                },
-                success: function (response) {
-                    if (response.success) {
-                        alert('Record deleted successfully.');
-                        fetchRecords(table);
-                        $('#form-fields-container').empty();
-                        $('#update-item-btn, #delete-item-btn').prop('disabled', true);
-                    } else {
-                        alert('Failed to delete record.');
-                    }
-                },
-                error: function (err) {
-                    console.error('Error deleting record:', err);
-                }
-            });
-        }
+    // Event: Clear Button
+    clearBtn.on('click', function () {
+        resetUI();
     });
+
+    // Reset UI
+    function resetUI() {
+        recordsContainer.html('<p>No records loaded.</p>');
+        formContainer.html('<p>Select a record to load its fields.</p>');
+    }
 });
