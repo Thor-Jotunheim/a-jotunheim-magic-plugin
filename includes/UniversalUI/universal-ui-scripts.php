@@ -113,26 +113,38 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 recordsContainer.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(record => {
-    let displayName;
+                        // Dynamically find the first string column as the name (fallback to ID)
+                        data.forEach(record => {
+                            let displayName;
 
-    // Table-specific logic for jotun_itemlist
-    if (table === 'jotun_itemlist') {
-        displayName = record.item_name || record.prefab_name || `Record ID: ${record.id}`;
-    } else {
-        // General logic for other tables
-        displayName = record.name || record.title || record.username || record.display_name ||
-                      record.activePlayerName || record._name || `Record ID: ${record.id}`;
-    }
+                            // Table-specific logic for jotun_itemlist
+                            if (table === 'jotun_itemlist') {
+                                displayName = record.item_name || record.prefab_name || `Record ID: ${record.id}`;
+                            } else {
+                                // General dynamic detection for other tables
+                                displayName = record.name || record.title || record.username || record.display_name || 
+                                            record.activePlayerName || record._name || `Record ID: ${record.id}`;
+                            }
 
-    const checkbox = `
-        <div>
-            <label>
-                <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${displayName}">
-                ${displayName}
-            </label>
-        </div>`;
-    recordsContainer.insertAdjacentHTML('beforeend', checkbox);
-});
+                            const checkbox = `
+                                <div>
+                                    <label>
+                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${displayName}">
+                                        ${displayName}
+                                    </label>
+                                </div>`;
+                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                        });
+
+                        const checkbox = `
+                            <div>
+                                <label>
+                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${displayName}">
+                                    ${displayName}
+                                </label>
+                            </div>`;
+                        recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                    });
                 } else {
                     recordsContainer.innerHTML = '<p>No records found for this table.</p>';
                 }
@@ -149,8 +161,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
     ];
 
     let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
-                        let displayName = record.name || record.title || record.display_name || record.activePlayerName || record._name || `Record ID: ${record.id}`;
-formHtml += `<h4>Editing: ${displayName}</h4>`;
+                        <h4>Editing: ${record.name || record.title || record.id}</h4>
                         <form class="record-details-form" data-record-id="${record.id}">`;
 
     columns.forEach(column => {
