@@ -7,6 +7,19 @@ global $wpdb;
 // Enable debugging logs for troubleshooting
 error_log("Starting universal-endpoint-handler.php");
 
+// Restrict access during activation or core processes
+if (defined('WP_INSTALLING') && WP_INSTALLING) {
+    error_log("Exiting: WP_INSTALLING is true.");
+    exit;
+}
+
+if (wp_doing_ajax() === false && !defined('DOING_CRON')) {
+    // Allow this script only in AJAX or valid external calls
+    error_log("Exiting: Invalid access attempt.");
+    echo json_encode(['error' => 'Unauthorized access.']);
+    exit;
+}
+
 // Capture request parameters
 $action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
 $table = isset($_REQUEST['table']) ? sanitize_text_field($_REQUEST['table']) : '';
