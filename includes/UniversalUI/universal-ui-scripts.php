@@ -24,96 +24,126 @@ function jotunheim_enqueue_universal_ui_scripts() {
     // Load the API key securely
     $apiKey = defined('JOTUN_API_KEY') ? JOTUN_API_KEY : '';
 
-    // Add Inline JavaScript Logic
+    // Inline JavaScript Logic
     ?>
     <script type="text/javascript">
         jQuery(document).ready(function ($) {
             const apiKey = "<?php echo esc_js($apiKey); ?>";
             const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
 
-            const tableSelector = $('#table-selector');
-            const recordsContainer = $('#records-list-container');
-            const formFieldsContainer = $('#form-fields-container');
+            const tableSelector = document.getElementById('table-selector');
+            const recordsContainer = document.getElementById('universal-editor-container');
+            const searchField = document.getElementById('record-search');
 
-            // Load Records when a table is selected
-            tableSelector.on('change', function () {
-                const table = $(this).val();
-                if (!table) {
-                    resetUI();
-                    return;
-                }
-                fetchRecords(table);
-            });
-
-            // Fetch Records
-            function fetchRecords(table) {
-                recordsContainer.html('<p>Loading records...</p>');
-
-                $.ajax({
-                    url: apiEndpoints['list_records'] ? apiEndpoints['list_records'].full_url : '',
+            // Fetch and populate records dynamically
+            function refreshRecordList(table) {
+                fetch(`${apiEndpoints['list_records'].full_url}`, {
                     method: 'POST',
                     headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-                    data: JSON.stringify({ table: table }),
-                    success: function (data) {
-                        recordsContainer.empty();
-                        if (data.length > 0) {
-                            data.forEach(record => {
-                                recordsContainer.append(`
-                                    <button class="record-btn" data-id="${record.id}" style="width: 100%; margin-bottom: 5px; padding: 8px; background: #0073aa; color: #fff; border-radius: 5px;">
+                    body: JSON.stringify({ table: table })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    recordsContainer.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(record => {
+                            const checkbox = `
+                                <div>
+                                    <label>
+                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
                                         ${record.name || `Record ID: ${record.id}`}
-                                    </button>
-                                `);
-                            });
-                        } else {
-                            recordsContainer.html('<p>No records found.</p>');
-                        }
-                    },
-                    error: function () {
-                        recordsContainer.html('<p>Failed to load records.</p>');
+                                    </label>
+                                </div>`;
+                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                        });
+                        trackCheckedState(); // Track checkbox state
+                        restoreCheckedState();
+                    } else {
+                        recordsContainer.innerHTML = '<p>No records found for this table.</p>';
                     }
-                });
+                })
+                .catch(error => console.error('Error fetching records:', error));
             }
 
-            // Fetch Record Details
-            recordsContainer.on('click', '.record-btn', function () {
-                const recordId = $(this).data('id');
-                const table = tableSelector.val();
-
-                formFieldsContainer.html('<p>Loading record...</p>');
-
-                $.ajax({
-                    url: apiEndpoints['get_record'] ? apiEndpoints['get_record'].full_url : '',
+            // Search records dynamically
+            function searchRecords(table, searchValue) {
+                fetch(`${apiEndpoints['list_records'].full_url}?search=${encodeURIComponent(searchValue)}`, {
                     method: 'POST',
                     headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-                    data: JSON.stringify({ table: table, id: recordId }),
-                    success: function (data) {
-                        formFieldsContainer.empty();
-                        for (const [key, value] of Object.entries(data)) {
-                            formFieldsContainer.append(`
-                                <div style="margin-bottom: 10px;">
-                                    <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
-                                    <input type="text" name="${key}" value="${value}" style="width: 100%; padding: 8px; border: 1px solid #666; border-radius: 5px;">
-                                </div>
-                            `);
-                        }
-                    },
-                    error: function () {
-                        formFieldsContainer.html('<p>Failed to load record details.</p>');
+                    body: JSON.stringify({ table: table })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    recordsContainer.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(record => {
+                            const checkbox = `
+                                <div>
+                                    <label>
+                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
+                                        ${record.name || `Record ID: ${record.id}`}
+                                    </label>
+                                </div>`;
+                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                        });
+                        trackCheckedState(); // Track checkbox state
+                        restoreCheckedState();
+                    } else {
+                        recordsContainer.innerHTML = '<p>No matching records found.</p>';
                     }
+                })
+                .catch(error => console.error('Error searching records:', error));
+            }
+
+            // Track checkbox state
+            let checkedRecords = new Set();
+            function trackCheckedState() {
+                document.querySelectorAll('.record-selection-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            checkedRecords.add(checkbox.dataset.id);
+                        } else {
+                            checkedRecords.delete(checkbox.dataset.id);
+                        }
+                    });
                 });
+            }
+
+            // Restore checkbox state
+            function restoreCheckedState() {
+                document.querySelectorAll('.record-selection-checkbox').forEach(checkbox => {
+                    checkbox.checked = checkedRecords.has(checkbox.dataset.id);
+                });
+            }
+
+            // Event Listeners
+            tableSelector.addEventListener('change', () => {
+                const table = tableSelector.value;
+                if (table) {
+                    refreshRecordList(table);
+                } else {
+                    recordsContainer.innerHTML = '<p>Select a table to load records.</p>';
+                }
             });
 
-            // Reset UI
-            function resetUI() {
-                recordsContainer.html('<p>Select a table to load records.</p>');
-                formFieldsContainer.html('<p>Select a record to load its fields.</p>');
-            }
+            searchField.addEventListener('input', () => {
+                const table = tableSelector.value;
+                const searchValue = searchField.value;
+
+                if (table) {
+                    if (searchValue.length >= 2) {
+                        searchRecords(table, searchValue);
+                    } else {
+                        refreshRecordList(table);
+                    }
+                }
+            });
         });
     </script>
     <?php
 }
 
-// Hook Shortcodes and Scripts
+// Hook for enqueueing the script
 add_action('wp_enqueue_scripts', 'jotunheim_enqueue_universal_ui_scripts');
 jotunheim_register_universal_editor_shortcode();
 jotunheim_register_universal_add_shortcode();

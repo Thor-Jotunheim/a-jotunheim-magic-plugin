@@ -35,7 +35,7 @@ function jotunheim_magic_universal_editor_interface() {
 
         <div style="flex: 2; overflow-y: auto; height: auto; min-height: calc(110vh - 50px);">
             <div id="edit-sections-container" class="edit-section" style="background: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
-                <h3 style="font-family: 'Roboto', sans-serif; font-weight: 700; color: #222; text-align: center;">Edit Zone Details</h3>
+                <h3 style="font-family: 'Roboto', sans-serif; font-weight: 700; color: #222; text-align: center;">Edit Record Details</h3>
                 <!-- Edit sections will be dynamically added here -->
             </div>
         </div>
