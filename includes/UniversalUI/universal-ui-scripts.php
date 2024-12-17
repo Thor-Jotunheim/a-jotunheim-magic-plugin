@@ -35,17 +35,17 @@ function jotunheim_enqueue_universal_ui_scripts() {
             const recordsContainer = document.getElementById('universal-editor-container');
             const searchField = document.getElementById('record-search');
 
-        document.getElementById('load-record-btn').addEventListener('click', function () {
-            const selectedRecords = Array.from(document.querySelectorAll('.record-selection-checkbox:checked')).map(checkbox => checkbox.dataset.id);
-            const editContainer = document.getElementById('edit-sections-container');
-            const table = document.getElementById('table-selector').value;
+            document.getElementById('load-record-btn').addEventListener('click', function () {
+        const selectedRecords = Array.from(document.querySelectorAll('.record-selection-checkbox:checked')).map(checkbox => checkbox.dataset.id);
+        const editContainer = document.getElementById('edit-sections-container');
+        const table = document.getElementById('table-selector').value;
 
-            if (selectedRecords.length === 0) {
-                alert('Please select at least one record to load.');
-                return;
-            }
+        if (selectedRecords.length === 0) {
+            alert('Please select at least one record to load.');
+            return;
+        }
 
-            editContainer.innerHTML = ''; // Clear existing content
+        editContainer.innerHTML = ''; // Clear existing content
 
         // Find the endpoint for fetching record details
         const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
@@ -66,13 +66,14 @@ function jotunheim_enqueue_universal_ui_scripts() {
                         <h4>Editing Record ID: ${record.id}</h4>
                         ${Object.keys(record).map(key => `
                             <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
-                            <input type="text" name="${key}" value="${record[key]}" style="width: 100%; margin-bottom: 10px;">
+                            <input type="text" value="${record[key]}" style="width: 100%; margin-bottom: 10px;">
                         `).join('')}
                     </div>`;
                 editContainer.insertAdjacentHTML('beforeend', formHtml);
             })
             .catch(error => console.error(`Error fetching details for record ID: ${recordId}`, error));
         });
+    });
 
         document.getElementById('clear-record-btn').addEventListener('click', function () {
             // Uncheck all checkboxes
@@ -174,7 +175,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 if (['id', 'string_name'].includes(field_name)) return;  // Skip ID and string_name fields
 
                 formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
-                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${universalCapitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
+                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${capitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
                                 <div style='flex: 2;'>`;
 
                 // Handle dropdowns for specific fields
