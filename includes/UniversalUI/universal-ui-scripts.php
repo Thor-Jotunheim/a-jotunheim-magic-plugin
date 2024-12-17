@@ -62,7 +62,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 if (data.length > 0) {
                     data.forEach(record => {
                         // Dynamically find the first string column as the name (fallback to ID)
-                        const displayName = record.name || record.title || record.username || record.display_name || `Record ID: ${record.id}`;
+                        const displayName = record.name || record.title || record.username || record.display_name || record.activePlayerName || record._name || `Record ID: ${record.id}`;
 
                         const checkbox = `
                             <div>
