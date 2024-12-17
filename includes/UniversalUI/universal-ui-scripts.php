@@ -12,7 +12,7 @@ function jotunheim_register_universal_add_shortcode() {
 }
 
 // Enqueue and Pass Inline Script
-function enqueue_universal_ui_scripts() {
+function jotunheim_enqueue_universal_ui_scripts() {
     global $wpdb;
 
     // Fetch API endpoints dynamically
@@ -21,21 +21,22 @@ function enqueue_universal_ui_scripts() {
         OBJECT_K
     );
 
-    // Inline script logic
+    // Load the API key securely
+    $apiKey = defined('JOTUN_API_KEY') ? JOTUN_API_KEY : '';
+
+    // Inline JavaScript Logic
     ?>
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            const apiKey = "<?php echo JOTUN_API_KEY; ?>";
-            const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
-            let checkedRecords = new Set();
+    document.addEventListener('DOMContentLoaded', function () {
+        const apiKey = "<?php echo esc_js($apiKey); ?>";
+        const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
 
-            const tableSelector = document.getElementById('table-selector');
-            const recordsContainer = document.getElementById('universal-editor-container');
-            const editContainer = document.getElementById('edit-sections-container');
-            const searchField = document.getElementById('record-search');
+        const tableSelector = document.getElementById('table-selector');
+        const recordsContainer = document.getElementById('universal-editor-container');
+        const searchField = document.getElementById('record-search');
 
-            // Function to refresh the list of records
-            function universalRefreshRecordList(table) {
+        // Fetch and refresh the record list for a selected table
+        function universalRefreshRecordList(table) {
             // Find the endpoint for the selected table
             const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
 
@@ -99,106 +100,76 @@ function enqueue_universal_ui_scripts() {
             .catch(error => console.error('Error fetching records:', error));
         }
 
-            // Function to load details for selected records
-            function universalLoadRecordDetails(table) {
-                const selectedRecords = Array.from(document.querySelectorAll('.record-selection-checkbox:checked')).map(checkbox => checkbox.dataset.id);
-                if (selectedRecords.length === 0) return;
+        // Search records dynamically
+        function universalSearchRecords(table, searchValue) {
+            // Find the endpoint for the selected table
+            const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
 
-                editContainer.innerHTML = '';
-                const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
+            if (!endpointEntry) {
+                console.error(`Error: No API endpoint found for table '${table}'`);
+                return;
+            }
 
-                if (!endpointEntry) {
-                    console.error(`No API endpoint mapped for table '${table}'`);
-                    return;
+            const fullUrl = `${endpointEntry.full_url}?search=${encodeURIComponent(searchValue)}`;
+            console.log(`Searching records for table: ${table}`);
+            console.log(`API URL: ${fullUrl}`);
+
+            fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': apiKey
                 }
-
-                selectedRecords.forEach(recordId => {
-                    fetch(`${endpointEntry.full_url}/${recordId}`, {
-                        headers: { 'X-API-KEY': apiKey }
-                    })
-                    .then(response => response.json())
-                    .then(record => {
-                        if (record) {
-                            const formHtml = universalGenerateEditForm(record);
-                            editContainer.insertAdjacentHTML('beforeend', formHtml);
-                        } else {
-                            console.error(`No data returned for record ID: ${recordId}`);
-                        }
-                    })
-                    .catch(error => console.error('Error fetching record details:', error));
-                });
-            }
-
-            // Function to clear selected records
-            function universalClearRecords() {
-                document.querySelectorAll('.record-selection-checkbox').forEach(checkbox => checkbox.checked = false);
-                checkedRecords.clear();
-                searchField.value = '';
-                editContainer.innerHTML = '';
-                recordsContainer.innerHTML = '<p>Cleared selection. Refresh to load records.</p>';
-            }
-
-            // Track checkbox states
-            function universalTrackCheckedState() {
-                document.querySelectorAll('.record-selection-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', () => {
-                        if (checkbox.checked) {
-                            checkedRecords.add(checkbox.dataset.id);
-                        } else {
-                            checkedRecords.delete(checkbox.dataset.id);
-                        }
+            })
+            .then(response => response.json())
+            .then(data => {
+                recordsContainer.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(record => {
+                        const checkbox = `
+                            <div>
+                                <label>
+                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
+                                    ${record.name || `Record ID: ${record.id}`}
+                                </label>
+                            </div>`;
+                        recordsContainer.insertAdjacentHTML('beforeend', checkbox);
                     });
-                });
+                } else {
+                    recordsContainer.innerHTML = '<p>No matching records found.</p>';
+                }
+            })
+            .catch(error => console.error('Error searching records:', error));
+        }
+
+        // Event Listeners
+        tableSelector.addEventListener('change', () => {
+            const table = tableSelector.value;
+            if (table) {
+                universalRefreshRecordList(table);
+            } else {
+                recordsContainer.innerHTML = '<p>Select a table to load records.</p>';
             }
-
-            // Attach event listeners
-            tableSelector.addEventListener('change', () => {
-                const selectedTable = tableSelector.value;
-                if (selectedTable) {
-                    universalRefreshRecordList(selectedTable);
-                }
-            });
-
-            document.getElementById('load-zone-btn').addEventListener('click', () => {
-                const selectedTable = tableSelector.value;
-                if (selectedTable) universalLoadRecordDetails(selectedTable);
-            });
-
-            document.getElementById('clear-zone-btn').addEventListener('click', () => {
-                universalClearRecords();
-            });
-
-            searchField.addEventListener('input', () => {
-                const searchValue = searchField.value;
-                const selectedTable = tableSelector.value;
-
-                if (searchValue.length >= 2 && selectedTable) {
-                    universalSearchRecords(selectedTable, searchValue);
-                } else if (selectedTable) {
-                    universalRefreshRecordList(selectedTable);
-                }
-            });
         });
 
-        // Function to generate edit form (simplified version)
-        function universalGenerateEditForm(record) {
-            let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px;">
-                                <h4>Editing: ${record.name || `Record ID: ${record.id}`}</h4>
-                                <form>`;
-            Object.keys(record).forEach(key => {
-                formHtml += `
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
-                        <input type="text" value="${record[key]}" style="width: 100%; padding: 5px;">
-                    </div>`;
-            });
-            formHtml += `</form></div>`;
-            return formHtml;
-        }
+        searchField.addEventListener('input', () => {
+            const table = tableSelector.value;
+            const searchValue = searchField.value;
+
+            if (table) {
+                if (searchValue.length >= 2) {
+                    universalSearchRecords(table, searchValue);
+                } else {
+                    universalRefreshRecordList(table);
+                }
+            }
+        });
+    });
     </script>
     <?php
 }
-add_action('admin_footer', 'enqueue_universal_ui_scripts');
+
+// Hook for enqueueing the script
+add_action('wp_footer', 'jotunheim_enqueue_universal_ui_scripts');
 jotunheim_register_universal_editor_shortcode();
 jotunheim_register_universal_add_shortcode();
 ?>
