@@ -61,11 +61,14 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 recordsContainer.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(record => {
+                        // Dynamically find the first string column as the name (fallback to ID)
+                        const displayName = record.name || record.title || record.username || record.display_name || `Record ID: ${record.id}`;
+
                         const checkbox = `
                             <div>
                                 <label>
-                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
-                                    ${record.name || `Record ID: ${record.id}`}
+                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${displayName}">
+                                    ${displayName}
                                 </label>
                             </div>`;
                         recordsContainer.insertAdjacentHTML('beforeend', checkbox);
