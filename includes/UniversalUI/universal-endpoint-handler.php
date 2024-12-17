@@ -12,7 +12,11 @@ $action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) 
 $table = isset($_REQUEST['table']) ? sanitize_text_field($_REQUEST['table']) : '';
 error_log("Action: $action, Table: $table");
 
-$response = [];
+// Skip invalid 'activate' requests
+if ($action === 'activate' || empty($action)) {
+    error_log("Skipping invalid or empty action: $action");
+    exit;
+}
 
 // Validate required parameters
 if (empty($action)) {
