@@ -188,7 +188,14 @@ function jotunheim_enqueue_universal_ui_scripts() {
                                 <input type="checkbox" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.5); margin-top: 5px;">`;
                 } else {
                     // Default text inputs
-                    formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${record[field_name] || ''}' style='width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ccc;'>`;
+                    let fieldValue = record[field_name];
+
+                    // Check for objects or arrays and stringify them
+                    if (typeof fieldValue === 'object' && fieldValue !== null) {
+                        fieldValue = JSON.stringify(fieldValue, null, 2);
+                    }
+
+                    formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${fieldValue || ''}' style='width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ccc;'>`;
                 }
 
                 formHtml += `</div></div>`;
