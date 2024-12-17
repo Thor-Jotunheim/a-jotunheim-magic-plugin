@@ -27,7 +27,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
     // Inline JavaScript Logic
     ?>
     <script type="text/javascript">
-        jQuery(document).ready(function ($) {
+        document.addEventListener('DOMContentLoaded', function () {
             const apiKey = "<?php echo esc_js($apiKey); ?>";
             const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
 
@@ -35,11 +35,21 @@ function jotunheim_enqueue_universal_ui_scripts() {
             const recordsContainer = document.getElementById('universal-editor-container');
             const searchField = document.getElementById('record-search');
 
-            // Fetch and populate records dynamically
-            function universalrefreshRecordList(table) {
-                fetch(`${apiEndpoints['list_records'].full_url}`, {
+            // Fetch and refresh the record list for a selected table
+            function universalRefreshRecordList(table) {
+                const listRecordsEndpoint = apiEndpoints['list_records'] ? apiEndpoints['list_records'].full_url : null;
+
+                if (!listRecordsEndpoint) {
+                    console.error('Error: list_records API endpoint not found.');
+                    return;
+                }
+
+                fetch(listRecordsEndpoint, {
                     method: 'POST',
-                    headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+                    headers: {
+                        'X-API-KEY': apiKey,
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ table: table })
                 })
                 .then(response => response.json())
@@ -56,8 +66,6 @@ function jotunheim_enqueue_universal_ui_scripts() {
                                 </div>`;
                             recordsContainer.insertAdjacentHTML('beforeend', checkbox);
                         });
-                        universaltrackCheckedState(); // Track checkbox state
-                        universalrestoreCheckedState();
                     } else {
                         recordsContainer.innerHTML = '<p>No records found for this table.</p>';
                     }
@@ -66,10 +74,20 @@ function jotunheim_enqueue_universal_ui_scripts() {
             }
 
             // Search records dynamically
-            function searchRecords(table, searchValue) {
-                fetch(`${apiEndpoints['list_records'].full_url}?search=${encodeURIComponent(searchValue)}`, {
+            function universalSearchRecords(table, searchValue) {
+                const listRecordsEndpoint = apiEndpoints['list_records'] ? apiEndpoints['list_records'].full_url : null;
+
+                if (!listRecordsEndpoint) {
+                    console.error('Error: list_records API endpoint not found.');
+                    return;
+                }
+
+                fetch(`${listRecordsEndpoint}?search=${encodeURIComponent(searchValue)}`, {
                     method: 'POST',
-                    headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+                    headers: {
+                        'X-API-KEY': apiKey,
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ table: table })
                 })
                 .then(response => response.json())
@@ -86,8 +104,6 @@ function jotunheim_enqueue_universal_ui_scripts() {
                                 </div>`;
                             recordsContainer.insertAdjacentHTML('beforeend', checkbox);
                         });
-                        universaltrackCheckedState(); // Track checkbox state
-                        universalrestoreCheckedState();
                     } else {
                         recordsContainer.innerHTML = '<p>No matching records found.</p>';
                     }
@@ -95,32 +111,11 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 .catch(error => console.error('Error searching records:', error));
             }
 
-            // Track checkbox state
-            let checkedRecords = new Set();
-            function universaltrackCheckedState() {
-                document.querySelectorAll('.record-selection-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', () => {
-                        if (checkbox.checked) {
-                            checkedRecords.add(checkbox.dataset.id);
-                        } else {
-                            checkedRecords.delete(checkbox.dataset.id);
-                        }
-                    });
-                });
-            }
-
-            // Restore checkbox state
-            function universalrestoreCheckedState() {
-                document.querySelectorAll('.record-selection-checkbox').forEach(checkbox => {
-                    checkbox.checked = checkedRecords.has(checkbox.dataset.id);
-                });
-            }
-
             // Event Listeners
             tableSelector.addEventListener('change', () => {
                 const table = tableSelector.value;
                 if (table) {
-                    universalrefreshRecordList(table);
+                    universalRefreshRecordList(table);
                 } else {
                     recordsContainer.innerHTML = '<p>Select a table to load records.</p>';
                 }
@@ -132,9 +127,9 @@ function jotunheim_enqueue_universal_ui_scripts() {
 
                 if (table) {
                     if (searchValue.length >= 2) {
-                        universalsearchRecords(table, searchValue);
+                        universalSearchRecords(table, searchValue);
                     } else {
-                        universalrefreshRecordList(table);
+                        universalRefreshRecordList(table);
                     }
                 }
             });
@@ -144,7 +139,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
 }
 
 // Hook for enqueueing the script
-add_action('wp_enqueue_scripts', 'jotunheim_enqueue_universal_ui_scripts');
+add_action('wp_footer', 'jotunheim_enqueue_universal_ui_scripts');
 jotunheim_register_universal_editor_shortcode();
 jotunheim_register_universal_add_shortcode();
 ?>
