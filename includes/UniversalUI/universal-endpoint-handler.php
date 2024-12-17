@@ -46,6 +46,13 @@ try {
 
 // Process Actions
 try {
+    // Check if action exists in API table
+    if (!isset($api_endpoints[$action])) {
+        error_log("Skipping unrecognized action: $action");
+        return; // Exit without interfering with other plugins
+    }
+
+    // Valid action handling
     if ($action === 'get_players') {
         $records = $wpdb->get_results("SELECT * FROM `$table`", ARRAY_A);
         echo json_encode($records ?: []);
