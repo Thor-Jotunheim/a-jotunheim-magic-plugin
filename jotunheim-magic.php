@@ -93,9 +93,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-pla
 require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-ui-scripts.php';
 require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-editor-ui.php';
 require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-add-ui.php';
-if (defined('DOING_AJAX') && DOING_AJAX) {
-    require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-endpoint-handler.php';
-}
+require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-endpoint-handler.php';
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
