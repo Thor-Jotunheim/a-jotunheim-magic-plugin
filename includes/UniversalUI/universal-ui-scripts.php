@@ -17,7 +17,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
 
     // Fetch API endpoints dynamically
     $api_endpoints = $wpdb->get_results(
-        "SELECT name, CONCAT(base_url, endpoint) AS full_url FROM jotun_api_endpoints WHERE enabled = 1",
+        "SELECT name, table_name, CONCAT(base_url, endpoint) AS full_url FROM jotun_api_endpoints WHERE enabled = 1",
         OBJECT_K
     );
 
