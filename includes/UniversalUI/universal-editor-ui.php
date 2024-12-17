@@ -25,8 +25,8 @@ function jotunheim_magic_universal_editor_interface() {
             <h1 class="record-title" style="font-family: 'MedievalSharp', cursive; font-size: 36px; color: #fff; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); text-align: center;">Jotunheim Universal Record Editor</h1>
             <div class="search-section" style="margin-bottom: 5px;">
                 <input type="text" id="record-search" placeholder="Search for a record..." style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #666; font-size: 16px;">
-                <button id="load-zone-btn" style="width: 100%; background: #444; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px;">Load Selected Zones</button>
-                <button id="clear-zone-btn" style="width: 100%; background: #888; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; margin-bottom: 10px;">Clear Selected</button>
+                <button id="load-record-btn" style="width: 100%; background: #444; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px;">Load Selected Zones</button>
+                <button id="clear-record-btn" style="width: 100%; background: #888; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; margin-bottom: 10px;">Clear Selected</button>
                 <div id="universal-editor-container" style="height: auto; max-height: calc(90vh - 140px); overflow-y: auto; background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 5px;">
                     <!-- Dynamically added checkboxes for records -->
                 </div>
