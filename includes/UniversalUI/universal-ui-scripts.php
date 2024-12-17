@@ -36,3 +36,32 @@ function jotunheim_universal_get_tables() {
     wp_send_json_success(['tables' => $tables]);
 }
 add_action('wp_ajax_jotunheim_get_tables', 'jotunheim_universal_get_tables');
+
+function jotunheim_enqueue_universal_ui_scripts() {
+    global $wpdb;
+
+    // Fetch API endpoints dynamically from the table
+    $api_endpoints = $wpdb->get_results(
+        "SELECT name, CONCAT(base_url, endpoint) AS full_url FROM jotun_api_endpoints WHERE enabled = 1", 
+        OBJECT_K
+    );
+
+    // Ensure API key is securely loaded
+    $apiKey = defined('JOTUN_API_KEY') ? JOTUN_API_KEY : '';
+
+    // Enqueue the JavaScript file
+    wp_enqueue_script(
+        'universal-ui-js',
+        plugin_dir_url(__FILE__) . '../js/universal-ui.js',
+        ['jquery'],
+        '1.0',
+        true
+    );
+
+    // Pass API key and endpoints dynamically to the script
+    wp_localize_script('universal-ui-js', 'JotunheimEditor', [
+        'apiKey' => $apiKey,
+        'apiEndpoints' => $api_endpoints
+    ]);
+}
+add_action('wp_enqueue_scripts', 'jotunheim_enqueue_universal_ui_scripts');
