@@ -51,17 +51,16 @@ function enqueue_universal_ui_scripts() {
                 .then(data => {
                     recordsContainer.innerHTML = '';
                     if (data.length > 0) {
-                        data.forEach(record => {
-                            const recordName = record.name || record.prefab_name || record.item_name || record.activePlayerName || `Record ID: ${record.id}`;
-                            const checkbox = `
-                                <div>
-                                    <label>
-                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${recordName}">
-                                        ${recordName}
-                                    </label>
-                                </div>`;
-                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
-                        });
+                            data.forEach(record => {
+                                const checkbox = `
+                                    <div>
+                                        <label>
+                                            <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
+                                            ${record.name || `Record ID: ${record.id}`}
+                                        </label>
+                                    </div>`;
+                                recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                            });
                         universalTrackCheckedState();
                     } else {
                         recordsContainer.innerHTML = '<p>No records found for this table.</p>';
