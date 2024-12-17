@@ -161,7 +161,8 @@ function jotunheim_enqueue_universal_ui_scripts() {
     ];
 
     let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
-                        <h4>Editing: ${record.name || record.title || record.id}</h4>
+                        let displayName = record.name || record.title || record.display_name || record.activePlayerName || record._name || `Record ID: ${record.id}`;
+formHtml += `<h4>Editing: ${displayName}</h4>`;
                         <form class="record-details-form" data-record-id="${record.id}">`;
 
     columns.forEach(column => {
