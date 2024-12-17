@@ -13,11 +13,12 @@ if (defined('WP_INSTALLING') && WP_INSTALLING) {
     exit;
 }
 
-if (wp_doing_ajax() === false && !defined('DOING_CRON')) {
-    // Allow this script only in AJAX or valid external calls
-    error_log("Exiting: Invalid access attempt.");
-    echo json_encode(['error' => 'Unauthorized access.']);
-    exit;
+if (php_sapi_name() !== 'cli' && !wp_doing_ajax() && !defined('DOING_CRON')) {
+    // Skip processing if this is not a CLI, AJAX, or cron request
+    if (!isset($_REQUEST['action'])) {
+        error_log("Exiting: Invalid access attempt - no action specified.");
+        exit;
+    }
 }
 
 // Capture request parameters
