@@ -168,7 +168,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 if (['id', 'string_name'].includes(field_name)) return;  // Skip ID and string_name fields
 
                 formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
-                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${capitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
+                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${universalCapitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
                                 <div style='flex: 2;'>`;
 
                 // Handle dropdowns for specific fields
