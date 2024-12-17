@@ -7,18 +7,10 @@ global $wpdb;
 // Enable debugging logs for troubleshooting
 error_log("Starting universal-endpoint-handler.php");
 
-// Restrict access during activation or core processes
-if (defined('WP_INSTALLING') && WP_INSTALLING) {
-    error_log("Exiting: WP_INSTALLING is true.");
+// Prevent execution during plugin activation
+if (defined('WP_PLUGIN_DIR') && isset($_REQUEST['action']) && $_REQUEST['action'] === 'activate') {
+    error_log("Exiting: Plugin activation detected.");
     exit;
-}
-
-if (php_sapi_name() !== 'cli' && !wp_doing_ajax() && !defined('DOING_CRON')) {
-    // Skip processing if this is not a CLI, AJAX, or cron request
-    if (!isset($_REQUEST['action'])) {
-        error_log("Exiting: Invalid access attempt - no action specified.");
-        exit;
-    }
 }
 
 // Capture request parameters
