@@ -27,117 +27,120 @@ function jotunheim_enqueue_universal_ui_scripts() {
     // Inline JavaScript Logic
     ?>
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            const apiKey = "<?php echo esc_js($apiKey); ?>";
-            const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
+    document.addEventListener('DOMContentLoaded', function () {
+        const apiKey = "<?php echo esc_js($apiKey); ?>";
+        const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
 
-            const tableSelector = document.getElementById('table-selector');
-            const recordsContainer = document.getElementById('universal-editor-container');
-            const searchField = document.getElementById('record-search');
+        const tableSelector = document.getElementById('table-selector');
+        const recordsContainer = document.getElementById('universal-editor-container');
+        const searchField = document.getElementById('record-search');
 
-            // Fetch and refresh the record list for a selected table
-            function universalRefreshRecordList(table) {
-                // Find the endpoint for the selected table
-                const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
+        // Fetch and refresh the record list for a selected table
+        function universalRefreshRecordList(table) {
+            // Find the endpoint for the selected table
+            const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
 
-                if (!endpointEntry) {
-                    console.error(`Error: No API endpoint found for table '${table}'`);
-                    recordsContainer.innerHTML = `<p>No API endpoint mapped for table: ${table}</p>`;
-                    return;
-                }
-
-                const fullUrl = endpointEntry.full_url; // Use the mapped API URL
-                console.log(`Fetching records for table: ${table}`);
-                console.log(`API URL: ${fullUrl}`);
-
-                fetch(fullUrl, {
-                    method: 'GET',
-                    headers: {
-                        'X-API-KEY': apiKey
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    recordsContainer.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(record => {
-                            const checkbox = `
-                                <div>
-                                    <label>
-                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
-                                        ${record.name || `Record ID: ${record.id}`}
-                                    </label>
-                                </div>`;
-                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
-                        });
-                    } else {
-                        recordsContainer.innerHTML = '<p>No records found for this table.</p>';
-                    }
-                })
-                .catch(error => console.error('Error fetching records:', error));
+            if (!endpointEntry) {
+                console.error(`Error: No API endpoint found for table '${table}'`);
+                recordsContainer.innerHTML = `<p>No API endpoint mapped for table: ${table}</p>`;
+                return;
             }
 
-            // Search records dynamically
-            function universalSearchRecords(table, searchValue) {
-                const listRecordsEndpoint = apiEndpoints['list_records'] ? apiEndpoints['list_records'].full_url : null;
+            const fullUrl = endpointEntry.full_url; // Use the mapped API URL
+            console.log(`Fetching records for table: ${table}`);
+            console.log(`API URL: ${fullUrl}`);
 
-                if (!listRecordsEndpoint) {
-                    console.error('Error: list_records API endpoint not found.');
-                    return;
+            fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': apiKey
                 }
-
-                fetch(`${listRecordsEndpoint}?search=${encodeURIComponent(searchValue)}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-API-KEY': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ table: table })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    recordsContainer.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(record => {
-                            const checkbox = `
-                                <div>
-                                    <label>
-                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
-                                        ${record.name || `Record ID: ${record.id}`}
-                                    </label>
-                                </div>`;
-                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
-                        });
-                    } else {
-                        recordsContainer.innerHTML = '<p>No matching records found.</p>';
-                    }
-                })
-                .catch(error => console.error('Error searching records:', error));
-            }
-
-            // Event Listeners
-            tableSelector.addEventListener('change', () => {
-                const table = tableSelector.value;
-                if (table) {
-                    universalRefreshRecordList(table);
+            })
+            .then(response => response.json())
+            .then(data => {
+                recordsContainer.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(record => {
+                        const checkbox = `
+                            <div>
+                                <label>
+                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
+                                    ${record.name || `Record ID: ${record.id}`}
+                                </label>
+                            </div>`;
+                        recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                    });
                 } else {
-                    recordsContainer.innerHTML = '<p>Select a table to load records.</p>';
+                    recordsContainer.innerHTML = '<p>No records found for this table.</p>';
                 }
-            });
+            })
+            .catch(error => console.error('Error fetching records:', error));
+        }
 
-            searchField.addEventListener('input', () => {
-                const table = tableSelector.value;
-                const searchValue = searchField.value;
+        // Search records dynamically
+        function universalSearchRecords(table, searchValue) {
+            // Find the endpoint for the selected table
+            const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
 
-                if (table) {
-                    if (searchValue.length >= 2) {
-                        universalSearchRecords(table, searchValue);
-                    } else {
-                        universalRefreshRecordList(table);
-                    }
+            if (!endpointEntry) {
+                console.error(`Error: No API endpoint found for table '${table}'`);
+                return;
+            }
+
+            const fullUrl = `${endpointEntry.full_url}?search=${encodeURIComponent(searchValue)}`;
+            console.log(`Searching records for table: ${table}`);
+            console.log(`API URL: ${fullUrl}`);
+
+            fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': apiKey
                 }
-            });
+            })
+            .then(response => response.json())
+            .then(data => {
+                recordsContainer.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(record => {
+                        const checkbox = `
+                            <div>
+                                <label>
+                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
+                                    ${record.name || `Record ID: ${record.id}`}
+                                </label>
+                            </div>`;
+                        recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                    });
+                } else {
+                    recordsContainer.innerHTML = '<p>No matching records found.</p>';
+                }
+            })
+            .catch(error => console.error('Error searching records:', error));
+        }
+
+        // Event Listeners
+        tableSelector.addEventListener('change', () => {
+            const table = tableSelector.value;
+            if (table) {
+                universalRefreshRecordList(table);
+            } else {
+                recordsContainer.innerHTML = '<p>Select a table to load records.</p>';
+            }
         });
+
+        searchField.addEventListener('input', () => {
+            const table = tableSelector.value;
+            const searchValue = searchField.value;
+
+            if (table) {
+                if (searchValue.length >= 2) {
+                    universalSearchRecords(table, searchValue);
+                } else {
+                    universalRefreshRecordList(table);
+                }
+            }
+        });
+    });
     </script>
     <?php
 }
