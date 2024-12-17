@@ -152,9 +152,9 @@ function jotunheim_enqueue_universal_ui_scripts() {
 
         function universalGenerateEditForm(record, columns) {
             const booleanFields = [
-                'forcePvp', 'godMode', 'ghostMode', 'iceZone', 'noItemLoss', 'noStatLoss', 
-                'noStatGain', 'disableDrops', 'noBuild', 'noShipDamage', 'onlyLeaveViaTeleport', 
-                'respawnOnCorpse', 'respawnAtLocation', 'allowSignUse', 'allowItemStandUse', 
+                'forcePvp', 'godMode', 'ghostMode', 'iceZone', 'noItemLoss', 'noStatLoss',
+                'noStatGain', 'disableDrops', 'noBuild', 'noShipDamage', 'onlyLeaveViaTeleport',
+                'respawnOnCorpse', 'respawnAtLocation', 'allowSignUse', 'allowItemStandUse',
                 'allowShipPlacement', 'allowCartPlacement', 'invisiblePlayers'
             ];
 
@@ -165,13 +165,13 @@ function jotunheim_enqueue_universal_ui_scripts() {
             columns.forEach(column => {
                 const field_name = column.Field;
 
-                if (['id', 'string_name'].includes(field_name)) return;  // Skip ID and string_name fields
+                if (['id', 'string_name'].includes(field_name)) return; // Skip ID and string_name fields
 
                 formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
-                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${capitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
+                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${universalCapitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
                                 <div style='flex: 2;'>`;
 
-                // Handle dropdowns for specific fields
+                // Custom dropdown fields
                 if (field_name === 'shape') {
                     formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
                                     <option value='Circle' ${record[field_name] === 'Circle' ? 'selected' : ''}>Circle</option>
@@ -187,8 +187,8 @@ function jotunheim_enqueue_universal_ui_scripts() {
                     formHtml += `<input type="hidden" name="${field_name}" value="0">
                                 <input type="checkbox" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.5); margin-top: 5px;">`;
                 } else {
-                    // Default to text input for other fields
-                    formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${record[field_name] || ''}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>`;
+                    // Default text inputs
+                    formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${record[field_name] || ''}' style='width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ccc;'>`;
                 }
 
                 formHtml += `</div></div>`;
