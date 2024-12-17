@@ -151,63 +151,56 @@ function jotunheim_enqueue_universal_ui_scripts() {
         }
 
         function universalGenerateEditForm(record, columns) {
-            const booleanFields = [
-                'forcePvp', 'godMode', 'ghostMode', 'iceZone', 'noItemLoss', 'noStatLoss',
-                'noStatGain', 'disableDrops', 'noBuild', 'noShipDamage', 'onlyLeaveViaTeleport',
-                'respawnOnCorpse', 'respawnAtLocation', 'allowSignUse', 'allowItemStandUse',
-                'allowShipPlacement', 'allowCartPlacement', 'invisiblePlayers'
-            ];
+    const booleanFields = [
+        'forcePvp', 'godMode', 'ghostMode', 'iceZone', 'noItemLoss', 'noStatLoss',
+        'noStatGain', 'disableDrops', 'noBuild', 'noShipDamage', 'onlyLeaveViaTeleport',
+        'respawnOnCorpse', 'respawnAtLocation', 'allowSignUse', 'allowItemStandUse',
+        'allowShipPlacement', 'allowCartPlacement', 'invisiblePlayers'
+    ];
 
-            let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
-                                <h4>Editing: ${record.name || ''}</h4>
-                                <form class="record-details-form" data-record-id="${record.id}">`;
+    let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+                        <h4>Editing: ${record.name || ''}</h4>
+                        <form class="record-details-form" data-record-id="${record.id}">`;
 
-            columns.forEach(column => {
-                const field_name = column.Field;
+    columns.forEach(column => {
+        const field_name = column.Field;
 
-                if (['id', 'string_name'].includes(field_name)) return; // Skip ID and string_name fields
+        if (['id', 'string_name'].includes(field_name)) return; // Skip ID and string_name fields
 
-                formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
-                                <label for='${field_name}' style='flex: 1; font-weight: bold;'>${universalCapitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
-                                <div style='flex: 2;'>`;
+        formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
+                        <label for='${field_name}' style='flex: 1; font-weight: bold;'>${universalCapitalizeFirstLetter(field_name.replace('_', ' '))}:</label>
+                        <div style='flex: 2;'>`;
 
-                // Custom dropdown fields
-                if (field_name === 'shape') {
-                    formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                                    <option value='Circle' ${record[field_name] === 'Circle' ? 'selected' : ''}>Circle</option>
-                                    <option value='Square' ${record[field_name] === 'Square' ? 'selected' : ''}>Square</option>
-                                </select>`;
-                } else if (field_name === 'eventzone_status') {
-                    formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                                    <option value='enabled' ${record[field_name] === 'enabled' ? 'selected' : ''}>Enabled</option>
-                                    <option value='disabled' ${record[field_name] === 'disabled' ? 'selected' : ''}>Disabled</option>
-                                </select>`;
-                } else if (booleanFields.includes(field_name)) {
-                    const isChecked = record[field_name] == 1;
-                    formHtml += `<input type="hidden" name="${field_name}" value="0">
-                                <input type="checkbox" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.5); margin-top: 5px;">`;
-                } else {
-                    // Default text inputs
-                    let fieldValue = record[field_name];
-
-                    // Check for objects or arrays and stringify them
-                    if (typeof fieldValue === 'object' && fieldValue !== null) {
-                        fieldValue = JSON.stringify(fieldValue, null, 2);
-                    }
-
-                    formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${fieldValue || ''}' style='width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ccc;'>`;
-                }
-
-                formHtml += `</div></div>`;
-            });
-
-            formHtml += `</form></div>`;
-            return formHtml;
+        // Custom dropdown fields
+        if (field_name === 'shape') {
+            formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
+                            <option value='Circle' ${record[field_name] === 'Circle' ? 'selected' : ''}>Circle</option>
+                            <option value='Square' ${record[field_name] === 'Square' ? 'selected' : ''}>Square</option>
+                         </select>`;
+        } else if (field_name === 'eventzone_status') {
+            formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
+                            <option value='enabled' ${record[field_name] === 'enabled' ? 'selected' : ''}>Enabled</option>
+                            <option value='disabled' ${record[field_name] === 'disabled' ? 'selected' : ''}>Disabled</option>
+                         </select>`;
+        } else if (booleanFields.includes(field_name)) {
+            const isChecked = record[field_name] == 1;
+            formHtml += `<input type="hidden" name="${field_name}" value="0">
+                         <input type="checkbox" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.5); margin-top: 5px;">`;
+        } else {
+            // Default text inputs
+            formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${record[field_name] || ''}' style='width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ccc;'>`;
         }
 
-        function universalCapitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
+        formHtml += `</div></div>`;
+    });
+
+    formHtml += `</form></div>`;
+    return formHtml;
+}
+
+function universalCapitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
         function universalInitializeFieldBehavior() {
             $('[data-field="squareXRadius"], [data-field="squareZRadius"]').hide();
