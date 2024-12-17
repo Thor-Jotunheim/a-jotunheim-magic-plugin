@@ -93,7 +93,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-pla
 require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-ui-scripts.php';
 require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-editor-ui.php';
 require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-add-ui.php';
-if (defined('DOING_AJAX') && DOING_AJAX && isset($_REQUEST['action']) && !in_array($_REQUEST['action'], ['heartbeat', 'wp_ajax_heartbeat'])) {
+if (defined('DOING_AJAX') && DOING_AJAX) {
     require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-endpoint-handler.php';
 }
 
