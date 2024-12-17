@@ -54,22 +54,18 @@ function jotunheim_enqueue_universal_ui_scripts() {
     }
 
     selectedRecords.forEach(recordId => {
-    fetch(`${endpointEntry.full_url}/${recordId}`, {
-        headers: { 'X-API-KEY': apiKey }
-    })
-    .then(response => response.json())
-    .then(record => {
-        const formHtml = `
-            <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9;">
-                <h4>Editing Record ID: ${record.id}</h4>
-                ${Object.keys(record).map(key => `
-                    <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
-                    <input type="text" name="${key}" value="${record[key]}" style="width: 100%; margin-bottom: 10px;">
-                `).join('')}
-            </div>`;
-        editContainer.insertAdjacentHTML('beforeend', formHtml);
-    })
-    .catch(error => console.error(`Error fetching details for record ID: ${recordId}`, error));
+        fetch(`${endpointEntry.full_url}?id=${recordId}`, {
+            headers: { 'X-API-KEY': apiKey }
+        })
+        .then(response => response.json())
+        .then(record => {
+            const columns = Object.keys(record).map(key => ({ Field: key, Type: typeof record[key] }));
+            const formHtml = universalGenerateEditForm(record, columns); // Use the universal form generator
+            editContainer.insertAdjacentHTML('beforeend', formHtml);
+            universalInitializeFieldBehavior(); // Initialize conditional behaviors
+        })
+        .catch(error => console.error(`Error fetching details for record ID: ${recordId}`, error));
+    });
 });
 
         document.getElementById('clear-record-btn').addEventListener('click', function () {
