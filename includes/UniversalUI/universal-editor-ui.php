@@ -11,10 +11,10 @@ function jotunheim_magic_universal_editor_interface() {
     $api_endpoints = $wpdb->get_results("SELECT name, CONCAT(base_url, endpoint) AS full_url FROM jotun_api_endpoints WHERE enabled = 1", OBJECT_K);
 
     ob_start(); ?>
-    <div class="wrap universal-editor-container" style="display: flex; gap: 20px; background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bhmpics.com%2Fdownloads%2FValheim-Wallpapers%2F77.3-mistlands-teaser-1bb74b243f7219098476.jpg&f=1&nofb=1&ipt=45065e8b7cc5ca3ae8824364501250a2b5b4cf1428e93cd817bd8671ce697ec2&ipo=images') no-repeat center; background-size: cover; padding: 10px; border-radius: 10px;">
+    <div class="wrap universal-editor-container" style="display: flex; gap: 20px; background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bhmpics.com%2Fdownloads%2FValheim-Wallpapers%2F77.3-mistlands-teaser-1bb74b243f7219098476.jpg&f=1&nofb=1&ipt=45065e8b7cc5ca3ae8824364501250a2b5b4cf1428e93cd817bd8671ce697ec2&ipo=images') no-repeat center; background-size: cover; padding: 10px; border-radius: 10px; width: 100%; max-width: 1200px; margin: auto;">
         
-        <!-- Left-hand side: List of Records -->
-        <div style="flex: 1; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); height: calc(110vh - 50px); overflow-y: auto;">
+        <!-- Left-hand side: Record List -->
+        <div style="flex: 1; background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); height: calc(110vh - 50px); overflow-y: auto;">
             <h4 style="font-family: 'Roboto', sans-serif; font-size: 18px; margin-bottom: 10px;">Select Table:</h4>
             <select id="table-selector" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 2px solid #666;">
                 <option value="">-- Select a Table --</option>
@@ -23,101 +23,111 @@ function jotunheim_magic_universal_editor_interface() {
                 <?php endforeach; ?>
             </select>
 
-            <div id="records-list-container" style="height: calc(100% - 80px); overflow-y: auto;">
-                <p>Select a table to load its records.</p>
+            <!-- Search bar -->
+            <input type="text" id="search-bar" placeholder="Search records..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #666;">
+            
+            <!-- Load/Clear buttons -->
+            <div style="margin-bottom: 10px;">
+                <button id="load-btn" style="padding: 8px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Load</button>
+                <button id="clear-btn" style="padding: 8px; background-color: #dc3545; color: #fff; border: none; border-radius: 5px; cursor: pointer; margin-left: 5px;">Clear</button>
+            </div>
+
+            <div id="records-list-container" style="height: calc(100% - 150px); overflow-y: auto;">
+                <p>Select a table and click Load to view records.</p>
             </div>
         </div>
 
         <!-- Right-hand side: Record Editor -->
-        <div style="flex: 2; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
+        <div style="flex: 2; background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
             <h4 style="font-family: 'Roboto', sans-serif; font-size: 18px; text-align: center; margin-bottom: 10px;">Edit Record</h4>
             <div id="form-fields-container">
-                <p>Select a record to load its fields.</p>
+                <p>Select a record from the list to load its fields.</p>
             </div>
         </div>
     </div>
 
     <script type="text/javascript">
         const apiEndpoints = <?php echo json_encode($api_endpoints); ?>;
+        const apiHeaders = { 'Authorization': 'Bearer <?php echo getenv('API_SECRET_KEY'); ?>' }; // Load API key from wp-config.php
 
         jQuery(document).ready(function($) {
-            // Fetch records dynamically for the selected table
-            $('#table-selector').change(function() {
-                const selectedTable = $(this).val();
+            // Load records
+            $('#load-btn').click(function() {
+                const selectedTable = $('#table-selector').val();
+                const searchTerm = $('#search-bar').val();
                 const recordsContainer = $('#records-list-container');
-                const formContainer = $('#form-fields-container');
+
+                if (!selectedTable) {
+                    alert('Please select a table first.');
+                    return;
+                }
 
                 recordsContainer.html('<p>Loading records...</p>');
-                formContainer.html('<p>Select a record to load its fields.</p>');
 
-                if (selectedTable) {
-                    $.ajax({
-                        url: apiEndpoints['list_records'].full_url,
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ table: selectedTable }),
-                        success: function(response) {
-                            recordsContainer.empty();
+                $.ajax({
+                    url: apiEndpoints['list_records'].full_url,
+                    method: 'POST',
+                    headers: apiHeaders,
+                    contentType: 'application/json',
+                    data: JSON.stringify({ table: selectedTable, search: searchTerm }),
+                    success: function(response) {
+                        recordsContainer.empty();
 
-                            if (response && response.length > 0) {
-                                response.forEach(record => {
-                                    const recordItem = `<div style="margin-bottom: 5px;">
-                                        <button class="load-record-btn" data-id="${record.id}" style="width: 100%; padding: 5px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; text-align: left;">
+                        if (response && response.length > 0) {
+                            response.forEach(record => {
+                                recordsContainer.append(`
+                                    <div>
+                                        <button class="load-record-btn" data-id="${record.id}" style="width: 100%; margin-bottom: 5px; padding: 8px; background: #0073aa; color: #fff; border: none; border-radius: 5px; text-align: left;">
                                             ${record.name || 'Record ID: ' + record.id}
                                         </button>
-                                    </div>`;
-                                    recordsContainer.append(recordItem);
-                                });
-                            } else {
-                                recordsContainer.html('<p>No records found for this table.</p>');
-                            }
-                        },
-                        error: function(error) {
-                            console.error('Error fetching records:', error);
-                            recordsContainer.html('<p>Failed to fetch records. Check the console for details.</p>');
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            recordsContainer.html('<p>No records found.</p>');
                         }
-                    });
-                } else {
-                    recordsContainer.html('<p>Select a table to load its records.</p>');
-                }
+                    },
+                    error: function(error) {
+                        console.error('Error loading records:', error);
+                        recordsContainer.html('<p>Failed to load records.</p>');
+                    }
+                });
             });
 
-            // Load fields for a selected record
+            // Clear records
+            $('#clear-btn').click(function() {
+                $('#records-list-container').html('<p>Cleared records.</p>');
+            });
+
+            // Load fields for a record
             $('#records-list-container').on('click', '.load-record-btn', function() {
                 const recordId = $(this).data('id');
                 const selectedTable = $('#table-selector').val();
-                const formContainer = $('#form-fields-container');
 
-                formContainer.html('<p>Loading record fields...</p>');
+                $('#form-fields-container').html('<p>Loading record...</p>');
 
                 $.ajax({
                     url: apiEndpoints['get_record'].full_url,
                     method: 'POST',
+                    headers: apiHeaders,
                     contentType: 'application/json',
                     data: JSON.stringify({ table: selectedTable, id: recordId }),
                     success: function(response) {
-                        if (response && Object.keys(response).length > 0) {
-                            formContainer.empty();
+                        const formContainer = $('#form-fields-container');
+                        formContainer.empty();
 
-                            for (const [key, value] of Object.entries(response)) {
-                                formContainer.append(`
-                                    <div style="margin-bottom: 10px;">
-                                        <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
-                                        <input type="text" name="${key}" value="${value}" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #666;">
-                                    </div>
-                                `);
-                            }
-
+                        for (const [key, value] of Object.entries(response)) {
                             formContainer.append(`
-                                <button type="button" id="save-btn" style="padding: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Save Changes</button>
+                                <div style="margin-bottom: 10px;">
+                                    <label style="font-weight: bold;">${key.replace('_', ' ')}:</label>
+                                    <input type="text" name="${key}" value="${value}" style="width: 100%; padding: 8px; border: 1px solid #666; border-radius: 5px;">
+                                </div>
                             `);
-                        } else {
-                            formContainer.html('<p>No fields found for this record.</p>');
                         }
                     },
                     error: function(error) {
-                        console.error('Error fetching record fields:', error);
-                        formContainer.html('<p>Failed to load record fields.</p>');
+                        console.error('Error loading record:', error);
+                        $('#form-fields-container').html('<p>Failed to load record.</p>');
                     }
                 });
             });
