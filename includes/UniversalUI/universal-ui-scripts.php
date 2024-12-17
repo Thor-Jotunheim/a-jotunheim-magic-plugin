@@ -44,7 +44,11 @@ function jotunheim_enqueue_universal_ui_scripts() {
                     return;
                 }
 
-                fetch(listRecordsEndpoint, {
+                const fullUrl = listRecordsEndpoint; // Debugging to verify endpoint URL
+                console.log(`Fetching records for table: ${table}`);
+                console.log(`API URL: ${fullUrl}`);
+
+                fetch(fullUrl, {
                     method: 'POST',
                     headers: {
                         'X-API-KEY': apiKey,
@@ -54,6 +58,7 @@ function jotunheim_enqueue_universal_ui_scripts() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Response:', data); // Debug the API response
                     recordsContainer.innerHTML = '';
                     if (data.length > 0) {
                         data.forEach(record => {
