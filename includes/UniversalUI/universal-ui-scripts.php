@@ -36,38 +36,68 @@ function enqueue_universal_ui_scripts() {
 
             // Function to refresh the list of records
             function universalRefreshRecordList(table) {
-                const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
+            // Find the endpoint for the selected table
+            const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
 
-                if (!endpointEntry) {
-                    console.error(`No API endpoint mapped for table '${table}'`);
-                    recordsContainer.innerHTML = `<p>No API endpoint mapped for table: <b>${table}</b></p>`;
-                    return;
-                }
-
-                fetch(endpointEntry.full_url, {
-                    headers: { 'X-API-KEY': apiKey }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    recordsContainer.innerHTML = '';
-                    if (data.length > 0) {
-                            data.forEach(record => {
-                                const checkbox = `
-                                    <div>
-                                        <label>
-                                            <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${record.name}">
-                                            ${record.name || `Record ID: ${record.id}`}
-                                        </label>
-                                    </div>`;
-                                recordsContainer.insertAdjacentHTML('beforeend', checkbox);
-                            });
-                        universalTrackCheckedState();
-                    } else {
-                        recordsContainer.innerHTML = '<p>No records found for this table.</p>';
-                    }
-                })
-                .catch(error => console.error('Error fetching records:', error));
+            if (!endpointEntry) {
+                console.error(`Error: No API endpoint found for table '${table}'`);
+                recordsContainer.innerHTML = `<p>No API endpoint mapped for table: ${table}</p>`;
+                return;
             }
+
+            const fullUrl = endpointEntry.full_url; // Use the mapped API URL
+            console.log(`Fetching records for table: ${table}`);
+            console.log(`API URL: ${fullUrl}`);
+
+            fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': apiKey
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                recordsContainer.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(record => {
+                        // Dynamically find the first string column as the name (fallback to ID)
+                        data.forEach(record => {
+                            let displayName;
+
+                            // Table-specific logic for jotun_itemlist
+                            if (table === 'jotun_itemlist') {
+                                displayName = record.item_name || record.prefab_name || `Record ID: ${record.id}`;
+                            } else {
+                                // General dynamic detection for other tables
+                                displayName = record.name || record.title || record.username || record.display_name || 
+                                            record.activePlayerName || record._name || `Record ID: ${record.id}`;
+                            }
+
+                            const checkbox = `
+                                <div>
+                                    <label>
+                                        <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${displayName}">
+                                        ${displayName}
+                                    </label>
+                                </div>`;
+                            recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                        });
+
+                        const checkbox = `
+                            <div>
+                                <label>
+                                    <input type="checkbox" class="record-selection-checkbox" data-id="${record.id}" value="${displayName}">
+                                    ${displayName}
+                                </label>
+                            </div>`;
+                        recordsContainer.insertAdjacentHTML('beforeend', checkbox);
+                    });
+                } else {
+                    recordsContainer.innerHTML = '<p>No records found for this table.</p>';
+                }
+            })
+            .catch(error => console.error('Error fetching records:', error));
+        }
 
             // Function to load details for selected records
             function universalLoadRecordDetails(table) {
