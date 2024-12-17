@@ -4,7 +4,7 @@ function jotunheim_magic_universal_add_item_interface() {
     global $wpdb;
 
     // Fetch tables starting with jotun_
-    $tables = $wpdb->get_col("SHOW TABLES LIKE 'jotun_%'");
+    $tables = jotunheim_get_enabled_universal_ui_tables();
 
     ob_start(); // Start output buffering
     ?>
