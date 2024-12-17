@@ -37,28 +37,27 @@ function jotunheim_enqueue_universal_ui_scripts() {
 
             // Fetch and refresh the record list for a selected table
             function universalRefreshRecordList(table) {
-                const listRecordsEndpoint = apiEndpoints['list_records'] ? apiEndpoints['list_records'].full_url : null;
+                // Find the endpoint for the selected table
+                const endpointEntry = Object.values(apiEndpoints).find(entry => entry.table_name === table);
 
-                if (!listRecordsEndpoint) {
-                    console.error('Error: list_records API endpoint not found.');
+                if (!endpointEntry) {
+                    console.error(`Error: No API endpoint found for table '${table}'`);
+                    recordsContainer.innerHTML = `<p>No API endpoint mapped for table: ${table}</p>`;
                     return;
                 }
 
-                const fullUrl = listRecordsEndpoint; // Debugging to verify endpoint URL
+                const fullUrl = endpointEntry.full_url; // Use the mapped API URL
                 console.log(`Fetching records for table: ${table}`);
                 console.log(`API URL: ${fullUrl}`);
 
                 fetch(fullUrl, {
-                    method: 'POST',
+                    method: 'GET',
                     headers: {
-                        'X-API-KEY': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ table: table })
+                        'X-API-KEY': apiKey
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Response:', data); // Debug the API response
                     recordsContainer.innerHTML = '';
                     if (data.length > 0) {
                         data.forEach(record => {
