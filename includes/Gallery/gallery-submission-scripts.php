@@ -1,10 +1,11 @@
 <?php
 function handle_gallery_submission() {
+    // Verify Nonce
     if (!isset($_POST['gallery_submission_nonce']) || !wp_verify_nonce($_POST['gallery_submission_nonce'], 'gallery_submission')) {
         wp_die('Nonce verification failed.');
     }
 
-    // Validate input
+    // Validate Input
     if (empty($_POST['build_name']) || empty($_POST['description']) || empty($_FILES['photos']['name'])) {
         wp_die('All fields are required, and you must upload at least 4 photos.');
     }
@@ -13,7 +14,7 @@ function handle_gallery_submission() {
         wp_die('You must upload at least 4 photos.');
     }
 
-    // Process uploaded photos
+    // Process Uploaded Photos
     $photo_ids = [];
     foreach ($_FILES['photos']['name'] as $index => $photo_name) {
         if ($_FILES['photos']['error'][$index] === UPLOAD_ERR_OK) {
@@ -27,6 +28,7 @@ function handle_gallery_submission() {
 
             $upload = wp_handle_upload($file, ['test_form' => false]);
             if (isset($upload['file'])) {
+                // Insert Attachment
                 $attachment = [
                     'post_mime_type' => $upload['type'],
                     'post_title'     => sanitize_file_name($photo_name),
@@ -34,33 +36,40 @@ function handle_gallery_submission() {
                     'post_status'    => 'inherit',
                 ];
                 $attachment_id = wp_insert_attachment($attachment, $upload['file']);
+
+                // Generate Attachment Metadata
                 require_once ABSPATH . 'wp-admin/includes/image.php';
-                wp_generate_attachment_metadata($attachment_id, $upload['file']);
-                wp_update_attachment_metadata($attachment_id, wp_generate_attachment_metadata($attachment_id, $upload['file']));
+                $attachment_data = wp_generate_attachment_metadata($attachment_id, $upload['file']);
+                wp_update_attachment_metadata($attachment_id, $attachment_data);
+
                 $photo_ids[] = $attachment_id;
             }
         }
     }
 
-    // Generate gallery shortcode for the post content
+    // Generate Gallery Shortcode with Full Image Links
     $gallery_shortcode = '';
     if (!empty($photo_ids)) {
-        $gallery_shortcode = '[gallery ids="' . implode(',', $photo_ids) . '"]';
+        $gallery_shortcode = '[gallery link="file" ids="' . implode(',', $photo_ids) . '"]';
     }
 
-    // Create draft post
+    // Create Draft Post
     $post_content = sanitize_textarea_field($_POST['description']) . "\n\n" . $gallery_shortcode;
     $post_id = wp_insert_post([
         'post_title'   => sanitize_text_field($_POST['build_name']),
         'post_content' => $post_content,
         'post_status'  => 'draft',
-        'post_type'    => 'post', // Or a custom post type like 'gallery'
-        'post_category' => [get_cat_ID('Player Builds')], // Set default category
-        'post_author'  => get_current_user_id(), // Set the author to the current logged-in user
+        'post_type'    => 'post',
+        'post_category' => [get_cat_ID('Player Builds')],
+        'post_author'  => get_current_user_id(),
     ]);
 
     if ($post_id) {
-        wp_redirect(home_url('/thank-you/')); // Redirect after submission
+        // Force the correct template
+        update_post_meta($post_id, '_wp_page_template', 'page-photo-gallery-submissions.php');
+
+        // Redirect to a Thank-You Page
+        wp_redirect(home_url('/thank-you/'));
         exit;
     } else {
         wp_die('Error saving your submission.');
