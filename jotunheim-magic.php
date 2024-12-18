@@ -98,7 +98,7 @@ if (defined('DOING_AJAX') && DOING_AJAX && isset($_REQUEST['action']) && !in_arr
 }
 
 // Include Gallery Submission components
-require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-forms.php');
+require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-form.php');
 require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-scripts.php');
 
 // Register shortcode for EventZones Editor
