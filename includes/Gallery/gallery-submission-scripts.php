@@ -60,8 +60,10 @@ function handle_gallery_submission() {
         ],
     ]);
 
-
     if ($post_id) {
+        // Add custom field for 'Created By'
+        update_post_meta($post_id, 'created_by', sanitize_text_field($_POST['created_by']));
+
         // Force the correct template
         update_post_meta($post_id, '_wp_page_template', 'page-photo-gallery-submissions.php');
 
