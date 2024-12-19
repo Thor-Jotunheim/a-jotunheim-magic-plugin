@@ -59,6 +59,7 @@ function handle_gallery_submission() {
         ],
     ]);
 
+    if ($post_id) {
     // Add custom field for 'Created By'
     update_post_meta($post_id, 'created_by', sanitize_text_field($_POST['created_by']));
 
@@ -72,7 +73,7 @@ function handle_gallery_submission() {
     // Handle the error, e.g., display an error message or log the error
     wp_die('Error saving your submission. Please try again later.');
 }
-
+}
 function my_plugin_locate_template( $template ) {
     $template = locate_template(
         array(
