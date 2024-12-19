@@ -47,28 +47,43 @@ function handle_gallery_submission() {
         }
     }
 
-    // Create Gallery Post
-    $post_id = wp_insert_post([
-        'post_title'   => sanitize_text_field($_POST['build_name']),
-        'post_content' => sanitize_textarea_field($_POST['description']),
-        'post_status'  => 'draft',
-        'post_type'    => 'gallery', // Use 'gallery' post type
-        'post_author'  => get_current_user_id(),
-        'meta_input'   => [ // Add uploaded photos as attachments
-            '_wp_attached_file' => $photo_ids,
-        ],
-    ]);
-
-    if ($post_id) {
+        // Create Gallery Post
+        $post_id = wp_insert_post([
+            'post_title'   => sanitize_text_field($_POST['build_name']),
+            'post_content' => sanitize_textarea_field($_POST['description']),
+            'post_status'  => 'draft',
+            'post_type'    => 'gallery',
+            'post_author'  => get_current_user_id(),
+            'meta_input'   => [
+                '_wp_attached_file' => $photo_ids,
+            ],
+        ]);
+    
+        // Add custom field for 'Created By'
+        update_post_meta($post_id, 'created_by', sanitize_text_field($_POST['created_by']));
+    
         // Force the correct template
         update_post_meta($post_id, '_wp_page_template', 'page-photo-gallery-submissions.php');
-
+    
         // Redirect to a Thank-You Page
         wp_redirect(home_url('/thank-you/'));
         exit;
     } else {
         wp_die('Error saving your submission.');
     }
-}
-add_action('admin_post_submit_gallery', 'handle_gallery_submission');
-add_action('admin_post_nopriv_submit_gallery', 'handle_gallery_submission');
+
+    function my_plugin_locate_template( $template ) {
+        $template = locate_template(
+            array(
+                'page-photo-gallery-submissions.php',
+            ),
+            false,
+            plugin_dir_path( __FILE__ ) . 'includes/Gallery/'
+        );
+    
+        return $template;
+    }
+    
+    add_action('admin_post_submit_gallery', 'handle_gallery_submission');
+    add_action('admin_post_nopriv_submit_gallery', 'handle_gallery_submission');
+    add_filter( 'template_include', 'my_plugin_locate_template', 10, 1 );
