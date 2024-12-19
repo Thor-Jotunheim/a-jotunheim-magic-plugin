@@ -68,9 +68,6 @@ function handle_gallery_submission() {
     // Redirect to a Thank-You Page
     wp_redirect(home_url('/thank-you/'));
     exit;
-} else {
-    // Handle the error, e.g., display an error message or log the error
-    wp_die('Error saving your submission. Please try again later.');
 }
 
 function my_plugin_locate_template( $template ) {
