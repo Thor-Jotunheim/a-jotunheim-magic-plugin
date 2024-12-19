@@ -64,7 +64,7 @@ function handle_gallery_submission() {
         update_post_meta($post_id, 'created_by', sanitize_text_field($_POST['created_by']));
 
         // Force the correct template
-        update_post_meta($post_id, '_wp_page_template', 'page-photo-gallery-submissions.php');
+        //update_post_meta($post_id, '_wp_page_template', 'page-photo-gallery-submissions.php');
 
         // Redirect to a Thank-You Page
         wp_redirect(home_url('/thank-you/'));
