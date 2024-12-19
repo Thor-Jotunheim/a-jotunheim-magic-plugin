@@ -47,21 +47,16 @@ function handle_gallery_submission() {
         }
     }
 
-    // Generate Gallery Shortcode with Full Image Links
-    $gallery_shortcode = '';
-    if (!empty($photo_ids)) {
-        $gallery_shortcode = '[gallery link="file" ids="' . implode(',', $photo_ids) . '"]';
-    }
-
-    // Create Draft Post
-    $post_content = sanitize_textarea_field($_POST['description']) . "\n\n" . $gallery_shortcode;
+    // Create Gallery Post
     $post_id = wp_insert_post([
         'post_title'   => sanitize_text_field($_POST['build_name']),
-        'post_content' => $post_content,
+        'post_content' => sanitize_textarea_field($_POST['description']),
         'post_status'  => 'draft',
-        'post_type'    => 'post',
-        'post_category' => [get_cat_ID('Player Builds')],
+        'post_type'    => 'gallery', // Use 'gallery' post type
         'post_author'  => get_current_user_id(),
+        'meta_input'   => [ // Add uploaded photos as attachments
+            '_wp_attached_file' => $photo_ids,
+        ],
     ]);
 
     if ($post_id) {
