@@ -52,11 +52,10 @@ function handle_gallery_submission() {
         'post_title'   => sanitize_text_field($_POST['build_name']),
         'post_content' => sanitize_textarea_field($_POST['description']),
         'post_status'  => 'draft',
-        'post_type'    => 'gallery',
-        'post_author'  => get_current_user_id(), // Use current user as author
-        'meta_input'   => [
+        'post_type'    => 'gallery', // Use 'gallery' post type
+        'post_author'  => get_current_user_id(),
+        'meta_input'   => [ // Add uploaded photos as attachments
             '_wp_attached_file' => $photo_ids,
-            'created_by' => sanitize_text_field($_POST['created_by']), // Custom field for 'Created By'
         ],
     ]);
 
