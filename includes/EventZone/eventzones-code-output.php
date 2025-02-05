@@ -49,7 +49,7 @@ function generate_eventzones_code_output() {
     ';
 
     // REST API endpoint for event zones
-    $api_url = "https://jotun.games/wp-json/jotunheim-magic/v1/eventzones";
+    $api_url = "https://JOTUNHEIM_BASE_URL/wp-json/jotunheim-magic/v1/eventzones";
     $response = @file_get_contents($api_url);
 
     if ($response === FALSE) {

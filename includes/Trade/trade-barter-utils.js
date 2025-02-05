@@ -5,7 +5,7 @@ let itemsData = [];
 export async function fetchItems() {
     console.log('Fetching items from API...');
     try {
-        const response = await fetch('https://jotun.games/wp-json/jotunheim-magic/v1/items');
+        const response = await fetch('https://JOTUNHEIM_BASE_URL/wp-json/jotunheim-magic/v1/items');
         const data = await response.json();
 
         console.log('Fetched Items:', data); // Log the fetched data

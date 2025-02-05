@@ -42,7 +42,7 @@ function get_jotun_prefabs() {
 
     // Process results to include the full icon URL
     $items = array_map(function($item) {
-        $item->icon_url = 'https://jotun.games/wp-content/uploads/Jotunheim-magic/icons/' . $item->icon_image;
+        $item->icon_url = 'https://JOTUNHEIM_BASE_URL/wp-content/uploads/Jotunheim-magic/icons/' . $item->icon_image;
         return $item;
     }, $results);
 

@@ -36,7 +36,7 @@ jobs:
       # Uncomment and configure if needed
       # - name: Re-enable Mod
       #   run: |
-      #     curl -X GET "https://jotun.games/ReEnableURL?key=YourKeyHere"
+      #     curl -X GET "https://JOTUNHEIM_BASE_URL/ReEnableURL?key=YourKeyHere"
 
       # - name: Wait for Mod to Re-enable
       #   run: sleep 10  # Adjust as necessary

@@ -26,7 +26,7 @@ function custom_discord_oauth_login($request) {
     $code = sanitize_text_field($request['code']);
     $client_id = '1297908076929613956';
     $client_secret = 'WzapYHJlj3P0XgwsBC9GATzrSs1kwi4z';
-    $redirect_uri = 'https://jotun.games/wp-admin/admin-ajax.php?action=oauth2callback';
+    $redirect_uri = 'https://JOTUNHEIM_BASE_URL/wp-admin/admin-ajax.php?action=oauth2callback';
 
     // Exchange the authorization code for an access token
     $response = wp_remote_post('https://discord.com/api/oauth2/token', array(

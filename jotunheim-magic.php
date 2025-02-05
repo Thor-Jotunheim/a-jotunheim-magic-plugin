@@ -11,6 +11,14 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
+// Determine if the site is running locally or on the live server
+function is_local_environment() {
+    return strpos($_SERVER['HTTP_HOST'], 'devtunnels.ms') !== false || strpos($_SERVER['HTTP_HOST'], 'localhost') !== false;
+}
+
+// Define base URL constant
+define('JOTUNHEIM_BASE_URL', is_local_environment() ? 'https://2p69j0g7-80.usw3.devtunnels.ms' : 'https://JOTUNHEIM_BASE_URL');
+
 // File: jotunheim-magic.php
 require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 
@@ -177,21 +185,15 @@ register_activation_hook(__FILE__, 'jotunheim_magic_activate');
 function jotunheim_magic_deactivate() {}
 register_deactivation_hook(__FILE__, 'jotunheim_magic_deactivate');
 
-// Function to render Discord Login Button as a shortcode
-function jotunheim_magic_discord_login_button() {
-    ob_start();
+// Add Discord button to login form with environment-specific URL
+function jotunheim_magic_add_discord_button_to_login() {
+    $redirect_uri = JOTUNHEIM_BASE_URL . '/wp-admin/admin-ajax.php?action=oauth2callback';
+    $discord_login_url = "https://discord.com/api/oauth2/authorize?client_id=1297908076929613956&redirect_uri=" . urlencode($redirect_uri) . "&response_type=code&scope=identify%20email";
     ?>
-    <a href="https://discord.com/api/oauth2/authorize?client_id=1297908076929613956&redirect_uri=https%3A%2F%2Fjotun.games%2Fwp-admin%2Fadmin-ajax.php%3Faction%3Doauth2callback&response_type=code&scope=identify%20email" class="discord-login-button" style="display: inline-block; padding: 10px 20px; background-color: #7289da; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center;">
+    <a href="<?php echo esc_url($discord_login_url); ?>" class="discord-login-button" style="display: inline-block; padding: 10px 20px; background-color: #7289da; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center;">
         Login with Discord
     </a>
     <?php
-    return ob_get_clean();
-}
-add_shortcode('discord_login_button', 'jotunheim_magic_discord_login_button');
-
-// Add Discord button to login form
-function jotunheim_magic_add_discord_button_to_login() {
-    echo do_shortcode('[discord_login_button]');
 }
 add_action('login_form', 'jotunheim_magic_add_discord_button_to_login');
 
