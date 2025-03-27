@@ -92,6 +92,11 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-put.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-claim.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-player.php');
 
+// Include Wiki files
+include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-permissions.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-core.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-rest-api.php');
+
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
 
