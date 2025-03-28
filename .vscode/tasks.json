@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Deploy to Local WordPress",
+            "type": "shell",
+            "command": "rm -rf /Users/clundervold/Documents/GitHub/wp-codespace-private/wordpress/wp-content/plugins/a-jotunheim-magic-plugin && mkdir -p /Users/clundervold/Documents/GitHub/wp-codespace-private/wordpress/wp-content/plugins/a-jotunheim-magic-plugin && cp -R ${workspaceFolder}/* /Users/clundervold/Documents/GitHub/wp-codespace-private/wordpress/wp-content/plugins/a-jotunheim-magic-plugin && echo 'Plugin deployed to local WordPress successfully!'",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "clear": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

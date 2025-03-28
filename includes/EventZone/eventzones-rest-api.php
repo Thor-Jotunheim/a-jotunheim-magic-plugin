@@ -32,7 +32,10 @@ add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/eventzones/name/(?P<name>[a-zA-Z0-9_-]+)', array(
         'methods' => 'GET',
         'callback' => 'fetch_eventzone_by_name_rest',
-        'permission_callback' => 'validate_api_key', // Requires API key
+        'permission_callback' => function($request) {
+            // Use the existing validate_api_key function from helpers.php
+            return validate_api_key($request);
+        },
         'args' => array(
             'name' => array(
                 'required' => true,
@@ -64,20 +67,6 @@ add_action('rest_api_init', function () {
         ),
     ));
 });
-
-
-// Function to validate API key directly from wp-config.php
-function validate_api_key($request) {
-    // Retrieve the API key from the request headers
-    $api_key = $request->get_header('x-api-key');
-    
-    // Ensure that the key matches the one defined in wp-config.php
-    if (!defined('EVENTZONES_API_KEY') || $api_key !== EVENTZONES_API_KEY) {
-        error_log('Invalid API key provided.');
-        return new WP_Error('rest_forbidden', __('Invalid API key.'), array('status' => 403));
-    }
-    return true;
-}
 
 // Callback function for fetching all event zones
 function fetch_all_eventzones_rest($request) {

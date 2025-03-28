@@ -3,43 +3,65 @@
 if (!defined('ABSPATH')) exit;
 
 // Hook into AJAX to handle the Discord OAuth2 callback
-add_action('wp_ajax_oauth2callback', 'jotunheim_magic_handle_discord_oauth2_callback');
-add_action('wp_ajax_nopriv_oauth2callback', 'jotunheim_magic_handle_discord_oauth2_callback');
+add_action('wp_ajax_oauth2callback', 'discord_oauth_callback');
+add_action('wp_ajax_nopriv_oauth2callback', 'discord_oauth_callback');
 
-function jotunheim_magic_handle_discord_oauth2_callback() {
+function discord_oauth_callback() {
+    include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Discord/discord-config.php');
+
     if (!isset($_GET['code'])) {
-        wp_die('Invalid request');
+        wp_die('Invalid request - No code parameter found');
     }
 
     $code = sanitize_text_field($_GET['code']);
-    $client_id = DISCORD_CLIENT_ID;
-    $client_secret = DISCORD_CLIENT_SECRET;
-    $redirect_uri = DISCORD_REDIRECT_URI;
+    $client_id = Jotunheim_Discord_Config::get_client_id();
+    $client_secret = Jotunheim_Discord_Config::get_client_secret();
+    $redirect_uri = Jotunheim_Discord_Config::get_redirect_uri();
     $guild_id = DISCORD_GUILD_ID;
 
-    // Instead of using the user token to fetch roles, use a bot token and standard guild member endpoint.
-    // Make sure you have a BOT token with the necessary privileges defined as DISCORD_BOT_TOKEN.
-    // Your bot must have the "Server Members Intent" enabled for this to work.
+    // Debug info
+    error_log('OAuth Callback - Code received: ' . substr($code, 0, 10) . '...');
+    error_log('Client ID: ' . $client_id);
+    error_log('Redirect URI: ' . $redirect_uri);
+    error_log('Client Secret length: ' . (strlen($client_secret) > 0 ? strlen($client_secret) : 'EMPTY!'));
 
     // Exchange the authorization code for an access token (just for user identity & email)
+    $token_request_data = array(
+        'client_id' => $client_id,
+        'client_secret' => $client_secret,
+        'grant_type' => 'authorization_code',
+        'code' => $code,
+        'redirect_uri' => $redirect_uri,
+        'scope' => 'identify email'
+    );
+
+    error_log('Token request data: ' . json_encode($token_request_data));
+
     $response = wp_remote_post('https://discord.com/api/oauth2/token', array(
-        'body' => array(
-            'client_id' => $client_id,
-            'client_secret' => $client_secret,
-            'grant_type' => 'authorization_code',
-            'code' => $code,
-            'redirect_uri' => $redirect_uri,
-            'scope' => 'identify email'
-        ),
+        'method' => 'POST',
+        'timeout' => 45,
+        'redirection' => 5,
+        'httpversion' => '1.1',
+        'blocking' => true,
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+        'body' => $token_request_data,
     ));
 
     if (is_wp_error($response)) {
-        wp_die('Failed to communicate with Discord.');
+        error_log('Discord token request failed: ' . $response->get_error_message());
+        wp_die('Failed to communicate with Discord: ' . $response->get_error_message());
     }
 
+    $status_code = wp_remote_retrieve_response_code($response);
     $body = json_decode(wp_remote_retrieve_body($response), true);
-    if (!isset($body['access_token'])) {
-        wp_die('Failed to get access token.');
+
+    error_log('Discord token response status: ' . $status_code);
+    error_log('Discord token response: ' . json_encode($body));
+
+    if ($status_code !== 200 || !isset($body['access_token'])) {
+        $error_description = isset($body['error_description']) ? $body['error_description'] : 'Unknown error';
+        error_log('Failed to get access token. Error: ' . $error_description);
+        wp_die('Failed to get access token. Error: ' . $error_description);
     }
 
     $access_token = sanitize_text_field($body['access_token']);

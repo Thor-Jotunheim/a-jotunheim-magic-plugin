@@ -34,7 +34,7 @@ function has_permission($capability = 'read') {
 
 
 // Unified function to validate API keys (keys should be set in wp-config.php)
-function validate_api_key($request) {
+function validate_api_key($request) { // Renamed function
     // Retrieve the API key from the request headers
     $api_key = $request->get_header('x-api-key');
 

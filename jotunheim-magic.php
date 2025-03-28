@@ -13,17 +13,21 @@ if (!defined('ABSPATH')) exit;
 
 // Determine if the site is running locally or on the live server
 function is_local_environment() {
-    return strpos($_SERVER['HTTP_HOST'], 'devtunnels.ms') !== false || strpos($_SERVER['HTTP_HOST'], 'localhost') !== false;
+    return strpos($_SERVER['HTTP_HOST'], 'devtunnels.ms') !== false || 
+           strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||
+           strpos($_SERVER['HTTP_HOST'], '.local') !== false;
 }
 
-// Define base URL constant
+// Define base URL constant and plugin constants
 define('JOTUNHEIM_BASE_URL', is_local_environment() ? 'https://2p69j0g7-80.usw3.devtunnels.ms' : 'https://JOTUNHEIM_BASE_URL');
+define('JOTUNHEIM_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('JOTUNHEIM_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('JOTUNHEIM_PLUGIN_FILE', __FILE__);
 
-// File: jotunheim-magic.php
-require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
-
-// Include Utility files
-include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
+// Include utility files first
+require_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/helpers.php');
+include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/dev-environment.php');
+include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/dark-mode.php');
 
 // Include ItemList files
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-scripts.php');
@@ -96,6 +100,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-pla
 include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-permissions.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-core.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-rest-api.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-integration.php');
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
@@ -192,8 +197,10 @@ register_deactivation_hook(__FILE__, 'jotunheim_magic_deactivate');
 
 // Add Discord button to login form with environment-specific URL
 function jotunheim_magic_add_discord_button_to_login() {
-    $redirect_uri = JOTUNHEIM_BASE_URL . '/wp-admin/admin-ajax.php?action=oauth2callback';
-    $discord_login_url = "https://discord.com/api/oauth2/authorize?client_id=1297908076929613956&redirect_uri=" . urlencode($redirect_uri) . "&response_type=code&scope=identify%20email";
+    // Load Discord configuration class
+    include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Discord/discord-config.php');
+    
+    $discord_login_url = Jotunheim_Discord_Config::get_auth_url();
     ?>
     <a href="<?php echo esc_url($discord_login_url); ?>" class="discord-login-button" style="display: inline-block; padding: 10px 20px; background-color: #7289da; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center;">
         Login with Discord
@@ -201,6 +208,14 @@ function jotunheim_magic_add_discord_button_to_login() {
     <?php
 }
 add_action('login_form', 'jotunheim_magic_add_discord_button_to_login');
+
+// Discord login button shortcode - reuses the same button rendering code
+function discord_login_button_shortcode($atts) {
+    ob_start();
+    jotunheim_magic_add_discord_button_to_login();
+    return ob_get_clean();
+}
+add_shortcode('discord_login_button', 'discord_login_button_shortcode');
 
 // Remove WordPress logo from admin bar for all users
 function jotunheim_magic_remove_wp_logo($wp_admin_bar) {
