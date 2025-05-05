@@ -40,23 +40,32 @@ function jotunheim_create_wiki_editor_role() {
         
         // Knowledge Base specific capabilities
         if (post_type_exists('knowledgebase')) {
+            // Standard KB editing capabilities
             $wiki_editor->add_cap('edit_knowledgebase');
             $wiki_editor->add_cap('edit_knowledgebases');
             $wiki_editor->add_cap('edit_others_knowledgebases');
             $wiki_editor->add_cap('edit_published_knowledgebases');
             $wiki_editor->add_cap('publish_knowledgebases');
+            $wiki_editor->add_cap('read_private_knowledgebases');
             
             // BasePress specific capabilities for content editing
             $wiki_editor->add_cap('basepress_edit_articles');
             $wiki_editor->add_cap('basepress_edit_knowledgebases');
+            $wiki_editor->add_cap('basepress_edit_others_articles');
+            $wiki_editor->add_cap('basepress_edit_published_articles');
             
-            // Adding BasePress management capabilities for Sections and Manage KB
+            // Adding full BasePress management capabilities
             $wiki_editor->add_cap('basepress_manage_sections');
+            $wiki_editor->add_cap('basepress_manage_options');
+            $wiki_editor->add_cap('basepress_manage_kbs');
+            $wiki_editor->add_cap('basepress_manage_products');
             $wiki_editor->add_cap('manage_basepress');
             
-            // Don't add these specific admin capabilities
-            // - basepress_manage_options
-            // - basepress_manage_products
+            // Taxonomy management for KB categories
+            $wiki_editor->add_cap('manage_knowledgebase_cat');
+            $wiki_editor->add_cap('edit_knowledgebase_cat');
+            $wiki_editor->add_cap('delete_knowledgebase_cat');
+            $wiki_editor->add_cap('assign_knowledgebase_cat');
         }
     }
 }
@@ -112,13 +121,12 @@ function jotunheim_remove_admin_menu_items() {
         return;
     }
     
-    // Get the KB post type
-    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-    $kb_menu = 'edit.php?post_type=' . $kb_post_type;
-    
     global $menu, $submenu;
     
-    // First, remove all menu items except profile and Knowledge Base
+    // Get the KB post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    
+    // Only keep the profile menu and KB menu items
     if (is_array($menu)) {
         foreach ($menu as $key => $item) {
             // Skip if not a proper menu item
@@ -126,40 +134,10 @@ function jotunheim_remove_admin_menu_items() {
                 continue;
             }
             
-            // Keep only profile menu and KB menu
-            if ($item[2] !== 'profile.php' && $item[2] !== $kb_menu) {
+            // Only keep profile menu and KB menu
+            if ($item[2] !== 'profile.php' && 
+                $item[2] !== 'edit.php?post_type=' . $kb_post_type) {
                 remove_menu_page($item[2]);
-            }
-        }
-    }
-    
-    // Keep Sections and Manage KB submenus, but remove any other KB management pages
-    if (isset($submenu[$kb_menu])) {
-        foreach ($submenu[$kb_menu] as $key => $item) {
-            // Skip if not a proper menu item
-            if (!isset($item[2])) {
-                continue;
-            }
-            
-            // List of allowed submenu pages
-            $allowed_pages = array(
-                $kb_menu, // All Articles
-                'post-new.php?post_type=' . $kb_post_type, // Add New
-                'basepress_sections', // Sections
-                'basepress_manage_kbs', // Manage KB
-            );
-            
-            // If item is not in allowed pages, remove it
-            $is_allowed = false;
-            foreach ($allowed_pages as $allowed_page) {
-                if (strpos($item[2], $allowed_page) !== false) {
-                    $is_allowed = true;
-                    break;
-                }
-            }
-            
-            if (!$is_allowed) {
-                remove_submenu_page($kb_menu, $item[2]);
             }
         }
     }
@@ -171,18 +149,34 @@ add_action('admin_menu', 'jotunheim_remove_admin_menu_items', 999);
  * This ensures they land at KB section when logging in
  */
 function jotunheim_wiki_editor_redirect() {
-    if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
-        // Get the KB post type
-        $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-        
-        // Get current screen
-        $screen = get_current_screen();
-        
-        // If on dashboard, redirect to KB
-        if ($screen && $screen->id === 'dashboard') {
-            wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
-            exit;
-        }
+    // Only apply to wiki_editor role (not for admins)
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // Get the KB post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    
+    // Get current screen
+    $screen = get_current_screen();
+    
+    // If on dashboard, redirect to KB
+    if ($screen && $screen->id === 'dashboard') {
+        wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
+        exit;
     }
 }
 add_action('current_screen', 'jotunheim_wiki_editor_redirect');
+
+/**
+ * Register wiki editor roles with BasePress
+ */
+function jotunheim_register_wiki_editor_with_basepress() {
+    if (function_exists('basepress_kb_edit_post_user_roles')) {
+        add_filter('basepress_kb_edit_post_user_roles', function($roles) {
+            $roles[] = 'wiki_editor';
+            return $roles;
+        });
+    }
+}
+add_action('init', 'jotunheim_register_wiki_editor_with_basepress', 20);
