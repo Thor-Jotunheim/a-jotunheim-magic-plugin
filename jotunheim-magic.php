@@ -105,6 +105,9 @@ require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-sc
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
 
+// Include Knowledge Base template fix
+include_once(plugin_dir_path(__FILE__) . 'includes/KB/kb-template-fix.php');
+
 // Include Knowledge Base template override
 include_once(plugin_dir_path(__FILE__) . 'includes/KB/kb-template-override.php');
 
