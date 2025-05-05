@@ -106,7 +106,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
 
 // Include KB modifications
-include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-header-override.php');
+// include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-header-override.php');
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
