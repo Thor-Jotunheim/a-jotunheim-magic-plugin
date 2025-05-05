@@ -107,3 +107,73 @@ function jotunheim_add_kb_new_button() {
     }
 }
 add_action('admin_head', 'jotunheim_add_kb_new_button');
+
+/**
+ * Ensure edit links are visible in admin for wiki editors
+ */
+function jotunheim_ensure_kb_edit_links() {
+    $screen = get_current_screen();
+    if (!$screen) return;
+    
+    // Get the proper knowledge base post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    
+    // Only run on knowledge base listing page
+    if ($screen->post_type !== $kb_post_type) return;
+    
+    // Only for wiki editors
+    if (!current_user_can('wiki_editor')) return;
+    
+    // Add JavaScript to ensure edit links and row actions are visible
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Add the New button if missing
+            if ($('.page-title-action').length === 0) {
+                $('.wp-heading-inline').after('<a href="<?php echo esc_url(admin_url("post-new.php?post_type=" . $kb_post_type)); ?>" class="page-title-action">Add New</a>');
+            }
+            
+            // Make sure row actions are visible
+            $('.row-actions').css('left', 'auto').css('position', 'relative');
+            
+            // Add edit buttons to rows if missing
+            $('tbody tr').each(function() {
+                var $row = $(this);
+                var postId = $row.attr('id') ? $row.attr('id').replace('post-', '') : null;
+                
+                if (postId && $row.find('.row-actions .edit').length === 0) {
+                    var editUrl = '<?php echo esc_url(admin_url("post.php?action=edit&post=")); ?>' + postId;
+                    var editLink = '<span class="edit"><a href="' + editUrl + '">Edit</a> | </span>';
+                    
+                    if ($row.find('.row-actions').length === 0) {
+                        $row.find('.title').append('<div class="row-actions">' + editLink + '</div>');
+                    } else {
+                        $row.find('.row-actions').prepend(editLink);
+                    }
+                }
+            });
+            
+            // If the post rows use a different structure, add our custom buttons
+            if ($('.wp-list-table tbody tr').length > 0 && $('.row-actions .edit').length === 0) {
+                $('.wp-list-table tbody tr').each(function() {
+                    var $row = $(this);
+                    var $titleCell = $row.find('td.title, td.column-title');
+                    
+                    if ($titleCell.length > 0) {
+                        var title = $titleCell.find('a').first().text();
+                        var href = $titleCell.find('a').first().attr('href');
+                        var postId = href ? href.match(/post=(\d+)/) : null;
+                        
+                        if (postId && postId[1]) {
+                            var editUrl = '<?php echo esc_url(admin_url("post.php?action=edit&post=")); ?>' + postId[1];
+                            var editButton = '<a href="' + editUrl + '" class="button button-small" style="margin-left: 10px;">Edit</a>';
+                            $titleCell.append(editButton);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    <?php
+}
+add_action('admin_head', 'jotunheim_ensure_kb_edit_links');

@@ -110,14 +110,20 @@ function assign_wiki_editor_role() {
             error_log('Added wiki_editor role to user ' . $user->ID);
         }
         
+        // Force required core capabilities for post editing
+        $core_caps = [
+            'read',
+            'edit_posts', // Core capability often required
+            'upload_files'
+        ];
+        
+        foreach ($core_caps as $cap) {
+            $user->add_cap($cap);
+        }
+        
         // Add comprehensive list of potential BasePress capabilities
         $caps = array(
-            // Standard WordPress editing caps
-            'edit_posts',
-            'publish_posts',
-            'edit_published_posts',
-            
-            // BasePress specific caps
+            // BasePress specific caps - All variations
             'edit_basepress',
             'edit_knowledgebase',
             'edit_knowledgebases',
@@ -126,6 +132,8 @@ function assign_wiki_editor_role() {
             'delete_knowledgebase',
             'edit_others_knowledgebases',
             'read_private_knowledgebases',
+            'basepress_edit_articles',
+            'basepress_edit_knowledgebases',
             
             // Dynamic capabilities based on detected post type
             "edit_{$basepress_post_type}",
@@ -136,9 +144,9 @@ function assign_wiki_editor_role() {
             "read_private_{$basepress_post_type}s",
             "delete_{$basepress_post_type}s",
             
-            // BasePress plugin specific caps (if any)
-            'basepress_edit_articles',
-            'basepress_edit_knowledgebases'
+            // Essential WP edit caps for the specific post type
+            "create_{$basepress_post_type}s", // Important for creation
+            "edit_published_{$basepress_post_type}s"
         );
         
         foreach ($caps as $cap) {
@@ -154,8 +162,14 @@ function assign_wiki_editor_role() {
  */
 function hide_post_ui_for_wiki_editors() {
     if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
-        // Remove Posts menu
-        remove_menu_page('edit.php');
+        // Hide ALL admin menu items to keep the interface clean
+        global $menu;
+        
+        if (!empty($menu)) {
+            foreach ($menu as $key => $item) {
+                remove_menu_page($item[2]);
+            }
+        }
         
         // Hide post creation UI elements
         echo '<style>
