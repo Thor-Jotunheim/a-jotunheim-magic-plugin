@@ -121,10 +121,6 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
 
     $wp_role = 'view_only';  // Default role
 
-    // Log the Discord user ID and roles
-    error_log('Discord User ID: ' . $discord_user_id);
-    error_log('Discord Roles Retrieved: ' . print_r($roles, true));
-
     if (in_array('816462309274419250', $roles)) { // Admin role ID
         $wp_role = 'editor';
     } elseif (in_array('816452821208793128', $roles)) { // Moderator role ID
@@ -135,22 +131,10 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
         $wp_role = 'view_only';
     }
 
-    // Check for Wiki Editor role
-    if (in_array('1354867612324200599', $roles)) { // Wiki Editor role ID
-        error_log('Wiki Editor role detected for user: ' . $discord_user_id);
-        $wp_role = 'wiki_editor';
-        $user->add_cap('edit_basepress'); // Grant capability to edit BasePress
-    } else {
-        error_log('Wiki Editor role NOT detected for user: ' . $discord_user_id);
-    }
-
     // For Thor and Odin, assign administrator
     if ($discord_user_id === '859390316410306560' || $discord_user_id === '190645182235017217') {
         $wp_role = 'administrator';
     }
-
-    // Log the final WordPress role being assigned
-    error_log('Assigning WordPress role: ' . $wp_role . ' to user: ' . $discord_user_id);
 
     $user = new WP_User($user_id);
     $user->set_role($wp_role);
