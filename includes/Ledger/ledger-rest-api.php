@@ -1,43 +1,63 @@
 <?php
-// Register the REST routes for player data
-function register_player_api_routes() {
-    // Route to get all players
-    register_rest_route('player-api/v1', '/players', array(
+// Register all REST API routes for the ledger functionality
+add_action('rest_api_init', function() {
+    // Register the GET endpoint to fetch all players' data
+    register_rest_route('player-api/v1', '/players', [
         'methods' => 'GET',
-        'callback' => 'get_all_players',
-        'permission_callback' => '__return_true', // Allow public access
-    ));
+        'callback' => 'get_all_players_data',
+    ]);
 
-    // Route to claim a player character
-    register_rest_route('player-api/v1', '/player/(?P<name>[a-zA-Z0-9\s]+)/claim', array(
+    // Register the POST endpoint to update fields for a specific player by name
+    register_rest_route('player-api/v1', '/player/(?P<name>[a-zA-Z0-9\s]+)/claim', [
         'methods' => 'POST',
-        'callback' => 'claim_player_character',
-        'permission_callback' => '__return_true', // Allow public access
-    ));
-
-    // Route to insert a new player
-    register_rest_route('player-api/v1', '/insert-player', array(
-        'methods' => 'POST',
-        'callback' => 'insert_player',
-        'permission_callback' => '__return_true', // Allow public access
-    ));
-
-    // Route to update fields for a specific player by name
-    register_rest_route('player-api/v1', '/player/(?P<name>[a-zA-Z0-9\s]+)/update', array(
-        'methods' => 'PUT',
         'callback' => 'update_player_data_by_name',
-        'args' => array(
-            'name' => array(
+        'args' => [
+            'name' => [
                 'required' => true,
                 'validate_callback' => function($param) {
                     return is_string($param);
                 }
-            )
-        ),
+            ]
+        ],
+    ]);
+
+    // Register the POST endpoint to insert a new player
+    register_rest_route('player-api/v1', '/insert-player', [
+        'methods' => 'POST',
+        'callback' => 'insert_new_player',
+        'args' => [
+            'playerName' => [
+                'required' => true,
+                'validate_callback' => function($param) {
+                    return is_string($param) && !empty($param);
+                },
+                'description' => 'The name of the player'
+            ],
+            'activePlayerName' => [
+                'required' => true,
+                'validate_callback' => function($param) {
+                    return is_string($param) && !empty($param);
+                },
+                'description' => 'The active name of the player'
+            ]
+        ],
+    ]);
+
+    // Register the PUT endpoint to update fields for a specific player by name
+    register_rest_route('player-api/v1', '/player/(?P<name>[a-zA-Z0-9\s]+)/update', [
+        'methods' => 'PUT',
+            'callback' => 'update_player_data_by_name',
+        'args' => [
+            'name' => [
+                'required' => true,
+                'validate_callback' => function($param) {
+                    return is_string($param);
+                }
+            ]
+        ],
         'permission_callback' => '__return_true' // Adjust this for production
-    ));
-}
-add_action('rest_api_init', 'register_player_api_routes');
+    ]);
+});
 
 // Include the individual endpoint functionality
 include_once plugin_dir_path(__FILE__) . 'ledger-get.php';        // For GET functionality

@@ -18,19 +18,10 @@ add_action('rest_api_init', function () {
 // Callback function for creating a new event zone
 function create_eventzone_rest($request) {
     global $wpdb;
-    
-    // Check if user is logged in, if not return unauthorized status
-    if (!is_user_logged_in()) {
-        $user_id = 'Guest';
-    } else {
-        $user_id = get_current_user_id();
-    }
-    
-    // Extract the event zone data
-    $params = $request->get_params();
-    
+    $table_name = 'jotun_eventzones';
+    $logs_table = 'jotun_eventzone_logs'; // Log table name
+
     // Get columns of the eventzones table dynamically
-    $table_name = $wpdb->prefix . 'eventzones';
     $columns = $wpdb->get_col("DESCRIBE $table_name", 0);
     $data = array();
 
@@ -42,54 +33,47 @@ function create_eventzone_rest($request) {
         }
     }
 
-    // Insert the event zone data into the database
-    $result = $wpdb->insert(
-        $table_name,
-        $data,
-        array_fill(0, count($data), '%s') // Dynamically generate format array
-    );
-    
+    // Insert a new event zone
+    $result = $wpdb->insert($table_name, $data);
+
     if ($result === false) {
-        return new WP_Error('db_error', 'Error inserting event zone data', array('status' => 500));
+        error_log("Failed to create event zone: " . $wpdb->last_error);
+        return new WP_Error('creation_failed', 'Failed to create event zone', array('status' => 500));
     }
-    
-    // Get the newly inserted event zone ID
-    $zone_id = $wpdb->insert_id;
-    
-    // Log the creation event - only if we have a valid zone_id
-    if (!empty($zone_id)) {
-        $log_table_name = $wpdb->prefix . 'eventzone_logs';
-        
-        $log_result = $wpdb->insert(
-            $log_table_name,
-            array(
-                'zone_id' => $zone_id,
-                'user_id' => is_numeric($user_id) ? $user_id : 'Guest',
-                'action' => 'update',
-                'timestamp' => current_time('mysql'),
-                'details' => 'Created a new event zone.',
-            ),
-            array(
-                '%d',
-                '%s',
-                '%s',
-                '%s',
-                '%s',
-            )
-        );
-        
-        if ($log_result === false) {
-            error_log("Logging failed for creation of Zone ID {$zone_id}: " . $wpdb->last_error);
-        }
-    } else {
-        error_log("Unable to log zone creation - no valid zone_id was generated");
-    }
-    
-    // Return success response
-    return rest_ensure_response(array(
-        'success' => true,
-        'zone_id' => $zone_id,
-        'message' => 'Event zone created successfully.',
-    ));
+
+    $new_zone_id = $wpdb->insert_id;
+
+// Log the creation action
+$current_user = wp_get_current_user();
+
+if (!$current_user->exists()) {
+    error_log("No authenticated user in PUT/POST handler.");
+    $username = 'Guest';
+} else {
+    $username = $current_user->user_login;
+    error_log("Authenticated user in PUT/POST handler: $username");
+}
+
+$timestamp = current_time('mysql');
+$details = 'Created a new event zone.';
+
+$log_result = $wpdb->insert(
+    $logs_table,
+    array(
+        'zone_id'   => $zone_id,
+        'user_id'   => $username, // Log the username instead of numeric user_id
+        'action'    => 'update',
+        'timestamp' => $timestamp,
+        'details'   => $details,
+    ),
+    array('%d', '%s', '%s', '%s', '%s') // Adjusted to match `user_id` as VARCHAR
+);
+
+if ($log_result === false) {
+    error_log("Logging failed for creation of Zone ID $new_zone_id: " . $wpdb->last_error);
+}
+
+
+    return rest_ensure_response(array('status' => 'created', 'zone_id' => $new_zone_id, 'message' => 'Event zone created successfully.'));
 }
 ?>
