@@ -286,26 +286,33 @@ add_action('init', 'ensure_wiki_editor_capabilities');
 // Restrict admin menu for the `wiki_editor` role
 function restrict_admin_menu_for_wiki_editor() {
     if (current_user_can('wiki_editor')) {
-        global $menu, $submenu;
+        global $menu;
 
         // Allow only the Knowledge Base menu
-        $allowed_menu_slugs = ['edit.php?post_type=knowledge_base'];
-
         foreach ($menu as $key => $value) {
-            if (!in_array($value[2], $allowed_menu_slugs)) {
+            if ($value[2] !== 'edit.php?post_type=knowledge_base') {
                 unset($menu[$key]);
-            }
-        }
-
-        // Remove submenus unrelated to Knowledge Base
-        foreach ($submenu as $parent_slug => $submenus) {
-            if ($parent_slug !== 'edit.php?post_type=knowledge_base') {
-                unset($submenu[$parent_slug]);
             }
         }
     }
 }
 add_action('admin_menu', 'restrict_admin_menu_for_wiki_editor', 999);
+
+// Ensure the Knowledge Base menu is visible for the `wiki_editor` role
+function ensure_knowledge_base_menu_for_wiki_editor() {
+    if (current_user_can('wiki_editor')) {
+        add_menu_page(
+            'Knowledge Base',
+            'Knowledge Base',
+            'edit_basepress',
+            'edit.php?post_type=knowledge_base',
+            '',
+            'dashicons-book',
+            20
+        );
+    }
+}
+add_action('admin_menu', 'ensure_knowledge_base_menu_for_wiki_editor', 998);
 
 // Restrict post access for the `wiki_editor` role
 function restrict_post_access_for_wiki_editor($query) {
