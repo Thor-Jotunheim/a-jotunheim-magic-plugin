@@ -69,13 +69,19 @@ function setup_wiki_editor_role() {
         'basepress_edit_articles' => true,
         'basepress_edit_knowledgebases' => true,
         'basepress_manage_options' => true,
+        'basepress_manage_sections' => true,  // Added for Sections access
+        'basepress_manage_products' => true,  // Added for Manage KBs access
+        'manage_basepress' => true,          // General BasePress management
         
         // Variations of post capabilities that BasePress might use
         'edit_knowledge_base' => true,
         'edit_knowledgebase' => true,
         'edit_knowledgebases' => true,
         'publish_knowledgebases' => true,
-        'edit_others_knowledgebases' => true
+        'edit_others_knowledgebases' => true,
+        
+        // WordPress admin capabilities needed
+        'manage_options' => true,           // Often needed to access settings pages
     );
     
     // Add each capability to the role

@@ -105,16 +105,6 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'title'  => 'Sections',
             'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=sections'),
         ]);
-        
-        // Add media library access (only if they have upload permissions)
-        if (current_user_can('upload_files')) {
-            $wp_admin_bar->add_node([
-                'id'     => 'wiki-editor-media',
-                'parent' => 'wiki-editor-kb',
-                'title'  => 'Media Library',
-                'href'   => admin_url('upload.php'),
-            ]);
-        }
     }
 }, 100);
 
