@@ -42,6 +42,110 @@ add_filter('basepress_editor_roles', 'jotunheim_add_wiki_editor_to_basepress_edi
 add_filter('basepress_allowed_roles', 'jotunheim_add_wiki_editor_to_basepress_editors');
 
 /**
+ * Hide admin menu for wiki editors
+ */
+function jotunheim_hide_admin_menu_for_wiki_editors() {
+    // Only apply to wiki_editor role
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // Remove admin menu items
+    global $menu, $submenu;
+    
+    if (is_array($menu)) {
+        // Keep only specific menu items
+        foreach ($menu as $key => $item) {
+            // Only keep: Profile, BasePress KB Articles
+            $keep_items = array(
+                'profile.php', // Profile
+                'edit.php?post_type=' . (function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase') // KB Articles
+            );
+            
+            // Check if current menu item should be kept
+            $keep = false;
+            foreach ($keep_items as $keep_item) {
+                if (isset($item[2]) && strpos($item[2], $keep_item) !== false) {
+                    $keep = true;
+                    break;
+                }
+            }
+            
+            // Remove menu item if not in keep list
+            if (!$keep) {
+                unset($menu[$key]);
+            }
+        }
+    }
+    
+    // Handle BasePress specific submenus
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    $parent_menu = 'edit.php?post_type=' . $kb_post_type;
+    
+    if (isset($submenu[$parent_menu])) {
+        // Only keep specific BasePress submenu items
+        $keep_submenu_items = array(
+            'edit.php?post_type=' . $kb_post_type, // All Articles
+            'post-new.php?post_type=' . $kb_post_type, // Add New
+        );
+        
+        foreach ($submenu[$parent_menu] as $key => $item) {
+            $keep_submenu = false;
+            foreach ($keep_submenu_items as $keep_item) {
+                if (isset($item[2]) && $item[2] === $keep_item) {
+                    $keep_submenu = true;
+                    break;
+                }
+            }
+            
+            if (!$keep_submenu) {
+                unset($submenu[$parent_menu][$key]);
+            }
+        }
+    }
+}
+add_action('admin_menu', 'jotunheim_hide_admin_menu_for_wiki_editors', 999);
+
+/**
+ * Fix permissions for BasePress functionality
+ */
+function jotunheim_fix_basepress_permissions() {
+    // Only apply to wiki_editor role
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // Get the proper knowledge base post type and taxonomies
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    $kb_tax = function_exists('basepress_get_taxonomy') ? basepress_get_taxonomy() : 'knowledgebase_cat';
+    
+    // Add necessary capabilities programmatically
+    $current_user = wp_get_current_user();
+    if (in_array('wiki_editor', $current_user->roles)) {
+        $current_user->add_cap('edit_' . $kb_post_type);
+        $current_user->add_cap('edit_' . $kb_post_type . 's');
+        $current_user->add_cap('read_' . $kb_post_type . 's');
+        $current_user->add_cap('manage_' . $kb_tax);
+        $current_user->add_cap('edit_' . $kb_tax);
+        $current_user->add_cap('assign_' . $kb_tax);
+    }
+    
+    // Redirect wiki editors away from restricted sections
+    global $pagenow;
+    if (isset($_GET['post_type']) && $_GET['post_type'] === $kb_post_type) {
+        // If trying to access Sections or Manage KB areas, redirect to main KB listing
+        if (
+            (isset($_GET['taxonomy']) && $_GET['taxonomy'] === $kb_tax) ||
+            (isset($_GET['page']) && strpos($_GET['page'], 'basepress') !== false)
+        ) {
+            wp_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
+            exit;
+        }
+    }
+}
+add_action('admin_init', 'jotunheim_fix_basepress_permissions', 1);
+
+/**
  * Add New+ button to admin interface for knowledge base
  */
 function jotunheim_add_kb_new_button() {

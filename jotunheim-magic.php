@@ -231,4 +231,35 @@ function jotunheim_magic_remove_dashboard_widgets() {
     }
 }
 add_action('wp_dashboard_setup', 'jotunheim_magic_remove_dashboard_widgets');
+
+// JotunheimMagic class
+class JotunheimMagic {
+    public function __construct() {
+        add_action('admin_menu', array($this, 'setup_admin_menu'));
+        
+        // This should run after the admin menu is set up
+        add_action('admin_init', array($this, 'restrict_admin_access'), 100);
+    }
+
+    public function setup_admin_menu() {
+        // Setup admin menu logic
+    }
+
+    public function restrict_admin_access() {
+        if (!current_user_can('jotunheim_magic_access') && !current_user_can('administrator')) {
+            // Remove menu pages that require special access
+            remove_submenu_page('jotunheim-magic', 'jotunheim-magic-settings');
+            remove_submenu_page('jotunheim-magic', 'jotunheim-magic-advanced');
+            
+            // Check if user is trying to access restricted pages
+            global $pagenow;
+            if ($pagenow == 'admin.php' && isset($_GET['page'])) {
+                $page = $_GET['page'];
+                if (in_array($page, array('jotunheim-magic-settings', 'jotunheim-magic-advanced'))) {
+                    wp_die(__('Sorry, you are not allowed to access this page.', 'jotunheim-magic'), 403);
+                }
+            }
+        }
+    }
+}
 ?>
