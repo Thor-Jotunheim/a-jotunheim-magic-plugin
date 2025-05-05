@@ -272,33 +272,16 @@ function ensure_wiki_editor_capabilities() {
             $role->add_cap('edit_basepress');
         }
 
-        // Add any other necessary BasePress capabilities
-        if (!$role->has_cap('read')) {
-            $role->add_cap('read');
+        // Add other necessary capabilities for BasePress
+        if (!$role->has_cap('edit_posts')) {
+            $role->add_cap('edit_posts');
+        }
+        if (!$role->has_cap('publish_posts')) {
+            $role->add_cap('publish_posts');
         }
     }
 }
 add_action('init', 'ensure_wiki_editor_capabilities');
-
-// Remove unnecessary capabilities from the Wiki Editor role
-function restrict_wiki_editor_capabilities() {
-    $role = get_role('wiki_editor');
-    if ($role) {
-        // Remove capabilities related to general WordPress posts/pages
-        $role->remove_cap('edit_posts');
-        $role->remove_cap('publish_posts');
-        $role->remove_cap('edit_pages');
-        $role->remove_cap('publish_pages');
-    }
-}
-add_action('init', 'restrict_wiki_editor_capabilities');
-
-// Ensure BasePress recognizes the Wiki Editor role
-function basepress_allow_wiki_editor_access($roles) {
-    $roles[] = 'wiki_editor';
-    return $roles;
-}
-add_filter('basepress_allowed_roles', 'basepress_allow_wiki_editor_access');
 
 // Restrict access to the magic plugin admin menu
 function restrict_magic_plugin_admin_menu() {
