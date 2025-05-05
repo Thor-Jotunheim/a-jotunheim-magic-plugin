@@ -1,26 +1,45 @@
 <?php
 /**
- * Custom BasePress header template with direct inclusion of site header
+ * Custom BasePress header template for Full Site Editor themes (FSE)
  */
 
-// Load the theme's standard header
+// Get the site's content wrapper opening tags by using output buffering with get_header()
+ob_start();
 get_header();
+$header_content = ob_get_clean();
 
-// Add a wrapper div for KB content
-echo '<div id="jotunheim-kb-content" class="jotunheim-kb-content-wrapper site-main" style="max-width: 1200px; margin: 0 auto; padding: 20px;">';
+// Output the header content
+echo $header_content;
 
-// Remove any duplicate BasePress content
+// Add KB content wrapper
+echo '<div class="kb-content-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 20px;">';
+
+// Add script to ensure proper styling
 ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Hide any BasePress headers
-    var bpressHeaders = document.querySelectorAll('.bpress-header');
-    if (bpressHeaders) {
-        for (var i = 0; i < bpressHeaders.length; i++) {
-            bpressHeaders[i].style.display = 'none';
-        }
+    const bpHeaders = document.querySelectorAll('.bpress-header');
+    bpHeaders.forEach(header => header.style.display = 'none');
+    
+    // Make sure the site header is visible
+    const siteHeader = document.querySelector('.wp-site-blocks header');
+    if (siteHeader) {
+        siteHeader.style.display = 'block';
+        siteHeader.style.visibility = 'visible';
     }
 });
 </script>
+<style>
+/* Fix for block theme headers */
+.wp-site-blocks header {
+    display: block !important;
+    visibility: visible !important;
+}
+/* Hide BasePress header */
+.bpress-header {
+    display: none !important;
+}
+</style>
 <?php
 ?>
