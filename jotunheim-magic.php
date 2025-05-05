@@ -101,9 +101,6 @@ if (defined('DOING_AJAX') && DOING_AJAX && isset($_REQUEST['action']) && !in_arr
 require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-form.php');
 require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-scripts.php');
 
-// Include Knowledge Base files
-include_once(plugin_dir_path(__FILE__) . 'includes/KnowledgeBase/knowledge-base-integration.php');
-
 // Include Role Management files
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
 
