@@ -8,65 +8,161 @@ if (!defined('ABSPATH')) exit;
 class JotunheimKBTemplateOverride {
     
     public function __construct() {
-        // Hook into template include to modify which template is used
-        add_filter('template_include', array($this, 'override_kb_templates'), 99);
+        // Force template override at plugin init
+        add_action('plugins_loaded', array($this, 'init_template_overrides'));
+    }
+
+    /**
+     * Initialize all template overrides
+     */
+    public function init_template_overrides() {
+        // Direct template override with high priority
+        add_filter('template_include', array($this, 'override_kb_templates'), 999);
         
-        // Filter the BasePress template parts
-        add_filter('basepress_template_path', array($this, 'modify_template_parts'), 99);
+        // Remove BasePress headers and footers completely
+        add_action('wp_head', array($this, 'remove_basepress_template_parts'), 1);
         
-        // Add custom body class to knowledge base pages
-        add_filter('body_class', array($this, 'add_kb_body_class'));
+        // Disable BasePress template wrapper
+        $this->disable_basepress_template_wrapper();
+        
+        // Add body classes to KB pages
+        add_filter('body_class', array($this, 'add_kb_body_classes'));
     }
     
     /**
-     * Override KB templates to use main theme header/footer
+     * Remove BasePress template parts and hooks
+     */
+    public function remove_basepress_template_parts() {
+        if ($this->is_kb_page()) {
+            // Remove BasePress header actions
+            remove_all_actions('basepress_header');
+            
+            // Remove BasePress footer actions
+            remove_all_actions('basepress_footer');
+            
+            // Ensure BasePress doesn't override our template
+            remove_filter('template_include', 'basepress_template_include', 99);
+        }
+    }
+    
+    /**
+     * Override KB templates to use theme templates
      */
     public function override_kb_templates($template) {
-        // Only apply to knowledge base templates
+        // Only apply to knowledge base pages
         if (!$this->is_kb_page()) {
             return $template;
         }
         
-        // Force use of theme's header and footer
-        add_action('basepress_before_main_content', array($this, 'open_theme_wrapper'), 0);
-        add_action('basepress_after_main_content', array($this, 'close_theme_wrapper'), 999);
+        // Force the theme's templates instead of BasePress templates
+        if (is_singular('knowledgebase')) {
+            // Force single.php or page.php for single KB articles
+            $single_template = locate_template(array('single-knowledgebase.php', 'single.php', 'page.php'));
+            if (!empty($single_template)) {
+                // Insert our content modifications 
+                $this->insert_content_filters();
+                return $single_template;
+            }
+        } elseif (is_tax('kb_category') || is_post_type_archive('knowledgebase')) {
+            // Force archive.php or index.php for KB archives
+            $archive_template = locate_template(array('archive-knowledgebase.php', 'archive.php', 'index.php'));
+            if (!empty($archive_template)) {
+                // Insert our content modifications
+                $this->insert_content_filters();
+                return $archive_template;
+            }
+        }
         
         return $template;
     }
     
     /**
-     * Open theme wrapper - include theme header
+     * Insert filters to modify the content in theme templates
      */
-    public function open_theme_wrapper() {
-        // Remove the default KB header
-        remove_action('basepress_header', 'basepress_header_content');
+    private function insert_content_filters() {
+        // Filter the page content to include BasePress content
+        add_filter('the_content', array($this, 'replace_with_kb_content'), 999);
         
-        // Output theme header
-        get_header();
+        // Force correct KB title
+        add_filter('the_title', array($this, 'kb_title_filter'), 10, 2);
         
-        // Add any additional wrapper HTML needed
-        echo '<div class="jotunheim-kb-content-wrapper">';
+        // Add BasePress classes to the body
+        add_filter('body_class', array($this, 'add_basepress_body_class'));
     }
     
     /**
-     * Close theme wrapper - include theme footer
+     * Replace page content with KB content
      */
-    public function close_theme_wrapper() {
-        // Close any wrapper divs
-        echo '</div><!-- .jotunheim-kb-content-wrapper -->';
+    public function replace_with_kb_content($content) {
+        global $post;
         
-        // Output theme footer
-        get_footer();
-    }
-    
-    /**
-     * Add custom body class to KB pages
-     */
-    public function add_kb_body_class($classes) {
-        if ($this->is_kb_page()) {
-            $classes[] = 'jotunheim-kb-page';
+        // Only modify KB content
+        if (!$post || $post->post_type !== 'knowledgebase') {
+            return $content;
         }
-        return $classes;
+        
+        // Capture BasePress output
+        ob_start();
+        echo '<div class="jotunheim-kb-content">';
+        
+        if (is_singular('knowledgebase')) {
+            // Get single KB article content
+            $this->get_kb_single_content();
+        } elseif (is_tax('kb_category') || is_post_type_archive('knowledgebase')) {
+            // Get KB archive content
+            $this->get_kb_archive_content();
+        }
+        
+        echo '</div>';
+        $kb_content = ob_get_clean();
+        
+        return $kb_content;
+    }
+    
+    /**
+     * Get content for single KB article
+     */
+    private function get_kb_single_content() {
+        if (function_exists('basepress_get_template_part')) {
+            basepress_get_template_part('single', 'knowledgebase');
+        } else {
+            // Fallback to original content if function doesn't exist
+            the_content();
+        }
+    }
+    
+    /**
+     * Get content for KB archives
+     */
+    private function get_kb_archive_content() {
+        if (function_exists('basepress_get_template_part')) {
+            basepress_get_template_part('archive', 'knowledgebase');
+        } else {
+            // Fallback
+            echo '<div class="basepress-fallback">';
+            if (have_posts()) {
+                while (have_posts()) {
+                    the_post();
+                    the_title('<h2>', '</h2>');
+                    the_excerpt();
+                }
+            }
+            echo '</div>';
+        }
+    }
+    
+    /**
+     * Filter for KB titles
+     */
+    public function kb_title_filter($title, $id = null) {
+        if ($id && get_post_type($id) === 'knowledgebase') {
+            // Get the original KB title
+            $kb_title = get_post($id)->post_title;
+            if (!empty($kb_title)) {
+                return $kb_title;
+            }
+        }
+        return $title;
     }
     
     /**
@@ -82,11 +178,50 @@ class JotunheimKBTemplateOverride {
     }
     
     /**
-     * Modify BasePress template paths if needed
+     * Add BasePress body classes
      */
-    public function modify_template_parts($template_path) {
-        // If you want to use custom template parts, modify the path here
-        return $template_path;
+    public function add_basepress_body_class($classes) {
+        if ($this->is_kb_page()) {
+            $classes[] = 'basepress';
+            $classes[] = 'basepress-force-theme';
+        }
+        return $classes;
+    }
+    
+    /**
+     * Add KB specific body classes
+     */
+    public function add_kb_body_classes($classes) {
+        if ($this->is_kb_page()) {
+            $classes[] = 'knowledge-base-page';
+            $classes[] = 'jotunheim-kb';
+            
+            if (is_singular('knowledgebase')) {
+                $classes[] = 'kb-single';
+            } elseif (is_tax('kb_category')) {
+                $classes[] = 'kb-category';
+            } elseif (is_post_type_archive('knowledgebase')) {
+                $classes[] = 'kb-archive';
+            }
+        }
+        return $classes;
+    }
+    
+    /**
+     * Disable BasePress template wrapper
+     */
+    private function disable_basepress_template_wrapper() {
+        // Remove template wrapper filters
+        if (class_exists('Basepress_Templates')) {
+            global $basepress;
+            if ($basepress && isset($basepress->templates)) {
+                remove_filter('template_include', array($basepress->templates, 'template_loader'));
+                remove_action('basepress_content', array($basepress->templates, 'get_template_part'));
+            }
+        }
+        
+        // Alternatively, try to remove filters by priority
+        remove_all_filters('template_include', 99);
     }
 }
 
