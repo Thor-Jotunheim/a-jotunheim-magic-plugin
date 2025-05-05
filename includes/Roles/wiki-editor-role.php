@@ -169,3 +169,105 @@ function jotunheim_redirect_wiki_editors_after_login($redirect_to, $request, $us
     return $redirect_to;
 }
 add_filter('login_redirect', 'jotunheim_redirect_wiki_editors_after_login', 10, 3);
+
+/**
+ * Direct fix for access to edit knowledge base posts by any author
+ */
+function jotunheim_fix_wiki_editor_edit_access() {
+    // Only apply for wiki editors
+    if (!current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    global $pagenow, $typenow;
+    
+    // Add edit link for all KB posts
+    add_filter('post_row_actions', function($actions, $post) {
+        if ($post->post_type === 'knowledgebase') {
+            $actions['edit'] = sprintf(
+                '<a href="%s">%s</a>',
+                admin_url('post.php?post=' . $post->ID . '&action=edit'),
+                __('Edit')
+            );
+        }
+        return $actions;
+    }, 999, 2);
+    
+    // Direct permission override for edit screen
+    if ($pagenow === 'post.php' && isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['post'])) {
+        $post_id = intval($_GET['post']);
+        $post_type = get_post_type($post_id);
+        
+        if ($post_type === 'knowledgebase') {
+            // Override core WordPress permission check
+            add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($post_id) {
+                $allcaps['edit_others_posts'] = true;
+                $allcaps['edit_others_knowledgebases'] = true;
+                $allcaps['edit_post'] = true;
+                $allcaps['edit_published_posts'] = true;
+                $allcaps['edit_published_knowledgebases'] = true;
+                return $allcaps;
+            }, 999, 4);
+            
+            // Override post edit permission check
+            add_filter('map_meta_cap', function($caps, $cap, $user_id, $args) use ($post_id) {
+                // For edit_post capability check
+                if ($cap === 'edit_post' && isset($args[0]) && $args[0] == $post_id) {
+                    return array('read');
+                }
+                return $caps;
+            }, 999, 4);
+            
+            // Remove post lock
+            add_filter('wp_check_post_lock_window', function() use ($post_id) {
+                return 0; // Disable post lock
+            });
+        }
+    }
+}
+add_action('init', 'jotunheim_fix_wiki_editor_edit_access', 999);
+
+/**
+ * Fix KB post type registration to allow wiki editors to edit any post
+ */
+function jotunheim_modify_kb_post_type_caps() {
+    if (!current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    add_filter('register_post_type_args', function($args, $post_type) {
+        if ($post_type === 'knowledgebase') {
+            // Set capabilities that wiki editors can access
+            if (isset($args['capability_type'])) {
+                $args['capability_type'] = 'post';
+                $args['capabilities'] = array(
+                    'edit_post' => 'edit_posts',
+                    'read_post' => 'read',
+                    'delete_post' => 'edit_posts',
+                    'edit_posts' => 'edit_posts',
+                    'edit_others_posts' => 'edit_posts',
+                    'publish_posts' => 'edit_posts',
+                    'read_private_posts' => 'read',
+                );
+            }
+        }
+        return $args;
+    }, 999, 2);
+}
+add_action('init', 'jotunheim_modify_kb_post_type_caps', 1);
+
+/**
+ * Add special meta filter to bypass author checks
+ */
+function jotunheim_bypass_post_author_check() {
+    add_filter('get_post_metadata', function($value, $post_id, $meta_key, $single) {
+        // Special override for post_author when wiki_editor is trying to edit
+        if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+            if ($meta_key === '_edit_last' || $meta_key === '_edit_lock') {
+                return false; // Skip these checks
+            }
+        }
+        return $value;
+    }, 999, 4);
+}
+add_action('init', 'jotunheim_bypass_post_author_check');
