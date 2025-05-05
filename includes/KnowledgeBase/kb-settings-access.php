@@ -56,6 +56,10 @@ class KB_Wiki_Editor_Access {
             return;
         }
         
+        // Apply our admin menu overrides
+        add_action('admin_menu', array($this, 'restore_kb_admin_menu'), 999);
+        add_action('admin_head', array($this, 'hide_unwanted_admin_items'), 999);
+        
         // Check if we're accessing BasePress settings
         if (!isset($_GET['post_type']) || $_GET['post_type'] !== 'knowledgebase' ||
             !isset($_GET['page']) || $_GET['page'] !== 'basepress_settings') {
@@ -66,79 +70,153 @@ class KB_Wiki_Editor_Access {
         $this->apply_permission_overrides();
     }
     
-    private function apply_permission_overrides() {
-        // Override core WordPress capability check
-        add_filter('user_has_cap', array($this, 'override_user_caps'), 999, 4);
+    /**
+     * Restore only the KB menu for wiki editors
+     */
+    public function restore_kb_admin_menu() {
+        if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+            return;
+        }
         
-        // Override specific BasePress checks
-        add_filter('basepress_settings_capability', array($this, 'return_read_capability'));
-        add_filter('basepress_sections_capability', array($this, 'return_read_capability'));  
-        add_filter('basepress_products_capability', array($this, 'return_read_capability'));
+        global $menu, $submenu;
         
-        // Generic settings page access
-        add_filter('option_page_capability_basepress_settings', array($this, 'return_read_capability'));
+        // First, save the KB menu and submenu
+        $kb_menu = null;
+        $kb_submenu = null;
         
-        // Override core capability mapping
-        add_filter('map_meta_cap', array($this, 'override_meta_cap'), 999, 4);
+        if (!empty($menu)) {
+            foreach ($menu as $key => $item) {
+                if (isset($item[2]) && $item[2] === 'edit.php?post_type=knowledgebase') {
+                    $kb_menu = $item;
+                    break;
+                }
+            }
+        }
+        
+        if (!empty($submenu) && isset($submenu['edit.php?post_type=knowledgebase'])) {
+            $kb_submenu = $submenu['edit.php?post_type=knowledgebase'];
+        }
+        
+        // Now clear all menus first
+        $menu = array();
+        $submenu = array();
+        
+        // Then restore only the KB menu and submenu
+        if ($kb_menu) {
+            $menu[10] = $kb_menu;
+        }
+        
+        if ($kb_submenu) {
+            $submenu['edit.php?post_type=knowledgebase'] = $kb_submenu;
+        }
     }
     
     /**
-     * Override user capabilities check
+     * Hide unwanted admin elements via CSS
      */
-    public function override_user_caps($allcaps, $caps, $args, $user) {
-        // Add all caps possibly needed for settings pages
-        $required_caps = array(
+    public function hide_unwanted_admin_items() {
+        if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+            return;
+        }
+        
+        echo '<style>
+            /* Hide all unwanted menu items */
+            #adminmenumain > #adminmenuwrap > #adminmenu > li:not(:has(a[href*="edit.php?post_type=knowledgebase"])) {
+                display: none !important;
+            }
+            
+            /* But ensure Knowledge Base menu is visible */
+            #adminmenumain > #adminmenuwrap > #adminmenu > li:has(a[href*="edit.php?post_type=knowledgebase"]) {
+                display: block !important;
+            }
+            
+            /* Hide unwanted notices that might interfere with the page content */
+            .update-nag, 
+            .update-plugins,
+            .update-message,
+            .updated:not(.notice-info),
+            #wpfooter {
+                display: none !important;
+            }
+        </style>';
+    }
+    
+    private function apply_permission_overrides() {
+        // Add admin capabilities directly to user temporarily
+        global $current_user;
+        $current_user->allcaps['manage_options'] = true;
+        $current_user->allcaps['activate_plugins'] = true;
+        $current_user->allcaps['edit_theme_options'] = true;
+        
+        // Override specific BasePress checks
+        add_filter('basepress_settings_capability', array($this, 'bypass_capability_check'));
+        add_filter('basepress_sections_capability', array($this, 'bypass_capability_check'));
+        add_filter('basepress_products_capability', array($this, 'bypass_capability_check'));
+        add_filter('option_page_capability_basepress_settings', array($this, 'bypass_capability_check'));
+        
+        // Override core capability mapping
+        add_filter('map_meta_cap', array($this, 'override_meta_cap'), 999, 4);
+        
+        // Direct capability bypass
+        add_filter('user_has_cap', array($this, 'force_specific_capability'), 999, 4);
+    }
+    
+    /**
+     * Force specific capabilities for wiki editors
+     */
+    public function force_specific_capability($allcaps, $caps, $args, $user) {
+        if (!in_array('wiki_editor', (array) $user->roles)) {
+            return $allcaps;
+        }
+        
+        // Always grant access to these specific capabilities
+        $grant_caps = array(
             'manage_options',
-            'edit_theme_options', 
-            'install_plugins',
-            'activate_plugins',
+            'manage_categories', 
+            'edit_theme_options',
             'edit_plugins',
-            'update_plugins',
-            'delete_plugins',
-            'manage_categories',
-            'edit_categories',
-            'delete_categories',
-            'manage_network',
-            'manage_network_options',
-            'manage_network_plugins',
+            'activate_plugins',
+            'install_plugins',
+            'edit_dashboard', 
+            'update_plugins'
         );
         
-        foreach ($required_caps as $cap) {
+        foreach ($grant_caps as $cap) {
             $allcaps[$cap] = true;
         }
         
-        // Add specific capability being checked
-        if (!empty($caps) && isset($caps[0])) {
+        // If specifically checking a capability, grant it
+        if (isset($caps[0])) {
             $allcaps[$caps[0]] = true;
-        }
-        
-        // BasePress specific capabilities
-        if (isset($_GET['tab'])) {
-            $tab = sanitize_text_field($_GET['tab']);
-            $allcaps["basepress_{$tab}_capability"] = true;
-            $allcaps["basepress_manage_{$tab}"] = true;
         }
         
         return $allcaps;
     }
     
     /**
-     * Directly modify capability mapping
+     * Bypass standard capability checks
+     */
+    public function bypass_capability_check($cap) {
+        return 'read';
+    }
+    
+    /**
+     * Override meta cap mapping
      */
     public function override_meta_cap($caps, $cap, $user_id, $args) {
-        // Replace admin capabilities with 'read'
+        $user = get_user_by('id', $user_id);
+        if (!$user || !in_array('wiki_editor', (array) $user->roles)) {
+            return $caps;
+        }
+        
+        // Bypass common admin capabilities
         $admin_caps = array(
             'manage_options',
             'edit_plugins',
             'activate_plugins',
             'administrator',
             'update_core',
-            'update_plugins',
-            'update_themes',
             'install_plugins',
-            'install_themes',
-            'delete_themes',
-            'delete_plugins',
             'edit_theme_options',
             'manage_categories',
         );
@@ -149,42 +227,39 @@ class KB_Wiki_Editor_Access {
         
         return $caps;
     }
-    
-    /**
-     * Return 'read' capability for specific checks
-     */
-    public function return_read_capability() {
-        return 'read';
-    }
 }
 
 // Initialize the access class
 KB_Wiki_Editor_Access::get_instance();
 
-// Add special handling for BasePress menu access
-function kb_add_basepress_settings_menu_for_wiki_editors() {
-    if (!current_user_can('wiki_editor')) {
+/**
+ * Direct BasePress settings content delivery for wiki editors
+ * This helps prevent blank pages due to permissions
+ */
+function kb_wiki_editor_access_basepress_settings() {
+    // Only run for wiki editors
+    if (!is_user_logged_in() || !current_user_can('wiki_editor') || current_user_can('administrator')) {
         return;
     }
     
-    // Get the BasePress menu item
-    global $submenu;
-    if (!isset($submenu['edit.php?post_type=knowledgebase'])) {
+    // Only run on BasePress settings pages
+    if (!isset($_GET['post_type']) || $_GET['post_type'] !== 'knowledgebase' ||
+        !isset($_GET['page']) || $_GET['page'] !== 'basepress_settings') {
         return;
     }
     
-    // Make sure wiki editors can see the settings menu item
-    add_submenu_page(
-        'edit.php?post_type=knowledgebase',
-        'Knowledge Base Settings',
-        'Settings',
-        'read',
-        'basepress_settings',
-        function() {
-            // This just redirects to the actual settings page
-            wp_redirect(admin_url('edit.php?post_type=knowledgebase&page=basepress_settings'));
-            exit;
-        }
-    );
+    // Force BasePress settings page to load properly
+    add_filter('basepress_settings_capability', function($cap) {
+        return 'read';
+    }, 9999);
+    
+    // Get the current tab
+    $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+    
+    // Ensure the tab is loaded properly
+    if ($tab === 'sections' || $tab === 'products') {
+        add_filter("basepress_{$tab}_capability", function() {
+            return 'read';
+        }, 9999);
+    }
 }
-add_action('admin_menu', 'kb_add_basepress_settings_menu_for_wiki_editors', 999);
