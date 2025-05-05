@@ -38,46 +38,15 @@ function jotunheim_create_wiki_editor_role() {
         $wiki_editor->add_cap('edit_posts');
         $wiki_editor->add_cap('edit_published_posts');
         
-        // Knowledge Base specific capabilities - get KB post type
-        $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-        $kb_tax = function_exists('basepress_get_taxonomy') ? basepress_get_taxonomy() : 'knowledgebase_cat';
-        
-        if (post_type_exists($kb_post_type)) {
-            // Standard WP capabilities for KB post type
-            $wiki_editor->add_cap('edit_' . $kb_post_type);
-            $wiki_editor->add_cap('edit_' . $kb_post_type . 's');
-            $wiki_editor->add_cap('edit_others_' . $kb_post_type . 's');
-            $wiki_editor->add_cap('edit_published_' . $kb_post_type . 's');
-            $wiki_editor->add_cap('publish_' . $kb_post_type . 's');
-            $wiki_editor->add_cap('read_private_' . $kb_post_type . 's');
-            $wiki_editor->add_cap('delete_' . $kb_post_type . 's');
-            $wiki_editor->add_cap('delete_published_' . $kb_post_type . 's');
-            
-            // BasePress specific capabilities
-            $wiki_editor->add_cap('basepress_edit_articles');
-            $wiki_editor->add_cap('basepress_edit_others_articles');
-            $wiki_editor->add_cap('basepress_edit_published_articles');
-            $wiki_editor->add_cap('basepress_edit_private_articles');
-            $wiki_editor->add_cap('basepress_delete_articles');
-            $wiki_editor->add_cap('basepress_delete_others_articles');
-            $wiki_editor->add_cap('basepress_delete_published_articles');
-            $wiki_editor->add_cap('basepress_delete_private_articles');
-            $wiki_editor->add_cap('basepress_publish_articles');
-            $wiki_editor->add_cap('basepress_read_private_articles');
-            
-            // Required capabilities for Sections and Manage KB
-            $wiki_editor->add_cap('manage_categories');
-            $wiki_editor->add_cap('edit_categories');
-            $wiki_editor->add_cap('delete_categories');
-            $wiki_editor->add_cap('assign_categories');
-            $wiki_editor->add_cap('manage_options');
-            $wiki_editor->add_cap('manage_' . $kb_tax);
-            $wiki_editor->add_cap('edit_' . $kb_tax);
-            $wiki_editor->add_cap('delete_' . $kb_tax);
-            $wiki_editor->add_cap('assign_' . $kb_tax);
-            $wiki_editor->add_cap('basepress_manage_sections');
-            $wiki_editor->add_cap('basepress_manage_kbs');
-            $wiki_editor->add_cap('manage_basepress');
+        // Knowledge Base specific capabilities
+        if (post_type_exists('knowledgebase')) {
+            // Standard editing capabilities for KB
+            $wiki_editor->add_cap('edit_knowledgebase');
+            $wiki_editor->add_cap('edit_knowledgebases');
+            $wiki_editor->add_cap('edit_others_knowledgebases');
+            $wiki_editor->add_cap('edit_published_knowledgebases');
+            $wiki_editor->add_cap('publish_knowledgebases');
+            $wiki_editor->add_cap('read_private_knowledgebases');
         }
     }
 }
@@ -86,7 +55,7 @@ add_action('init', 'jotunheim_create_wiki_editor_role');
 /**
  * Hide all admin menu items except Knowledge Base and Profile for wiki editors
  */
-function jotunheim_remove_admin_menu_items() {
+function jotunheim_hide_admin_menu_items() {
     // Only apply to wiki_editor role (not for admins)
     if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
         return;
@@ -94,11 +63,25 @@ function jotunheim_remove_admin_menu_items() {
     
     global $menu, $submenu;
     
-    // Get the KB post type
-    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-    $kb_menu_slug = 'edit.php?post_type=' . $kb_post_type;
+    // Keep track of KB menu position to preserve it
+    $kb_menu_position = null;
+    $kb_post_type = 'knowledgebase'; // Default value
     
-    // Only keep the profile menu and KB menu items
+    // Find Knowledge Base menu position and post type
+    if (is_array($menu)) {
+        foreach ($menu as $key => $item) {
+            if (isset($item[2]) && strpos($item[2], 'post_type=') !== false && strpos($item[2], 'knowledgebase') !== false) {
+                $kb_menu_position = $key;
+                preg_match('/post_type=([a-zA-Z0-9_-]+)/', $item[2], $matches);
+                if (isset($matches[1])) {
+                    $kb_post_type = $matches[1];
+                }
+                break;
+            }
+        }
+    }
+    
+    // Remove all menu items except Knowledge Base and Profile
     if (is_array($menu)) {
         foreach ($menu as $key => $item) {
             // Skip if not a proper menu item
@@ -106,36 +89,20 @@ function jotunheim_remove_admin_menu_items() {
                 continue;
             }
             
-            // Only keep profile menu and KB menu
-            if ($item[2] !== 'profile.php' && 
-                $item[2] !== $kb_menu_slug) {
+            // Keep only profile and KB menu
+            if ($item[2] !== 'profile.php' && $key !== $kb_menu_position) {
                 remove_menu_page($item[2]);
             }
         }
     }
+    
+    // Set dashboard redirect to KB
+    add_action('current_screen', function() use ($kb_post_type) {
+        $screen = get_current_screen();
+        if ($screen && $screen->id === 'dashboard') {
+            wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
+            exit;
+        }
+    });
 }
-add_action('admin_menu', 'jotunheim_remove_admin_menu_items', 999);
-
-/**
- * Set admin dashboard redirect for wiki editors
- * This ensures they land at KB section when logging in
- */
-function jotunheim_wiki_editor_redirect() {
-    // Only apply to wiki_editor role (not for admins)
-    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
-        return;
-    }
-    
-    // Get the KB post type
-    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-    
-    // Get current screen
-    $screen = get_current_screen();
-    
-    // If on dashboard, redirect to KB
-    if ($screen && $screen->id === 'dashboard') {
-        wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
-        exit;
-    }
-}
-add_action('current_screen', 'jotunheim_wiki_editor_redirect');
+add_action('admin_menu', 'jotunheim_hide_admin_menu_items', 999);
