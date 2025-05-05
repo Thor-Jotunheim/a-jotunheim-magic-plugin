@@ -94,6 +94,179 @@ function jotunheim_magic_staff_page_access() {
     }
 }
 
+/**
+ * Checks if the current user has the Discord Moderator role
+ * @return bool True if user has moderator role or higher
+ */
+function user_has_discord_moderator_role() {
+    // If user is admin, always grant access
+    if (current_user_can('administrator')) {
+        return true;
+    }
+    
+    // Get current user
+    $current_user = wp_get_current_user();
+    if (!$current_user || !$current_user->ID) {
+        return false;
+    }
+    
+    // Check for Discord role meta data
+    $discord_roles = get_user_meta($current_user->ID, 'discord_roles', true);
+    
+    if (empty($discord_roles) || !is_array($discord_roles)) {
+        return false;
+    }
+    
+    // Check for moderator role ID (816452821208793128)
+    if (in_array('816452821208793128', $discord_roles)) {
+        return true;
+    }
+    
+    // Check for admin role ID (816462309274419250)
+    if (in_array('816462309274419250', $discord_roles)) {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Control access to staff knowledge base content based on Discord roles
+ */
+function jotunheim_restrict_staff_kb_access() {
+    // Only filter on front-end
+    if (is_admin()) {
+        return;
+    }
+    
+    // Filter KB queries
+    add_filter('pre_get_posts', 'jotunheim_filter_kb_queries');
+    
+    // Filter KB content
+    add_filter('the_content', 'jotunheim_filter_kb_content', 999);
+    
+    // Control access to single KB posts
+    add_action('template_redirect', 'jotunheim_check_kb_access');
+}
+add_action('wp', 'jotunheim_restrict_staff_kb_access');
+
+/**
+ * Filter KB queries to restrict Staff KB access
+ */
+function jotunheim_filter_kb_queries($query) {
+    // Only filter KB queries
+    if (!$query->is_main_query() || $query->get('post_type') !== 'knowledgebase') {
+        return $query;
+    }
+    
+    // If user doesn't have Discord Moderator role, exclude Staff KB
+    if (!user_has_discord_moderator_role()) {
+        // Get the Staff KB ID
+        $staff_kb_id = jotunheim_get_staff_kb_id();
+        
+        // Get current tax query
+        $tax_query = $query->get('tax_query');
+        if (!is_array($tax_query)) {
+            $tax_query = array();
+        }
+        
+        // Add filter to exclude Staff KB
+        $tax_query[] = array(
+            'taxonomy' => 'kb_category', // Change if your taxonomy is different
+            'field'    => 'term_id',
+            'terms'    => $staff_kb_id,
+            'operator' => 'NOT IN',
+        );
+        
+        $query->set('tax_query', $tax_query);
+    }
+    
+    return $query;
+}
+
+/**
+ * Filter KB content to hide Staff KB content
+ */
+function jotunheim_filter_kb_content($content) {
+    global $post;
+    
+    // Only filter KB content
+    if (!$post || $post->post_type !== 'knowledgebase') {
+        return $content;
+    }
+    
+    // Check if this is Staff KB
+    if (jotunheim_is_staff_kb($post->ID)) {
+        // If user doesn't have Moderator role, hide content
+        if (!user_has_discord_moderator_role()) {
+            return '<div class="restricted-content">This content is only available to staff members.</div>';
+        }
+    }
+    
+    return $content;
+}
+
+/**
+ * Redirect unauthorized users trying to access Staff KB
+ */
+function jotunheim_check_kb_access() {
+    global $post;
+    
+    // Only check on single KB pages
+    if (!is_singular('knowledgebase') || !$post) {
+        return;
+    }
+    
+    // Check if this is Staff KB and user doesn't have access
+    if (jotunheim_is_staff_kb($post->ID) && !user_has_discord_moderator_role()) {
+        // Redirect to KB home or show error
+        wp_redirect(home_url('/knowledge-base/'));
+        exit;
+    }
+}
+
+/**
+ * Get the Staff KB ID
+ * @return int Staff KB term ID or 0 if not found
+ */
+function jotunheim_get_staff_kb_id() {
+    // Get the Staff KB term ID - adjust to match your actual term
+    $staff_term = get_term_by('slug', 'staff', 'kb_category');
+    if ($staff_term) {
+        return $staff_term->term_id;
+    }
+    
+    // Alternative: Try getting by name
+    $staff_term = get_term_by('name', 'Staff', 'kb_category');
+    if ($staff_term) {
+        return $staff_term->term_id;
+    }
+    
+    return 0;
+}
+
+/**
+ * Check if a post belongs to Staff KB
+ * @param int $post_id The post ID to check
+ * @return bool True if post belongs to Staff KB
+ */
+function jotunheim_is_staff_kb($post_id) {
+    $staff_kb_id = jotunheim_get_staff_kb_id();
+    
+    // If no Staff KB found, return false
+    if (!$staff_kb_id) {
+        return false;
+    }
+    
+    // Check if post has Staff KB term
+    $terms = wp_get_post_terms($post_id, 'kb_category', array('fields' => 'ids'));
+    if (is_wp_error($terms)) {
+        return false;
+    }
+    
+    return in_array($staff_kb_id, $terms);
+}
+
 function assign_roles_from_permissions($user_id, $permissions_csv) {
     $permissions = explode(',', $permissions_csv); // Assuming permissions are comma-separated
     $wp_role = 'subscriber'; // Default role
