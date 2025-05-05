@@ -1,12 +1,11 @@
 <?php
 /**
- * Custom BasePress footer template that uses Zeever theme footer
- * Based on official BasePress documentation
+ * Custom BasePress footer template using direct theme footer
  */
 
 // Close the content wrapper
 echo '</div><!-- .jotunheim-kb-content-wrapper -->';
 
-// Load the Zeever block footer
-echo do_blocks('<!-- wp:template-part {"slug":"footer","theme":"zeever"} /-->');
+// Load the theme's standard footer
+get_footer();
 ?>
