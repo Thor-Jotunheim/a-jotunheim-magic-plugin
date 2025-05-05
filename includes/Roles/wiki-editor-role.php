@@ -38,79 +38,56 @@ function jotunheim_create_wiki_editor_role() {
         $wiki_editor->add_cap('edit_posts');
         $wiki_editor->add_cap('edit_published_posts');
         
-        // Knowledge Base specific capabilities
-        if (post_type_exists('knowledgebase')) {
-            // Standard KB editing capabilities
-            $wiki_editor->add_cap('edit_knowledgebase');
-            $wiki_editor->add_cap('edit_knowledgebases');
-            $wiki_editor->add_cap('edit_others_knowledgebases');
-            $wiki_editor->add_cap('edit_published_knowledgebases');
-            $wiki_editor->add_cap('publish_knowledgebases');
-            $wiki_editor->add_cap('read_private_knowledgebases');
+        // Knowledge Base specific capabilities - get KB post type
+        $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+        $kb_tax = function_exists('basepress_get_taxonomy') ? basepress_get_taxonomy() : 'knowledgebase_cat';
+        
+        if (post_type_exists($kb_post_type)) {
+            // Standard WP capabilities for KB post type
+            $wiki_editor->add_cap('edit_' . $kb_post_type);
+            $wiki_editor->add_cap('edit_' . $kb_post_type . 's');
+            $wiki_editor->add_cap('edit_others_' . $kb_post_type . 's');
+            $wiki_editor->add_cap('edit_published_' . $kb_post_type . 's');
+            $wiki_editor->add_cap('publish_' . $kb_post_type . 's');
+            $wiki_editor->add_cap('read_private_' . $kb_post_type . 's');
+            $wiki_editor->add_cap('delete_' . $kb_post_type . 's');
+            $wiki_editor->add_cap('delete_published_' . $kb_post_type . 's');
             
-            // BasePress specific capabilities for content editing
+            // BasePress specific capabilities
             $wiki_editor->add_cap('basepress_edit_articles');
-            $wiki_editor->add_cap('basepress_edit_knowledgebases');
             $wiki_editor->add_cap('basepress_edit_others_articles');
             $wiki_editor->add_cap('basepress_edit_published_articles');
+            $wiki_editor->add_cap('basepress_edit_private_articles');
+            $wiki_editor->add_cap('basepress_delete_articles');
+            $wiki_editor->add_cap('basepress_delete_others_articles');
+            $wiki_editor->add_cap('basepress_delete_published_articles');
+            $wiki_editor->add_cap('basepress_delete_private_articles');
+            $wiki_editor->add_cap('basepress_publish_articles');
+            $wiki_editor->add_cap('basepress_read_private_articles');
             
-            // Adding full BasePress management capabilities
+            // BasePress KB management capabilities
+            $wiki_editor->add_cap('basepress_edit_kb');
+            $wiki_editor->add_cap('basepress_edit_kbs');
+            $wiki_editor->add_cap('basepress_edit_others_kbs');
+            $wiki_editor->add_cap('basepress_edit_published_kbs');
+            $wiki_editor->add_cap('basepress_edit_private_kbs');
+            
+            // Management capabilities for Sections and KB management
             $wiki_editor->add_cap('basepress_manage_sections');
             $wiki_editor->add_cap('basepress_manage_options');
             $wiki_editor->add_cap('basepress_manage_kbs');
             $wiki_editor->add_cap('basepress_manage_products');
             $wiki_editor->add_cap('manage_basepress');
             
-            // Taxonomy management for KB categories
-            $wiki_editor->add_cap('manage_knowledgebase_cat');
-            $wiki_editor->add_cap('edit_knowledgebase_cat');
-            $wiki_editor->add_cap('delete_knowledgebase_cat');
-            $wiki_editor->add_cap('assign_knowledgebase_cat');
+            // Taxonomy management capabilities
+            $wiki_editor->add_cap('manage_' . $kb_tax);
+            $wiki_editor->add_cap('edit_' . $kb_tax);
+            $wiki_editor->add_cap('delete_' . $kb_tax);
+            $wiki_editor->add_cap('assign_' . $kb_tax);
         }
     }
 }
 add_action('init', 'jotunheim_create_wiki_editor_role');
-
-/**
- * Check if current page is a restricted BasePress page
- */
-function jotunheim_is_restricted_basepress_page() {
-    // Get the BasePress taxonomy
-    $kb_tax = function_exists('basepress_get_taxonomy') ? basepress_get_taxonomy() : 'knowledgebase_cat';
-    
-    // Check for Sections page
-    if (isset($_GET['taxonomy']) && $_GET['taxonomy'] === $kb_tax) {
-        return true;
-    }
-    
-    // Check for Manage KB pages
-    if (isset($_GET['page']) && strpos($_GET['page'], 'basepress') !== false) {
-        return true;
-    }
-    
-    return false;
-}
-
-/**
- * Redirect wiki editors away from restricted BasePress pages
- */
-function jotunheim_redirect_from_restricted_pages() {
-    // Only apply to wiki_editor role (not for admins)
-    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
-        return;
-    }
-    
-    // If on a restricted page, redirect to main KB listing
-    if (jotunheim_is_restricted_basepress_page()) {
-        // Get the KB post type
-        $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-        
-        // Redirect to the main KB articles page
-        wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
-        exit;
-    }
-}
-add_action('admin_init', 'jotunheim_redirect_from_restricted_pages', 1);
 
 /**
  * Hide all admin menu items except Knowledge Base and Profile for wiki editors
@@ -169,11 +146,18 @@ function jotunheim_wiki_editor_redirect() {
 add_action('current_screen', 'jotunheim_wiki_editor_redirect');
 
 /**
- * Register wiki editor roles with BasePress
+ * Register wiki editor role with BasePress
  */
 function jotunheim_register_wiki_editor_with_basepress() {
-    if (function_exists('basepress_kb_edit_post_user_roles')) {
-        add_filter('basepress_kb_edit_post_user_roles', function($roles) {
+    if (function_exists('basepress_add_editor_roles')) {
+        // Register wiki_editor as a role that can edit BasePress content
+        add_filter('basepress_editor_roles', function($roles) {
+            $roles[] = 'wiki_editor';
+            return $roles;
+        });
+        
+        // Add to allowed roles
+        add_filter('basepress_allowed_roles', function($roles) {
             $roles[] = 'wiki_editor';
             return $roles;
         });

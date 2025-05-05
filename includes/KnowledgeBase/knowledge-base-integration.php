@@ -33,51 +33,26 @@ function jotunheim_knowledge_base_shortcode($atts) {
 
 /**
  * Add the Wiki Editor role to BasePress editors
+ * This ensures wiki editors are recognized by BasePress
  */
-function jotunheim_add_wiki_editor_to_basepress_editors($roles) {
-    $roles[] = 'wiki_editor';
+function jotunheim_add_wiki_editor_to_basepress($roles) {
+    if (!in_array('wiki_editor', $roles)) {
+        $roles[] = 'wiki_editor';
+    }
     return $roles;
 }
-add_filter('basepress_editor_roles', 'jotunheim_add_wiki_editor_to_basepress_editors');
-add_filter('basepress_allowed_roles', 'jotunheim_add_wiki_editor_to_basepress_editors');
+add_filter('basepress_editor_roles', 'jotunheim_add_wiki_editor_to_basepress');
+add_filter('basepress_allowed_roles', 'jotunheim_add_wiki_editor_to_basepress');
 
 /**
- * Fix specific wiki_editor permissions for Sections and Manage KB
+ * Add required scripts and styles for front-end
  */
-function jotunheim_fix_wiki_editor_kb_permissions() {
-    // Only apply this to wiki_editor role (not for admins)
-    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
-        return;
-    }
-    
-    // Get the BasePress post type and taxonomy
-    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-    $kb_tax = function_exists('basepress_get_taxonomy') ? basepress_get_taxonomy() : 'knowledgebase_cat';
-    
-    // Check if we're on a specific BasePress admin page that should be restricted
-    if (is_admin()) {
-        global $pagenow;
-        
-        // Handle taxonomy (Sections) pages - redirect to main KB listing
-        if ($pagenow === 'edit-tags.php' && 
-            isset($_GET['taxonomy']) && 
-            $_GET['taxonomy'] === $kb_tax && 
-            isset($_GET['post_type']) && 
-            $_GET['post_type'] === $kb_post_type) {
-            wp_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
-            exit;
-        }
-        
-        // Handle all BasePress "Manage KB" pages - redirect to main KB listing
-        if ($pagenow === 'admin.php' && 
-            isset($_GET['page']) && 
-            strpos($_GET['page'], 'basepress') !== false) {
-            wp_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
-            exit;
-        }
+function jotunheim_enqueue_knowledge_base_scripts() {
+    if (has_shortcode(get_the_content(), 'jotunheim_knowledge_base')) {
+        wp_enqueue_script('jquery');
     }
 }
-add_action('admin_init', 'jotunheim_fix_wiki_editor_kb_permissions', 1);
+add_action('wp_enqueue_scripts', 'jotunheim_enqueue_knowledge_base_scripts');
 
 /**
  * Add New+ button to admin interface for knowledge base
