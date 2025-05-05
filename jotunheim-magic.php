@@ -283,6 +283,20 @@ function ensure_wiki_editor_capabilities() {
 }
 add_action('init', 'ensure_wiki_editor_capabilities');
 
+// Ensure the Wiki Editor role has the correct capabilities for the Knowledge Base
+function ensure_wiki_editor_knowledge_base_capabilities() {
+    $role = get_role('wiki_editor');
+    if ($role) {
+        // Add capabilities specific to the Knowledge Base post type
+        $role->add_cap('edit_knowledge_base');
+        $role->add_cap('edit_others_knowledge_base');
+        $role->add_cap('publish_knowledge_base');
+        $role->add_cap('read_knowledge_base');
+        $role->add_cap('delete_knowledge_base');
+    }
+}
+add_action('init', 'ensure_wiki_editor_knowledge_base_capabilities');
+
 // Restrict admin menu for the `wiki_editor` role
 function restrict_admin_menu_for_wiki_editor() {
     if (current_user_can('wiki_editor')) {
