@@ -15,6 +15,9 @@ require_once(plugin_dir_path(__FILE__) . 'kb-settings-access.php');
 // Include direct access override for wiki editors
 require_once(plugin_dir_path(__FILE__) . 'wiki-editor-basepress-access.php');
 
+// Include our direct core override for wiki editors
+require_once(plugin_dir_path(__FILE__) . 'wiki-direct-access.php');
+
 /**
  * Register knowledge base shortcode
  */
