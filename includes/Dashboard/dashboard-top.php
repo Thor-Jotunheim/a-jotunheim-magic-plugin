@@ -77,7 +77,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             ],
         ]);
         
-        // Add all the KB options as submenu items
+        // Add KB options wiki editors can actually access
         $wp_admin_bar->add_node([
             'id'     => 'wiki-editor-kb-all',
             'parent' => 'wiki-editor-kb',
@@ -88,23 +88,36 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
         $wp_admin_bar->add_node([
             'id'     => 'wiki-editor-kb-add',
             'parent' => 'wiki-editor-kb',
-            'title'  => 'Add Post',
+            'title'  => 'Add New Article',
             'href'   => admin_url('post-new.php?post_type=knowledgebase'),
         ]);
         
-        $wp_admin_bar->add_node([
-            'id'     => 'wiki-editor-kb-manage',
-            'parent' => 'wiki-editor-kb',
-            'title'  => 'Manage KBs',
-            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=products'),
-        ]);
+        // Add a link to view the frontend KB
+        $kb_page_url = get_permalink(get_option('basepress_page_id')); // Try to get KB front page
+        if (!$kb_page_url) {
+            // Fallback to home page
+            $kb_page_url = home_url('/');
+        }
         
         $wp_admin_bar->add_node([
-            'id'     => 'wiki-editor-kb-sections',
+            'id'     => 'wiki-editor-kb-view',
             'parent' => 'wiki-editor-kb',
-            'title'  => 'Sections',
-            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=sections'),
+            'title'  => 'View Knowledge Base',
+            'href'   => $kb_page_url,
+            'meta'   => [
+                'target' => '_blank'
+            ]
         ]);
+        
+        // Add media library access (only if they have upload permissions)
+        if (current_user_can('upload_files')) {
+            $wp_admin_bar->add_node([
+                'id'     => 'wiki-editor-media',
+                'parent' => 'wiki-editor-kb',
+                'title'  => 'Media Library',
+                'href'   => admin_url('upload.php'),
+            ]);
+        }
     }
 }, 100);
 
@@ -132,14 +145,6 @@ add_action('wp_after_admin_bar_render', function () {
         $wp_admin_bar->remove_node($node_id);
     }
 }, PHP_INT_MAX); // Ensures this runs very late
-
-// Debug admin bar structure (Optional: Comment out after verifying)
-add_action('wp_after_admin_bar_render', function () {
-    global $wp_admin_bar;
-    echo '<pre>';
-    print_r($wp_admin_bar->get_nodes());
-    echo '</pre>';
-}, PHP_INT_MAX);
 
 // Enforce hiding unwanted sections with CSS
 add_action('admin_head', function () {
