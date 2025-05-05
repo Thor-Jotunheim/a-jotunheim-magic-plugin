@@ -225,4 +225,30 @@ function jotunheim_magic_remove_dashboard_widgets() {
     }
 }
 add_action('wp_dashboard_setup', 'jotunheim_magic_remove_dashboard_widgets');
+
+// Check if the logged-in user has the Discord "Wiki Editor" role
+function user_has_discord_wiki_editor_role() {
+    if (!is_user_logged_in()) {
+        return false;
+    }
+
+    // Get the user's Discord roles from user meta
+    $discord_roles = get_user_meta(get_current_user_id(), 'discord_roles', true);
+
+    // Check if the "Wiki Editor" role ID exists in the user's roles
+    return is_array($discord_roles) && in_array('1354867612324200599', $discord_roles);
+}
+
+// Grant BasePress capabilities to users with the "Wiki Editor" role
+function grant_wiki_editor_capabilities() {
+    if (user_has_discord_wiki_editor_role()) {
+        $user = wp_get_current_user();
+
+        // Add the necessary capability dynamically
+        if ($user && !$user->has_cap('edit_basepress')) {
+            $user->add_cap('edit_basepress');
+        }
+    }
+}
+add_action('init', 'grant_wiki_editor_capabilities');
 ?>
