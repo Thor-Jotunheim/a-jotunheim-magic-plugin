@@ -211,49 +211,76 @@ add_action('admin_head', 'jotunheim_ensure_kb_edit_links');
  * Add Edit Article button for wiki editors on the frontend
  */
 function jotunheim_kb_add_frontend_edit_button() {
-    // Only run on single KB pages
+    // Only continue for logged in users
+    if (!is_user_logged_in()) return;
+    
+    // Only run on singular pages
     if (!is_singular()) return;
     
-    // Get the proper knowledge base post type
+    // Get the current post
+    global $post;
+    if (!$post) return;
+    
+    // Check if current post is a BasePress KB article
     $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
     
-    // Only run on KB post type
-    if (get_post_type() !== $kb_post_type) return;
+    // Check if current post is a KB article or if we're on a BasePress template
+    $is_kb_article = ($post->post_type === $kb_post_type) || 
+                    (function_exists('is_basepress') && is_basepress());
     
-    // Check if user has permission to edit
-    if (!current_user_can('edit_' . $kb_post_type . 's')) return;
+    if (!$is_kb_article) return;
     
-    // Get edit link
-    $edit_link = get_edit_post_link();
-    if (!$edit_link) return;
+    // Check if user has permission to edit this post
+    if (!current_user_can('edit_post', $post->ID) && 
+        !current_user_can('edit_' . $kb_post_type) && 
+        !current_user_can('edit_' . $kb_post_type . 's')) {
+        return;
+    }
     
-    // Output the edit button
+    // Get edit link - try multiple methods
+    $edit_link = '';
+    
+    // Try standard WordPress function
+    if (function_exists('get_edit_post_link')) {
+        $edit_link = get_edit_post_link($post->ID);
+    }
+    
+    // If no link, create a manual link
+    if (!$edit_link) {
+        $edit_link = admin_url('post.php?post=' . $post->ID . '&action=edit');
+    }
+    
+    // Output the edit button with enhanced styling and visibility
     ?>
     <style>
         .jotunheim-kb-edit-button {
             position: fixed;
             top: 100px;
-            left: 20px;
-            z-index: 999;
-            background-color: #23282d;
+            right: 20px;
+            z-index: 999999;
+            background-color: #2271b1;
             color: #fff;
             padding: 10px 15px;
             font-size: 14px;
             font-weight: bold;
-            text-decoration: none;
+            text-decoration: none !important;
             border-radius: 3px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             gap: 8px;
             transition: all 0.2s ease;
+            border: 2px solid white;
         }
         
-        .jotunheim-kb-edit-button:hover {
-            background-color: #32373c;
-            color: #fff;
+        .jotunheim-kb-edit-button:hover,
+        .jotunheim-kb-edit-button:focus,
+        .jotunheim-kb-edit-button:active {
+            background-color: #135e96;
+            color: #fff !important;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-decoration: none !important;
         }
         
         .jotunheim-kb-edit-button svg {
@@ -265,12 +292,7 @@ function jotunheim_kb_add_frontend_edit_button() {
             .jotunheim-kb-edit-button {
                 top: auto;
                 bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-            }
-            
-            .jotunheim-kb-edit-button:hover {
-                transform: translateX(-50%) translateY(-2px);
+                right: 20px;
             }
         }
     </style>
@@ -283,4 +305,6 @@ function jotunheim_kb_add_frontend_edit_button() {
     </a>
     <?php
 }
-add_action('wp_footer', 'jotunheim_kb_add_frontend_edit_button');
+// Hook into both wp_footer and basepress specific hooks
+add_action('wp_footer', 'jotunheim_kb_add_frontend_edit_button', 999);
+add_action('basepress_after_content', 'jotunheim_kb_add_frontend_edit_button', 999);

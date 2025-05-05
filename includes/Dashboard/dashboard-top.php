@@ -118,6 +118,15 @@ add_action('wp_after_admin_bar_render', function () {
         'gutenverse-pro',        // Gutenverse PRO
         'updraft_admin_node',    // UpdraftPlus
     ];
+    
+    // Remove New+ dropdown for wiki editors
+    if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+        $nodes_to_remove[] = 'new-content';
+        $nodes_to_remove[] = 'new-post';
+        $nodes_to_remove[] = 'new-media';
+        $nodes_to_remove[] = 'new-page';
+        $nodes_to_remove[] = 'new-user';
+    }
 
     foreach ($nodes_to_remove as $node_id) {
         $wp_admin_bar->remove_node($node_id);
@@ -134,11 +143,26 @@ add_action('wp_after_admin_bar_render', function () {
 
 // Enforce hiding unwanted sections with CSS
 add_action('admin_head', function () {
-    echo '<style>
-        #wp-admin-bar-gutenverse,
-        #wp-admin-bar-gutenverse-pro,
-        #wp-admin-bar-updraft_admin_node {
-            display: none !important;
-        }
-    </style>';
+    if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+        echo '<style>
+            #wp-admin-bar-gutenverse,
+            #wp-admin-bar-gutenverse-pro,
+            #wp-admin-bar-updraft_admin_node,
+            #wp-admin-bar-new-content,
+            #wp-admin-bar-new-post,
+            #wp-admin-bar-new-media,
+            #wp-admin-bar-new-page,
+            #wp-admin-bar-new-user {
+                display: none !important;
+            }
+        </style>';
+    } else {
+        echo '<style>
+            #wp-admin-bar-gutenverse,
+            #wp-admin-bar-gutenverse-pro,
+            #wp-admin-bar-updraft_admin_node {
+                display: none !important;
+            }
+        </style>';
+    }
 });
