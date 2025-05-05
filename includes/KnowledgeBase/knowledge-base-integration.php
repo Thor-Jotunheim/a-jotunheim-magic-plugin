@@ -9,14 +9,8 @@ if (!defined('ABSPATH')) exit;
  * and includes functionality to ensure wiki editors have proper access.
  */
 
-// Include the KB settings access override for wiki editors
-require_once(plugin_dir_path(__FILE__) . 'kb-settings-access.php');
-
-// Include direct access override for wiki editors
-require_once(plugin_dir_path(__FILE__) . 'wiki-editor-basepress-access.php');
-
-// Include our direct core override for wiki editors
-require_once(plugin_dir_path(__FILE__) . 'wiki-direct-access.php');
+// Include the wiki editor role definition with all BasePress access functionality
+require_once(plugin_dir_path(dirname(__FILE__)) . 'Roles/wiki-editor-role.php');
 
 /**
  * Register knowledge base shortcode
@@ -36,39 +30,6 @@ function jotunheim_knowledge_base_shortcode($atts) {
     // Return the knowledge base interface
     return jotunheim_knowledge_base_interface();
 }
-
-/**
- * Ensure the wiki_editor role has proper permissions for the knowledge base
- */
-function jotunheim_ensure_wiki_editor_kb_permissions() {
-    // Only run if BasePress is active
-    if (!function_exists('basepress_get_post_type') && !post_type_exists('knowledgebase')) {
-        return;
-    }
-    
-    // Get the proper knowledge base post type
-    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-    error_log("BasePress post type detected: " . $kb_post_type);
-    
-    // Create or get the wiki_editor role
-    if (!get_role('wiki_editor')) {
-        add_role('wiki_editor', 'Wiki Editor', array('read' => true));
-    }
-    
-    $wiki_role = get_role('wiki_editor');
-    
-    // Add media upload capabilities
-    $wiki_role->add_cap('upload_files');
-    $wiki_role->add_cap('read');
-    
-    // Add knowledge base specific capabilities
-    $wiki_role->add_cap('edit_' . $kb_post_type);
-    $wiki_role->add_cap('edit_' . $kb_post_type . 's');
-    $wiki_role->add_cap('publish_' . $kb_post_type . 's');
-    $wiki_role->add_cap('edit_published_' . $kb_post_type . 's');
-    $wiki_role->add_cap('edit_others_' . $kb_post_type . 's');
-}
-add_action('init', 'jotunheim_ensure_wiki_editor_kb_permissions', 20);
 
 /**
  * Add the Wiki Editor role to BasePress editors
