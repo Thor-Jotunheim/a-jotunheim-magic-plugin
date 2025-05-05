@@ -11,14 +11,6 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
-// Fix for text domain loading too early
-add_action('init', function() {
-    if (function_exists('load_plugin_textdomain')) {
-        load_plugin_textdomain('breadcrumb-navxt', false, dirname(plugin_basename(__FILE__)) . '/languages');
-        load_plugin_textdomain('custom-fonts', false, dirname(plugin_basename(__FILE__)) . '/languages');
-    }
-}, 1); // Priority 1 to ensure it runs early in the init phase
-
 // Include required files
 require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 
@@ -110,8 +102,8 @@ require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-fo
 require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-scripts.php');
 
 // Include Role Management files
-include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
+// include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
+// include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
 
 // Include KB modifications
 // include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-header-override.php');
