@@ -307,7 +307,6 @@ function setup_wiki_editor_role() {
 }
 
 // Assign the Wiki Editor role to users with the Discord Wiki Editor role
-// but preserve their existing roles for proper role segregation
 function assign_wiki_editor_role() {
     if (!is_user_logged_in()) return;
     
@@ -327,22 +326,42 @@ function assign_wiki_editor_role() {
             error_log('Added wiki_editor role to user ' . $user->ID);
         }
         
-        // Add BasePress editing capabilities directly to the user
+        // Add comprehensive list of potential BasePress capabilities
         $caps = array(
+            // Standard WordPress editing caps
+            'edit_posts',
+            'publish_posts',
+            'edit_published_posts',
+            
+            // BasePress specific caps
             'edit_basepress',
             'edit_knowledgebase',
             'edit_knowledgebases',
             'publish_knowledgebases',
+            'read_knowledgebase',
+            'delete_knowledgebase',
+            'edit_others_knowledgebases',
+            'read_private_knowledgebases',
+            
+            // Dynamic capabilities based on detected post type
             "edit_{$basepress_post_type}",
             "edit_{$basepress_post_type}s",
-            "publish_{$basepress_post_type}s", 
+            "edit_published_{$basepress_post_type}s",
+            "publish_{$basepress_post_type}s",
+            "edit_others_{$basepress_post_type}s",
+            "read_private_{$basepress_post_type}s",
+            "delete_{$basepress_post_type}s",
+            
+            // BasePress plugin specific caps (if any)
+            'basepress_edit_articles',
+            'basepress_edit_knowledgebases'
         );
         
         foreach ($caps as $cap) {
             $user->add_cap($cap);
         }
         
-        error_log('User ' . $user->ID . ' capabilities: ' . print_r($user->allcaps, true));
+        error_log('User ' . $user->ID . ' capabilities updated with complete BasePress edit permissions');
     }
 }
 add_action('wp_loaded', 'assign_wiki_editor_role');
