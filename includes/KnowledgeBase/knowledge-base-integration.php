@@ -14,6 +14,9 @@ require_once(plugin_dir_path(dirname(__FILE__)) . 'Roles/wiki-editor-role.php');
 // Include the BasePress specific wiki editor integration
 require_once(plugin_dir_path(__FILE__) . 'basepress-wiki-editor.php');
 
+// Include the BasePress permission override
+require_once(plugin_dir_path(__FILE__) . 'basepress-permission-override.php');
+
 /**
  * Register knowledge base shortcode
  */
