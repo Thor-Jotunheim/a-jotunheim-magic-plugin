@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) exit;
  */
 
 // Control access to Manage KBs section - set to false to disable access
-define('WIKI_EDITOR_CAN_MANAGE_KBS', false);
+define('WIKI_EDITOR_CAN_MANAGE_KBS', true);
 
 /**
  * Create the Wiki Editor role with needed capabilities
