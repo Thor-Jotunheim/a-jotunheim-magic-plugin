@@ -103,7 +103,7 @@ require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-sc
 
 // Include Role Management files
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
-//include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
