@@ -9,71 +9,84 @@ if (!defined('ABSPATH')) exit;
  */
 
 /**
- * Create the Wiki Editor role if it doesn't exist
+ * Create and update the Wiki Editor role with needed capabilities
  */
 function jotunheim_create_wiki_editor_role() {
-    // Check if wiki editor role already exists
-    if (!get_role('wiki_editor')) {
-        // Create the wiki editor role with basic capabilities
-        add_role(
-            'wiki_editor',
-            'Wiki Editor',
-            array(
-                'read' => true,
-                'upload_files' => true,
-                'edit_posts' => true,
-                'edit_published_posts' => true,
-            )
-        );
+    // Get admin role to copy needed permissions
+    $admin = get_role('administrator');
+    $admin_caps = $admin->capabilities;
+    
+    // Check if wiki editor role exists
+    $wiki_editor = get_role('wiki_editor');
+    if (!$wiki_editor) {
+        // Create the role
+        add_role('wiki_editor', 'Wiki Editor', array('read' => true));
+        $wiki_editor = get_role('wiki_editor');
     }
     
-    // Get the wiki editor role
-    $wiki_editor = get_role('wiki_editor');
+    // First, add basic capabilities
+    $wiki_editor->add_cap('read');
+    $wiki_editor->add_cap('upload_files');
     
-    // Add required capabilities for wiki editors
-    if ($wiki_editor) {
-        // Basic editing capabilities
-        $wiki_editor->add_cap('read');
-        $wiki_editor->add_cap('upload_files');
-        $wiki_editor->add_cap('edit_posts');
-        $wiki_editor->add_cap('edit_published_posts');
+    // Add editing capabilities for all post types
+    $wiki_editor->add_cap('edit_posts');
+    $wiki_editor->add_cap('edit_others_posts');
+    $wiki_editor->add_cap('edit_published_posts');
+    $wiki_editor->add_cap('edit_private_posts');
+    
+    // Add KB specific capabilities - copy directly from admin role
+    foreach ($admin_caps as $cap => $value) {
+        // Add KB editing capabilities
+        if (strpos($cap, 'edit_') === 0 && strpos($cap, 'knowledgebase') !== false) {
+            $wiki_editor->add_cap($cap);
+        }
         
-        // Knowledge Base specific capabilities
-        if (post_type_exists('knowledgebase')) {
-            // Standard editing capabilities for KB
-            $wiki_editor->add_cap('edit_knowledgebase');
-            $wiki_editor->add_cap('edit_knowledgebases');
-            $wiki_editor->add_cap('edit_others_knowledgebases');
-            $wiki_editor->add_cap('edit_published_knowledgebases');
-            $wiki_editor->add_cap('publish_knowledgebases');
-            $wiki_editor->add_cap('read_private_knowledgebases');
-            
-            // Critical capabilities for Sections and Manage KBs pages
-            $wiki_editor->add_cap('manage_categories');
-            $wiki_editor->add_cap('edit_categories');
-            $wiki_editor->add_cap('delete_categories');
-            $wiki_editor->add_cap('assign_categories');
-            
-            // Add all capabilities that might be needed for BasePress
-            $wiki_editor->add_cap('manage_options');
-            $wiki_editor->add_cap('basepress_edit_articles');
-            $wiki_editor->add_cap('basepress_edit_others_articles');
-            $wiki_editor->add_cap('basepress_edit_published_articles');
-            $wiki_editor->add_cap('basepress_edit_private_articles');
-            $wiki_editor->add_cap('basepress_manage_sections');
-            $wiki_editor->add_cap('basepress_manage_kbs');
-            $wiki_editor->add_cap('basepress_manage_options');
-            $wiki_editor->add_cap('basepress_manage_products');
-            $wiki_editor->add_cap('manage_basepress');
-            
-            // KB taxonomy capabilities
-            $kb_tax = 'knowledgebase_cat';
-            $wiki_editor->add_cap('manage_' . $kb_tax);
-            $wiki_editor->add_cap('edit_' . $kb_tax);
-            $wiki_editor->add_cap('delete_' . $kb_tax);
-            $wiki_editor->add_cap('assign_' . $kb_tax);
+        // Add KB publishing capabilities
+        if (strpos($cap, 'publish_') === 0 && strpos($cap, 'knowledgebase') !== false) {
+            $wiki_editor->add_cap($cap);
+        }
+        
+        // Add KB reading capabilities
+        if (strpos($cap, 'read_') === 0 && strpos($cap, 'knowledgebase') !== false) {
+            $wiki_editor->add_cap($cap);
+        }
+        
+        // Add BasePress specific capabilities
+        if (strpos($cap, 'basepress_') === 0) {
+            $wiki_editor->add_cap($cap);
+        }
+        
+        // Add taxonomy management capabilities
+        if (
+            $cap === 'manage_categories' || 
+            strpos($cap, 'knowledgebase_cat') !== false ||
+            $cap === 'manage_options'
+        ) {
+            $wiki_editor->add_cap($cap);
         }
     }
+    
+    // Explicitly add critical capabilities
+    $wiki_editor->add_cap('edit_knowledgebase');
+    $wiki_editor->add_cap('edit_knowledgebases');
+    $wiki_editor->add_cap('edit_others_knowledgebases');
+    $wiki_editor->add_cap('edit_published_knowledgebases');
+    $wiki_editor->add_cap('edit_private_knowledgebases');
+    $wiki_editor->add_cap('publish_knowledgebases');
+    $wiki_editor->add_cap('read_private_knowledgebases');
+    $wiki_editor->add_cap('manage_knowledgebase_cat');
+    $wiki_editor->add_cap('edit_knowledgebase_cat');
+    
+    // BasePress specific capabilities
+    $wiki_editor->add_cap('basepress_edit_articles');
+    $wiki_editor->add_cap('basepress_edit_others_articles');
+    $wiki_editor->add_cap('basepress_edit_published_articles');
+    $wiki_editor->add_cap('basepress_edit_private_articles');
+    $wiki_editor->add_cap('basepress_manage_sections');
+    $wiki_editor->add_cap('basepress_manage_kbs');
+    $wiki_editor->add_cap('basepress_manage_products');
+    $wiki_editor->add_cap('basepress_manage_options');
+    $wiki_editor->add_cap('manage_basepress');
 }
 add_action('init', 'jotunheim_create_wiki_editor_role');
 
@@ -86,75 +99,59 @@ function jotunheim_hide_admin_menu_items() {
         return;
     }
     
-    global $menu, $submenu;
+    global $menu;
     
-    // Keep track of KB menu position to preserve it
-    $kb_menu_position = null;
-    $kb_post_type = 'knowledgebase'; // Default value
-    
-    // Find Knowledge Base menu position and post type
-    if (is_array($menu)) {
-        foreach ($menu as $key => $item) {
-            if (isset($item[2]) && strpos($item[2], 'post_type=') !== false && strpos($item[2], 'knowledgebase') !== false) {
-                $kb_menu_position = $key;
-                preg_match('/post_type=([a-zA-Z0-9_-]+)/', $item[2], $matches);
-                if (isset($matches[1])) {
-                    $kb_post_type = $matches[1];
-                }
-                break;
-            }
+    // Find Knowledge Base menu
+    $kb_menu_slug = '';
+    foreach ($menu as $key => $item) {
+        if (isset($item[2]) && strpos($item[2], 'post_type=') !== false && strpos($item[2], 'knowledgebase') !== false) {
+            $kb_menu_slug = $item[2];
+            break;
         }
     }
     
     // Remove all menu items except Knowledge Base and Profile
     if (is_array($menu)) {
         foreach ($menu as $key => $item) {
-            // Skip if not a proper menu item
             if (!isset($item[2])) {
                 continue;
             }
             
             // Keep only profile and KB menu
-            if ($item[2] !== 'profile.php' && $key !== $kb_menu_position) {
+            if ($item[2] !== 'profile.php' && $item[2] !== $kb_menu_slug) {
                 remove_menu_page($item[2]);
             }
         }
     }
-    
-    // Set dashboard redirect to KB
-    add_action('current_screen', function() use ($kb_post_type) {
-        $screen = get_current_screen();
-        if ($screen && $screen->id === 'dashboard') {
-            wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
-            exit;
-        }
-    });
 }
 add_action('admin_menu', 'jotunheim_hide_admin_menu_items', 999);
 
 /**
- * Override BasePress capability checks to ensure wiki editors have access
+ * Override capability checks to ensure wiki editors can access everything KB related
  */
-function jotunheim_override_basepress_capability_check($allcaps, $caps, $args) {
+function jotunheim_override_kb_capabilities($allcaps, $caps, $args, $user) {
     // Only apply to wiki_editor role
-    if (!is_user_logged_in() || !current_user_can('wiki_editor') || current_user_can('administrator')) {
+    if (!in_array('wiki_editor', $user->roles) || in_array('administrator', $user->roles)) {
         return $allcaps;
     }
     
-    // Grant access to critical capabilities for BasePress
-    $basepress_caps = array(
-        'manage_categories',
-        'manage_options',
-        'basepress_manage_sections',
-        'basepress_manage_kbs',
-        'basepress_manage_options',
-        'manage_basepress'
-    );
+    // Get requested capability
+    if (empty($caps)) {
+        return $allcaps;
+    }
     
-    foreach ($basepress_caps as $cap) {
-        $allcaps[$cap] = true;
+    // Grant all KB and BasePress related capabilities
+    foreach ($caps as $cap) {
+        if (
+            strpos($cap, 'knowledgebase') !== false ||
+            strpos($cap, 'basepress') !== false ||
+            $cap === 'manage_categories' ||
+            $cap === 'manage_options'
+        ) {
+            $allcaps[$cap] = true;
+        }
     }
     
     return $allcaps;
 }
-add_filter('user_has_cap', 'jotunheim_override_basepress_capability_check', 10, 3);
+add_filter('user_has_cap', 'jotunheim_override_kb_capabilities', 1, 4);
