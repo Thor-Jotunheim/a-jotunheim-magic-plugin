@@ -283,10 +283,11 @@ function ensure_wiki_editor_capabilities() {
 }
 add_action('init', 'ensure_wiki_editor_capabilities');
 
-// Restrict access to the Jotunheim Magic plugin admin menu for specific roles
+// Restrict access to the Jotunheim Magic plugin admin menu for the `wiki_editor` role
 function restrict_magic_plugin_admin_menu() {
     if (current_user_can('wiki_editor')) {
-        remove_menu_page('magic-plugin-admin-menu-slug'); // Replace with the actual menu slug of the Jotunheim Magic plugin
+        // Replace 'jotunheim-magic' with the actual menu slug of the plugin
+        remove_menu_page('jotunheim-magic');
     }
 }
 add_action('admin_menu', 'restrict_magic_plugin_admin_menu', 999);
