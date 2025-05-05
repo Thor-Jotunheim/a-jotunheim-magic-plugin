@@ -11,6 +11,13 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
+// Fix for custom-fonts text domain loading too early
+add_action('init', function() {
+    if (function_exists('load_plugin_textdomain')) {
+        load_plugin_textdomain('custom-fonts', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    }
+}, 1); // Priority 1 to ensure it runs early in the init phase
+
 // File: jotunheim-magic.php
 require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 
