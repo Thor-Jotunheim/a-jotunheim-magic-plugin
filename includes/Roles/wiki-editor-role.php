@@ -268,6 +268,96 @@ function allow_wiki_editor_products_access($capability) {
 add_filter('basepress_products_capability', 'allow_wiki_editor_products_access');
 
 /**
+ * Direct override of user capabilities check for wiki editors
+ * This is a more direct approach to bypass WordPress capability checks
+ */
+function wiki_editor_map_meta_cap($caps, $cap, $user_id, $args) {
+    // Only process for wiki editors
+    $user = get_user_by('id', $user_id);
+    if (!$user || !in_array('wiki_editor', $user->roles)) {
+        return $caps;
+    }
+
+    // Check for BasePress settings pages
+    $is_basepress_admin = false;
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase' && 
+        isset($_GET['page']) && $_GET['page'] === 'basepress_settings') {
+        $is_basepress_admin = true;
+    }
+    
+    if ($is_basepress_admin) {
+        // These are capabilities commonly checked for admin pages
+        $admin_caps = [
+            'manage_options',
+            'edit_plugins',
+            'activate_plugins',
+            'administrator',
+            'manage_categories',
+        ];
+        
+        if (in_array($cap, $admin_caps)) {
+            return ['read']; // Replace with a capability wiki editors have
+        }
+    }
+    
+    return $caps;
+}
+add_filter('map_meta_cap', 'wiki_editor_map_meta_cap', 10, 4);
+
+/**
+ * Fix specific admin page access for wiki editors
+ * This runs early to intercept and modify capability checks
+ */
+function wiki_editor_admin_page_access() {
+    // Only run for wiki editors
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // Check if we're on a BasePress settings page
+    $is_basepress_admin = false;
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase' && 
+        isset($_GET['page']) && $_GET['page'] === 'basepress_settings') {
+        $is_basepress_admin = true;
+    }
+    
+    if ($is_basepress_admin) {
+        // Direct override for BasePress pages
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) {
+            if (isset($caps[0])) {
+                $allcaps[$caps[0]] = true;
+            }
+            
+            // Add required capabilities for settings pages
+            $admin_caps = [
+                'manage_options',
+                'edit_plugins',
+                'activate_plugins',
+                'administrator',
+                'manage_categories',
+            ];
+            
+            foreach ($admin_caps as $admin_cap) {
+                $allcaps[$admin_cap] = true;
+            }
+            
+            return $allcaps;
+        }, 10, 4);
+        
+        // Enable access to specific tabs
+        if (isset($_GET['tab'])) {
+            $tab = $_GET['tab'];
+            if ($tab === 'sections' || $tab === 'products') {
+                add_filter('basepress_' . $tab . '_capability', function() {
+                    return 'read';
+                });
+            }
+        }
+    }
+}
+add_action('admin_init', 'wiki_editor_admin_page_access', 1); // Run very early
+
+/**
  * Hook all wiki editor role functions
  */
 function initialize_wiki_editor_role() {
