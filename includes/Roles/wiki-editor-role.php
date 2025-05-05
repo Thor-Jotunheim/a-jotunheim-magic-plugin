@@ -102,7 +102,7 @@ function jotunheim_redirect_from_restricted_pages() {
 add_action('admin_init', 'jotunheim_redirect_from_restricted_pages', 1);
 
 /**
- * Remove admin menu items that wiki editors shouldn't have access to
+ * Hide all admin menu items except Knowledge Base for wiki editors
  */
 function jotunheim_remove_admin_menu_items() {
     // Only apply to wiki_editor role (not for admins)
@@ -112,24 +112,61 @@ function jotunheim_remove_admin_menu_items() {
     
     // Get the KB post type
     $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
-    $parent_menu = 'edit.php?post_type=' . $kb_post_type;
+    $kb_menu = 'edit.php?post_type=' . $kb_post_type;
     
-    // Remove Sections from submenu
-    global $submenu;
-    if (isset($submenu[$parent_menu])) {
-        foreach ($submenu[$parent_menu] as $key => $item) {
-            // Look for Sections in the label or slug
-            if (isset($item[0]) && 
-                (strpos(strtolower($item[0]), 'section') !== false || 
-                 (isset($item[2]) && strpos($item[2], 'section') !== false))) {
-                unset($submenu[$parent_menu][$key]);
+    global $menu, $submenu;
+    
+    // First, remove all menu items except profile and Knowledge Base
+    if (is_array($menu)) {
+        foreach ($menu as $key => $item) {
+            // Skip if not a proper menu item
+            if (!isset($item[2])) {
+                continue;
             }
             
-            // Look for Manage KB items
-            if (isset($item[2]) && strpos($item[2], 'basepress') !== false) {
-                unset($submenu[$parent_menu][$key]);
+            // Keep only profile menu and KB menu
+            if ($item[2] !== 'profile.php' && $item[2] !== $kb_menu) {
+                remove_menu_page($item[2]);
+            }
+        }
+    }
+    
+    // Remove specific items from KB submenu
+    if (isset($submenu[$kb_menu])) {
+        foreach ($submenu[$kb_menu] as $key => $item) {
+            // Keep only All Articles and Add Post submenus
+            if (!isset($item[2])) {
+                continue;
+            }
+            
+            // Check if this contains 'sections' or is a BasePress management page
+            if (strpos(strtolower($item[0]), 'section') !== false || 
+                strpos($item[2], 'edit-tags.php') !== false ||
+                strpos($item[2], 'basepress') !== false) {
+                remove_submenu_page($kb_menu, $item[2]);
             }
         }
     }
 }
 add_action('admin_menu', 'jotunheim_remove_admin_menu_items', 999);
+
+/**
+ * Set admin dashboard redirect for wiki editors
+ * This ensures they land at KB section when logging in
+ */
+function jotunheim_wiki_editor_redirect() {
+    if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+        // Get the KB post type
+        $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+        
+        // Get current screen
+        $screen = get_current_screen();
+        
+        // If on dashboard, redirect to KB
+        if ($screen && $screen->id === 'dashboard') {
+            wp_safe_redirect(admin_url('edit.php?post_type=' . $kb_post_type));
+            exit;
+        }
+    }
+}
+add_action('current_screen', 'jotunheim_wiki_editor_redirect');
