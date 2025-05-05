@@ -46,15 +46,17 @@ function jotunheim_create_wiki_editor_role() {
             $wiki_editor->add_cap('edit_published_knowledgebases');
             $wiki_editor->add_cap('publish_knowledgebases');
             
-            // BasePress specific capabilities for content editing only
+            // BasePress specific capabilities for content editing
             $wiki_editor->add_cap('basepress_edit_articles');
             $wiki_editor->add_cap('basepress_edit_knowledgebases');
             
-            // Explicitly NOT adding admin capabilities:
+            // Adding BasePress management capabilities for Sections and Manage KB
+            $wiki_editor->add_cap('basepress_manage_sections');
+            $wiki_editor->add_cap('manage_basepress');
+            
+            // Don't add these specific admin capabilities
             // - basepress_manage_options
-            // - basepress_manage_sections
             // - basepress_manage_products
-            // - manage_basepress
         }
     }
 }
@@ -102,7 +104,7 @@ function jotunheim_redirect_from_restricted_pages() {
 add_action('admin_init', 'jotunheim_redirect_from_restricted_pages', 1);
 
 /**
- * Hide all admin menu items except Knowledge Base for wiki editors
+ * Hide all admin menu items except Knowledge Base and Profile for wiki editors
  */
 function jotunheim_remove_admin_menu_items() {
     // Only apply to wiki_editor role (not for admins)
@@ -131,18 +133,32 @@ function jotunheim_remove_admin_menu_items() {
         }
     }
     
-    // Remove specific items from KB submenu
+    // Keep Sections and Manage KB submenus, but remove any other KB management pages
     if (isset($submenu[$kb_menu])) {
         foreach ($submenu[$kb_menu] as $key => $item) {
-            // Keep only All Articles and Add Post submenus
+            // Skip if not a proper menu item
             if (!isset($item[2])) {
                 continue;
             }
             
-            // Check if this contains 'sections' or is a BasePress management page
-            if (strpos(strtolower($item[0]), 'section') !== false || 
-                strpos($item[2], 'edit-tags.php') !== false ||
-                strpos($item[2], 'basepress') !== false) {
+            // List of allowed submenu pages
+            $allowed_pages = array(
+                $kb_menu, // All Articles
+                'post-new.php?post_type=' . $kb_post_type, // Add New
+                'basepress_sections', // Sections
+                'basepress_manage_kbs', // Manage KB
+            );
+            
+            // If item is not in allowed pages, remove it
+            $is_allowed = false;
+            foreach ($allowed_pages as $allowed_page) {
+                if (strpos($item[2], $allowed_page) !== false) {
+                    $is_allowed = true;
+                    break;
+                }
+            }
+            
+            if (!$is_allowed) {
                 remove_submenu_page($kb_menu, $item[2]);
             }
         }
