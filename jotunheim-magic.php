@@ -47,6 +47,9 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-api.php
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-handler.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-role-access.php');
 
+// Include KB files - BasePress overrides
+include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-header-override.php');
+
 // Include event zones editor files
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-permission.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-rest-api.php');

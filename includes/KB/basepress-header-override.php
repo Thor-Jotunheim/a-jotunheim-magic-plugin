@@ -3,7 +3,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Force BasePress to use our custom full template
+ * Force BasePress to use our custom full template and site editor header block
  */
 class JotunheimBasePressFSETemplates {
     
@@ -17,6 +17,9 @@ class JotunheimBasePressFSETemplates {
         
         // Add styling fixes
         add_action('wp_head', array($this, 'add_header_styles'));
+        
+        // Force site editor header to be used
+        add_action('init', array($this, 'force_site_editor_header'));
     }
     
     /**
@@ -41,6 +44,13 @@ class JotunheimBasePressFSETemplates {
      * Custom header template path
      */
     public function custom_header() {
+        // Use WordPress site editor header
+        if (current_theme_supports('block-templates')) {
+            // Just return a minimal template that will allow the block-based header to load
+            return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/header-block-basepress.php';
+        }
+        
+        // Fallback to our custom header
         return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/header-basepress.php';
     }
     
@@ -49,6 +59,30 @@ class JotunheimBasePressFSETemplates {
      */
     public function custom_footer() {
         return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/footer-basepress.php';
+    }
+    
+    /**
+     * Force the site editor header to be used
+     */
+    public function force_site_editor_header() {
+        // Only for BasePress pages
+        if (!function_exists('is_basepress')) {
+            return;
+        }
+        
+        // Remove any BasePress header actions
+        remove_action('basepress_header', 'basepress_header', 10);
+        
+        // Add our custom action that will ensure the site editor header is displayed
+        add_action('basepress_header', array($this, 'output_site_editor_header'), 10);
+    }
+    
+    /**
+     * Output the site editor header
+     */
+    public function output_site_editor_header() {
+        // This is intentionally left empty as we want to use the site's block template header
+        // The header will be added by WordPress core when using block templates
     }
     
     /**
@@ -65,11 +99,18 @@ class JotunheimBasePressFSETemplates {
             header.wp-block-template-part {
                 display: block !important;
                 visibility: visible !important;
+                position: relative !important;
             }
             
             /* Hide BasePress header */
             .bpress-header {
                 display: none !important;
+            }
+            
+            /* Ensure proper stacking */
+            .wp-site-blocks {
+                position: relative;
+                z-index: 10;
             }
         </style>
         <?php
