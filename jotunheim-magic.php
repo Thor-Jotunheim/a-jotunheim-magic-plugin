@@ -228,6 +228,18 @@ add_action('wp_dashboard_setup', 'jotunheim_magic_remove_dashboard_widgets');
 
 // Enhanced function to set up Wiki Editor role with proper capabilities
 function setup_wiki_editor_role() {
+    // Detect BasePress post type - it may not be 'knowledge_base'
+    $basepress_post_type = 'knowledgebase'; // Default BasePress post type
+    
+    if (post_type_exists('basepress_knowledgebase')) {
+        $basepress_post_type = 'basepress_knowledgebase';
+    } elseif (post_type_exists('knowledgebase')) {
+        $basepress_post_type = 'knowledgebase';
+    }
+    
+    // Log the detected post type
+    error_log('Detected BasePress post type: ' . $basepress_post_type);
+    
     // Create the role if it doesn't exist
     if (!get_role('wiki_editor')) {
         add_role('wiki_editor', 'Wiki Editor', array(
@@ -256,17 +268,28 @@ function setup_wiki_editor_role() {
         $role->remove_cap($cap);
     }
     
-    // BasePress specific capabilities only
+    // BasePress specific capabilities - using detected post type
     $basepress_caps = array(
         'edit_basepress',
-        'edit_knowledge_base', 
-        'read_knowledge_base',
-        'delete_knowledge_base',
-        'edit_knowledge_bases',
-        'edit_others_knowledge_bases',
-        'publish_knowledge_bases',
-        'read_private_knowledge_bases',
-        'delete_knowledge_bases'
+        'edit_knowledgebase',
+        'edit_knowledgebases',
+        'edit_published_knowledgebases',
+        'publish_knowledgebases',
+        'read_knowledgebase',
+        'delete_knowledgebase',
+        'edit_others_knowledgebases',
+        'read_private_knowledgebases',
+        'delete_knowledgebases',
+        // Add capability variations for different post type names
+        "edit_{$basepress_post_type}",
+        "edit_{$basepress_post_type}s",
+        "edit_published_{$basepress_post_type}s",
+        "publish_{$basepress_post_type}s",
+        "read_{$basepress_post_type}",
+        "delete_{$basepress_post_type}",
+        "edit_others_{$basepress_post_type}s",
+        "read_private_{$basepress_post_type}s",
+        "delete_{$basepress_post_type}s",
     );
     
     // Add BasePress capabilities
@@ -279,29 +302,40 @@ function setup_wiki_editor_role() {
     $role->add_cap('level_0');
     
     error_log('Wiki Editor role capabilities: ' . print_r($role->capabilities, true));
+    
+    return $basepress_post_type;
 }
-add_action('init', 'setup_wiki_editor_role', 10);
 
 // Assign the Wiki Editor role to users with the Discord Wiki Editor role
+// but preserve their existing roles for proper role segregation
 function assign_wiki_editor_role() {
     if (!is_user_logged_in()) return;
     
     $user = wp_get_current_user();
     $discord_roles = get_user_meta($user->ID, 'discord_roles', true);
     
-    if (is_array($discord_roles) && in_array('1354867612324200599', $discord_roles)) {
-        // Ensure user has wiki_editor role
+    // Detect if user has the Wiki Editor Discord role
+    $has_wiki_editor_discord = is_array($discord_roles) && in_array('1354867612324200599', $discord_roles);
+    
+    if ($has_wiki_editor_discord) {
+        // Get BasePress post type
+        $basepress_post_type = setup_wiki_editor_role();
+        
+        // Add wiki_editor role but don't replace existing roles
         if (!in_array('wiki_editor', $user->roles)) {
             $user->add_role('wiki_editor');
             error_log('Added wiki_editor role to user ' . $user->ID);
         }
         
-        // DO NOT add post editing capabilities
+        // Add BasePress editing capabilities directly to the user
         $caps = array(
             'edit_basepress',
-            'edit_knowledge_base',
-            'publish_knowledge_bases',
-            'read_knowledge_base'
+            'edit_knowledgebase',
+            'edit_knowledgebases',
+            'publish_knowledgebases',
+            "edit_{$basepress_post_type}",
+            "edit_{$basepress_post_type}s",
+            "publish_{$basepress_post_type}s", 
         );
         
         foreach ($caps as $cap) {
@@ -337,12 +371,20 @@ function restrict_wiki_editor_admin_access() {
     if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
         global $pagenow;
         
+        // Detect BasePress post type
+        $basepress_post_type = 'knowledgebase'; // Default
+        if (post_type_exists('basepress_knowledgebase')) {
+            $basepress_post_type = 'basepress_knowledgebase';
+        } elseif (post_type_exists('knowledgebase')) {
+            $basepress_post_type = 'knowledgebase';
+        }
+        
         // Block access to post creation/editing screens
         $restricted_pages = array('post-new.php', 'edit.php');
         
         if (in_array($pagenow, $restricted_pages) && 
-            (!isset($_GET['post_type']) || $_GET['post_type'] !== 'knowledge_base')) {
-            wp_redirect(admin_url('edit.php?post_type=knowledge_base'));
+            (!isset($_GET['post_type']) || $_GET['post_type'] !== $basepress_post_type)) {
+            wp_redirect(admin_url("edit.php?post_type={$basepress_post_type}"));
             exit;
         }
     }
