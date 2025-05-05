@@ -15,14 +15,23 @@ function jotunheim_create_wiki_editor_role() {
     
     // Define capabilities for wiki editor
     $capabilities = array(
+        // Basic capabilities
         'read' => true,
         'edit_posts' => true,
+        'upload_files' => true,
+        
+        // Knowledge Base specific capabilities
         'edit_knowledgebase' => true,
         'edit_knowledgebases' => true,
+        'edit_others_knowledgebases' => true,
         'edit_published_knowledgebases' => true,
         'read_knowledgebase' => true,
         'read_private_knowledgebases' => true,
         'publish_knowledgebases' => true,
+        'delete_knowledgebase' => true,
+        'delete_knowledgebases' => true,
+        'delete_published_knowledgebases' => true,
+        'manage_categories' => true,
     );
     
     if (!$wiki_editor) {
@@ -32,6 +41,20 @@ function jotunheim_create_wiki_editor_role() {
         // Update existing role with capabilities
         foreach ($capabilities as $cap => $grant) {
             $wiki_editor->add_cap($cap, $grant);
+        }
+    }
+    
+    // Add the custom capabilities that may be used by the BasePress Knowledge Base plugin
+    $custom_caps = array(
+        'basepress_view_others_sections',
+        'basepress_edit_others_sections',
+        'basepress_manage_sections',
+        'basepress_manage_knowledgebases',
+    );
+    
+    foreach ($custom_caps as $cap) {
+        if ($wiki_editor) {
+            $wiki_editor->add_cap($cap, true);
         }
     }
 }
@@ -49,17 +72,61 @@ function jotunheim_add_wiki_editor_capabilities() {
         $role = get_role('wiki_editor');
         
         if ($role) {
-            // Add all capabilities needed to manage knowledge base items
-            $role->add_cap('edit_' . $post_type_object->name);
-            $role->add_cap('read_' . $post_type_object->name);
-            $role->add_cap('publish_' . $post_type_object->name . 's');
-            $role->add_cap('edit_' . $post_type_object->name . 's');
-            $role->add_cap('edit_published_' . $post_type_object->name . 's');
-            $role->add_cap('read_private_' . $post_type_object->name . 's');
+            // Standard post capabilities
+            $post_caps = array(
+                'edit_post',
+                'read_post',
+                'delete_post',
+                'edit_posts',
+                'edit_others_posts',
+                'publish_posts',
+                'read_private_posts',
+            );
+            
+            // Map standard caps to the post type
+            foreach ($post_caps as $cap) {
+                $role->add_cap(str_replace('post', $post_type_object->name, $cap));
+                $role->add_cap(str_replace('post', $post_type_object->name . 's', $cap));
+            }
+            
+            // Add taxonomy capabilities
+            $role->add_cap('manage_knowledgebase_categories');
+            $role->add_cap('edit_knowledgebase_categories');
+            $role->add_cap('delete_knowledgebase_categories');
+            $role->add_cap('assign_knowledgebase_categories');
         }
     }
 }
 add_action('init', 'jotunheim_add_wiki_editor_capabilities', 20);
+
+/**
+ * Allow wiki editors to access Knowledge Base related menus
+ */
+function jotunheim_set_kb_menu_access() {
+    if (!current_user_can('wiki_editor')) return;
+    
+    // Give access to the Knowledge Base admin menu
+    global $pagenow;
+    
+    // Add specific capability to access KB admin page
+    if ($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'knowledgebase') {
+        add_filter('user_has_cap', function($allcaps) {
+            $allcaps['edit_knowledgebase'] = true;
+            $allcaps['edit_knowledgebases'] = true;
+            $allcaps['read_knowledgebase'] = true;
+            $allcaps['manage_knowledgebase_terms'] = true;
+            $allcaps['edit_knowledgebase_terms'] = true;
+            $allcaps['delete_knowledgebase_terms'] = true;
+            $allcaps['assign_knowledgebase_terms'] = true;
+            $allcaps['basepress_view_others_sections'] = true;
+            $allcaps['basepress_edit_others_sections'] = true;
+            $allcaps['basepress_manage_sections'] = true;
+            $allcaps['basepress_manage_knowledgebases'] = true;
+            return $allcaps;
+        });
+    }
+}
+add_action('admin_init', 'jotunheim_set_kb_menu_access');
 
 /**
  * Hide all admin menu items except Knowledge Base and Profile for wiki editors
@@ -92,9 +159,9 @@ function jotunheim_hide_admin_menu_items() {
         }
     }
     
-    // Cleanup submenu items if needed
+    // Make sure Knowledge Base submenu items are accessible
     if (isset($submenu['edit.php?post_type=knowledgebase'])) {
-        // Can optionally restrict specific submenu items here if needed
+        // Keep all KB submenu items visible - no need to restrict them
     }
 }
 add_action('admin_menu', 'jotunheim_hide_admin_menu_items', 999);
@@ -111,3 +178,30 @@ function jotunheim_redirect_wiki_editors_after_login($redirect_to, $request, $us
     return $redirect_to;
 }
 add_filter('login_redirect', 'jotunheim_redirect_wiki_editors_after_login', 10, 3);
+
+/**
+ * Filter admin bar nodes to ensure wiki editors see only relevant items
+ */
+function jotunheim_filter_admin_bar_for_wiki_editors($wp_admin_bar) {
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // Keep only specific admin bar nodes
+    $keep_nodes = array('top-secondary', 'my-account', 'user-actions', 
+        'user-info', 'edit-profile', 'logout', 'menu-toggle', 
+        'site-name', 'view-site', 'wiki-editor-kb', 'wiki-editor-kb-all', 
+        'wiki-editor-kb-add', 'wiki-editor-kb-manage', 'wiki-editor-kb-sections');
+        
+    // Get all nodes
+    $all_nodes = $wp_admin_bar->get_nodes();
+    
+    if ($all_nodes) {
+        foreach ($all_nodes as $node) {
+            if (!in_array($node->id, $keep_nodes)) {
+                $wp_admin_bar->remove_node($node->id);
+            }
+        }
+    }
+}
+add_action('admin_bar_menu', 'jotunheim_filter_admin_bar_for_wiki_editors', 999);
