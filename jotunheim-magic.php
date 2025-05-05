@@ -226,136 +226,85 @@ function jotunheim_magic_remove_dashboard_widgets() {
 }
 add_action('wp_dashboard_setup', 'jotunheim_magic_remove_dashboard_widgets');
 
-// Check if the logged-in user has the Discord "Wiki Editor" role
-function user_has_discord_wiki_editor_role() {
-    if (!is_user_logged_in()) {
-        return false;
-    }
-
-    // Get the user's Discord roles from user meta
-    $discord_roles = get_user_meta(get_current_user_id(), 'discord_roles', true);
-
-    // Check if the "Wiki Editor" role ID exists in the user's roles
-    return is_array($discord_roles) && in_array('1354867612324200599', $discord_roles);
-}
-
-// Grant BasePress capabilities to users with the "Wiki Editor" role
-function grant_wiki_editor_capabilities() {
-    if (user_has_discord_wiki_editor_role()) {
-        $user = wp_get_current_user();
-
-        // Add the necessary capability dynamically
-        if ($user && !$user->has_cap('edit_basepress')) {
-            $user->add_cap('edit_basepress');
-        }
-    }
-}
-add_action('init', 'grant_wiki_editor_capabilities');
-
-// Ensure the Wiki Editor role exists
-function create_wiki_editor_role() {
+// Enhanced function to set up Wiki Editor role with proper capabilities
+function setup_wiki_editor_role() {
+    // Create the role if it doesn't exist
     if (!get_role('wiki_editor')) {
         add_role('wiki_editor', 'Wiki Editor', array(
             'read' => true,
-            'edit_basepress' => true // Capability to edit BasePress
+            'level_0' => true
         ));
     }
-}
-add_action('init', 'create_wiki_editor_role');
-
-// Ensure the Wiki Editor role has the correct capabilities
-function ensure_wiki_editor_capabilities() {
+    
     $role = get_role('wiki_editor');
-    if ($role) {
-        // Add the capability to edit BasePress if missing
-        if (!$role->has_cap('edit_basepress')) {
-            $role->add_cap('edit_basepress');
-        }
-
-        // Add other necessary capabilities for BasePress
-        if (!$role->has_cap('edit_posts')) {
-            $role->add_cap('edit_posts');
-        }
-        if (!$role->has_cap('publish_posts')) {
-            $role->add_cap('publish_posts');
-        }
+    
+    // Base capabilities
+    $base_caps = array(
+        'read' => true,
+        'edit_posts' => true,
+        'edit_published_posts' => true,
+        'publish_posts' => true
+    );
+    
+    // Add base capabilities
+    foreach ($base_caps as $cap => $grant) {
+        $role->add_cap($cap, $grant);
     }
-}
-add_action('init', 'ensure_wiki_editor_capabilities');
-
-// Ensure the Wiki Editor role has the correct capabilities for the Knowledge Base
-function ensure_wiki_editor_knowledge_base_capabilities() {
-    $role = get_role('wiki_editor');
-    if ($role) {
-        // Add capabilities specific to the Knowledge Base post type
-        $role->add_cap('edit_knowledge_base');
-        $role->add_cap('edit_others_knowledge_base');
-        $role->add_cap('publish_knowledge_base');
-        $role->add_cap('read_knowledge_base');
-        $role->add_cap('delete_knowledge_base');
+    
+    // BasePress specific capabilities
+    $basepress_caps = array(
+        'edit_basepress',
+        'edit_knowledge_base', 
+        'read_knowledge_base',
+        'delete_knowledge_base',
+        'edit_knowledge_bases',
+        'edit_others_knowledge_bases',
+        'publish_knowledge_bases',
+        'read_private_knowledge_bases',
+        'delete_knowledge_bases'
+    );
+    
+    // Add BasePress capabilities
+    foreach ($basepress_caps as $cap) {
+        $role->add_cap($cap);
     }
+    
+    // Log the role's capabilities for debugging
+    error_log('Wiki Editor role capabilities: ' . print_r($role->capabilities, true));
 }
-add_action('init', 'ensure_wiki_editor_knowledge_base_capabilities');
+add_action('init', 'setup_wiki_editor_role', 10);
 
-// Handle multiple Discord roles and prioritize them
-function assign_highest_priority_role($user_id, $discord_roles) {
-    $role_hierarchy = [
-        'administrator' => 'administrator',
-        'editor' => 'editor',
-        'wiki_editor' => 'wiki_editor',
-        'subscriber' => 'subscriber'
-    ];
-
-    foreach ($role_hierarchy as $discord_role_id => $wp_role) {
-        if (in_array($discord_role_id, $discord_roles)) {
-            $user = new WP_User($user_id);
-            $user->set_role($wp_role);
-            break;
+// Assign the Wiki Editor role to users with the Discord Wiki Editor role
+function assign_wiki_editor_role() {
+    if (!is_user_logged_in()) return;
+    
+    $user = wp_get_current_user();
+    $discord_roles = get_user_meta($user->ID, 'discord_roles', true);
+    
+    if (is_array($discord_roles) && in_array('1354867612324200599', $discord_roles)) {
+        // Ensure user has wiki_editor role
+        if (!in_array('wiki_editor', $user->roles)) {
+            $user->add_role('wiki_editor');
+            error_log('Added wiki_editor role to user ' . $user->ID);
         }
-    }
-}
-
-// Example usage during Discord login
-function handle_discord_login($user_id, $discord_roles) {
-    assign_highest_priority_role($user_id, $discord_roles);
-}
-
-// Restrict admin menu for the `wiki_editor` role
-function restrict_admin_menu_for_wiki_editor() {
-    if (current_user_can('wiki_editor')) {
-        global $menu;
-
-        // Allow only the Knowledge Base menu
-        foreach ($menu as $key => $value) {
-            if ($value[2] !== 'edit.php?post_type=knowledge_base') {
-                unset($menu[$key]);
-            }
-        }
-    }
-}
-add_action('admin_menu', 'restrict_admin_menu_for_wiki_editor', 999);
-
-// Ensure the Knowledge Base menu is visible for the `wiki_editor` role
-function ensure_knowledge_base_menu_for_wiki_editor() {
-    if (current_user_can('wiki_editor')) {
-        add_menu_page(
-            'Knowledge Base',
-            'Knowledge Base',
-            'edit_basepress',
-            'edit.php?post_type=knowledge_base',
-            '',
-            'dashicons-book',
-            20
+        
+        // Directly add necessary capabilities
+        $caps = array(
+            'edit_posts', 
+            'publish_posts',
+            'edit_published_posts',
+            'edit_knowledge_base',
+            'publish_knowledge_base',
+            'edit_knowledge_bases',
+            'edit_basepress'
         );
+        
+        foreach ($caps as $cap) {
+            $user->add_cap($cap);
+        }
+        
+        error_log('User ' . $user->ID . ' capabilities: ' . print_r($user->allcaps, true));
     }
 }
-add_action('admin_menu', 'ensure_knowledge_base_menu_for_wiki_editor', 998);
-
-// Restrict post access for the `wiki_editor` role
-function restrict_post_access_for_wiki_editor($query) {
-    if (is_admin() && $query->is_main_query() && current_user_can('wiki_editor')) {
-        $query->set('post_type', 'knowledge_base');
-    }
-}
-add_action('pre_get_posts', 'restrict_post_access_for_wiki_editor');
+add_action('wp_loaded', 'assign_wiki_editor_role');
 ?>
