@@ -283,40 +283,35 @@ function ensure_wiki_editor_capabilities() {
 }
 add_action('init', 'ensure_wiki_editor_capabilities');
 
-// Restrict access to the Jotunheim Magic plugin admin menu for the `wiki_editor` role
-function restrict_magic_plugin_admin_menu() {
+// Restrict admin menu for the `wiki_editor` role
+function restrict_admin_menu_for_wiki_editor() {
     if (current_user_can('wiki_editor')) {
-        // Replace 'jotunheim-magic' with the actual menu slug of the plugin
-        remove_menu_page('jotunheim-magic');
-    }
-}
-add_action('admin_menu', 'restrict_magic_plugin_admin_menu', 999);
-
-// Restrict access to posts and other post types for the `wiki_editor` role
-function restrict_wiki_editor_post_access() {
-    if (current_user_can('wiki_editor')) {
-        global $menu;
+        global $menu, $submenu;
 
         // Allow only the Knowledge Base menu
         $allowed_menu_slugs = ['edit.php?post_type=knowledge_base'];
 
         foreach ($menu as $key => $value) {
             if (!in_array($value[2], $allowed_menu_slugs)) {
-                remove_menu_page($value[2]);
+                unset($menu[$key]);
+            }
+        }
+
+        // Remove submenus unrelated to Knowledge Base
+        foreach ($submenu as $parent_slug => $submenus) {
+            if ($parent_slug !== 'edit.php?post_type=knowledge_base') {
+                unset($submenu[$parent_slug]);
             }
         }
     }
 }
-add_action('admin_menu', 'restrict_wiki_editor_post_access', 999);
+add_action('admin_menu', 'restrict_admin_menu_for_wiki_editor', 999);
 
-// Restrict access to non-Knowledge Base posts in the admin area
-function restrict_wiki_editor_query($query) {
+// Restrict post access for the `wiki_editor` role
+function restrict_post_access_for_wiki_editor($query) {
     if (is_admin() && $query->is_main_query() && current_user_can('wiki_editor')) {
-        $screen = get_current_screen();
-        if ($screen && $screen->post_type !== 'knowledge_base') {
-            $query->set('post_type', 'knowledge_base');
-        }
+        $query->set('post_type', 'knowledge_base');
     }
 }
-add_action('pre_get_posts', 'restrict_wiki_editor_query');
+add_action('pre_get_posts', 'restrict_post_access_for_wiki_editor');
 ?>
