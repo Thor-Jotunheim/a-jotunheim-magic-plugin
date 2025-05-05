@@ -271,6 +271,11 @@ function ensure_wiki_editor_capabilities() {
         if (!$role->has_cap('edit_basepress')) {
             $role->add_cap('edit_basepress');
         }
+
+        // Add any other necessary BasePress capabilities
+        if (!$role->has_cap('read')) {
+            $role->add_cap('read');
+        }
     }
 }
 add_action('init', 'ensure_wiki_editor_capabilities');
