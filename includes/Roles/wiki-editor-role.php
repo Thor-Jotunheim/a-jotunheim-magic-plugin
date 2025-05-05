@@ -409,3 +409,181 @@ function jotunheim_override_post_edit_capability() {
     }, 99999, 2);
 }
 add_action('init', 'jotunheim_override_post_edit_capability', 5); // Run early to affect registration
+
+/**
+ * Emergency override to ensure Wiki Editors can edit any knowledge base post
+ */
+function jotunheim_emergency_kb_edit_override() {
+    // Only apply for wiki editors
+    if (!is_user_logged_in() || !current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    global $pagenow;
+    
+    // Extreme capability override - add ALL capabilities for knowledgebase
+    add_filter('user_has_cap', function($allcaps, $caps, $args, $user) {
+        // For ALL knowledgebase related capabilities
+        if (is_admin() && isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase') {
+            // Grant ALL capabilities for knowledge base post type
+            $kb_caps = array(
+                'edit_knowledgebase',
+                'edit_knowledgebases',
+                'edit_others_knowledgebases', 
+                'edit_published_knowledgebases',
+                'edit_private_knowledgebases',
+                'delete_knowledgebase',
+                'delete_knowledgebases',
+                'delete_others_knowledgebases',
+                'delete_published_knowledgebases',
+                'delete_private_knowledgebases',
+                'read_knowledgebase',
+                'read_private_knowledgebases',
+                'publish_knowledgebases',
+                'edit_others_posts',
+                'edit_post',
+                'edit_posts'
+            );
+            
+            foreach ($kb_caps as $cap) {
+                $allcaps[$cap] = true;
+            }
+        }
+        
+        // When editing a specific post
+        if ($pagenow === 'post.php' && isset($_GET['post'])) {
+            $post_id = $_GET['post'];
+            $post_type = get_post_type($post_id);
+            
+            if ($post_type === 'knowledgebase') {
+                // Grant all edit capabilities
+                $allcaps['edit_post'] = true;
+                $allcaps['edit_posts'] = true;
+                $allcaps['edit_others_posts'] = true;
+                $allcaps['edit_published_posts'] = true;
+                $allcaps['edit_knowledgebase'] = true;
+                $allcaps['edit_knowledgebases'] = true;
+                $allcaps['edit_others_knowledgebases'] = true;
+                $allcaps['edit_published_knowledgebases'] = true;
+            }
+        }
+        
+        return $allcaps;
+    }, 99999, 4); // Very high priority
+    
+    // Direct intervention for meta capability mapping
+    add_filter('map_meta_cap', function($caps, $cap, $user_id, $args) {
+        // Check if we're dealing with a knowledgebase post
+        if (!empty($args) && isset($args[0])) {
+            $post = get_post($args[0]);
+            if ($post && $post->post_type === 'knowledgebase') {
+                // For edit actions, return a capability the user has
+                if ($cap === 'edit_post' || $cap === 'edit_others_posts' || $cap === 'edit_published_posts') {
+                    return array('edit_posts');
+                }
+            }
+        }
+        return $caps;
+    }, 99999, 4);
+    
+    // Force the post row actions to include edit for knowledge base
+    add_filter('post_row_actions', function($actions, $post) {
+        if ($post->post_type === 'knowledgebase') {
+            // Replace the view link with an edit link if needed
+            if (isset($actions['view']) && !isset($actions['edit'])) {
+                $actions['edit'] = sprintf(
+                    '<a href="%s">%s</a>',
+                    admin_url('post.php?post=' . $post->ID . '&action=edit'),
+                    __('Edit')
+                );
+            }
+        }
+        return $actions;
+    }, 99999, 2);
+}
+add_action('init', 'jotunheim_emergency_kb_edit_override', 1); // Run very early
+
+/**
+ * Completely unlock post editing screen for wiki editors
+ */
+function jotunheim_unlock_kb_edit_screen() {
+    if (!is_admin() || !current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    global $pagenow, $post;
+    
+    if ($pagenow === 'post.php' && isset($_GET['action']) && $_GET['action'] === 'edit') {
+        if (isset($_GET['post'])) {
+            $post_id = intval($_GET['post']);
+            $post_type = get_post_type($post_id);
+            
+            if ($post_type === 'knowledgebase') {
+                // Remove all capability checks for this post
+                add_filter('user_has_cap', function($allcaps) {
+                    return array_merge($allcaps, array(
+                        'edit_post' => true,
+                        'edit_posts' => true, 
+                        'edit_others_posts' => true,
+                        'edit_knowledgebase' => true,
+                        'edit_knowledgebases' => true,
+                        'edit_others_knowledgebases' => true,
+                        'edit_published_knowledgebases' => true
+                    ));
+                }, 99999);
+                
+                // Make the post editable
+                add_filter('post_protected_meta', function($protected, $meta_key) {
+                    return false;  // Remove "protected" restrictions
+                }, 99999, 2);
+            }
+        }
+    }
+}
+add_action('admin_init', 'jotunheim_unlock_kb_edit_screen', 1);
+
+/**
+ * Add edit links directly to the post type list for wiki editors
+ */
+function jotunheim_add_admin_inline_js() {
+    if (!is_admin() || !current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    global $pagenow;
+    
+    if ($pagenow === 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase') {
+        // Add custom JavaScript to transform view links to edit links
+        ?>
+        <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all row actions with only view links
+            var rows = document.querySelectorAll('.wp-list-table tbody tr');
+            rows.forEach(function(row) {
+                var actions = row.querySelector('.row-actions');
+                if (actions && actions.textContent.indexOf('Edit') === -1) {
+                    // Get the post ID from the checkbox
+                    var checkbox = row.querySelector('th.check-column input');
+                    if (checkbox && checkbox.value) {
+                        var postId = checkbox.value;
+                        var editLink = document.createElement('a');
+                        editLink.href = '<?php echo admin_url('post.php?action=edit&post='); ?>' + postId;
+                        editLink.textContent = 'Edit';
+                        
+                        // Add the edit span
+                        var editSpan = document.createElement('span');
+                        editSpan.className = 'edit';
+                        editSpan.appendChild(editLink);
+                        editSpan.innerHTML += ' | ';
+                        
+                        // Add at the beginning of actions
+                        actions.insertBefore(editSpan, actions.firstChild);
+                    }
+                }
+            });
+        });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'jotunheim_add_admin_inline_js');
