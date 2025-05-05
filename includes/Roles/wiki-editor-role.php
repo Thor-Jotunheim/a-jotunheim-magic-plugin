@@ -25,12 +25,14 @@ function jotunheim_create_wiki_editor_role() {
         'edit_knowledgebases' => true,
         'edit_others_knowledgebases' => true,
         'edit_published_knowledgebases' => true,
+        'edit_others_posts' => true,
         'read_knowledgebase' => true,
         'read_private_knowledgebases' => true,
         'publish_knowledgebases' => true,
         'delete_knowledgebase' => true,
         'delete_knowledgebases' => true,
         'delete_published_knowledgebases' => true,
+        'delete_others_knowledgebases' => true,
         'manage_categories' => true,
     );
     
@@ -114,6 +116,9 @@ function jotunheim_set_kb_menu_access() {
             $allcaps['edit_knowledgebase'] = true;
             $allcaps['edit_knowledgebases'] = true;
             $allcaps['read_knowledgebase'] = true;
+            $allcaps['edit_others_knowledgebases'] = true;
+            $allcaps['edit_others_posts'] = true;
+            $allcaps['delete_others_knowledgebases'] = true;
             $allcaps['manage_knowledgebase_terms'] = true;
             $allcaps['edit_knowledgebase_terms'] = true;
             $allcaps['delete_knowledgebase_terms'] = true;
@@ -122,6 +127,33 @@ function jotunheim_set_kb_menu_access() {
             $allcaps['basepress_edit_others_sections'] = true;
             $allcaps['basepress_manage_sections'] = true;
             $allcaps['basepress_manage_knowledgebases'] = true;
+            return $allcaps;
+        });
+    }
+    
+    // Add capabilities for single post editing
+    if ($pagenow == 'post.php' && isset($_GET['post'])) {
+        $post_id = intval($_GET['post']);
+        $post_type = get_post_type($post_id);
+        
+        if ($post_type == 'knowledgebase') {
+            add_filter('user_has_cap', function($allcaps) {
+                $allcaps['edit_knowledgebase'] = true;
+                $allcaps['edit_knowledgebases'] = true;
+                $allcaps['edit_others_knowledgebases'] = true;
+                $allcaps['edit_published_knowledgebases'] = true;
+                $allcaps['edit_others_posts'] = true;
+                return $allcaps;
+            });
+        }
+    }
+    
+    // Add capabilities for creating new posts
+    if ($pagenow == 'post-new.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'knowledgebase') {
+        add_filter('user_has_cap', function($allcaps) {
+            $allcaps['edit_knowledgebase'] = true;
+            $allcaps['edit_knowledgebases'] = true;
+            $allcaps['publish_knowledgebases'] = true;
             return $allcaps;
         });
     }
