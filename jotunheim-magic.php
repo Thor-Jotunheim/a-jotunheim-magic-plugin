@@ -238,17 +238,17 @@ function setup_wiki_editor_role() {
     
     $role = get_role('wiki_editor');
     
-    // Base capabilities
-    $base_caps = array(
-        'read' => true,
-        'edit_posts' => true,
-        'edit_published_posts' => true,
-        'publish_posts' => true
+    // Remove regular post capabilities
+    $post_caps_to_remove = array(
+        'edit_posts',
+        'publish_posts',
+        'edit_published_posts',
+        'delete_posts'
     );
     
-    // Add base capabilities
-    foreach ($base_caps as $cap => $grant) {
-        $role->add_cap($cap, $grant);
+    // Remove capabilities for regular posts
+    foreach ($post_caps_to_remove as $cap) {
+        $role->remove_cap($cap);
     }
     
     // BasePress specific capabilities
@@ -268,6 +268,10 @@ function setup_wiki_editor_role() {
     foreach ($basepress_caps as $cap) {
         $role->add_cap($cap);
     }
+    
+    // Ensure basic capabilities
+    $role->add_cap('read');
+    $role->add_cap('level_0');
     
     // Log the role's capabilities for debugging
     error_log('Wiki Editor role capabilities: ' . print_r($role->capabilities, true));
