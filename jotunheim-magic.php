@@ -282,4 +282,12 @@ function ensure_wiki_editor_capabilities() {
     }
 }
 add_action('init', 'ensure_wiki_editor_capabilities');
+
+// Restrict access to the magic plugin admin menu
+function restrict_magic_plugin_admin_menu() {
+    if (!current_user_can('administrator') && !current_user_can('editor')) {
+        remove_menu_page('magic-plugin-admin-menu-slug'); // Replace with the actual menu slug
+    }
+}
+add_action('admin_menu', 'restrict_magic_plugin_admin_menu', 999);
 ?>
