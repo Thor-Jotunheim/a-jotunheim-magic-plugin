@@ -297,6 +297,29 @@ function ensure_wiki_editor_knowledge_base_capabilities() {
 }
 add_action('init', 'ensure_wiki_editor_knowledge_base_capabilities');
 
+// Handle multiple Discord roles and prioritize them
+function assign_highest_priority_role($user_id, $discord_roles) {
+    $role_hierarchy = [
+        'administrator' => 'administrator',
+        'editor' => 'editor',
+        'wiki_editor' => 'wiki_editor',
+        'subscriber' => 'subscriber'
+    ];
+
+    foreach ($role_hierarchy as $discord_role_id => $wp_role) {
+        if (in_array($discord_role_id, $discord_roles)) {
+            $user = new WP_User($user_id);
+            $user->set_role($wp_role);
+            break;
+        }
+    }
+}
+
+// Example usage during Discord login
+function handle_discord_login($user_id, $discord_roles) {
+    assign_highest_priority_role($user_id, $discord_roles);
+}
+
 // Restrict admin menu for the `wiki_editor` role
 function restrict_admin_menu_for_wiki_editor() {
     if (current_user_can('wiki_editor')) {
