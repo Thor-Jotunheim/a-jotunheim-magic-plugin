@@ -104,6 +104,7 @@ require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-sc
 // Include Role Management files
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
 require_once plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-kb-access.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-override.php';
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
