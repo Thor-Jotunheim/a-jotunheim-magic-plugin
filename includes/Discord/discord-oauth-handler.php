@@ -121,10 +121,6 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
 
     $wp_role = 'view_only';  // Default role
 
-    // Log the Discord user ID and roles
-    error_log('Discord User ID: ' . $discord_user_id);
-    error_log('Discord Roles Retrieved: ' . print_r($roles, true));
-
     if (in_array('816462309274419250', $roles)) { // Admin role ID
         $wp_role = 'editor';
     } elseif (in_array('816452821208793128', $roles)) { // Moderator role ID
@@ -138,10 +134,44 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     // Check for Wiki Editor role
     if (in_array('1354867612324200599', $roles)) { // Wiki Editor role ID
         error_log('Wiki Editor role detected for user: ' . $discord_user_id);
+        setup_wiki_editor_role();  // Ensure the role exists with proper capabilities
         $wp_role = 'wiki_editor';
-        $user->add_cap('edit_basepress'); // Grant capability to edit BasePress
-    } else {
-        error_log('Wiki Editor role NOT detected for user: ' . $discord_user_id);
+        
+        // Directly add capabilities to the user object that will be used for this session
+        $user = new WP_User($user_id);
+        $user->add_role('wiki_editor');
+        
+        // BasePress capabilities - get the actual post type
+        $post_types = get_post_types([], 'objects');
+        $basepress_post_type = 'knowledgebase'; // Default
+        
+        foreach ($post_types as $pt) {
+            if (strpos(strtolower($pt->name), 'knowledge') !== false || 
+                strpos(strtolower($pt->name), 'basepress') !== false) {
+                $basepress_post_type = $pt->name;
+                break;
+            }
+        }
+        
+        // Add all normal post-type editing capabilities
+        $user->add_cap('edit_posts');
+        $user->add_cap('publish_posts');
+        $user->add_cap('edit_published_posts');
+        
+        // Add BasePress specific capabilities directly to user
+        $user->add_cap('edit_basepress');
+        $user->add_cap('basepress_edit_articles');
+        $user->add_cap('basepress_edit_knowledgebases');
+        $user->add_cap("edit_{$basepress_post_type}");
+        $user->add_cap("edit_{$basepress_post_type}s");
+        $user->add_cap("publish_{$basepress_post_type}s");
+        $user->add_cap("edit_published_{$basepress_post_type}s");
+        $user->add_cap("edit_others_{$basepress_post_type}s");
+        
+        // IMPORTANT: Article creation capability
+        $user->add_cap("create_{$basepress_post_type}s");
+        
+        error_log('Added BasePress editing capabilities to user: ' . $discord_user_id);
     }
 
     // For Thor and Odin, assign administrator
