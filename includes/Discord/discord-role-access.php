@@ -139,6 +139,9 @@ function jotunheim_restrict_staff_kb_access() {
         return;
     }
     
+    // Redirect from main KB page to Chosen section
+    jotunheim_redirect_to_chosen_kb();
+    
     // Immediately block direct access to staff KB URLs
     jotunheim_block_direct_staff_kb_access();
     
@@ -158,6 +161,23 @@ function jotunheim_restrict_staff_kb_access() {
     add_filter('basepress_articles_list', 'jotunheim_filter_articles_list', 999);
 }
 add_action('wp', 'jotunheim_restrict_staff_kb_access');
+
+/**
+ * Redirect from main KB page to the Chosen section
+ */
+function jotunheim_redirect_to_chosen_kb() {
+    // Check if we're on the main KB page without any section specified
+    $current_url = $_SERVER['REQUEST_URI'];
+    
+    // Match exactly /knowledge-base/ with trailing slash
+    if ($current_url == '/knowledge-base/' || $current_url == '/knowledge-base') {
+        // Don't redirect admins and moderators
+        if (!user_has_discord_moderator_role()) {
+            wp_redirect(home_url('/knowledge-base/chosen/'));
+            exit;
+        }
+    }
+}
 
 /**
  * Block direct access to Staff KB URLs
