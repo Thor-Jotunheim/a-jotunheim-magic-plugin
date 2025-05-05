@@ -251,4 +251,15 @@ function grant_wiki_editor_capabilities() {
     }
 }
 add_action('init', 'grant_wiki_editor_capabilities');
+
+// Ensure the Wiki Editor role exists
+function create_wiki_editor_role() {
+    if (!get_role('wiki_editor')) {
+        add_role('wiki_editor', 'Wiki Editor', array(
+            'read' => true,
+            'edit_basepress' => true // Capability to edit BasePress
+        ));
+    }
+}
+add_action('init', 'create_wiki_editor_role');
 ?>
