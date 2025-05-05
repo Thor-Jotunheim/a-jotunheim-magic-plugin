@@ -11,6 +11,9 @@ if (!defined('ABSPATH')) exit;
 // Include the wiki editor role definition
 require_once(plugin_dir_path(dirname(__FILE__)) . 'Roles/wiki-editor-role.php');
 
+// Include the BasePress specific wiki editor integration
+require_once(plugin_dir_path(__FILE__) . 'basepress-wiki-editor.php');
+
 /**
  * Register knowledge base shortcode
  */
@@ -25,6 +28,16 @@ add_action('init', 'jotunheim_register_knowledge_base_shortcode');
 function jotunheim_knowledge_base_shortcode($atts) {
     return '<p>Please contact the administrator to set up the Knowledge Base interface.</p>';
 }
+
+/**
+ * Add required scripts and styles for front-end
+ */
+function jotunheim_enqueue_knowledge_base_scripts() {
+    if (has_shortcode(get_the_content(), 'jotunheim_knowledge_base')) {
+        wp_enqueue_script('jquery');
+    }
+}
+add_action('wp_enqueue_scripts', 'jotunheim_enqueue_knowledge_base_scripts');
 
 /**
  * Add direct capabilities for wiki editors
