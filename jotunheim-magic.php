@@ -262,4 +262,24 @@ function create_wiki_editor_role() {
     }
 }
 add_action('init', 'create_wiki_editor_role');
+
+// Ensure the Wiki Editor role has the correct capabilities
+function ensure_wiki_editor_capabilities() {
+    $role = get_role('wiki_editor');
+    if ($role) {
+        // Add the capability to edit BasePress if missing
+        if (!$role->has_cap('edit_basepress')) {
+            $role->add_cap('edit_basepress');
+        }
+
+        // Add other necessary capabilities for BasePress
+        if (!$role->has_cap('edit_posts')) {
+            $role->add_cap('edit_posts');
+        }
+        if (!$role->has_cap('publish_posts')) {
+            $role->add_cap('publish_posts');
+        }
+    }
+}
+add_action('init', 'ensure_wiki_editor_capabilities');
 ?>
