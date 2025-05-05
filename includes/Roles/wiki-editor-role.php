@@ -6,6 +6,9 @@ if (!defined('ABSPATH')) exit;
  * Simple Wiki Editor Role Definition
  */
 
+// Control access to Manage KBs section - set to false to disable access
+define('WIKI_EDITOR_CAN_MANAGE_KBS', true);
+
 /**
  * Create the Wiki Editor role with needed capabilities
  */
@@ -34,8 +37,18 @@ function jotunheim_create_wiki_editor_role() {
         'delete_knowledgebases' => true,
         'delete_published_knowledgebases' => true,
         'delete_others_knowledgebases' => true,
-        'manage_categories' => true,
     );
+    
+    // Only add manage_categories capability if allowed to manage KBs
+    if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && WIKI_EDITOR_CAN_MANAGE_KBS) {
+        $capabilities['manage_categories'] = true;
+        
+        // Add any other management capabilities needed
+        $capabilities['manage_terms'] = true;
+        $capabilities['edit_terms'] = true;
+        $capabilities['delete_terms'] = true;
+        $capabilities['assign_terms'] = true;
+    }
     
     if (!$wiki_editor) {
         // Create the role if it doesn't exist
@@ -44,6 +57,21 @@ function jotunheim_create_wiki_editor_role() {
         // Update existing role with capabilities
         foreach ($capabilities as $cap => $grant) {
             $wiki_editor->add_cap($cap, $grant);
+        }
+        
+        // Remove management capabilities if disabled
+        if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
+            $management_caps = array(
+                'manage_categories',
+                'manage_terms',
+                'edit_terms',
+                'delete_terms',
+                'assign_terms'
+            );
+            
+            foreach ($management_caps as $cap) {
+                $wiki_editor->remove_cap($cap);
+            }
         }
     }
 }
@@ -151,6 +179,22 @@ function jotunheim_hide_admin_menu_items() {
             // Keep only allowed pages
             if (!in_array($item[2], $allowed_top_pages)) {
                 remove_menu_page($item[2]);
+            }
+        }
+    }
+    
+    // Hide KB management submenu items if access is disabled
+    if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
+        if (isset($submenu['edit.php?post_type=knowledgebase'])) {
+            foreach ($submenu['edit.php?post_type=knowledgebase'] as $key => $item) {
+                // Hide category management pages
+                if (isset($item[2]) && (
+                    strpos($item[2], 'taxonomy=') !== false || 
+                    strpos($item[2], 'manage') !== false ||
+                    strpos($item[2], 'settings') !== false
+                )) {
+                    unset($submenu['edit.php?post_type=knowledgebase'][$key]);
+                }
             }
         }
     }
