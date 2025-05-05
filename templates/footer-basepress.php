@@ -1,11 +1,11 @@
 <?php
 /**
- * Custom BasePress footer template using direct theme footer
+ * Footer template for BasePress pages
  */
 
-// Close the content wrapper
-echo '</div><!-- .jotunheim-kb-content-wrapper -->';
+// Exit if accessed directly
+if (!defined('ABSPATH')) exit;
 
-// Load the theme's standard footer
+// Use WordPress core footer to ensure block templates are properly loaded
 get_footer();
 ?>

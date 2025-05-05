@@ -8,18 +8,21 @@ if (!defined('ABSPATH')) exit;
 class JotunheimBasePressFSETemplates {
     
     public function __construct() {
-        // Register our custom template for BasePress
-        add_filter('template_include', array($this, 'use_custom_template'), 999);
+        // Higher priority to override BasePress templates
+        add_filter('template_include', array($this, 'use_custom_template'), 99999);
         
-        // Add custom header and footer fallbacks
-        add_filter('basepress_get_header', array($this, 'custom_header'));
-        add_filter('basepress_get_footer', array($this, 'custom_footer'));
+        // Remove BasePress's default header and footer actions
+        add_action('init', array($this, 'remove_basepress_template_parts'), 20);
+        
+        // Override the BasePress header and footer filters
+        add_filter('basepress_get_header', array($this, 'custom_header'), 99999);
+        add_filter('basepress_get_footer', array($this, 'custom_footer'), 99999);
         
         // Add styling fixes
         add_action('wp_head', array($this, 'add_header_styles'));
         
-        // Force site editor header to be used
-        add_action('init', array($this, 'force_site_editor_header'));
+        // Prevent BasePress from using its own templates
+        add_filter('basepress_override_templates', '__return_true', 99999);
     }
     
     /**
@@ -34,6 +37,8 @@ class JotunheimBasePressFSETemplates {
         $custom_template = plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/basepress-template.php';
         
         if (file_exists($custom_template)) {
+            // Force-disable BasePress's own template handling
+            remove_all_filters('template_include', 20);
             return $custom_template;
         }
         
@@ -41,17 +46,36 @@ class JotunheimBasePressFSETemplates {
     }
     
     /**
+     * Remove BasePress template parts
+     */
+    public function remove_basepress_template_parts() {
+        // Only run if BasePress is active
+        if (!function_exists('is_basepress')) {
+            return;
+        }
+        
+        // Remove BasePress header and footer actions
+        remove_all_actions('basepress_header');
+        remove_all_actions('basepress_footer');
+        
+        // Add our own empty actions that will defer to WordPress core
+        add_action('basepress_header', array($this, 'output_nothing'), 1);
+        add_action('basepress_footer', array($this, 'output_nothing'), 1);
+    }
+    
+    /**
+     * Empty output function
+     */
+    public function output_nothing() {
+        // Intentionally empty
+    }
+    
+    /**
      * Custom header template path
      */
     public function custom_header() {
-        // Use WordPress site editor header
-        if (current_theme_supports('block-templates')) {
-            // Just return a minimal template that will allow the block-based header to load
-            return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/header-block-basepress.php';
-        }
-        
-        // Fallback to our custom header
-        return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/header-basepress.php';
+        // Always use our custom header that forces WordPress headers
+        return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/header-block-basepress.php';
     }
     
     /**
@@ -59,30 +83,6 @@ class JotunheimBasePressFSETemplates {
      */
     public function custom_footer() {
         return plugin_dir_path(dirname(dirname(__FILE__))) . 'templates/footer-basepress.php';
-    }
-    
-    /**
-     * Force the site editor header to be used
-     */
-    public function force_site_editor_header() {
-        // Only for BasePress pages
-        if (!function_exists('is_basepress')) {
-            return;
-        }
-        
-        // Remove any BasePress header actions
-        remove_action('basepress_header', 'basepress_header', 10);
-        
-        // Add our custom action that will ensure the site editor header is displayed
-        add_action('basepress_header', array($this, 'output_site_editor_header'), 10);
-    }
-    
-    /**
-     * Output the site editor header
-     */
-    public function output_site_editor_header() {
-        // This is intentionally left empty as we want to use the site's block template header
-        // The header will be added by WordPress core when using block templates
     }
     
     /**
@@ -102,9 +102,18 @@ class JotunheimBasePressFSETemplates {
                 position: relative !important;
             }
             
-            /* Hide BasePress header */
-            .bpress-header {
+            /* Hide any BasePress headers that might still appear */
+            .bpress-header,
+            div[class*="bpress"] > header:not(.wp-block-template-part) {
                 display: none !important;
+                height: 0 !important;
+                visibility: hidden !important;
+                overflow: hidden !important;
+            }
+            
+            /* Fix content spacing */
+            .basepress-main {
+                margin-top: 20px;
             }
             
             /* Ensure proper stacking */
