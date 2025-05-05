@@ -20,14 +20,10 @@ function jotunheim_register_knowledge_base_shortcode() {
 add_action('init', 'jotunheim_register_knowledge_base_shortcode');
 
 /**
- * Knowledge Base shortcode callback
+ * Knowledge Base shortcode callback (simplified version after interface file deletion)
  */
 function jotunheim_knowledge_base_shortcode($atts) {
-    // Include the interface file
-    require_once(plugin_dir_path(__FILE__) . 'knowledge-base-interface.php');
-    
-    // Return the knowledge base interface
-    return jotunheim_knowledge_base_interface();
+    return '<p>Please contact the administrator to set up the Knowledge Base interface.</p>';
 }
 
 /**
