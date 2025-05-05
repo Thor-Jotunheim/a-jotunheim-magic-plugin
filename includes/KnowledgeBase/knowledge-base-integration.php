@@ -9,6 +9,9 @@ if (!defined('ABSPATH')) exit;
  * and includes functionality to ensure wiki editors have proper access.
  */
 
+// Include the KB settings access override for wiki editors
+require_once(plugin_dir_path(__FILE__) . 'kb-settings-access.php');
+
 /**
  * Register knowledge base shortcode
  */
