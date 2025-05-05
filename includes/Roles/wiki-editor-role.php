@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) exit;
  */
 
 // Control access to Manage KBs section - set to false to disable access
-define('WIKI_EDITOR_CAN_MANAGE_KBS', true);
+define('WIKI_EDITOR_CAN_MANAGE_KBS', false);
 
 /**
  * Create the Wiki Editor role with needed capabilities
@@ -37,18 +37,8 @@ function jotunheim_create_wiki_editor_role() {
         'delete_knowledgebases' => true,
         'delete_published_knowledgebases' => true,
         'delete_others_knowledgebases' => true,
+        'manage_categories' => true,
     );
-    
-    // Only add manage_categories capability if allowed to manage KBs
-    if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && WIKI_EDITOR_CAN_MANAGE_KBS) {
-        $capabilities['manage_categories'] = true;
-        
-        // Add any other management capabilities needed
-        $capabilities['manage_terms'] = true;
-        $capabilities['edit_terms'] = true;
-        $capabilities['delete_terms'] = true;
-        $capabilities['assign_terms'] = true;
-    }
     
     if (!$wiki_editor) {
         // Create the role if it doesn't exist
@@ -57,21 +47,6 @@ function jotunheim_create_wiki_editor_role() {
         // Update existing role with capabilities
         foreach ($capabilities as $cap => $grant) {
             $wiki_editor->add_cap($cap, $grant);
-        }
-        
-        // Remove management capabilities if disabled
-        if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
-            $management_caps = array(
-                'manage_categories',
-                'manage_terms',
-                'edit_terms',
-                'delete_terms',
-                'assign_terms'
-            );
-            
-            foreach ($management_caps as $cap) {
-                $wiki_editor->remove_cap($cap);
-            }
         }
     }
 }
@@ -187,11 +162,13 @@ function jotunheim_hide_admin_menu_items() {
     if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
         if (isset($submenu['edit.php?post_type=knowledgebase'])) {
             foreach ($submenu['edit.php?post_type=knowledgebase'] as $key => $item) {
-                // Hide category management pages
+                // Check if this is a management link
                 if (isset($item[2]) && (
-                    strpos($item[2], 'taxonomy=') !== true || 
+                    strpos($item[2], 'edit-tags.php') !== false || 
+                    strpos($item[2], 'taxonomy=') !== false || 
                     strpos($item[2], 'manage') !== false ||
-                    strpos($item[2], 'settings') !== true
+                    strpos($item[2], 'settings') !== false ||
+                    strpos($item[2], 'basepress') !== false
                 )) {
                     unset($submenu['edit.php?post_type=knowledgebase'][$key]);
                 }
@@ -315,3 +292,54 @@ function jotunheim_bypass_post_author_check() {
     }, 999, 4);
 }
 add_action('init', 'jotunheim_bypass_post_author_check');
+
+/**
+ * Restrict access to Manage KBs section
+ */
+function jotunheim_restrict_manage_kb_access() {
+    // Only apply for wiki editors (not for admins)
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // If access to Manage KBs is disabled
+    if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
+        global $pagenow;
+        
+        // Block access to the Knowledge Base management pages
+        if ($pagenow === 'edit-tags.php' || $pagenow === 'term.php') {
+            if (isset($_GET['taxonomy']) && isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase') {
+                wp_die(__('You do not have sufficient permissions to access this page.'), 403);
+            }
+        }
+        
+        // Block access to BasePress KB management page if it exists
+        if ($pagenow === 'admin.php' && isset($_GET['page'])) {
+            $page = $_GET['page'];
+            if (strpos($page, 'basepress') !== false || strpos($page, 'knowledge') !== false || strpos($page, 'kb') !== false) {
+                wp_die(__('You do not have sufficient permissions to access this page.'), 403);
+            }
+        }
+        
+        // Remove KB management capabilities
+        add_filter('user_has_cap', function($allcaps) {
+            // Remove management capabilities
+            $management_caps = array(
+                'manage_categories',
+                'manage_terms',
+                'edit_terms',
+                'delete_terms',
+                'assign_terms',
+                'basepress_manage_sections',
+                'basepress_manage_knowledgebases'
+            );
+            
+            foreach ($management_caps as $cap) {
+                $allcaps[$cap] = false;
+            }
+            
+            return $allcaps;
+        }, 999);
+    }
+}
+add_action('admin_init', 'jotunheim_restrict_manage_kb_access');
