@@ -291,4 +291,32 @@ function restrict_magic_plugin_admin_menu() {
     }
 }
 add_action('admin_menu', 'restrict_magic_plugin_admin_menu', 999);
+
+// Restrict access to posts and other post types for the `wiki_editor` role
+function restrict_wiki_editor_post_access() {
+    if (current_user_can('wiki_editor')) {
+        // Remove the Posts menu
+        remove_menu_page('edit.php');
+
+        // Remove other post types if necessary
+        global $menu;
+        foreach ($menu as $key => $value) {
+            if ($value[2] !== 'edit.php?post_type=knowledge_base') {
+                remove_menu_page($value[2]);
+            }
+        }
+    }
+}
+add_action('admin_menu', 'restrict_wiki_editor_post_access', 999);
+
+// Restrict access to non-Knowledge Base posts in the admin area
+function restrict_wiki_editor_query($query) {
+    if (is_admin() && $query->is_main_query() && current_user_can('wiki_editor')) {
+        $screen = get_current_screen();
+        if ($screen && $screen->post_type !== 'knowledge_base') {
+            $query->set('post_type', 'knowledge_base');
+        }
+    }
+}
+add_action('pre_get_posts', 'restrict_wiki_editor_query');
 ?>
