@@ -324,3 +324,88 @@ function jotunheim_modify_edit_post_link($url, $post_id, $context) {
     return $url;
 }
 add_filter('get_edit_post_link', 'jotunheim_modify_edit_post_link', 10, 3);
+
+/**
+ * Directly modify post row actions to ensure edit links for Wiki Editors
+ */
+function jotunheim_force_kb_row_edit_links($actions, $post) {
+    // Only apply to knowledge base posts and Wiki Editors
+    if ($post->post_type !== 'knowledgebase' || !current_user_can('wiki_editor')) {
+        return $actions;
+    }
+    
+    // Add edit action regardless of author
+    $actions['edit'] = sprintf(
+        '<a href="%s" aria-label="%s">%s</a>',
+        get_edit_post_link($post->ID),
+        /* translators: %s: post title */
+        esc_attr(sprintf(__('Edit &#8220;%s&#8221;'), $post->post_title)),
+        __('Edit')
+    );
+    
+    // Add view action
+    if (!isset($actions['view'])) {
+        $actions['view'] = sprintf(
+            '<a href="%s" rel="bookmark" aria-label="%s">%s</a>',
+            get_permalink($post->ID),
+            /* translators: %s: post title */
+            esc_attr(sprintf(__('View &#8220;%s&#8221;'), $post->post_title)),
+            __('View')
+        );
+    }
+    
+    return $actions;
+}
+// Use priority 99999 to ensure our function runs last
+add_filter('post_row_actions', 'jotunheim_force_kb_row_edit_links', 99999, 2);
+
+/**
+ * Add a pre_get_posts filter to ensure wiki editors see all knowledge base posts
+ */
+function jotunheim_show_all_kb_posts_to_wiki_editors($query) {
+    // Only modify admin queries for wiki editors
+    if (!is_admin() || !current_user_can('wiki_editor') || !$query->is_main_query()) {
+        return;
+    }
+    
+    // Check if we're on the knowledgebase post type screen
+    $screen = get_current_screen();
+    if (!$screen || $screen->post_type !== 'knowledgebase') {
+        return;
+    }
+    
+    // Remove author restriction for wiki editors
+    $query->set('author', '');
+}
+add_action('pre_get_posts', 'jotunheim_show_all_kb_posts_to_wiki_editors');
+
+/**
+ * Override post type capability check for wiki editors
+ */
+function jotunheim_override_post_edit_capability() {
+    // Only apply for wiki editors
+    if (!current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    // This directly modifies the post type object to give edit access to wiki editors
+    add_filter('register_post_type_args', function($args, $post_type) {
+        if ($post_type === 'knowledgebase') {
+            // Modify capability type to use something wiki editors can access
+            $args['capability_type'] = 'post';
+            
+            // Set specific capabilities
+            $args['capabilities'] = array(
+                'edit_post' => 'edit_posts',
+                'read_post' => 'read',
+                'delete_post' => 'edit_posts',
+                'edit_posts' => 'edit_posts',
+                'edit_others_posts' => 'edit_posts',  // Use edit_posts instead of edit_others_posts
+                'publish_posts' => 'edit_posts',
+                'read_private_posts' => 'read',
+            );
+        }
+        return $args;
+    }, 99999, 2);
+}
+add_action('init', 'jotunheim_override_post_edit_capability', 5); // Run early to affect registration
