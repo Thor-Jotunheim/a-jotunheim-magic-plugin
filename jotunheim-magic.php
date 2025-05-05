@@ -101,12 +101,9 @@ if (defined('DOING_AJAX') && DOING_AJAX && isset($_REQUEST['action']) && !in_arr
 require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-form.php');
 require_once(plugin_dir_path(__FILE__) . 'includes/Gallery/gallery-submission-scripts.php');
 
-/// Include Role Management files
+// Include Role Management files
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/wiki-editor-role.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Roles/kb-discord-access.php');
-
-// Include KB modifications
-// include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-header-override.php');
 
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
