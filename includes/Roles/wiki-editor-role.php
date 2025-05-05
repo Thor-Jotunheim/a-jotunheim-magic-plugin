@@ -78,6 +78,7 @@ function jotunheim_create_wiki_editor_role() {
             $wiki_editor->add_cap('basepress_manage_kbs');
             $wiki_editor->add_cap('basepress_manage_products');
             $wiki_editor->add_cap('manage_basepress');
+            $wiki_editor->add_cap('manage_categories');
             
             // Taxonomy management capabilities
             $wiki_editor->add_cap('manage_' . $kb_tax);
@@ -102,6 +103,7 @@ function jotunheim_remove_admin_menu_items() {
     
     // Get the KB post type
     $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    $kb_menu_slug = 'edit.php?post_type=' . $kb_post_type;
     
     // Only keep the profile menu and KB menu items
     if (is_array($menu)) {
@@ -113,13 +115,73 @@ function jotunheim_remove_admin_menu_items() {
             
             // Only keep profile menu and KB menu
             if ($item[2] !== 'profile.php' && 
-                $item[2] !== 'edit.php?post_type=' . $kb_post_type) {
+                $item[2] !== $kb_menu_slug) {
                 remove_menu_page($item[2]);
             }
         }
     }
 }
 add_action('admin_menu', 'jotunheim_remove_admin_menu_items', 999);
+
+/**
+ * Add Sections and Manage KBs submenu items explicitly to ensure they appear
+ */
+function jotunheim_add_kb_submenu_items() {
+    // Only apply to wiki_editor role (not for admins)
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+    
+    // Get the KB post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    $kb_menu_slug = 'edit.php?post_type=' . $kb_post_type;
+    
+    // Add the Sections and Manage KBs submenu items if they don't exist
+    global $submenu;
+    
+    // Check if the KB menu exists
+    if (!isset($submenu[$kb_menu_slug])) {
+        return;
+    }
+    
+    // Check if Sections and Manage KBs are already in the menu
+    $has_sections = false;
+    $has_manage_kbs = false;
+    
+    foreach ($submenu[$kb_menu_slug] as $item) {
+        if (isset($item[2]) && $item[2] === 'basepress_sections') {
+            $has_sections = true;
+        }
+        if (isset($item[2]) && $item[2] === 'basepress_manage_kbs') {
+            $has_manage_kbs = true;
+        }
+    }
+    
+    // Add Sections if it doesn't exist
+    if (!$has_sections) {
+        add_submenu_page(
+            $kb_menu_slug,
+            'Sections',
+            'Sections',
+            'wiki_editor',
+            'basepress_sections',
+            '__return_false' // This is a placeholder, BasePress will handle the actual page
+        );
+    }
+    
+    // Add Manage KBs if it doesn't exist
+    if (!$has_manage_kbs) {
+        add_submenu_page(
+            $kb_menu_slug,
+            'Manage KBs',
+            'Manage KBs',
+            'wiki_editor',
+            'basepress_manage_kbs',
+            '__return_false' // This is a placeholder, BasePress will handle the actual page
+        );
+    }
+}
+add_action('admin_menu', 'jotunheim_add_kb_submenu_items', 1000);
 
 /**
  * Set admin dashboard redirect for wiki editors
@@ -164,3 +226,43 @@ function jotunheim_register_wiki_editor_with_basepress() {
     }
 }
 add_action('init', 'jotunheim_register_wiki_editor_with_basepress', 20);
+
+/**
+ * Fix permissions check for BasePress admin pages
+ */
+function jotunheim_fix_basepress_admin_page_access() {
+    global $pagenow;
+    
+    // Only run on admin.php or edit.php with page parameter
+    if (!is_admin() || ($pagenow !== 'admin.php' && $pagenow !== 'edit.php') || !isset($_GET['page'])) {
+        return;
+    }
+    
+    // Check if we're on a BasePress admin page
+    $page = sanitize_text_field($_GET['page']);
+    
+    if ($page === 'basepress_sections' || $page === 'basepress_manage_kbs') {
+        // If current user is a wiki_editor
+        if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+            // Add necessary filters to bypass BasePress permission checks
+            add_filter('basepress_user_can_manage_sections', '__return_true');
+            add_filter('basepress_user_can_manage_options', '__return_true');
+            add_filter('basepress_user_can_manage_kbs', '__return_true');
+            
+            // Fix capability checks for specific pages
+            add_filter('user_has_cap', function($allcaps, $caps, $args, $user) {
+                if (!empty($args) && isset($args[0])) {
+                    // Add the specific capabilities being checked
+                    if ($args[0] === 'basepress_manage_sections' || 
+                        $args[0] === 'basepress_manage_options' || 
+                        $args[0] === 'basepress_manage_kbs' || 
+                        $args[0] === 'manage_basepress') {
+                        $allcaps[$args[0]] = true;
+                    }
+                }
+                return $allcaps;
+            }, 10, 4);
+        }
+    }
+}
+add_action('admin_init', 'jotunheim_fix_basepress_admin_page_access', 5);
