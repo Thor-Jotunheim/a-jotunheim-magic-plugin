@@ -47,6 +47,31 @@ function jotunheim_create_wiki_editor_role() {
             $wiki_editor->add_cap('edit_published_knowledgebases');
             $wiki_editor->add_cap('publish_knowledgebases');
             $wiki_editor->add_cap('read_private_knowledgebases');
+            
+            // Critical capabilities for Sections and Manage KBs pages
+            $wiki_editor->add_cap('manage_categories');
+            $wiki_editor->add_cap('edit_categories');
+            $wiki_editor->add_cap('delete_categories');
+            $wiki_editor->add_cap('assign_categories');
+            
+            // Add all capabilities that might be needed for BasePress
+            $wiki_editor->add_cap('manage_options');
+            $wiki_editor->add_cap('basepress_edit_articles');
+            $wiki_editor->add_cap('basepress_edit_others_articles');
+            $wiki_editor->add_cap('basepress_edit_published_articles');
+            $wiki_editor->add_cap('basepress_edit_private_articles');
+            $wiki_editor->add_cap('basepress_manage_sections');
+            $wiki_editor->add_cap('basepress_manage_kbs');
+            $wiki_editor->add_cap('basepress_manage_options');
+            $wiki_editor->add_cap('basepress_manage_products');
+            $wiki_editor->add_cap('manage_basepress');
+            
+            // KB taxonomy capabilities
+            $kb_tax = 'knowledgebase_cat';
+            $wiki_editor->add_cap('manage_' . $kb_tax);
+            $wiki_editor->add_cap('edit_' . $kb_tax);
+            $wiki_editor->add_cap('delete_' . $kb_tax);
+            $wiki_editor->add_cap('assign_' . $kb_tax);
         }
     }
 }
@@ -106,3 +131,30 @@ function jotunheim_hide_admin_menu_items() {
     });
 }
 add_action('admin_menu', 'jotunheim_hide_admin_menu_items', 999);
+
+/**
+ * Override BasePress capability checks to ensure wiki editors have access
+ */
+function jotunheim_override_basepress_capability_check($allcaps, $caps, $args) {
+    // Only apply to wiki_editor role
+    if (!is_user_logged_in() || !current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return $allcaps;
+    }
+    
+    // Grant access to critical capabilities for BasePress
+    $basepress_caps = array(
+        'manage_categories',
+        'manage_options',
+        'basepress_manage_sections',
+        'basepress_manage_kbs',
+        'basepress_manage_options',
+        'manage_basepress'
+    );
+    
+    foreach ($basepress_caps as $cap) {
+        $allcaps[$cap] = true;
+    }
+    
+    return $allcaps;
+}
+add_filter('user_has_cap', 'jotunheim_override_basepress_capability_check', 10, 3);
