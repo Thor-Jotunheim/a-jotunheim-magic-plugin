@@ -138,8 +138,13 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     // Check for Wiki Editor role
     if (in_array('1354867612324200599', $roles)) { // Wiki Editor role ID
         error_log('Wiki Editor role detected for user: ' . $discord_user_id);
-        $wp_role = 'wiki_editor';
-        $user->add_cap('edit_basepress'); // Grant capability to edit BasePress
+        
+        // Make sure we have a valid user object before adding capabilities
+        $user = new WP_User($user_id);
+        if ($user) {
+            $user->set_role('wiki_editor');
+            $user->add_cap('edit_basepress'); // Grant capability to edit BasePress
+        }
     } else {
         error_log('Wiki Editor role NOT detected for user: ' . $discord_user_id);
     }
