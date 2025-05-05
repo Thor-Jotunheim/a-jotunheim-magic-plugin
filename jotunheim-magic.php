@@ -11,19 +11,15 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
-// Fix for custom-fonts text domain loading too early
+// Fix for text domain loading too early
 add_action('init', function() {
     if (function_exists('load_plugin_textdomain')) {
-        // Check if __FILE__ is valid before using it
-        $plugin_file = __FILE__;
-        if ($plugin_file) {
-            $plugin_basename = plugin_basename($plugin_file);
-            load_plugin_textdomain('custom-fonts', false, dirname($plugin_basename) . '/languages');
-        }
+        load_plugin_textdomain('breadcrumb-navxt', false, dirname(plugin_basename(__FILE__)) . '/languages');
+        load_plugin_textdomain('custom-fonts', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
 }, 1); // Priority 1 to ensure it runs early in the init phase
 
-// File: jotunheim-magic.php
+// Include required files
 require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 
 // Include Utility files
