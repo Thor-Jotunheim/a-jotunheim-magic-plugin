@@ -295,13 +295,13 @@ add_action('admin_menu', 'restrict_magic_plugin_admin_menu', 999);
 // Restrict access to posts and other post types for the `wiki_editor` role
 function restrict_wiki_editor_post_access() {
     if (current_user_can('wiki_editor')) {
-        // Remove the Posts menu
-        remove_menu_page('edit.php');
-
-        // Remove other post types if necessary
         global $menu;
+
+        // Allow only the Knowledge Base menu
+        $allowed_menu_slugs = ['edit.php?post_type=knowledge_base'];
+
         foreach ($menu as $key => $value) {
-            if ($value[2] !== 'edit.php?post_type=knowledge_base') {
+            if (!in_array($value[2], $allowed_menu_slugs)) {
                 remove_menu_page($value[2]);
             }
         }
