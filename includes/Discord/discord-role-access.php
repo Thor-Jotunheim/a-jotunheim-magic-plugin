@@ -139,16 +139,44 @@ function jotunheim_restrict_staff_kb_access() {
         return;
     }
     
+    // Immediately block direct access to staff KB URLs
+    jotunheim_block_direct_staff_kb_access();
+    
     // Filter KB queries
     add_filter('pre_get_posts', 'jotunheim_filter_kb_queries');
     
     // Filter KB content
     add_filter('the_content', 'jotunheim_filter_kb_content', 999);
     
-    // Control access to single KB posts
-    add_action('template_redirect', 'jotunheim_check_kb_access');
+    // Hide the staff section from KB navigation
+    add_filter('basepress_sections_list', 'jotunheim_filter_section_list', 999);
+    
+    // Hide the staff section from breadcrumbs
+    add_filter('basepress_breadcrumbs', 'jotunheim_filter_breadcrumbs', 999);
+    
+    // Remove staff section links
+    add_filter('basepress_articles_list', 'jotunheim_filter_articles_list', 999);
 }
 add_action('wp', 'jotunheim_restrict_staff_kb_access');
+
+/**
+ * Block direct access to Staff KB URLs
+ */
+function jotunheim_block_direct_staff_kb_access() {
+    // Check if this is a Knowledge Base URL with "staff" in it
+    $current_url = $_SERVER['REQUEST_URI'];
+    
+    // If URL contains both 'knowledge-base' and 'staff', check access
+    if (strpos($current_url, 'knowledge-base/staff') !== false || 
+        strpos($current_url, 'knowledge-base/staff/') !== false) {
+        
+        // Block access if not a moderator
+        if (!user_has_discord_moderator_role()) {
+            wp_redirect(home_url('/knowledge-base/'));
+            exit;
+        }
+    }
+}
 
 /**
  * Filter KB queries to restrict Staff KB access
@@ -207,6 +235,73 @@ function jotunheim_filter_kb_content($content) {
 }
 
 /**
+ * Filter KB sections list to remove Staff section
+ */
+function jotunheim_filter_section_list($sections) {
+    // If user doesn't have moderator role, remove Staff section
+    if (!user_has_discord_moderator_role()) {
+        $staff_kb_id = jotunheim_get_staff_kb_id();
+        
+        if ($staff_kb_id) {
+            foreach ($sections as $key => $section) {
+                // Check if section ID or parent ID matches Staff KB ID
+                if ((isset($section->term_id) && $section->term_id == $staff_kb_id) || 
+                    (isset($section->parent) && $section->parent == $staff_kb_id)) {
+                    unset($sections[$key]);
+                }
+            }
+        }
+    }
+    
+    return $sections;
+}
+
+/**
+ * Filter breadcrumbs to remove Staff KB elements
+ */
+function jotunheim_filter_breadcrumbs($breadcrumbs) {
+    // If user doesn't have moderator role and breadcrumbs contain Staff elements
+    if (!user_has_discord_moderator_role()) {
+        $staff_kb_id = jotunheim_get_staff_kb_id();
+        
+        if ($staff_kb_id && is_array($breadcrumbs)) {
+            foreach ($breadcrumbs as $key => $crumb) {
+                // Look for staff element in the URL or ID
+                if (isset($crumb['url']) && strpos($crumb['url'], 'staff') !== false) {
+                    // Remove this and all subsequent breadcrumbs
+                    for ($i = $key; $i < count($breadcrumbs); $i++) {
+                        unset($breadcrumbs[$i]);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    return $breadcrumbs;
+}
+
+/**
+ * Filter article list to remove Staff KB articles
+ */
+function jotunheim_filter_articles_list($articles) {
+    // If user doesn't have moderator role, filter articles
+    if (!user_has_discord_moderator_role()) {
+        $staff_kb_id = jotunheim_get_staff_kb_id();
+        
+        if ($staff_kb_id && is_array($articles)) {
+            foreach ($articles as $key => $article) {
+                if (jotunheim_is_staff_kb($article->ID)) {
+                    unset($articles[$key]);
+                }
+            }
+        }
+    }
+    
+    return $articles;
+}
+
+/**
  * Redirect unauthorized users trying to access Staff KB
  */
 function jotunheim_check_kb_access() {
@@ -226,29 +321,43 @@ function jotunheim_check_kb_access() {
 }
 
 /**
- * Get the Staff KB ID
- * @return int Staff KB term ID or 0 if not found
+ * Get the Staff KB ID - more robust version
  */
 function jotunheim_get_staff_kb_id() {
-    // Get the Staff KB term ID - adjust to match your actual term
+    // First try by slug
     $staff_term = get_term_by('slug', 'staff', 'kb_category');
     if ($staff_term) {
         return $staff_term->term_id;
     }
     
-    // Alternative: Try getting by name
+    // Try by name
     $staff_term = get_term_by('name', 'Staff', 'kb_category');
     if ($staff_term) {
         return $staff_term->term_id;
+    }
+    
+    // Try by word matching in name
+    $args = array(
+        'taxonomy' => 'kb_category',
+        'hide_empty' => false,
+    );
+    
+    $terms = get_terms($args);
+    
+    if (!is_wp_error($terms) && is_array($terms)) {
+        foreach ($terms as $term) {
+            // Look for terms containing 'staff' in the name
+            if (stripos($term->name, 'staff') !== false) {
+                return $term->term_id;
+            }
+        }
     }
     
     return 0;
 }
 
 /**
- * Check if a post belongs to Staff KB
- * @param int $post_id The post ID to check
- * @return bool True if post belongs to Staff KB
+ * Modified check if a post belongs to Staff KB - more thorough
  */
 function jotunheim_is_staff_kb($post_id) {
     $staff_kb_id = jotunheim_get_staff_kb_id();
@@ -264,7 +373,20 @@ function jotunheim_is_staff_kb($post_id) {
         return false;
     }
     
-    return in_array($staff_kb_id, $terms);
+    if (in_array($staff_kb_id, $terms)) {
+        return true;
+    }
+    
+    // Check the post's ancestors to see if any belong to Staff KB
+    $ancestors = get_ancestors($post_id, 'knowledgebase');
+    foreach ($ancestors as $ancestor_id) {
+        $ancestor_terms = wp_get_post_terms($ancestor_id, 'kb_category', array('fields' => 'ids'));
+        if (!is_wp_error($ancestor_terms) && in_array($staff_kb_id, $ancestor_terms)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 function assign_roles_from_permissions($user_id, $permissions_csv) {
