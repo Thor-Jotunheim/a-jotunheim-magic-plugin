@@ -134,7 +134,14 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     // Check for Wiki Editor role
     if (in_array('1354867612324200599', $roles)) { // Wiki Editor role ID
         error_log('Wiki Editor role detected for user: ' . $discord_user_id);
-        setup_wiki_editor_role();  // Ensure the role exists with proper capabilities
+        
+        // Check if the function exists before calling it
+        if (function_exists('setup_wiki_editor_role')) {
+            setup_wiki_editor_role();  // Ensure the role exists with proper capabilities
+        } else {
+            error_log('setup_wiki_editor_role function not available');
+        }
+        
         $wp_role = 'wiki_editor';
         
         // Directly add capabilities to the user object that will be used for this session

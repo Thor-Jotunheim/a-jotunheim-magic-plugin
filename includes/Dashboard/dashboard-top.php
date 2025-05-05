@@ -64,6 +64,19 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'href'   => '#',
         ]);
     }
+
+    // Add Knowledge Base access for wiki_editor role
+    if (in_array('wiki_editor', $roles)) {
+        // Add Knowledge Base menu for wiki editors
+        $wp_admin_bar->add_node([
+            'id'    => 'wiki-editor-kb',
+            'title' => 'Knowledge Base',
+            'href'  => admin_url('edit.php?post_type=knowledgebase'), // Adjust post type if needed
+            'meta'  => [
+                'class' => 'wiki-editor-kb-menu',
+            ],
+        ]);
+    }
 }, 100);
 
 // Hide unwanted sections in the admin bar

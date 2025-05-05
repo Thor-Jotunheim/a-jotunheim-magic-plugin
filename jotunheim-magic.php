@@ -406,4 +406,20 @@ function restrict_wiki_editor_admin_access() {
     }
 }
 add_action('admin_init', 'restrict_wiki_editor_admin_access');
+
+// Add BasePress role capabilities for the wiki_editor role
+function add_basepress_capabilities_for_wiki_editor($basepress_roles) {
+    // Add wiki_editor to the list of roles that can edit BasePress content
+    $basepress_roles[] = 'wiki_editor';
+    return $basepress_roles;
+}
+add_filter('basepress_editor_roles', 'add_basepress_capabilities_for_wiki_editor');
+
+// Ensure wiki_editor can access BasePress admin pages
+function ensure_wiki_editor_basepress_access($capability) {
+    if (current_user_can('wiki_editor')) {
+        return 'edit_posts'; // Use a capability that wiki_editor has
+    }
+    return $capability;
+}
 ?>
