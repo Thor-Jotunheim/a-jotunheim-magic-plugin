@@ -14,7 +14,12 @@ if (!defined('ABSPATH')) exit;
 // Fix for custom-fonts text domain loading too early
 add_action('init', function() {
     if (function_exists('load_plugin_textdomain')) {
-        load_plugin_textdomain('custom-fonts', false, dirname(plugin_basename(__FILE__)) . '/languages');
+        // Check if __FILE__ is valid before using it
+        $plugin_file = __FILE__;
+        if ($plugin_file) {
+            $plugin_basename = plugin_basename($plugin_file);
+            load_plugin_textdomain('custom-fonts', false, dirname($plugin_basename) . '/languages');
+        }
     }
 }, 1); // Priority 1 to ensure it runs early in the init phase
 
