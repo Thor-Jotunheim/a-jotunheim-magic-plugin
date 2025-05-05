@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) exit;
  */
 
 // Control access to Manage KBs section - set to false to disable access
-define('WIKI_EDITOR_CAN_MANAGE_KBS', true);
+define('WIKI_EDITOR_CAN_MANAGE_KBS', false);
 
 /**
  * Create the Wiki Editor role with needed capabilities
@@ -168,7 +168,8 @@ function jotunheim_hide_admin_menu_items() {
                     strpos($item[2], 'taxonomy=') !== false || 
                     strpos($item[2], 'manage') !== false ||
                     strpos($item[2], 'settings') !== false ||
-                    strpos($item[2], 'basepress') !== false
+                    strpos($item[2], 'basepress') !== false ||
+                    strpos($item[2], 'category') !== false
                 )) {
                     unset($submenu['edit.php?post_type=knowledgebase'][$key]);
                 }
@@ -304,20 +305,44 @@ function jotunheim_restrict_manage_kb_access() {
     
     // If access to Manage KBs is disabled
     if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
-        global $pagenow;
+        global $pagenow, $plugin_page;
         
-        // Block access to the Knowledge Base management pages
-        if ($pagenow === 'edit-tags.php' || $pagenow === 'term.php') {
-            if (isset($_GET['taxonomy']) && isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase') {
+        // Block KB management pages with wp_die
+        $blocked_pages = array(
+            'edit-tags.php', // Taxonomy/category management
+            'term.php',      // Term editing
+        );
+        
+        // Check URL parameters that indicate KB management pages
+        $management_indicators = array(
+            'basepress-sections',
+            'basepress-settings',
+            'basepress_settings',
+            'knowledgebase-settings',
+            'kb-settings',
+            'basepress-options',
+            'knowledge-base',
+            'manage-kb',
+            'knowledgebase_category'
+        );
+        
+        // Block access to taxonomy management
+        if (in_array($pagenow, $blocked_pages)) {
+            if (isset($_GET['taxonomy']) && (
+                strpos($_GET['taxonomy'], 'kb') !== false || 
+                strpos($_GET['taxonomy'], 'knowledge') !== false ||
+                strpos($_GET['taxonomy'], 'basepress') !== false
+            )) {
                 wp_die(__('You do not have sufficient permissions to access this page.'), 403);
             }
         }
         
-        // Block access to BasePress KB management page if it exists
+        // Block KB management in admin.php
         if ($pagenow === 'admin.php' && isset($_GET['page'])) {
-            $page = $_GET['page'];
-            if (strpos($page, 'basepress') !== false || strpos($page, 'knowledge') !== false || strpos($page, 'kb') !== false) {
-                wp_die(__('You do not have sufficient permissions to access this page.'), 403);
+            foreach ($management_indicators as $indicator) {
+                if (strpos($_GET['page'], $indicator) !== false) {
+                    wp_die(__('You do not have sufficient permissions to access this page.'), 403);
+                }
             }
         }
         
@@ -331,7 +356,12 @@ function jotunheim_restrict_manage_kb_access() {
                 'delete_terms',
                 'assign_terms',
                 'basepress_manage_sections',
-                'basepress_manage_knowledgebases'
+                'basepress_manage_knowledgebases',
+                'manage_kb',
+                'manage_kb_terms',
+                'edit_kb_terms',
+                'delete_kb_terms',
+                'assign_kb_terms'
             );
             
             foreach ($management_caps as $cap) {
@@ -340,6 +370,46 @@ function jotunheim_restrict_manage_kb_access() {
             
             return $allcaps;
         }, 999);
+        
+        // Add a global admin_notice to show a message when access is denied
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-error"><p>' . 
+                 __('Access to Knowledge Base management has been disabled for Wiki Editors.') . 
+                 '</p></div>';
+        });
     }
 }
-add_action('admin_init', 'jotunheim_restrict_manage_kb_access');
+add_action('admin_init', 'jotunheim_restrict_manage_kb_access', 5);
+
+/**
+ * More aggressive KB management restriction
+ * This catches any page that wasn't caught by the earlier function
+ */
+function jotunheim_block_kb_management_access() {
+    // Only apply for wiki editors when KB management access is disabled
+    if (!current_user_can('wiki_editor') || current_user_can('administrator') ||
+        !defined('WIKI_EDITOR_CAN_MANAGE_KBS') || WIKI_EDITOR_CAN_MANAGE_KBS) {
+        return;
+    }
+    
+    // Check all requests for KB management indicators
+    $current_url = $_SERVER['REQUEST_URI'];
+    $management_patterns = array(
+        '/edit-tags\.php/',
+        '/term\.php/',
+        '/taxonomy=/',
+        '/basepress.*section/',
+        '/basepress.*settings/',
+        '/basepress.*options/',
+        '/knowledgebase.*category/',
+        '/manage-kb/',
+        '/knowledge-base.*settings/'
+    );
+    
+    foreach ($management_patterns as $pattern) {
+        if (preg_match($pattern, $current_url)) {
+            wp_die(__('You do not have sufficient permissions to access this page.'), 403);
+        }
+    }
+}
+add_action('admin_init', 'jotunheim_block_kb_management_access', 999);
