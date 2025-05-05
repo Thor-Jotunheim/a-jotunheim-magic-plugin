@@ -238,12 +238,17 @@ function setup_wiki_editor_role() {
     
     $role = get_role('wiki_editor');
     
-    // Remove regular post capabilities
+    // Remove ALL regular post capabilities
     $post_caps_to_remove = array(
         'edit_posts',
         'publish_posts',
         'edit_published_posts',
-        'delete_posts'
+        'delete_posts',
+        'edit_others_posts',
+        'delete_others_posts',
+        'delete_published_posts',
+        'edit_private_posts',
+        'read_private_posts'
     );
     
     // Remove capabilities for regular posts
@@ -251,7 +256,7 @@ function setup_wiki_editor_role() {
         $role->remove_cap($cap);
     }
     
-    // BasePress specific capabilities
+    // BasePress specific capabilities only
     $basepress_caps = array(
         'edit_basepress',
         'edit_knowledge_base', 
@@ -273,7 +278,6 @@ function setup_wiki_editor_role() {
     $role->add_cap('read');
     $role->add_cap('level_0');
     
-    // Log the role's capabilities for debugging
     error_log('Wiki Editor role capabilities: ' . print_r($role->capabilities, true));
 }
 add_action('init', 'setup_wiki_editor_role', 10);
@@ -292,15 +296,12 @@ function assign_wiki_editor_role() {
             error_log('Added wiki_editor role to user ' . $user->ID);
         }
         
-        // Directly add necessary capabilities
+        // DO NOT add post editing capabilities
         $caps = array(
-            'edit_posts', 
-            'publish_posts',
-            'edit_published_posts',
+            'edit_basepress',
             'edit_knowledge_base',
-            'publish_knowledge_base',
-            'edit_knowledge_bases',
-            'edit_basepress'
+            'publish_knowledge_bases',
+            'read_knowledge_base'
         );
         
         foreach ($caps as $cap) {
@@ -311,4 +312,40 @@ function assign_wiki_editor_role() {
     }
 }
 add_action('wp_loaded', 'assign_wiki_editor_role');
+
+// Hide posts UI for wiki editors
+function hide_post_ui_for_wiki_editors() {
+    if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+        // Remove Posts menu
+        remove_menu_page('edit.php');
+        
+        // Hide post creation UI elements
+        echo '<style>
+            #wp-admin-bar-new-post, 
+            #wp-admin-bar-new-content,
+            .page-title-action { 
+                display: none !important; 
+            }
+        </style>';
+    }
+}
+add_action('admin_menu', 'hide_post_ui_for_wiki_editors');
+add_action('admin_head', 'hide_post_ui_for_wiki_editors');
+
+// Restrict wiki editors from accessing post-related admin pages
+function restrict_wiki_editor_admin_access() {
+    if (current_user_can('wiki_editor') && !current_user_can('administrator')) {
+        global $pagenow;
+        
+        // Block access to post creation/editing screens
+        $restricted_pages = array('post-new.php', 'edit.php');
+        
+        if (in_array($pagenow, $restricted_pages) && 
+            (!isset($_GET['post_type']) || $_GET['post_type'] !== 'knowledge_base')) {
+            wp_redirect(admin_url('edit.php?post_type=knowledge_base'));
+            exit;
+        }
+    }
+}
+add_action('admin_init', 'restrict_wiki_editor_admin_access');
 ?>
