@@ -213,48 +213,114 @@ add_action('admin_bar_menu', 'jotunheim_filter_admin_bar_for_wiki_editors', 999)
  * Allow wiki editors to edit any knowledge base post regardless of author
  */
 function jotunheim_allow_wiki_editors_edit_any_kb_post() {
-    if (!current_user_can('wiki_editor')) return;
+    // Only run this for wiki editors
+    if (!is_user_logged_in() || !current_user_can('wiki_editor')) {
+        return;
+    }
     
-    // When editing a single post
+    // Direct override for edit_post capability
     add_filter('map_meta_cap', function($caps, $cap, $user_id, $args) {
-        // Only apply to knowledge base post type
-        if (!isset($args[0])) return $caps;
-        
-        $post_id = $args[0];
-        $post = get_post($post_id);
-        
-        if (!$post || $post->post_type !== 'knowledgebase') return $caps;
-        
-        // Check if it's an edit capability being checked
+        // These are the capabilities we want to modify
         $edit_caps = array(
             'edit_post',
-            'edit_others_posts', 
+            'edit_others_posts',
             'edit_published_posts',
-            'edit_others_knowledgebases',
-            'edit_knowledgebase',
-            'edit_knowledgebases'
+            'edit_others_knowledgebases'
         );
         
-        if (in_array($cap, $edit_caps)) {
-            // Remove restrictive capabilities
-            foreach ($caps as $key => $capability) {
-                if ($capability == 'do_not_allow') {
-                    unset($caps[$key]);
-                }
-            }
+        if (in_array($cap, $edit_caps) && isset($args[0])) {
+            $post_id = $args[0];
+            $post = get_post($post_id);
             
-            // Add the capability needed
-            $caps[] = 'edit_others_knowledgebases';
+            // Only modify for knowledge base post type
+            if ($post && $post->post_type === 'knowledgebase') {
+                return array('edit_knowledgebases');  // Replace with a capability they already have
+            }
         }
         
         return $caps;
-    }, 10, 4);
+    }, 999, 4);  // High priority to override other filters
     
-    // Ensure "Edit" links are visible in admin
-    add_filter('user_has_cap', function($allcaps) {
-        $allcaps['edit_others_knowledgebases'] = true;
-        $allcaps['edit_others_posts'] = true;
-        return $allcaps;
-    }, 10);
+    // Show edit links for all knowledgebase posts in admin
+    add_filter('post_row_actions', function($actions, $post) {
+        if ($post->post_type === 'knowledgebase') {
+            if (!isset($actions['edit'])) {
+                $actions['edit'] = sprintf(
+                    '<a href="%s">%s</a>',
+                    get_edit_post_link($post->ID),
+                    __('Edit')
+                );
+            }
+        }
+        return $actions;
+    }, 999, 2);
 }
-add_action('init', 'jotunheim_allow_wiki_editors_edit_any_kb_post', 30);
+add_action('init', 'jotunheim_allow_wiki_editors_edit_any_kb_post', 999);  // Very high priority
+
+/**
+ * Force-add editing capabilities for Wiki Editors when in admin
+ */
+function jotunheim_force_kb_edit_capabilities() {
+    // Only run in admin and for wiki editors
+    if (!is_admin() || !current_user_can('wiki_editor')) {
+        return;
+    }
+    
+    global $pagenow;
+    
+    // When viewing or editing a post
+    if (($pagenow === 'post.php' || $pagenow === 'post-new.php') && isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase') {
+        // Add all possible editing caps
+        add_filter('user_has_cap', function($allcaps) {
+            $allcaps['edit_others_knowledgebases'] = true;
+            $allcaps['edit_others_posts'] = true;
+            $allcaps['edit_published_knowledgebases'] = true;
+            $allcaps['edit_published_posts'] = true;
+            $allcaps['edit_knowledgebase'] = true;
+            $allcaps['edit_knowledgebases'] = true;
+            return $allcaps;
+        }, 999);
+    }
+    
+    // When editing an existing post
+    if ($pagenow === 'post.php' && isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['post'])) {
+        $post_id = intval($_GET['post']);
+        $post_type = get_post_type($post_id);
+        
+        if ($post_type === 'knowledgebase') {
+            // Add all possible editing caps
+            add_filter('user_has_cap', function($allcaps) {
+                $allcaps['edit_others_knowledgebases'] = true;
+                $allcaps['edit_others_posts'] = true;
+                $allcaps['edit_published_knowledgebases'] = true;
+                $allcaps['edit_published_posts'] = true;
+                $allcaps['edit_knowledgebase'] = true;
+                $allcaps['edit_knowledgebases'] = true;
+                return $allcaps;
+            }, 999);
+        }
+    }
+    
+    // In the posts list
+    if ($pagenow === 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase') {
+        add_filter('user_has_cap', function($allcaps) {
+            $allcaps['edit_others_knowledgebases'] = true;
+            $allcaps['edit_others_posts'] = true;
+            return $allcaps;
+        }, 999);
+    }
+}
+add_action('admin_init', 'jotunheim_force_kb_edit_capabilities');
+
+/**
+ * Modify edit post link for knowledgebase post type
+ */
+function jotunheim_modify_edit_post_link($url, $post_id, $context) {
+    if (current_user_can('wiki_editor') && get_post_type($post_id) === 'knowledgebase') {
+        // Force the edit link to work by adding a special parameter
+        return add_query_arg('wiki_editor_override', '1', $url);
+    }
+    
+    return $url;
+}
+add_filter('get_edit_post_link', 'jotunheim_modify_edit_post_link', 10, 3);
