@@ -77,7 +77,7 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             ],
         ]);
         
-        // Add KB options wiki editors can actually access
+        // Add KB options exactly as shown in the screenshot
         $wp_admin_bar->add_node([
             'id'     => 'wiki-editor-kb-all',
             'parent' => 'wiki-editor-kb',
@@ -88,25 +88,22 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
         $wp_admin_bar->add_node([
             'id'     => 'wiki-editor-kb-add',
             'parent' => 'wiki-editor-kb',
-            'title'  => 'Add New Article',
+            'title'  => 'Add Post',
             'href'   => admin_url('post-new.php?post_type=knowledgebase'),
         ]);
         
-        // Add a link to view the frontend KB
-        $kb_page_url = get_permalink(get_option('basepress_page_id')); // Try to get KB front page
-        if (!$kb_page_url) {
-            // Fallback to home page
-            $kb_page_url = home_url('/');
-        }
+        $wp_admin_bar->add_node([
+            'id'     => 'wiki-editor-kb-manage',
+            'parent' => 'wiki-editor-kb',
+            'title'  => 'Manage KBs',
+            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=products'),
+        ]);
         
         $wp_admin_bar->add_node([
-            'id'     => 'wiki-editor-kb-view',
+            'id'     => 'wiki-editor-kb-sections',
             'parent' => 'wiki-editor-kb',
-            'title'  => 'View Knowledge Base',
-            'href'   => $kb_page_url,
-            'meta'   => [
-                'target' => '_blank'
-            ]
+            'title'  => 'Sections',
+            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=sections'),
         ]);
         
         // Add media library access (only if they have upload permissions)
