@@ -135,6 +135,9 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
         $wp_role = 'view_only';
     }
 
+    $user = new WP_User($user_id);
+    $user->set_role($wp_role);
+
     // Check for Wiki Editor role
     if (in_array('1354867612324200599', $roles)) { // Wiki Editor role ID
         error_log('Wiki Editor role detected for user: ' . $discord_user_id);
@@ -151,9 +154,6 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
 
     // Log the final WordPress role being assigned
     error_log('Assigning WordPress role: ' . $wp_role . ' to user: ' . $discord_user_id);
-
-    $user = new WP_User($user_id);
-    $user->set_role($wp_role);
 
     // Additional custom roles
     if (in_array('895810058439491635', $roles)) { // Valkyrie
