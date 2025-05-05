@@ -180,7 +180,7 @@ function jotunheim_fix_wiki_editor_edit_access() {
     }
     
     global $pagenow, $typenow;
-    
+    //
     // Add edit link for all KB posts
     add_filter('post_row_actions', function($actions, $post) {
         if ($post->post_type === 'knowledgebase') {
