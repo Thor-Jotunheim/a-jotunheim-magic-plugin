@@ -226,19 +226,25 @@ function jotunheim_magic_remove_dashboard_widgets() {
 }
 add_action('wp_dashboard_setup', 'jotunheim_magic_remove_dashboard_widgets');
 
-// Enhanced function to set up Wiki Editor role with proper capabilities
+// Setup wiki editor role with ALL possible BasePress editing capabilities
 function setup_wiki_editor_role() {
-    // Detect BasePress post type - it may not be 'knowledge_base'
-    $basepress_post_type = 'knowledgebase'; // Default BasePress post type
+    // Find the actual post type used by BasePress
+    $post_types = get_post_types([], 'objects');
+    $basepress_post_type = '';
     
-    if (post_type_exists('basepress_knowledgebase')) {
-        $basepress_post_type = 'basepress_knowledgebase';
-    } elseif (post_type_exists('knowledgebase')) {
-        $basepress_post_type = 'knowledgebase';
+    foreach ($post_types as $pt) {
+        if (strpos(strtolower($pt->name), 'knowledge') !== false || 
+            strpos(strtolower($pt->name), 'basepress') !== false) {
+            $basepress_post_type = $pt->name;
+            error_log('Found BasePress post type: ' . $basepress_post_type);
+            break;
+        }
     }
     
-    // Log the detected post type
-    error_log('Detected BasePress post type: ' . $basepress_post_type);
+    if (empty($basepress_post_type)) {
+        $basepress_post_type = 'knowledgebase'; // Fallback default
+        error_log('Using default BasePress post type: ' . $basepress_post_type);
+    }
     
     // Create the role if it doesn't exist
     if (!get_role('wiki_editor')) {
@@ -250,58 +256,49 @@ function setup_wiki_editor_role() {
     
     $role = get_role('wiki_editor');
     
-    // Remove ALL regular post capabilities
-    $post_caps_to_remove = array(
-        'edit_posts',
-        'publish_posts',
-        'edit_published_posts',
-        'delete_posts',
-        'edit_others_posts',
-        'delete_others_posts',
-        'delete_published_posts',
-        'edit_private_posts',
-        'read_private_posts'
+    // First, remove access to regular posts
+    $role->remove_cap('edit_posts');
+    $role->remove_cap('publish_posts');
+    $role->remove_cap('delete_posts');
+    
+    // Then add ALL possible BasePress capabilities
+    $capabilities = array(
+        // WordPress base capabilities that BasePress might require
+        'read' => true,
+        'upload_files' => true,
+        
+        // Standard post type capabilities with dynamic BasePress post type
+        "edit_{$basepress_post_type}" => true,
+        "edit_{$basepress_post_type}s" => true,
+        "edit_others_{$basepress_post_type}s" => true,
+        "publish_{$basepress_post_type}s" => true,
+        "read_{$basepress_post_type}" => true,
+        "read_private_{$basepress_post_type}s" => true,
+        "delete_{$basepress_post_type}" => true,
+        "delete_{$basepress_post_type}s" => true,
+        "delete_published_{$basepress_post_type}s" => true,
+        "edit_published_{$basepress_post_type}s" => true,
+        
+        // BasePress specific capabilities
+        'edit_basepress' => true,
+        'basepress_edit_articles' => true,
+        'basepress_edit_knowledgebases' => true,
+        'basepress_manage_options' => true,
+        
+        // Variations of post capabilities that BasePress might use
+        'edit_knowledge_base' => true,
+        'edit_knowledgebase' => true,
+        'edit_knowledgebases' => true,
+        'publish_knowledgebases' => true,
+        'edit_others_knowledgebases' => true
     );
     
-    // Remove capabilities for regular posts
-    foreach ($post_caps_to_remove as $cap) {
-        $role->remove_cap($cap);
-    }
-    
-    // BasePress specific capabilities - using detected post type
-    $basepress_caps = array(
-        'edit_basepress',
-        'edit_knowledgebase',
-        'edit_knowledgebases',
-        'edit_published_knowledgebases',
-        'publish_knowledgebases',
-        'read_knowledgebase',
-        'delete_knowledgebase',
-        'edit_others_knowledgebases',
-        'read_private_knowledgebases',
-        'delete_knowledgebases',
-        // Add capability variations for different post type names
-        "edit_{$basepress_post_type}",
-        "edit_{$basepress_post_type}s",
-        "edit_published_{$basepress_post_type}s",
-        "publish_{$basepress_post_type}s",
-        "read_{$basepress_post_type}",
-        "delete_{$basepress_post_type}",
-        "edit_others_{$basepress_post_type}s",
-        "read_private_{$basepress_post_type}s",
-        "delete_{$basepress_post_type}s",
-    );
-    
-    // Add BasePress capabilities
-    foreach ($basepress_caps as $cap) {
+    // Add each capability to the role
+    foreach ($capabilities as $cap => $grant) {
         $role->add_cap($cap);
     }
     
-    // Ensure basic capabilities
-    $role->add_cap('read');
-    $role->add_cap('level_0');
-    
-    error_log('Wiki Editor role capabilities: ' . print_r($role->capabilities, true));
+    error_log('Wiki Editor role configured with ' . count($capabilities) . ' capabilities');
     
     return $basepress_post_type;
 }
