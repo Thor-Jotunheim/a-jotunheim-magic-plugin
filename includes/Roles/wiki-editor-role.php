@@ -224,6 +224,50 @@ function add_basepress_capabilities_for_wiki_editor($basepress_roles) {
 }
 
 /**
+ * Allow wiki editors to access BasePress admin settings pages
+ */
+function allow_wiki_editor_basepress_settings_access($capability) {
+    if (current_user_can('wiki_editor')) {
+        // Check if we're on a BasePress settings page
+        $is_basepress_admin = false;
+        if (isset($_GET['post_type']) && $_GET['post_type'] === 'knowledgebase' && 
+            isset($_GET['page']) && $_GET['page'] === 'basepress_settings') {
+            $is_basepress_admin = true;
+        }
+        
+        if ($is_basepress_admin) {
+            return 'read'; // Change required capability to one the wiki editor has
+        }
+    }
+    
+    return $capability;
+}
+add_filter('basepress_settings_capability', 'allow_wiki_editor_basepress_settings_access');
+add_filter('option_page_capability_basepress_settings', 'allow_wiki_editor_basepress_settings_access');
+
+/**
+ * Allow wiki editors to access sections admin page
+ */
+function allow_wiki_editor_sections_access($capability) {
+    if (current_user_can('wiki_editor') && isset($_GET['tab']) && $_GET['tab'] === 'sections') {
+        return 'read';
+    }
+    return $capability;
+}
+add_filter('basepress_sections_capability', 'allow_wiki_editor_sections_access');
+
+/**
+ * Allow wiki editors to access products admin page
+ */
+function allow_wiki_editor_products_access($capability) {
+    if (current_user_can('wiki_editor') && isset($_GET['tab']) && $_GET['tab'] === 'products') {
+        return 'read';
+    }
+    return $capability;
+}
+add_filter('basepress_products_capability', 'allow_wiki_editor_products_access');
+
+/**
  * Hook all wiki editor role functions
  */
 function initialize_wiki_editor_role() {

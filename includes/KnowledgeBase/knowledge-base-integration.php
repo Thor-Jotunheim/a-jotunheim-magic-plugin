@@ -308,3 +308,47 @@ function jotunheim_kb_add_frontend_edit_button() {
 // Hook into both wp_footer and basepress specific hooks
 add_action('wp_footer', 'jotunheim_kb_add_frontend_edit_button', 999);
 add_action('basepress_after_content', 'jotunheim_kb_add_frontend_edit_button', 999);
+
+/**
+ * Restore header styling for wiki editors
+ */
+function restore_header_styling_for_wiki_editors() {
+    if (current_user_can('wiki_editor')) {
+        ?>
+        <style>
+            /* Ensure header elements are visible */
+            .site-header,
+            .site-header img,
+            .site-branding,
+            .site-logo,
+            .custom-logo-link,
+            .custom-logo,
+            .header-image {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                max-height: none !important;
+            }
+            
+            /* Fix admin bar positioning if needed */
+            html {
+                margin-top: 32px !important;
+            }
+            
+            /* Additional fixes for BasePress settings pages */
+            .basepress-settings input[type="submit"],
+            .basepress-settings .button-primary {
+                display: inline-block !important;
+            }
+            
+            /* Ensure all header elements load correctly */
+            img.header-image {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        </style>
+        <?php
+    }
+}
+add_action('wp_head', 'restore_header_styling_for_wiki_editors');
+add_action('admin_head', 'restore_header_styling_for_wiki_editors');
