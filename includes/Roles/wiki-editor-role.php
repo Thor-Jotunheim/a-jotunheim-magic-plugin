@@ -158,37 +158,85 @@ function jotunheim_register_wiki_editor_with_basepress() {
 add_action('init', 'jotunheim_register_wiki_editor_with_basepress', 20);
 
 /**
- * Modify the capability check for wiki editors to access Sections and Manage KB pages
- * 
- * This overrides the capability checks in BasePress to allow wiki_editors to access these pages
+ * Add wiki editor specific menu items to the BasePress menu
  */
-function jotunheim_allow_wiki_editor_access($caps, $cap, $user_id, $args) {
-    // Get current user
-    $user = get_userdata($user_id);
-    
-    // If not a wiki editor or if user is an admin, don't modify capabilities
-    if (!$user || !in_array('wiki_editor', $user->roles) || in_array('administrator', $user->roles)) {
-        return $caps;
+function jotunheim_add_wiki_editor_menu_items() {
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
     }
     
-    // Check for BasePress Sections page capability
-    if ($cap === 'manage_categories') {
-        // Check if we're on the BasePress Sections page
-        if (isset($_GET['page']) && $_GET['page'] === 'basepress_sections') {
-            // Allow access - return empty array to pass the check
-            return array();
-        }
-    }
+    // Get the KB post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
     
-    // Check for BasePress Manage KBs capability
-    if (strpos($cap, 'manage_') === 0 || strpos($cap, 'basepress_') === 0) {
-        // Check if we're on the Manage KBs page
-        if (isset($_GET['page']) && $_GET['page'] === 'basepress_manage_kbs') {
-            // Allow access - return empty array to pass the check
-            return array();
-        }
-    }
+    // Add Sections submenu item
+    add_submenu_page(
+        'edit.php?post_type=' . $kb_post_type,
+        'Sections',
+        'Sections',
+        'read', // Use a capability that wiki_editor definitely has
+        'basepress_sections',
+        null // Let BasePress handle the actual page content
+    );
     
-    return $caps;
+    // Add Manage KBs submenu item
+    add_submenu_page(
+        'edit.php?post_type=' . $kb_post_type,
+        'Manage KBs',
+        'Manage KBs',
+        'read', // Use a capability that wiki_editor definitely has
+        'basepress_manage_kbs',
+        null // Let BasePress handle the actual page content
+    );
 }
-add_filter('map_meta_cap', 'jotunheim_allow_wiki_editor_access', 10, 4);
+add_action('admin_menu', 'jotunheim_add_wiki_editor_menu_items', 20);
+
+/**
+ * Direct hack to allow wiki editors access to BasePress admin pages
+ */
+function jotunheim_override_basepress_capabilities() {
+    if (is_admin() && current_user_can('wiki_editor') && !current_user_can('administrator')) {
+        global $pagenow;
+        
+        // Check if we're on the right pages
+        if ($pagenow === 'edit.php' && isset($_GET['page'])) {
+            $page = sanitize_text_field($_GET['page']);
+            
+            // Only add these filters for Sections and Manage KBs pages
+            if ($page === 'basepress_sections' || $page === 'basepress_manage_kbs') {
+                // This filter bypasses the capability check in the Sections page class
+                add_filter('user_has_cap', function($allcaps, $caps, $args) {
+                    if (isset($args[0]) && ($args[0] === 'manage_categories' || $args[0] === 'manage_basepress')) {
+                        $allcaps['manage_categories'] = true;
+                        $allcaps['manage_basepress'] = true;
+                    }
+                    return $allcaps;
+                }, 0, 3);
+            }
+        }
+    }
+}
+add_action('admin_init', 'jotunheim_override_basepress_capabilities', 1);
+
+/**
+ * Add custom menu highlighting for wiki editors
+ */
+function jotunheim_admin_menu_highlight() {
+    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
+        return;
+    }
+
+    global $pagenow, $submenu_file;
+    
+    // Get the KB post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    
+    // Highlight the correct menu item when on Sections or Manage KB pages
+    if ($pagenow === 'edit.php' && isset($_GET['page'])) {
+        $page = sanitize_text_field($_GET['page']);
+        
+        if ($page === 'basepress_sections' || $page === 'basepress_manage_kbs') {
+            $submenu_file = 'edit.php?post_type=' . $kb_post_type . '&page=' . $page;
+        }
+    }
+}
+add_action('admin_head', 'jotunheim_admin_menu_highlight');
