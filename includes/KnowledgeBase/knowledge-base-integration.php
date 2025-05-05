@@ -121,16 +121,37 @@ function jotunheim_ensure_kb_edit_links() {
     // Only run on knowledge base listing page
     if ($screen->post_type !== $kb_post_type) return;
     
-    // Only for wiki editors
-    if (!current_user_can('wiki_editor')) return;
-    
     // Add JavaScript to ensure edit links and row actions are visible
     ?>
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // Add the New button if missing
+            // PRIORITY: Add the Add New button if missing (with higher visibility)
             if ($('.page-title-action').length === 0) {
-                $('.wp-heading-inline').after('<a href="<?php echo esc_url(admin_url("post-new.php?post_type=" . $kb_post_type)); ?>" class="page-title-action">Add New</a>');
+                // Add prominent Add New button
+                var addNewBtn = $('<a>').attr({
+                    'href': '<?php echo esc_url(admin_url("post-new.php?post_type=" . $kb_post_type)); ?>',
+                    'class': 'page-title-action'
+                }).text('Add New');
+                
+                // Add the button after the title
+                $('.wp-heading-inline').after(addNewBtn);
+                
+                // Also add a more prominent button at the top if the standard one might be hidden
+                var prominentBtn = $('<div>').css({
+                    'margin': '10px 0 20px',
+                    'text-align': 'center'
+                }).append(
+                    $('<a>').attr({
+                        'href': '<?php echo esc_url(admin_url("post-new.php?post_type=" . $kb_post_type)); ?>',
+                        'class': 'button button-primary button-large'
+                    }).text('Create New Knowledge Base Article').css({
+                        'padding': '8px 20px',
+                        'font-size': '16px'
+                    })
+                );
+                
+                // Add the prominent button at the top of the page
+                $('.wp-header-end').after(prominentBtn);
             }
             
             // Make sure row actions are visible
@@ -174,6 +195,92 @@ function jotunheim_ensure_kb_edit_links() {
             }
         });
     </script>
+    
+    <style>
+    /* Custom CSS to ensure the Add New button is visible */
+    .wrap h1.wp-heading-inline + a.page-title-action {
+        display: inline-block !important;
+        visibility: visible !important;
+    }
+    </style>
     <?php
 }
 add_action('admin_head', 'jotunheim_ensure_kb_edit_links');
+
+/**
+ * Add Edit Article button for wiki editors on the frontend
+ */
+function jotunheim_kb_add_frontend_edit_button() {
+    // Only run on single KB pages
+    if (!is_singular()) return;
+    
+    // Get the proper knowledge base post type
+    $kb_post_type = function_exists('basepress_get_post_type') ? basepress_get_post_type() : 'knowledgebase';
+    
+    // Only run on KB post type
+    if (get_post_type() !== $kb_post_type) return;
+    
+    // Check if user has permission to edit
+    if (!current_user_can('edit_' . $kb_post_type . 's')) return;
+    
+    // Get edit link
+    $edit_link = get_edit_post_link();
+    if (!$edit_link) return;
+    
+    // Output the edit button
+    ?>
+    <style>
+        .jotunheim-kb-edit-button {
+            position: fixed;
+            top: 100px;
+            left: 20px;
+            z-index: 999;
+            background-color: #23282d;
+            color: #fff;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .jotunheim-kb-edit-button:hover {
+            background-color: #32373c;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .jotunheim-kb-edit-button svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .jotunheim-kb-edit-button {
+                top: auto;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .jotunheim-kb-edit-button:hover {
+                transform: translateX(-50%) translateY(-2px);
+            }
+        }
+    </style>
+    
+    <a href="<?php echo esc_url($edit_link); ?>" class="jotunheim-kb-edit-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+        </svg>
+        Edit Article
+    </a>
+    <?php
+}
+add_action('wp_footer', 'jotunheim_kb_add_frontend_edit_button');

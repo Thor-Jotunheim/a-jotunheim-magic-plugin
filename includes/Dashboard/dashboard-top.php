@@ -76,6 +76,35 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
                 'class' => 'wiki-editor-kb-menu',
             ],
         ]);
+        
+        // Add all the KB options as submenu items
+        $wp_admin_bar->add_node([
+            'id'     => 'wiki-editor-kb-all',
+            'parent' => 'wiki-editor-kb',
+            'title'  => 'All Articles',
+            'href'   => admin_url('edit.php?post_type=knowledgebase'),
+        ]);
+        
+        $wp_admin_bar->add_node([
+            'id'     => 'wiki-editor-kb-add',
+            'parent' => 'wiki-editor-kb',
+            'title'  => 'Add Post',
+            'href'   => admin_url('post-new.php?post_type=knowledgebase'),
+        ]);
+        
+        $wp_admin_bar->add_node([
+            'id'     => 'wiki-editor-kb-manage',
+            'parent' => 'wiki-editor-kb',
+            'title'  => 'Manage KBs',
+            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=products'),
+        ]);
+        
+        $wp_admin_bar->add_node([
+            'id'     => 'wiki-editor-kb-sections',
+            'parent' => 'wiki-editor-kb',
+            'title'  => 'Sections',
+            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_settings&tab=sections'),
+        ]);
     }
 }, 100);
 
