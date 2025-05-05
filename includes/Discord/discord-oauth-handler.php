@@ -131,6 +131,12 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
         $wp_role = 'view_only';
     }
 
+    // Check for Wiki Editor role
+    if (in_array('1354867612324200599', $roles)) { // Wiki Editor role ID
+        $wp_role = 'wiki_editor';
+        $user->add_cap('edit_basepress'); // Grant capability to edit BasePress
+    }
+
     // For Thor and Odin, assign administrator
     if ($discord_user_id === '859390316410306560' || $discord_user_id === '190645182235017217') {
         $wp_role = 'administrator';
