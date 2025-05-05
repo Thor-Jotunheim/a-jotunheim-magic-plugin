@@ -92,12 +92,12 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'href'   => admin_url('post-new.php?post_type=knowledgebase'),
         ]);
         
-        $wp_admin_bar->add_node([
-            'id'     => 'wiki-editor-kb-manage',
-            'parent' => 'wiki-editor-kb',
-            'title'  => 'Manage KBs',
-            'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_manage_kbs'),
-        ]);
+        //$wp_admin_bar->add_node([
+        //    'id'     => 'wiki-editor-kb-manage',
+        //    'parent' => 'wiki-editor-kb',
+        //    'title'  => 'Manage KBs',
+        //    'href'   => admin_url('edit.php?post_type=knowledgebase&page=basepress_manage_kbs'),
+        //]);
         
         $wp_admin_bar->add_node([
             'id'     => 'wiki-editor-kb-sections',

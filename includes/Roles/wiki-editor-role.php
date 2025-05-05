@@ -6,8 +6,8 @@ if (!defined('ABSPATH')) exit;
  * Simple Wiki Editor Role Definition
  */
 
-// Control access to Manage KBs section - set to false to disable access
-define('WIKI_EDITOR_CAN_MANAGE_KBS', false);
+// Control whether to show Manage KBs in menu - set to false to hide
+define('WIKI_EDITOR_SHOW_MANAGE_KBS', false);
 
 /**
  * Create the Wiki Editor role with needed capabilities
@@ -129,6 +129,7 @@ function jotunheim_wiki_editor_posts_query($query) {
 
 /**
  * Hide all admin menu items except Knowledge Base and Profile for wiki editors
+ * Also hide Manage KBs menu item if configured
  */
 function jotunheim_hide_admin_menu_items() {
     // Only apply to wiki_editor role (not for admins)
@@ -158,22 +159,19 @@ function jotunheim_hide_admin_menu_items() {
         }
     }
     
-    // Hide KB management submenu items if access is disabled
-    if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
+    // Hide Manage KBs menu item if configured to hide
+    if (defined('WIKI_EDITOR_SHOW_MANAGE_KBS') && !WIKI_EDITOR_SHOW_MANAGE_KBS) {
         if (isset($submenu['edit.php?post_type=knowledgebase'])) {
             foreach ($submenu['edit.php?post_type=knowledgebase'] as $key => $item) {
-                // Check if this is a management link (but not sections)
-                if (isset($item[2]) && (
-                    strpos($item[2], 'edit-tags.php') !== false || 
-                    strpos($item[2], 'taxonomy=') !== false ||
-                    strpos($item[2], 'settings') !== false ||
-                    strpos($item[2], 'options') !== false
+                // Check if this is the Manage KBs link
+                if (isset($item[0]) && (
+                    strpos($item[0], 'Manage') !== false || 
+                    strpos($item[0], 'manage') !== false ||
+                    strpos($item[2], 'manage') !== false ||
+                    strpos($item[0], 'KB') !== false ||
+                    strpos($item[0], 'Knowledge Base') !== false
                 )) {
-                    // But don't hide if it contains 'section' or 'article'
-                    if (!(strpos($item[2], 'section') !== false || 
-                          strpos($item[2], 'article') !== false)) {
-                        unset($submenu['edit.php?post_type=knowledgebase'][$key]);
-                    }
+                    unset($submenu['edit.php?post_type=knowledgebase'][$key]);
                 }
             }
         }
@@ -295,167 +293,3 @@ function jotunheim_bypass_post_author_check() {
     }, 999, 4);
 }
 add_action('init', 'jotunheim_bypass_post_author_check');
-
-/**
- * Restrict access to Manage KBs section but keep Sections area accessible
- */
-function jotunheim_restrict_manage_kb_access() {
-    // Only apply for wiki editors (not for admins)
-    if (!current_user_can('wiki_editor') || current_user_can('administrator')) {
-        return;
-    }
-    
-    // If access to Manage KBs is disabled
-    if (defined('WIKI_EDITOR_CAN_MANAGE_KBS') && !WIKI_EDITOR_CAN_MANAGE_KBS) {
-        global $pagenow, $plugin_page;
-        
-        // These are specific management pages we want to block
-        $blocked_pages = array(
-            'edit-tags.php', // Taxonomy/category management
-            'term.php',      // Term editing
-        );
-        
-        // List of management indicators in URLs we want to block
-        $management_indicators = array(
-            'basepress-settings',
-            'basepress_settings',
-            'knowledgebase-settings',
-            'kb-settings',
-            'basepress-options',
-            'manage-kb',
-            'options' // Settings/options pages
-        );
-        
-        // EXCLUDE these indicators to keep them accessible
-        $allowed_indicators = array(
-            'section',
-            'sections',
-            'article',
-            'articles'
-        );
-        
-        // Block access to taxonomy management
-        if (in_array($pagenow, $blocked_pages)) {
-            if (isset($_GET['taxonomy']) && (
-                strpos($_GET['taxonomy'], 'kb') !== false || 
-                strpos($_GET['taxonomy'], 'knowledge') !== false ||
-                strpos($_GET['taxonomy'], 'basepress') !== false
-            )) {
-                wp_die(__('You do not have sufficient permissions to access this page.'), 403);
-            }
-        }
-        
-        // Block KB management in admin.php but allow Sections
-        if ($pagenow === 'admin.php' && isset($_GET['page'])) {
-            $page = $_GET['page'];
-            
-            // Check if this is a management page but not a section page
-            $is_management = false;
-            foreach ($management_indicators as $indicator) {
-                if (strpos($page, $indicator) !== false) {
-                    $is_management = true;
-                    break;
-                }
-            }
-            
-            // Check if it's an allowed page
-            $is_allowed = false;
-            foreach ($allowed_indicators as $indicator) {
-                if (strpos($page, $indicator) !== false) {
-                    $is_allowed = true;
-                    break;
-                }
-            }
-            
-            // Block if it's a management page but not in the allowed list
-            if ($is_management && !$is_allowed) {
-                wp_die(__('You do not have sufficient permissions to access this page.'), 403);
-            }
-        }
-        
-        // Remove KB management capabilities but keep section editing capabilities
-        add_filter('user_has_cap', function($allcaps) {
-            // Remove specific management capabilities
-            $management_caps = array(
-                'manage_categories',
-                'manage_terms',
-                'edit_terms',
-                'delete_terms',
-                'basepress_manage_knowledgebases',
-                'manage_kb',
-                'manage_kb_terms',
-                'edit_kb_terms',
-                'delete_kb_terms'
-            );
-            
-            foreach ($management_caps as $cap) {
-                $allcaps[$cap] = false;
-            }
-            
-            // Keep these capabilities
-            $keep_caps = array(
-                'assign_terms',
-                'basepress_view_others_sections',
-                'basepress_edit_others_sections',
-                'basepress_manage_sections'
-            );
-            
-            foreach ($keep_caps as $cap) {
-                $allcaps[$cap] = true;
-            }
-            
-            return $allcaps;
-        }, 999);
-    }
-}
-add_action('admin_init', 'jotunheim_restrict_manage_kb_access', 5);
-
-/**
- * More selective KB management restriction
- * This catches KB management pages but allows section access
- */
-function jotunheim_block_kb_management_access() {
-    // Only apply for wiki editors when KB management access is disabled
-    if (!current_user_can('wiki_editor') || current_user_can('administrator') ||
-        !defined('WIKI_EDITOR_CAN_MANAGE_KBS') || WIKI_EDITOR_CAN_MANAGE_KBS) {
-        return;
-    }
-    
-    // Check all requests for KB management indicators
-    $current_url = $_SERVER['REQUEST_URI'];
-    
-    // Block these patterns
-    $management_patterns = array(
-        '/edit-tags\.php/',
-        '/term\.php/',
-        '/taxonomy=/',
-        '/basepress.*settings/',
-        '/basepress.*options/',
-        '/knowledgebase.*category/',
-        '/manage-kb/',
-        '/knowledge-base.*settings/'
-    );
-    
-    // Allow these patterns
-    $allowed_patterns = array(
-        '/section/',
-        '/sections/',
-        '/article/',
-        '/articles/'
-    );
-    
-    // First check if URL contains an allowed pattern
-    foreach ($allowed_patterns as $pattern) {
-        if (preg_match($pattern, $current_url)) {
-            return; // Allow access to these URLs
-        }
-    }
-    
-    // Then check if URL contains a blocked pattern
-    foreach ($management_patterns as $pattern) {
-        if (preg_match($pattern, $current_url)) {
-            wp_die(__('You do not have sufficient permissions to access this page.'), 403);
-        }
-    }
-}
-add_action('admin_init', 'jotunheim_block_kb_management_access', 999);
