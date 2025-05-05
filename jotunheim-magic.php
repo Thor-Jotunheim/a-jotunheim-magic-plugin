@@ -293,6 +293,13 @@ function restrict_wiki_editor_capabilities() {
 }
 add_action('init', 'restrict_wiki_editor_capabilities');
 
+// Ensure BasePress recognizes the Wiki Editor role
+function basepress_allow_wiki_editor_access($roles) {
+    $roles[] = 'wiki_editor';
+    return $roles;
+}
+add_filter('basepress_allowed_roles', 'basepress_allow_wiki_editor_access');
+
 // Restrict access to the magic plugin admin menu
 function restrict_magic_plugin_admin_menu() {
     if (!current_user_can('administrator') && !current_user_can('editor')) {
