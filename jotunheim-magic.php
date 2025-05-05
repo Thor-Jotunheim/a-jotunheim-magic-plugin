@@ -28,6 +28,7 @@ define('JOTUNHEIM_PLUGIN_FILE', __FILE__);
 require_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/helpers.php');
 include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/dev-environment.php');
 include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/dark-mode.php');
+include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/media-fixes.php'); // Include the new media fix utilities
 
 // Include ItemList files
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-scripts.php');
@@ -107,6 +108,25 @@ add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
 
 // Register shortcode for EventZones Add New Zone
 add_shortcode('eventzones_add_new_zone', 'eventzones_add_new_zone_shortcode');
+
+// Register shortcode for Wiki
+add_shortcode('wiki', 'wiki_shortcode');
+
+// Ensure the Wiki core outputs content
+function wiki_shortcode() {
+    if (!is_user_logged_in()) {
+        return do_shortcode('[discord_login_button]');
+    }
+
+    // Start output buffering
+    ob_start();
+
+    // Include the Wiki core functionality
+    include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Wiki/wiki-core.php');
+
+    // Capture and return the output
+    return ob_get_clean();
+}
 
 // Function to assign capabilities to administrator and editor roles
 function jotunheim_magic_assign_capabilities() {

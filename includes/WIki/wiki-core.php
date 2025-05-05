@@ -162,3 +162,28 @@ class Jotunheim_Wiki_Core {
 
 // Initialize the class
 new Jotunheim_Wiki_Core();
+
+// Display a basic wiki interface
+echo '<div class="wiki-container">';
+echo '<h1>Welcome to the Wiki</h1>';
+echo '<p>This is the wiki interface. You can customize this page further.</p>';
+echo '</div>';
+
+// Add styles for the wiki interface
+echo '<style>
+.wiki-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.wiki-container h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+.wiki-container p {
+    font-size: 16px;
+    color: #333;
+}
+</style>';
+?>
