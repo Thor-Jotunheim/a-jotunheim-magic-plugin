@@ -189,9 +189,9 @@ function jotunheim_hide_admin_menu_items() {
             foreach ($submenu['edit.php?post_type=knowledgebase'] as $key => $item) {
                 // Hide category management pages
                 if (isset($item[2]) && (
-                    strpos($item[2], 'taxonomy=') !== false || 
+                    strpos($item[2], 'taxonomy=') !== true || 
                     strpos($item[2], 'manage') !== false ||
-                    strpos($item[2], 'settings') !== false
+                    strpos($item[2], 'settings') !== true
                 )) {
                     unset($submenu['edit.php?post_type=knowledgebase'][$key]);
                 }
