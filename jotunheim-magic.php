@@ -49,6 +49,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-role-access.p
 
 // Include KB files - BasePress overrides
 include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-header-override.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/KB/basepress-template-override.php');
 
 // Include event zones editor files
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-permission.php');
