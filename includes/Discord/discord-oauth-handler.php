@@ -44,6 +44,9 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
 
     $access_token = sanitize_text_field($body['access_token']);
 
+    $user = new WP_User($user_id);
+    $user->set_role($wp_role);
+
     // Get user information from Discord
     $user_response = wp_remote_get('https://discord.com/api/users/@me', array(
         'headers' => array(
@@ -151,9 +154,6 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
 
     // Log the final WordPress role being assigned
     error_log('Assigning WordPress role: ' . $wp_role . ' to user: ' . $discord_user_id);
-
-    $user = new WP_User($user_id);
-    $user->set_role($wp_role);
 
     // Additional custom roles
     if (in_array('895810058439491635', $roles)) { // Valkyrie
