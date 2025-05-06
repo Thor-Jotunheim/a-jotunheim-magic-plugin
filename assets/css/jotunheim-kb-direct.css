@@ -1,0 +1,170 @@
+/**
+ * Direct BasePress integration CSS styles
+ * This file contains styles to ensure BasePress content fits within the theme
+ */
+
+/* Main wrapper for KB content */
+.jotunheim-kb-wrapper {
+    width: 100%;
+    clear: both;
+}
+
+.jotunheim-kb-inner {
+    width: 100%;
+}
+
+/* Content container */
+.jotunheim-kb-content {
+    width: 100%;
+    padding: 40px 0;
+}
+
+.jotunheim-kb-container {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Article styling */
+.jotunheim-kb-article {
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.jotunheim-kb-article-header {
+    margin-bottom: 30px;
+}
+
+.jotunheim-kb-article-title {
+    font-size: 32px;
+    line-height: 1.3;
+    color: #333;
+    margin-top: 0;
+}
+
+.jotunheim-kb-article-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+}
+
+/* Breadcrumbs */
+.bpress-crumbs {
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+/* Override any BasePress styling that might interfere */
+.basepress-wrap,
+.bpress-wrap {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.bpress-content-area,
+.basepress-content-area {
+    float: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Hide any duplicate BasePress headers */
+.bpress-header,
+.basepress-header,
+body.jotunheim-kb .bpress-header,
+body.jotunheim-kb .basepress-header {
+    display: none !important;
+}
+
+/* Content headings */
+.jotunheim-kb-article-content h1,
+.jotunheim-kb-article-content h2,
+.jotunheim-kb-article-content h3,
+.jotunheim-kb-article-content h4 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.jotunheim-kb-article-content p {
+    margin-bottom: 20px;
+}
+
+/* Fix image alignment */
+.jotunheim-kb-article-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Adjacent articles navigation */
+.bpress-adjacent-article {
+    background: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    transition: background 0.2s ease;
+}
+
+.bpress-adjacent-article:hover {
+    background: #f1f1f1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .jotunheim-kb-article {
+        padding: 20px;
+    }
+    
+    .jotunheim-kb-article-title {
+        font-size: 24px;
+    }
+}
+
+/* Make sure BasePress search form is styled correctly */
+.bpress-searchform {
+    margin-bottom: 30px;
+}
+
+.bpress-searchform input[type="text"] {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.bpress-searchform button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Add additional spacing to article content elements */
+.jotunheim-kb-article-content ul,
+.jotunheim-kb-article-content ol {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.jotunheim-kb-article-content pre {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    overflow: auto;
+    margin-bottom: 20px;
+}
