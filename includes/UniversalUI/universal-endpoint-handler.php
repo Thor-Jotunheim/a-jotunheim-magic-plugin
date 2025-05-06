@@ -46,14 +46,6 @@ try {
 
 // Process Actions
 try {
-    // Special handling for OAuth2 callback
-    if ($action === 'oauth2callback') {
-        error_log("Processing Discord OAuth2 callback");
-        require_once(plugin_dir_path(__FILE__) . '../Discord/discord-oauth-handler.php');
-        jotunheim_magic_handle_discord_oauth2_callback();
-        exit;
-    }
-    
     // Check if action exists in API table
     if (!isset($api_endpoints[$action])) {
         error_log("Skipping unrecognized action: $action");
