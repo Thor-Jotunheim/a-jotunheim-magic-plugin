@@ -29,7 +29,7 @@ class Jotunheim_BasePress_Integration {
         }
         
         // Set up template directories
-        add_filter('basepress_template_paths', array(__CLASS__, 'add_template_path'), 1);
+        add_filter('basepress_template_paths', array(__CLASS__, 'add_template_path'), 20);
         
         // Force specific template inclusion
         add_filter('basepress_theme_file', array(__CLASS__, 'force_template_files'), 1, 2);
@@ -85,8 +85,8 @@ class Jotunheim_BasePress_Integration {
      * Add our template directory with highest priority
      */
     public static function add_template_path($paths) {
-        // Add our path as the first one (highest priority)
-        array_unshift($paths, plugin_dir_path(dirname(__DIR__)) . 'templates/basepress/');
+        // Add our path with high priority
+        $paths[] = plugin_dir_path(dirname(__DIR__)) . 'templates/basepress/';
         return $paths;
     }
 
@@ -117,7 +117,7 @@ class Jotunheim_BasePress_Integration {
                 'jotunheim-kb-styles', 
                 plugin_dir_url(dirname(__DIR__)) . 'assets/css/jotunheim-kb.css',
                 array(),
-                '1.0.1'
+                '1.0.2'
             );
         }
     }
@@ -224,3 +224,20 @@ class Jotunheim_BasePress_Integration {
 
 // Initialize the integration
 Jotunheim_BasePress_Integration::init();
+
+// Add help text in admin for proper header/footer setup
+function jotunheim_kb_admin_notice() {
+    $screen = get_current_screen();
+    
+    if (isset($screen->id) && ($screen->id == 'settings_page_basepress-settings' || $screen->id == 'knowledgebase_page_basepress-settings')) {
+        echo '<div class="notice notice-info is-dismissible">';
+        echo '<p><strong>Jotunheim KB Integration:</strong> For proper header/footer integration with Zeever theme, ensure you have:</p>';
+        echo '<ol>';
+        echo '<li>Created <code>header-basepress.html</code> in the Zeever theme directory</li>';
+        echo '<li>Created <code>footer-basepress.html</code> in the Zeever theme directory</li>';
+        echo '</ol>';
+        echo '<p>These files should contain the proper theme header/footer code with any BasePress-specific modifications.</p>';
+        echo '</div>';
+    }
+}
+add_action('admin_notices', 'jotunheim_kb_admin_notice');
