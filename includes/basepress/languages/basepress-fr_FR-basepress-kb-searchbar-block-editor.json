@@ -1,0 +1,19 @@
+{
+  "translation-revision-date": "+0000",
+  "generator": "",
+  "domain": "basepress",
+  "locale_data": {
+    "messages": {
+      "":                                                             {
+        "domain":       "basepress",
+        "plural-forms": "n != 1",
+        "lang":         "fr-FR"
+      },
+      "Knowledge Base": ["Base de Connaissances"],
+      "KB Search Bar": ["Barre de recherche - BdC"],
+      "Adds a search bar to find articles in your knowledge base": ["Ajoute une barre de recherche pour trouver des articles au sein de votre Base de Connaissances"],
+      "KB Search bar settings": ["Paramètres de la barre de recherche - BdC"],
+      "Width": ["Largeur"]
+    }
+  }
+}

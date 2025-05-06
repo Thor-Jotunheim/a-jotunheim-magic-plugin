@@ -1,0 +1,2588 @@
+# Translation of BasePress
+# This file is distributed under the same license as the plugin package.
+msgid ""
+msgstr ""
+"Project-Id-Version: BasePress\n"
+"Report-Msgid-Bugs-To: BasePress<info@codesavory.com>\n"
+"POT-Creation-Date: 2021-08-18 13:16+0200\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 2.4.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;esc_html_e;esc_html_x:1,2c;esc_html__;esc_attr_e;esc_attr_x:1,2c;esc_attr__;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_x:1,2c;_n:1,2;_n_noop:1,2;__ngettext:1,2;__ngettext_noop:1,2;_c,_nc:4c,1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: freemius\n"
+
+#: admin/class-basepress-manual.php:18
+msgid "Quick Start Guide"
+msgstr "Guide de démarrage"
+
+#: admin/class-basepress-manual.php:29
+msgid "Welcome to BasePress"
+msgstr "Bienvenue sur BasePress"
+
+#: admin/class-basepress-manual.php:36
+msgid "Your Knowledge Base is not set up yet. Use the Setup Wizard or go to the settings page to get started manually."
+msgstr "Votre Base de Connaissances n’est pas encore paramétrée. Utilisez l’Assistant d’installation ou allez à la page de paramétrage pour le faire manuellement."
+
+#: admin/class-basepress-manual.php:38 admin/wizard.php:116
+msgid "Start Wizard"
+msgstr "Démarrer l'assistant"
+
+#: admin/class-basepress-manual.php:39
+msgid "Settings Page"
+msgstr "Page de paramétrage"
+
+#: admin/class-basepress-post-icon-metabox.php:39
+msgid "Article Icon"
+msgstr "Icône de l'article"
+
+#: admin/class-basepress-product-metabox.php:40
+#: admin/premium/class-basepress-dashboard-widget.php:97
+#: admin/premium/class-basepress-post-order.php:111
+#: admin/premium/class-basepress-shortcode-editor.php:187
+#: admin/premium/class-basepress-shortcode-editor.php:285
+#: blocks/gb-blocks.php:56 blocks/js/basepress-searchbar-block.js:89
+#: blocks/premium/js/basepress-articles-list-block.js:94
+#: includes/class-basepress-cpt.php:367 includes/class-basepress-cpt.php:369
+#: includes/class-basepress-cpt.php:962
+msgid "Knowledge Base"
+msgstr "Base de Connaissances"
+
+#: admin/class-basepress-product-metabox.php:112
+msgid "Choose Knowledge Base"
+msgstr "Choisissez une Base de Connaissances"
+
+#: admin/class-basepress-products-page.php:36
+msgid "Manage KBs"
+msgstr "Gérer les Bases"
+
+#: admin/class-basepress-products-page.php:84
+msgid "Manage Knowledge Bases"
+msgstr "Gérer les Bases de Connaissances"
+
+#: admin/class-basepress-products-page.php:93
+#: admin/class-basepress-products-page.php:148
+msgid "Add New Knowledge Base"
+msgstr "Nouvelle Base de Connaissances"
+
+#: admin/class-basepress-products-page.php:98
+#: admin/class-basepress-products-page.php:172
+#: admin/class-basepress-products-page.php:209
+#: admin/class-basepress-sections-page.php:105
+#: admin/class-basepress-sections-page.php:193
+#: admin/class-basepress-sections-page.php:245
+msgid "Name"
+msgstr "Nom"
+
+#: admin/class-basepress-products-page.php:100
+#: admin/class-basepress-sections-page.php:107
+msgid "The name is how it appears on your site."
+msgstr "Libellé du nom qui apparaîtra sur le site."
+
+#: admin/class-basepress-products-page.php:104
+#: admin/class-basepress-products-page.php:174
+#: admin/class-basepress-products-page.php:215
+#: admin/class-basepress-sections-page.php:111
+#: admin/class-basepress-sections-page.php:195
+#: admin/class-basepress-sections-page.php:251
+msgid "Slug"
+msgstr "Permalien"
+
+#: admin/class-basepress-products-page.php:106
+#: admin/class-basepress-sections-page.php:113
+msgid "The &#8220;slug&#8221; is the URL-friendly version of the name. It is usually all lowercase and contains only letters, numbers, and hyphens."
+msgstr "Le &#8220; permalien &#8221; est le nom de la page adapté aux URLs. Il est écrit en minuscule avec uniquement des lettres, des chiffres et des traits d'union."
+
+#: admin/class-basepress-products-page.php:110
+#: admin/class-basepress-products-page.php:173
+#: admin/class-basepress-products-page.php:221
+#: admin/class-basepress-sections-page.php:117
+#: admin/class-basepress-sections-page.php:194
+#: admin/class-basepress-sections-page.php:257
+msgid "Description"
+msgstr "Description"
+
+#: admin/class-basepress-products-page.php:112
+#: admin/class-basepress-sections-page.php:119
+msgid "The description is not prominent by default; however, some themes may show it."
+msgstr "La description n'est en principe pas importante par défaut. Cependant, il arrive que certains thèmes l'affichent."
+
+#: admin/class-basepress-products-page.php:116
+#: admin/class-basepress-products-page.php:227
+msgid "Knowledge Base image"
+msgstr "Image de la Base de Connaissances"
+
+#: admin/class-basepress-products-page.php:121
+msgid "Choose an image for this Knowledge Base."
+msgstr "Sélectionnez une image pour cette base de connaissance."
+
+#: admin/class-basepress-products-page.php:124
+#: admin/class-basepress-products-page.php:234
+#: admin/class-basepress-sections-page.php:143
+#: admin/class-basepress-sections-page.php:282
+#: themes/modern/settings/theme-settings.php:172
+msgid "Select image"
+msgstr "Sélectionner une image"
+
+#: admin/class-basepress-products-page.php:125
+#: admin/class-basepress-products-page.php:235
+#: admin/class-basepress-sections-page.php:144
+#: admin/class-basepress-sections-page.php:283
+#: themes/modern/settings/theme-settings.php:173
+msgid "Remove image"
+msgstr "Enlever l'image"
+
+#: admin/class-basepress-products-page.php:130
+#: admin/class-basepress-products-page.php:240
+msgid "Sections style"
+msgstr "Style des sections"
+
+#: admin/class-basepress-products-page.php:132
+#: admin/class-basepress-products-page.php:139
+#: admin/class-basepress-products-page.php:242
+#: admin/class-basepress-products-page.php:249
+msgid "List"
+msgstr "Liste"
+
+#: admin/class-basepress-products-page.php:133
+#: admin/class-basepress-products-page.php:140
+#: admin/class-basepress-products-page.php:243
+#: admin/class-basepress-products-page.php:250
+msgid "Boxed"
+msgstr "Encadré"
+
+#: admin/class-basepress-products-page.php:137
+#: admin/class-basepress-products-page.php:247
+msgid "Sub-Sections style"
+msgstr "Style des sous-sections"
+
+#: admin/class-basepress-products-page.php:164
+#: admin/class-basepress-sections-page.php:183
+#: admin/premium/class-basepress-post-order.php:104
+msgid "Save Order"
+msgstr "Enregistrer l'ordre"
+
+#: admin/class-basepress-products-page.php:171
+#: admin/class-basepress-sections-page.php:192
+msgid "Image"
+msgstr "Image"
+
+#: admin/class-basepress-products-page.php:175
+#: admin/class-basepress-sections-page.php:196
+msgid "Count"
+msgstr "Compte utilisateur"
+
+#: admin/class-basepress-products-page.php:203 basepress.php:485
+msgid "Edit Knowledge Base"
+msgstr "Modifier la Base de Connaissances"
+
+#: admin/class-basepress-products-page.php:262
+#: admin/class-basepress-sections-page.php:300
+msgid "Save changes"
+msgstr "Enregistrer les modifications"
+
+#: admin/class-basepress-products-page.php:265
+#: admin/class-basepress-sections-page.php:303
+#: admin/class-basepress-sections-page.php:317
+msgid "Cancel"
+msgstr "Annuler"
+
+#: admin/class-basepress-section-metabox.php:42
+#: admin/premium/class-basepress-post-order.php:112
+#: admin/premium/class-basepress-shortcode-editor.php:195
+#: blocks/premium/js/basepress-articles-list-block.js:102
+#: includes/class-basepress-cpt.php:963 includes/class-basepress-cpt.php:1107
+#: includes/class-basepress-cpt.php:1172
+msgid "Section"
+msgstr "Section"
+
+#: admin/class-basepress-section-metabox.php:112
+#: admin/class-basepress-section-metabox.php:149
+#: admin/premium/class-basepress-post-order.php:199
+msgid "Choose Section"
+msgstr "Choisissez la Section"
+
+#: admin/class-basepress-sections-page.php:37
+#: admin/premium/class-basepress-dashboard-widget.php:143
+msgid "Sections"
+msgstr "Sections"
+
+#: admin/class-basepress-sections-page.php:73
+msgid "To create a new section please select the KB where you want to add it."
+msgstr "Pour créer une nouvelle section, veuillez sélectionner la base de connaissances à laquelle vous souhaitez l’ajouter."
+
+#: admin/class-basepress-sections-page.php:74
+msgid "Are you sure you want to delete this section?"
+msgstr "Vous êtes certain de vouloir supprimer cette section?"
+
+#: admin/class-basepress-sections-page.php:91
+msgid "Knowledge Base Sections"
+msgstr "Sections de la Base de Connaissances"
+
+#: admin/class-basepress-sections-page.php:100
+#: admin/class-basepress-sections-page.php:152
+msgid "Add New Section"
+msgstr "Ajouter une nouvelle section"
+
+#: admin/class-basepress-sections-page.php:123
+#: admin/class-basepress-sections-page.php:191
+#: admin/class-basepress-sections-page.php:263
+msgid "Icon"
+msgstr "Icône"
+
+#: admin/class-basepress-sections-page.php:126
+msgid "Choose an icon for this section."
+msgstr "Choisissez une icône pour cette section."
+
+#: admin/class-basepress-sections-page.php:130
+#: admin/class-basepress-sections-page.php:269
+#: admin/class-basepress-sections-page.php:312
+msgid "Select icon"
+msgstr "Sélectionner une icône"
+
+#: admin/class-basepress-sections-page.php:131
+#: admin/class-basepress-sections-page.php:270
+msgid "Remove icon"
+msgstr "Supprimer l'icône"
+
+#: admin/class-basepress-sections-page.php:135
+#: admin/class-basepress-sections-page.php:274
+msgid "Section image"
+msgstr "Image de la section"
+
+#: admin/class-basepress-sections-page.php:140
+#: admin/class-basepress-sections-page.php:279
+msgid "Choose an image for this section."
+msgstr "Sélectionnez une image pour cette section."
+
+#: admin/class-basepress-sections-page.php:171
+#: admin/premium/class-basepress-post-order.php:97
+#: admin/premium/class-basepress-shortcode-editor.php:189
+#: admin/premium/class-basepress-shortcode-editor.php:287
+#: includes/class-basepress-products-widget.php:258
+msgid "Select Knowledge Base"
+msgstr "Sélectionner une Base de Connaissances"
+
+#: admin/class-basepress-sections-page.php:175
+msgid "Section:"
+msgstr "Section :"
+
+#: admin/class-basepress-sections-page.php:177
+msgid "Root"
+msgstr "Racine"
+
+#: admin/class-basepress-sections-page.php:242 basepress.php:489
+msgid "Edit Section"
+msgstr "Modifier la section"
+
+#: admin/class-basepress-sections-page.php:288
+msgid "Parent"
+msgstr "Parent"
+
+#: admin/class-basepress-sections-page.php:295
+msgid "View More"
+msgstr "Voir plus"
+
+#: admin/class-basepress-sections-page.php:474
+#, php-format
+msgid "There are no sections under <b><i>%s</i></b>. You can create a new section from the form on the left."
+msgstr "Il n’y a aucune section sous <b><i>%s</i></b>. Vous pouvez créer une nouvelle section à partir du formulaire de gauche."
+
+#: admin/class-basepress-settings.php:77 admin/class-basepress-settings.php:78
+#: admin/class-basepress-settings.php:710
+msgid "Settings"
+msgstr "Paramètres"
+
+#: admin/class-basepress-settings.php:107
+msgid "General"
+msgstr "Général"
+
+#: admin/class-basepress-settings.php:110
+msgid "Appearance"
+msgstr "Apparence"
+
+#: admin/class-basepress-settings.php:113
+msgid "Breadcrumbs"
+msgstr "Fil d'Ariane"
+
+#: admin/class-basepress-settings.php:116
+msgid "Search"
+msgstr "Recherches"
+
+#: admin/class-basepress-settings.php:119
+msgid "Comments"
+msgstr "Commentaires"
+
+#: admin/class-basepress-settings.php:127
+msgid "Import/Export"
+msgstr "Importer / Exporter"
+
+#: admin/class-basepress-settings.php:130
+msgid "Knowledge Base page"
+msgstr "Page de BasePress"
+
+#: admin/class-basepress-settings.php:131
+msgid "Exclude IPs from article view counter"
+msgstr "Exclure ces adresses IP du comptage des articles vus"
+
+#: admin/class-basepress-settings.php:132
+msgid "Single Knowledge Base mode"
+msgstr "Base de Connaissances unique"
+
+#: admin/class-basepress-settings.php:133
+#, fuzzy
+#| msgid "KB Articles List"
+msgid "Articles permalink structure"
+msgstr "Liste des articles de la BdC"
+
+#: admin/class-basepress-settings.php:134
+msgid "Sections permalink structure"
+msgstr ""
+
+#: admin/class-basepress-settings.php:135 admin/wizard.php:204
+msgid "Enable build mode"
+msgstr "Activer le mode construction"
+
+#: admin/class-basepress-settings.php:137
+msgid "Remove all content on uninstall"
+msgstr "Supprimer tout le contenu lors de la désinstallation"
+
+#: admin/class-basepress-settings.php:141 admin/wizard.php:141
+msgid "Theme"
+msgstr "Thème"
+
+#: admin/class-basepress-settings.php:142
+msgid "Skip loading of header and footer"
+msgstr "Ignorer le chargement de l'entête et du pied de page"
+
+#: admin/class-basepress-settings.php:143
+msgid "Default Sidebar Position"
+msgstr "Position de la barre latérale par défaut"
+
+#: admin/class-basepress-settings.php:144
+msgid "Force Sidebar Position on Articles"
+msgstr "Forcer la position de la barre latérale sur les articles"
+
+#: admin/class-basepress-settings.php:145
+msgid "Knowledge Base \"Choose\" Button Text"
+msgstr "Libellé du bouton \"Choisir\" dans la Base de Connaissances"
+
+#: admin/class-basepress-settings.php:146
+msgid "\"View all articles\" link text"
+msgstr "Libellé du texte pour \"Afficher tous les résultats\""
+
+#: admin/class-basepress-settings.php:147
+msgid "Knowledge Bases Columns"
+msgstr "Nb colonnes de la Base de Connaissances"
+
+#: admin/class-basepress-settings.php:148
+msgid "Sections Columns"
+msgstr "Nombre de colonnes de sections"
+
+#: admin/class-basepress-settings.php:149
+msgid "Limit Articles count on multi sections page"
+msgstr "Nombre d'articles par page s'il y a plusieurs sections"
+
+#: admin/class-basepress-settings.php:150
+msgid "Limit Articles count on single section page"
+msgstr "Nombre d'articles par page s'il n'y a qu'une section"
+
+#: admin/class-basepress-settings.php:151
+msgid "Show Section Icons"
+msgstr "Afficher les icônes des sections"
+
+#: admin/class-basepress-settings.php:152
+msgid "Show Articles Icons"
+msgstr "Afficher les icônes des articles"
+
+#: admin/class-basepress-settings.php:153
+msgid "Show Articles count on Sections"
+msgstr "Afficher le nombre d'articles par section"
+
+#: admin/class-basepress-settings.php:154
+#: admin/premium/class-basepress-post-order.php:39
+msgid "Articles Order"
+msgstr "Ordre des articles"
+
+#: admin/class-basepress-settings.php:157
+msgid "Breadcrumbs name"
+msgstr "Libellé du fil d'Ariane"
+
+#: admin/class-basepress-settings.php:158
+msgid "Include Home link"
+msgstr "Inclure un lien vers la page d'accueil"
+
+#: admin/class-basepress-settings.php:159
+msgid "Text for Home link"
+msgstr "Libellé du lien vers la page d'accueil"
+
+#: admin/class-basepress-settings.php:160
+msgid "Include parent pages link"
+msgstr "Inclure un lien vers les pages parentes"
+
+#: admin/class-basepress-settings.php:163
+msgid "Enable live search results"
+msgstr "Activer les résultats de recherche en direct"
+
+#: admin/class-basepress-settings.php:164
+msgid "Disable live search results on devices smaller than"
+msgstr "Désactiver la recherche en direct sur les écrans inférieurs à"
+
+#: admin/class-basepress-settings.php:165
+msgid "Max live search results"
+msgstr "Max résultats de recherche en direct"
+
+#: admin/class-basepress-settings.php:166
+msgid "Minimum word length"
+msgstr ""
+
+#: admin/class-basepress-settings.php:167
+msgid "Enable wildcard before search terms"
+msgstr "Activer le caractère générique avant les termes de recherche"
+
+#: admin/class-basepress-settings.php:168
+msgid "Search field placeholder"
+msgstr "Texte fictif inscrit dans la zone de recherche"
+
+#: admin/class-basepress-settings.php:169
+#: admin/premium/class-basepress-premium-settings.php:110
+msgid "Submit button text"
+msgstr "Texte du bouton \"Envoyer votre avis\""
+
+#: admin/class-basepress-settings.php:170
+msgid "Show search submit button"
+msgstr "Afficher le bouton \"Rechercher\""
+
+#: admin/class-basepress-settings.php:171
+msgid "Search result page title"
+msgstr "Titre de la page de résultats"
+
+#: admin/class-basepress-settings.php:172
+msgid "'No search result found' page title"
+msgstr "Titre de la page \"Aucun résultat trouvé\""
+
+#: admin/class-basepress-settings.php:173
+msgid "'No search result found' message for live search"
+msgstr "Libellé du message \"Aucun résultat trouvé\" lors de la recherche en direct"
+
+#: admin/class-basepress-settings.php:174
+msgid "Show all results text"
+msgstr "Libellé du texte \"Afficher tous les résultats\""
+
+#: admin/class-basepress-settings.php:175
+msgid "Load css with shortcode"
+msgstr "Charger le CSS avec le shortcode"
+
+#: admin/class-basepress-settings.php:176
+msgid "Use search parameter on URL"
+msgstr "Utiliser le paramètre de recherche dans l'URL"
+
+#: admin/class-basepress-settings.php:177
+msgid "Exclude KB articles from other WordPress searches"
+msgstr "Exclure les articles de la Base de Connaissances des autres recherches dans WordPress"
+
+#: admin/class-basepress-settings.php:180
+msgid "Enable Comments"
+msgstr "Activer les commentaires"
+
+#: admin/class-basepress-settings.php:181
+msgid "Use main theme template"
+msgstr "Utiliser le modèle du thème principal"
+
+#: admin/class-basepress-settings.php:189
+msgid "Import Settings"
+msgstr "Paramètres d’importation"
+
+#: admin/class-basepress-settings.php:190
+msgid "Export Settings"
+msgstr "Paramètres d’exportation"
+
+#: admin/class-basepress-settings.php:218
+msgid "Select page"
+msgstr "Sélectionner une page"
+
+#: admin/class-basepress-settings.php:224
+msgid "Select the page containing the knowledge base shortcode."
+msgstr "Sélectionner la page qui contient le shortcode de votre Base de Connaissances."
+
+#: admin/class-basepress-settings.php:232
+msgid "Add multiple IP addresses separated by a space."
+msgstr "Ajouter plusieurs adresses IP séparées par un espace."
+
+#: admin/class-basepress-settings.php:249
+#, fuzzy
+#| msgid "Articles"
+msgid "article-slug"
+msgstr "Articles"
+
+#: admin/class-basepress-settings.php:250
+msgid "Available tags are <code>%knowledge_base%</code>, <code>%parent_sections%</code>, <code>%article_section%</code> or <code>%none%</code>.<br>Add a forward slash between each tag. If left empty it defaults to <code>%knowledgebase%/$article_section%</code>."
+msgstr ""
+
+#: admin/class-basepress-settings.php:260
+#, fuzzy
+#| msgid "Sections"
+msgid "section-slug"
+msgstr "Sections"
+
+#: admin/class-basepress-settings.php:261
+msgid "Available tags are <code>%knowledge_base%</code>, <code>%parent_sections%</code> or <code>%none%</code>.<br>Add a forward slash between each tag. If left empty it defaults to <code>%knowledgebase%</code>."
+msgstr ""
+
+#: admin/class-basepress-settings.php:269
+msgid "When enabled only admin users can access the knowledge base in the front end."
+msgstr "Lorsque cette option activée seuls les administrateurs peuvent accéder à Base de Connaissances depuis le site public."
+
+#: admin/class-basepress-settings.php:277
+msgid "If enabled all plugin content including Knowledge Bases, sections and articles will be deleted when the plugin is unistalled."
+msgstr "Si cette option est activée, tout le contenu de l'extension, les Bases de Connaissances, les sections et les articles seront supprimés lors de la désinstallation du plugin."
+
+#: admin/class-basepress-settings.php:308 admin/wizard.php:270
+msgid "Select Theme"
+msgstr "Sélectionner le thème"
+
+#: admin/class-basepress-settings.php:327
+msgid "After saving the settings, further customizations for the selected theme are available under the BasePress menu."
+msgstr "Après avoir enregistré les paramètres, d’autres personnalisations pour le thème sélectionné sont disponibles dans le menu BasePress."
+
+#: admin/class-basepress-settings.php:335
+msgid "BasePress templates load the header and footer from your theme using WordPress functions get_header() and get_footer(). If your theme already loads the header and footer use this option to prevent BasePress from loading them again."
+msgstr "Les thèmes de BasePress chargent l'en-tête et le pied de page de votre thème à l'aide des fonctions de WordPress \"get_header()\" et \"get_footer()\". Si votre thème charge déjà l'en-tête et le pied de page, utilisez cette option pour empêcher BasePress de les charger à nouveau."
+
+#: admin/class-basepress-settings.php:343
+msgid "Select sidebar position"
+msgstr "Sélectionnez la position de la barre latérale"
+
+#: admin/class-basepress-settings.php:344
+msgid "Right"
+msgstr "Droite"
+
+#: admin/class-basepress-settings.php:345
+msgid "Left"
+msgstr "Gauche"
+
+#: admin/class-basepress-settings.php:346
+#: admin/premium/class-basepress-premium-settings.php:414
+#: admin/premium/class-basepress-premium-settings.php:598
+#: includes/class-basepress-cpt.php:1139
+msgid "None"
+msgstr "Aucune"
+
+#: admin/class-basepress-settings.php:357
+msgid "By default you can choose a different sidebar position for each article.<br>When this option is enabled all articles will be displayed with the default sidebar position."
+msgstr "Par défaut, la position de la barre latérale est définie individuellement pour chaque article.<br>Lorsque cette option est activée, tous les articles s'affichent avec la barre latérale dans la position par défaut."
+
+#: admin/class-basepress-settings.php:381
+msgid "The text appears under the list of articles in the section. Type the singular and plural form for \"View all articles\" separated by a vertical bar \"|\".<br>Use %number% to show the number of articles.<br>Default: View %number% article | View all %number% articles."
+msgstr "Le texte apparaît sous la liste des articles de la section. Tapez le singulier et le pluriel pour “Afficher tous les articles” séparés par une barre verticale “|”.<br>Utilisez %number% pour afficher le nombre d’articles.<br>Par défaut : Voir %number% articles | Voir tous les %number% articles."
+
+#: admin/class-basepress-settings.php:438
+#, fuzzy
+#| msgid "Date Ascending"
+msgid "Date ascending"
+msgstr "Date croissante"
+
+#: admin/class-basepress-settings.php:439
+#, fuzzy
+#| msgid "Date Descending"
+msgid "Date descending"
+msgstr "Date décroissante"
+
+#: admin/class-basepress-settings.php:440
+#, fuzzy
+#| msgid "Alphabetically"
+msgid "Alphabetical ascending"
+msgstr "Alphabétiquement"
+
+#: admin/class-basepress-settings.php:441
+#, fuzzy
+#| msgid "Alphabetically"
+msgid "Alphabetical descending"
+msgstr "Alphabétiquement"
+
+#: admin/class-basepress-settings.php:454
+msgid "This is the name used in the breadcrumbs for the knowledge base entry page."
+msgstr "C'est le libellé du fil d'Ariane pour revenir à la page d'accueil de la Base de Connaissances."
+
+#: admin/class-basepress-settings.php:469
+msgid "This is the name used in the breadcrumbs for the Home page. Default is Home."
+msgstr "C'est le libellé utilisé dans le fil d'Ariane pour revenir à la page d'accueil. Par défaut \"Accueil\"."
+
+#: admin/class-basepress-settings.php:488
+msgid "Display live search results while typing on the search bar."
+msgstr "Affichez les résultats de la recherche en direct en tapant sur la barre de recherche."
+
+#: admin/class-basepress-settings.php:500
+msgid "Insert the minimum screen <u>height</u> in px."
+msgstr "Indiquer la <u>hauteur</u> minimale de l'écran en px."
+
+#: admin/class-basepress-settings.php:508
+msgid "Maximum number of results to display during a live search."
+msgstr "Nombre maximum de résultats à afficher lors d’une recherche en direct."
+
+#: admin/class-basepress-settings.php:516 admin/wizard.php:195
+msgid "Any search term shorter than this value will be omitted from the search."
+msgstr ""
+
+#: admin/class-basepress-settings.php:548
+msgid "This is the title for the search page. Use %number% to include the number of found articles in the text."
+msgstr "C'est le titre de la page de recherche. Utilisez %number% pour inclure le nombre d'articles trouvés dans le texte du résultat."
+
+#: admin/class-basepress-settings.php:559
+msgid "This is the title for the search page when no results are found."
+msgstr "C'est le titre de la page de résultat quand rien n'est trouvé."
+
+#: admin/class-basepress-settings.php:567
+msgid "This is the message for the Smart search when no results are found."
+msgstr "C'est le titre de la page de résultat quand rien n'est trouvé avec la recherche assistée."
+
+#: admin/class-basepress-settings.php:580
+msgid "This text appears at the bottom of the search bar suggestions. Use %number% to include the number of found articles in the text."
+msgstr "Ce texte apparaît en bas de la barre dans la recherche assistée. Utilisez %number% pour inclure le nombre d'articles trouvés dans le texte du message."
+
+#: admin/class-basepress-settings.php:591
+msgid "You can add a search bar anywhere in your website using the shortcode [basepress-search].<br>Check this option to load the CSS style for the search bar or leave it unchecked to use your own CSS style."
+msgstr "Vous pouvez ajouter une barre de recherche n’importe où dans votre site Web en utilisant le shortcode [basepress-search]. <br> Cochez cette option pour charger le style CSS de la barre de recherche ou laissez-la décochée pour utiliser votre propre style CSS."
+
+#: admin/class-basepress-settings.php:600 admin/wizard.php:200
+msgid "By default searches are performed with a wildcard after each term. Searching for \"<b><u>app</u></b>\" will find \"<b><u>app</u></b>le\" but not \"pine<b><u>app</u></b>le\". If you want to include a wildcard before each term as well or your content is in a language that uses no spaces between words, like Chinese or Japanese, enable this option."
+msgstr "Par défaut, les recherches sont effectuées avec un caractère générique après chaque terme. La recherche de “<b><u>pre</u></b>” trouvera “<b><u>pre</u></b>mière” mais pas “com<b><u>pre</u></b>nd “. Si vous souhaitez également inclure un caractère générique avant chaque terme ou si votre contenu est dans une langue qui n’utilise aucun espace entre les mots, comme le chinois ou le japonais, activez cette option."
+
+#: admin/class-basepress-settings.php:608
+msgid "When enabled the URL will contain the search parameters instead of the search base. Like http://www.your-domain.com/knowledge-base/?s=search+term"
+msgstr "Lorsque cette option est activée, l'URL affiche les paramètres de recherche à la place de l'URL par défaut.<br>Par exemple : http://www.your-domain.com/knowledge-base/?s=search+term"
+
+#: admin/class-basepress-settings.php:638
+msgid "Here you can transfer the BasePress settings. If you need to migrate the whole knowledge base content please use the"
+msgstr ""
+
+#: admin/class-basepress-settings.php:643
+msgid "Paste your settings and click Import. This action cannot be undone."
+msgstr "Collez vos paramètres et cliquez sur \"Importer\". Cette action ne peut pas être annulée."
+
+#: admin/class-basepress-settings.php:645
+msgid "Import"
+msgstr "Importer"
+
+#: admin/class-basepress-settings.php:706
+#: themes/default/settings/theme-settings.php:86
+#: themes/modern/settings/theme-settings.php:86
+#: themes/zen/settings/theme-settings.php:86
+msgid "You do not have sufficient permissions to access this page."
+msgstr "Vous n'avez pas les droits suffisants pour accéder à cette page."
+
+#: admin/class-basepress-settings.php:721
+#: themes/default/settings/theme-settings.php:114
+#: themes/modern/settings/theme-settings.php:120
+#: themes/zen/settings/theme-settings.php:113
+msgid "Save Settings"
+msgstr "Enregistrer"
+
+#: admin/class-basepress-template-metabox.php:43
+#: includes/class-basepress-cpt.php:1177
+msgid "Template"
+msgstr "Modèle"
+
+#: admin/class-basepress-template-metabox.php:76
+msgid "Choose Template"
+msgstr "Choisir un modèle"
+
+#: admin/class-basepress-terms-edit.php:67
+msgid "This page is disabled!<br>To edit the Knowledge Base taxonomies use the pages available under the Knowledge Base menu."
+msgstr "Cette page est désactivée !<br>Pour modifier les taxonomies de la Base de Connaissances, utilisez les pages disponibles dans le menu de la Base de Connaissances."
+
+#: admin/icons-manager.php:59 admin/icons-manager.php:96
+msgid "Icons Manager"
+msgstr "Gestionnaire d'icônes"
+
+#: admin/icons-manager.php:103
+msgid "Css URI"
+msgstr "CSS URI"
+
+#: admin/icons-manager.php:106
+msgid "Extra Classes"
+msgstr "Classes supplémentaires"
+
+#: admin/icons-manager.php:109
+msgid "Load Icons"
+msgstr "Charger les icônes"
+
+#: admin/icons-manager.php:112
+msgid "Don't load icons font on front end"
+msgstr "Ne pas charger les icônes sur le site public"
+
+#: admin/icons-manager.php:116
+msgid "Articles Icons"
+msgstr "Icône des articles"
+
+#: admin/icons-manager.php:117
+msgid "Sections Icons"
+msgstr "Icônes des sections"
+
+#: admin/icons-manager.php:118
+msgid "Breadcrumbs Icons"
+msgstr "Icônes du fil d'Ariane"
+
+#: admin/icons-manager.php:119
+msgid "Votes Icons"
+msgstr "Icônes des votes"
+
+#: admin/icons-manager.php:120
+msgid "Pagination Icons"
+msgstr "Icônes de pagination"
+
+#: admin/icons-manager.php:121
+msgid "Article Meta Icons"
+msgstr "Icônes des métadonnées des articles"
+
+#: admin/icons-manager.php:122
+#, fuzzy
+#| msgid "Votes Icons"
+msgid "Notices Icons"
+msgstr "Icônes des votes"
+
+#: admin/icons-manager.php:124
+msgid "Sort Icons"
+msgstr "Trier les icônes"
+
+#: admin/icons-manager.php:125
+msgid "Restore Saved Icons"
+msgstr "Restaurer les icônes enregistrés"
+
+#: admin/icons-manager.php:126
+msgid "Restore Default Icons"
+msgstr "Remettre les icônes par défaut"
+
+#: admin/icons-manager.php:128
+msgid "Save Icons"
+msgstr "Enregistrer les icônes"
+
+#: admin/icons-manager.php:197
+msgid "The icons css file could not be found!"
+msgstr "Le fichier CSS des icônes n'a pas été trouvé !"
+
+#: admin/icons-manager.php:374
+msgid "The icons options have been saved."
+msgstr "Les options d'icônes ont été enregistrées."
+
+#: admin/icons-manager.php:378
+msgid "The icons options could not be saved. Please try again."
+msgstr "Les options d'icônes n'ont pas été enregistrées. Merci de recommencer."
+
+#: admin/icons-manager.php:395
+msgid "The icons options have been restored to default."
+msgstr "Les options d'icônes ont été réinitialisées à leur valeur par défaut."
+
+#: admin/icons-manager.php:399
+msgid "The icons options could not be restored to default. Please try again."
+msgstr "Les options d'icônes n'ont pu être restaurées à leur valeur par défaut. Merci de recommencer."
+
+#: admin/premium/class-basepress-dashboard-widget.php:139
+#: admin/premium/class-basepress-insight.php:239
+msgid "Knowledge Bases"
+msgstr "Base de Connaissances"
+
+#: admin/premium/class-basepress-dashboard-widget.php:147
+#: includes/premium/class-basepress-widget-visibility.php:43
+msgid "Articles"
+msgstr "Articles"
+
+#: admin/premium/class-basepress-dashboard-widget.php:168
+msgid "Open Feedback"
+msgstr "Activer les avis"
+
+#: admin/premium/class-basepress-dashboard-widget.php:210
+msgid "Articles to improve"
+msgstr "Articles à améliorer"
+
+#: admin/premium/class-basepress-dashboard-widget.php:241
+msgid "Articles viewed today"
+msgstr "Articles vus aujourd'hui"
+
+#: admin/premium/class-basepress-dashboard-widget.php:257
+msgid "Popular Searches today"
+msgstr "Recherches populaires du jour"
+
+#: admin/premium/class-basepress-dashboard-widget.php:261
+msgid "Query"
+msgstr "Requête"
+
+#: admin/premium/class-basepress-dashboard-widget.php:262
+#: admin/premium/class-basepress-insight.php:139
+#: admin/premium/class-basepress-insight.php:257
+msgid "Searches"
+msgstr "Recherches"
+
+#: admin/premium/class-basepress-dashboard-widget.php:279
+msgid "No Searches Today"
+msgstr "Aucune recherche aujourd'hui"
+
+#: admin/premium/class-basepress-insight.php:136
+msgid "Are you sure you want to delete logs older than"
+msgstr "Êtes-vous certains de vouloir supprimer les logs plus vieux de"
+
+#: admin/premium/class-basepress-insight.php:137
+msgid "Time"
+msgstr "Heure"
+
+#: admin/premium/class-basepress-insight.php:138
+#: admin/premium/class-basepress-post-order.php:115
+#: admin/premium/class-basepress-shortcode-editor.php:213
+#: blocks/premium/js/basepress-articles-list-block.js:174
+#: includes/class-basepress-post-views.php:131
+#: includes/premium/class-basepress-popular-articles-widget.php:83
+msgid "Views"
+msgstr "Vues"
+
+#: admin/premium/class-basepress-insight.php:159
+#: admin/premium/class-basepress-insight.php:171
+#: admin/premium/class-basepress-premium-settings.php:71
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: admin/premium/class-basepress-insight.php:197
+msgid "Date Range"
+msgstr "Période"
+
+#: admin/premium/class-basepress-insight.php:200
+#: admin/premium/class-basepress-premium-settings.php:680
+msgid "Week"
+msgstr "Semaine"
+
+#: admin/premium/class-basepress-insight.php:201
+#: admin/premium/class-basepress-premium-settings.php:681
+msgid "Month"
+msgstr "Mois"
+
+#: admin/premium/class-basepress-insight.php:202
+#: admin/premium/class-basepress-premium-settings.php:682
+msgid "Year"
+msgstr "Année"
+
+#: admin/premium/class-basepress-insight.php:203
+msgid "Apply"
+msgstr "Appliquer"
+
+#: admin/premium/class-basepress-insight.php:208
+msgid "From"
+msgstr "De"
+
+#: admin/premium/class-basepress-insight.php:212
+msgid "To"
+msgstr "A"
+
+#: admin/premium/class-basepress-insight.php:219
+msgid "Manage Logs"
+msgstr "Gérer les logs"
+
+#: admin/premium/class-basepress-insight.php:221
+msgid "Delete Logs"
+msgstr "Supprimer les logs"
+
+#: admin/premium/class-basepress-insight.php:225
+msgid "Older than"
+msgstr "Plus anciens"
+
+#: admin/premium/class-basepress-insight.php:230
+#: admin/premium/class-basepress-premium-settings.php:701
+msgid "Delete"
+msgstr "Supprimer"
+
+#: admin/premium/class-basepress-insight.php:256
+msgid "Views and Scores"
+msgstr "Vues et scores"
+
+#: admin/premium/class-basepress-insight.php:267
+msgid "Visits by time range"
+msgstr "Visites par période"
+
+#: admin/premium/class-basepress-insight.php:278
+msgid "Most Visited"
+msgstr "Les plus vus"
+
+#: admin/premium/class-basepress-insight.php:285
+msgid "Most visited by time range"
+msgstr "Les plus vus sur une période"
+
+#: admin/premium/class-basepress-insight.php:294
+msgid "Highest Score"
+msgstr "Score le plus élevé"
+
+#: admin/premium/class-basepress-insight.php:301
+msgid "Lowest Score"
+msgstr "Score le plus faible"
+
+#: admin/premium/class-basepress-insight.php:314
+msgid "Searches by time range"
+msgstr "Recherches par période"
+
+#: admin/premium/class-basepress-insight.php:325
+msgid "Top Searches"
+msgstr "Top des recherches"
+
+#: admin/premium/class-basepress-insight.php:332
+msgid "Top Searches by time range"
+msgstr "Top des recherches par période"
+
+#: admin/premium/class-basepress-insight.php:339
+msgid "Failed Searches"
+msgstr "Recherches non abouties"
+
+#: admin/premium/class-basepress-insight.php:479
+#: admin/premium/class-basepress-insight.php:786
+#: admin/premium/class-basepress-insight.php:952
+msgid "Global"
+msgstr "Global"
+
+#: admin/premium/class-basepress-insight.php:705
+#: includes/premium/class-basepress-users-feedback.php:300
+msgid "Uncategorised"
+msgstr ""
+
+#: admin/premium/class-basepress-insight.php:731
+#: admin/premium/class-basepress-insight.php:926
+msgid "No results to display here!"
+msgstr "Il n'y a aucun résultat à afficher ici !"
+
+#: admin/premium/class-basepress-insight.php:913
+msgid "Global search"
+msgstr "Recherche globale"
+
+#: admin/premium/class-basepress-network.php:78
+msgid "Delete Content from site(s)"
+msgstr "Supprimer le contenu du site"
+
+#: admin/premium/class-basepress-network.php:95
+#: includes/premium/class-basepress-users-feedback.php:420
+msgid "Submit"
+msgstr "Envoyer"
+
+#: admin/premium/class-basepress-post-order.php:76
+#, fuzzy
+#| msgid "Paste your settings and click Import. This action cannot be undone."
+msgid "Are you sure you want to save the articles order? This action cannot be undone"
+msgstr "Collez vos paramètres et cliquez sur \"Importer\". Cette action ne peut pas être annulée."
+
+#: admin/premium/class-basepress-post-order.php:77
+#, fuzzy
+#| msgid "Are you sure you want to delete logs older than"
+msgid "Are you sure you want to reset the articles order? This action cannot be undone"
+msgstr "Êtes-vous certains de vouloir supprimer les logs plus vieux de"
+
+#: admin/premium/class-basepress-post-order.php:93
+msgid "Knowledge Base Articles order"
+msgstr "Classement des articles dans la Base de Connaissances"
+
+#: admin/premium/class-basepress-post-order.php:101
+#: admin/premium/class-basepress-shortcode-editor.php:198
+#: blocks/gb-blocks.php:131 blocks/gb-blocks.php:140
+msgid "Select Section"
+msgstr "Sélectionner la section"
+
+#: admin/premium/class-basepress-post-order.php:103
+#, fuzzy
+#| msgid "Post Order"
+msgid "Reset Order"
+msgstr "Ordre des publications"
+
+#: admin/premium/class-basepress-post-order.php:109
+#: admin/premium/class-basepress-shortcode-editor.php:211
+#: blocks/premium/js/basepress-articles-list-block.js:172
+msgid "Title"
+msgstr "Titre"
+
+#: admin/premium/class-basepress-post-order.php:110
+msgid "Author"
+msgstr "Auteur"
+
+#: admin/premium/class-basepress-post-order.php:113
+#: admin/premium/class-basepress-premium-settings.php:53
+#: includes/premium/class-basepress-votings.php:234
+msgid "Votes"
+msgstr "Votes"
+
+#: admin/premium/class-basepress-post-order.php:114
+#: admin/premium/class-basepress-shortcode-editor.php:214
+#: blocks/premium/js/basepress-articles-list-block.js:175
+#: includes/premium/class-basepress-popular-articles-widget.php:84
+msgid "Score"
+msgstr "Score"
+
+#: admin/premium/class-basepress-post-order.php:116
+#: admin/premium/class-basepress-shortcode-editor.php:212
+#: blocks/premium/js/basepress-articles-list-block.js:173
+msgid "Date"
+msgstr "Date"
+
+#: admin/premium/class-basepress-premium-settings.php:50
+#: includes/class-basepress-cpt.php:328
+#: includes/premium/class-basepress-widget-visibility.php:42
+msgid "Tags"
+msgstr "Mots-clés"
+
+#: admin/premium/class-basepress-premium-settings.php:56
+#: includes/premium/class-basepress-users-feedback.php:110
+msgid "Feedback"
+msgstr "Avis"
+
+#: admin/premium/class-basepress-premium-settings.php:59
+#: includes/premium/class-basepress-table-of-content.php:241
+msgid "Table of Contents"
+msgstr "Table des matières"
+
+#: admin/premium/class-basepress-premium-settings.php:62
+#: admin/premium/class-basepress-shortcode-editor.php:162
+msgid "Notices"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:65
+msgid "Articles Navigation"
+msgstr "Navigation entre articles"
+
+#: admin/premium/class-basepress-premium-settings.php:68
+msgid "Content Restriction"
+msgstr "Restriction de contenu"
+
+#: admin/premium/class-basepress-premium-settings.php:75
+msgid "Delete Data"
+msgstr "Supprimer les données"
+
+#: admin/premium/class-basepress-premium-settings.php:83
+msgid "Tags slug"
+msgstr "Slug des mots-clés"
+
+#: admin/premium/class-basepress-premium-settings.php:84
+msgid "Tags page title"
+msgstr "Titre de la page des mots-clés"
+
+#: admin/premium/class-basepress-premium-settings.php:85
+msgid "Tags list title"
+msgstr "Titre de la liste des mots-clés"
+
+#: admin/premium/class-basepress-premium-settings.php:88
+msgid "Enable article votes"
+msgstr "Activer le vote sur les articles"
+
+#: admin/premium/class-basepress-premium-settings.php:89
+msgid "Voting Question"
+msgstr "Question posée lors du vote"
+
+#: admin/premium/class-basepress-premium-settings.php:90
+msgid "Hide dislike button"
+msgstr "Masquer le bouton \"J'aime pas\""
+
+#: admin/premium/class-basepress-premium-settings.php:91
+msgid "Show votes count in the buttons"
+msgstr "Afficher le nombre de votes"
+
+#: admin/premium/class-basepress-premium-settings.php:92
+msgid "Show confirmation message after vote submission"
+msgstr "Afficher un message de confirmation après l'envoi du vote"
+
+#: admin/premium/class-basepress-premium-settings.php:93
+msgid "Vote confirmation message"
+msgstr "Message de confirmation"
+
+#: admin/premium/class-basepress-premium-settings.php:94
+msgid "User has already voted notice"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:95
+msgid "Hide the voting buttons if the user has already voted"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:97
+msgid "Votes icons"
+msgstr "Icônes du vote"
+
+#: admin/premium/class-basepress-premium-settings.php:102
+msgid "Enable feedback"
+msgstr "Activer les avis"
+
+#: admin/premium/class-basepress-premium-settings.php:103
+msgid "Form visibility"
+msgstr "Affichage du formulaire"
+
+#: admin/premium/class-basepress-premium-settings.php:104
+msgid "Form label"
+msgstr "Libellé du formulaire"
+
+#: admin/premium/class-basepress-premium-settings.php:105
+#, fuzzy
+#| msgid "Include current article"
+msgid "Include email field"
+msgstr "Inclure l'article en cours"
+
+#: admin/premium/class-basepress-premium-settings.php:106
+msgid "Make email field required"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:107
+msgid "Email field label"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:108
+#, fuzzy
+#| msgid "Search field placeholder"
+msgid "Email field placeholder"
+msgstr "Texte fictif inscrit dans la zone de recherche"
+
+#: admin/premium/class-basepress-premium-settings.php:109
+msgid "Privacy notice"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:111
+msgid "Message after successful submit"
+msgstr "Message affiché après l'envoi d'un avis réussi"
+
+#: admin/premium/class-basepress-premium-settings.php:112
+msgid "Message after failed submit"
+msgstr "Message affiché après l'envoi d'un avis en échec"
+
+#: admin/premium/class-basepress-premium-settings.php:113
+msgid "Send notice of new feedback to:"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:114
+msgid "Send notice from this email:"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:115
+msgid "Notice email subject:"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:116
+#, fuzzy
+#| msgid "Vote confirmation message"
+msgid "Notice email message:"
+msgstr "Message de confirmation"
+
+#: admin/premium/class-basepress-premium-settings.php:117
+msgid "Use reCAPTCHA"
+msgstr "Utiliser reCAPTCHA"
+
+#: admin/premium/class-basepress-premium-settings.php:118
+msgid "reCAPTCHA Site KEY"
+msgstr "Clé publique reCAPTCHA"
+
+#: admin/premium/class-basepress-premium-settings.php:119
+msgid "reCAPTCHA Secret KEY"
+msgstr "Clé secrète reCAPTCHA"
+
+#: admin/premium/class-basepress-premium-settings.php:122
+msgid "Show Table of Content on articles"
+msgstr "Afficher la table des matières dans les articles"
+
+#: admin/premium/class-basepress-premium-settings.php:123
+msgid "Table of Content title"
+msgstr "Titre de la table des matières"
+
+#: admin/premium/class-basepress-premium-settings.php:124
+msgid "Show numbers on list items"
+msgstr "Afficher le nombre d'articles présents dans les listes"
+
+#: admin/premium/class-basepress-premium-settings.php:125
+msgid "Show Back to top link"
+msgstr "Afficher un lien de retour vers le haut de page"
+
+#: admin/premium/class-basepress-premium-settings.php:126
+msgid "Back to top link text"
+msgstr "Libellé du lien de retour vers le haut de page"
+
+#: admin/premium/class-basepress-premium-settings.php:127
+msgid "Show links to copy headings anchor URL to clipboard"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:128
+#, fuzzy
+#| msgid "Text for Home link"
+msgid "Tooltip text for \"Copy Link\""
+msgstr "Libellé du lien vers la page d'accueil"
+
+#: admin/premium/class-basepress-premium-settings.php:129
+msgid "Tooltip text for \"Link Copied\""
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:132
+#, fuzzy
+#| msgid "Show teaser"
+msgid "Show Titles"
+msgstr "Afficher un extrait"
+
+#: admin/premium/class-basepress-premium-settings.php:133
+#, fuzzy
+#| msgid "Show Post Icons"
+msgid "Show Icons"
+msgstr "Afficher les icônes des publications"
+
+#: admin/premium/class-basepress-premium-settings.php:134
+#, fuzzy
+#| msgid "Title"
+msgid "Titles"
+msgstr "Titre"
+
+#: admin/premium/class-basepress-premium-settings.php:137
+msgid "Show adjacent articles"
+msgstr "Afficher les articles adjacents"
+
+#: admin/premium/class-basepress-premium-settings.php:138
+msgid "Previous article title"
+msgstr "Libellé du lien vers l'article précédent"
+
+#: admin/premium/class-basepress-premium-settings.php:139
+msgid "Next article title"
+msgstr "Libellé du lien vers l'article suivant"
+
+#: admin/premium/class-basepress-premium-settings.php:142
+msgid "Enable content restriction"
+msgstr "Activer la restriction de contenu"
+
+#: admin/premium/class-basepress-premium-settings.php:143
+msgid "Redirected Pages"
+msgstr "Pages à rediriger"
+
+#: admin/premium/class-basepress-premium-settings.php:144
+msgid "Restricted page notice"
+msgstr "Avertissement d'accès restreint"
+
+#: admin/premium/class-basepress-premium-settings.php:145
+msgid "Restricted search snippet notice"
+msgstr "Avertissement de recherche restreinte"
+
+#: admin/premium/class-basepress-premium-settings.php:146
+msgid "Show teaser"
+msgstr "Afficher un extrait"
+
+#: admin/premium/class-basepress-premium-settings.php:147
+msgid "Teaser length in characters"
+msgstr "Longueur de l'extrait en nombre de caractères"
+
+#: admin/premium/class-basepress-premium-settings.php:148
+msgid "Include shortcodes content in the teaser"
+msgstr "Inclure le contenu des shortcodes dans le teaser"
+
+#: admin/premium/class-basepress-premium-settings.php:149
+msgid "Show Login form"
+msgstr "Afficher le formulaire de connexion"
+
+#: admin/premium/class-basepress-premium-settings.php:150
+msgid "Order roles alphabetically"
+msgstr "Classer les rôles alphabétiquement"
+
+#: admin/premium/class-basepress-premium-settings.php:151
+msgid "Show admin columns"
+msgstr "Afficher les colonnes admin"
+
+#: admin/premium/class-basepress-premium-settings.php:154
+msgid "Enable Statistics"
+msgstr "Activer les statistiques"
+
+#: admin/premium/class-basepress-premium-settings.php:155
+msgid "Default time range"
+msgstr "Période d'observation par défaut"
+
+#: admin/premium/class-basepress-premium-settings.php:156
+msgid "Max Results to show per statistic"
+msgstr "Maximum de résultats à afficher pour chaque statistique"
+
+#: admin/premium/class-basepress-premium-settings.php:160
+msgid "Delete all data"
+msgstr "Supprimer toutes les données"
+
+#: admin/premium/class-basepress-premium-settings.php:173
+msgid "The slug will be used in the tag permalinks. The default value is <b>tag</b>."
+msgstr "Le slug sera utilisé dans le permalien des mots-clés. La valeur par défaut est <b>tag</b>."
+
+#: admin/premium/class-basepress-premium-settings.php:181
+msgid "This is the title used on the tag pages. Use %tag% where you want to include the tag name.<br>Example \"Articles tagged with: %tag%\". Leave empty to display the tag name only."
+msgstr "C'est le titre utilisé sur pages de mots-clés. Utilisez %tag% là où vous souhaitez inclure le nom du mot-clé. <br>Exemple “Articles avec le mot-clé : %tag%”. Laissez vide pour afficher uniquement le nom du mot-clé."
+
+#: admin/premium/class-basepress-premium-settings.php:189
+msgid "This is the title used to list the tags for the current article. Default is <b>Tags:</b>."
+msgstr "C'est le titre utilisé pour la liste des mots-clés de l’article en cours. La valeur par défaut est <b>Tags :</b>."
+
+#: admin/premium/class-basepress-premium-settings.php:300
+msgid "Select Option"
+msgstr "Sélectionnez une option"
+
+#: admin/premium/class-basepress-premium-settings.php:301
+msgid "After Dislikes"
+msgstr "Après \"J'aime pas\""
+
+#: admin/premium/class-basepress-premium-settings.php:302
+msgid "After Likes and Dislikes"
+msgstr "Après \"J'aime\" et \"J'aime pas\""
+
+#: admin/premium/class-basepress-premium-settings.php:303
+msgid "Always visible"
+msgstr "Toujours visible"
+
+#: admin/premium/class-basepress-premium-settings.php:319
+msgid "Adds an optional field to the feedback form for the user to add an email to be contacted back."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:327
+msgid "When enabled the user must supply an email to submit the feedback."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:350
+msgid "Leave this field empty to disable the privacy notice."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:379
+msgid "Add emails that should be notified of new feedback. One email per line. Use the {{author_email}} placeholder to notify the author of the article. Leave empty to disable this feature."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:387
+msgid "This is the email address used to send the notice from your server. If left empty the default WordPress email will be used: wordpress@yourdomain.com."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:393
+#: includes/premium/class-basepress-users-feedback.php:770
+#, fuzzy
+#| msgid "I need a single Knowledge Base"
+msgid "You have received a new Knowledge Base Feedback!"
+msgstr "J'ai besoin d'une Base de Connaissances unique"
+
+#: admin/premium/class-basepress-premium-settings.php:406
+msgid "Use the following placeholders when customising the message:<br><b>{{article_title}}</b> for the title of the article that the feedback refers to<br><b>{{article_link}}</b> for the link to the article<br><b>{{feedback_text}}</b> for the text of the feedback<br><b>{{submitter_email}}</b> for the email of the person that submitted the feedback if present"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:415
+msgid "reCAPTCHA v2 Checkbox"
+msgstr "Case à cocher reCAPTCHA v2"
+
+#: admin/premium/class-basepress-premium-settings.php:416
+msgid "reCAPTCHA v2 Invisible"
+msgstr "reCAPTCHA v2 invisible"
+
+#: admin/premium/class-basepress-premium-settings.php:442
+msgid "This applies only to the ToC on the articles body. If unchecked you can still use the dedicated widget in the sidebar to show a ToC."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:450
+msgid "This title applies to the Table of Content in articles body. The widget has its own title."
+msgstr "Ce titre s'applique uniquement à la table des matières au sein des articles. Le Widget a son propre titre."
+
+#: admin/premium/class-basepress-premium-settings.php:458
+msgid "This option applies to the widget as well."
+msgstr "Cette option s'applique également au Widget."
+
+#: admin/premium/class-basepress-premium-settings.php:466
+msgid "Shows a link to go back to the top of the page."
+msgstr "Affiche un lien qui renvoie vers le haut de la page."
+
+#: admin/premium/class-basepress-premium-settings.php:481
+#, fuzzy
+#| msgid "Shows a link to go back to the top of the page."
+msgid "Shows a link next to the article's headings to copy the URL to the heading."
+msgstr "Affiche un lien qui renvoie vers le haut de la page."
+
+#: admin/premium/class-basepress-premium-settings.php:488
+#: includes/premium/class-basepress-table-of-content.php:359
+msgid "Copy Link"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:495
+#: includes/premium/class-basepress-table-of-content.php:360
+msgid "Link Copied"
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:544
+msgid "Shows Previous and Next articles link."
+msgstr "Afficher les liens \"Suivant\" et \"Précédent\"."
+
+#: admin/premium/class-basepress-premium-settings.php:597
+msgid "All pages"
+msgstr "Toutes les pages"
+
+#: admin/premium/class-basepress-premium-settings.php:599
+msgid "Sections only"
+msgstr "Sections uniquement"
+
+#: admin/premium/class-basepress-premium-settings.php:602
+msgid "<b>All Pages</b> - restricted content is visible ONLY to users that have access. Direct access to any of these pages without permission will lead to a 404 error page."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:603
+msgid "<b>None</b> - restricted content is visible to ALL users. Anyone that doesn't have the right role to view the content sees only teaser content and a restriction notice."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:604
+msgid "<b>Section Only</b> - restricted content is visible ONLY to users that have access. Anyone accessing an article with a direct link without the right role to view the content only sees teaser content and a restriction notice."
+msgstr ""
+
+#: admin/premium/class-basepress-premium-settings.php:653
+msgid "Orders user roles alphabetically in articles edit screen."
+msgstr "Classe les utilisateurs par ordre alphabétique de rôle dans l'écran de modification des articles."
+
+#: admin/premium/class-basepress-premium-settings.php:661
+msgid "Adds admin columns in the articles list with the list of roles that can view each article."
+msgstr "Ajoute des colonnes Admin dans la liste des articles avec la liste des rôles pouvant visualiser chaque article."
+
+#: admin/premium/class-basepress-premium-settings.php:702
+msgid "ATTENTION! This action cannot be undone."
+msgstr "ATTENTION ! Cette action ne peut être annulée."
+
+#: admin/premium/class-basepress-shortcode-editor.php:42
+#: admin/premium/class-basepress-shortcode-editor.php:117
+#: admin/premium/class-basepress-shortcode-editor.php:141
+msgid "Shortcode Editor"
+msgstr "Shortcodes"
+
+#: admin/premium/class-basepress-shortcode-editor.php:161
+#, fuzzy
+#| msgid "KB Articles List"
+msgid "Articles list"
+msgstr "Liste des articles de la BdC"
+
+#: admin/premium/class-basepress-shortcode-editor.php:163
+#, fuzzy
+#| msgid "KB Search Bar"
+msgid "Search Bar"
+msgstr "Barre de recherche de la BdC"
+
+#: admin/premium/class-basepress-shortcode-editor.php:190
+#: admin/premium/class-basepress-shortcode-editor.php:288
+#, fuzzy
+#| msgid "Knowledge Bases"
+msgid "All Knowledge Bases"
+msgstr "Base de Connaissances"
+
+#: admin/premium/class-basepress-shortcode-editor.php:199
+#: admin/premium/class-basepress-shortcode-editor.php:203
+msgid "All Sections"
+msgstr "Toutes les sections"
+
+#: admin/premium/class-basepress-shortcode-editor.php:208
+#: blocks/premium/js/basepress-articles-list-block.js:167
+msgid "Order by"
+msgstr "Trier par"
+
+#: admin/premium/class-basepress-shortcode-editor.php:210
+#: blocks/premium/js/basepress-articles-list-block.js:171
+#: includes/class-basepress-products-widget.php:99
+#: includes/class-basepress-related-articles-widget.php:108
+#: includes/class-basepress-sections-widget.php:99
+msgid "Custom"
+msgstr "Personnalisé"
+
+#: admin/premium/class-basepress-shortcode-editor.php:217
+#: blocks/premium/js/basepress-articles-list-block.js:181
+msgid "Order"
+msgstr "Tri"
+
+#: admin/premium/class-basepress-shortcode-editor.php:219
+#: blocks/premium/js/basepress-articles-list-block.js:185
+msgid "Ascending"
+msgstr "Croissant"
+
+#: admin/premium/class-basepress-shortcode-editor.php:220
+#: blocks/premium/js/basepress-articles-list-block.js:186
+msgid "Descending"
+msgstr "Décroissant"
+
+#: admin/premium/class-basepress-shortcode-editor.php:223
+msgid "Number of Articles"
+msgstr "Nombre d'articles"
+
+#: admin/premium/class-basepress-shortcode-editor.php:227
+msgid "Articles Preview"
+msgstr "Aperçu des articles"
+
+#: admin/premium/class-basepress-shortcode-editor.php:233
+#, fuzzy
+#| msgid "Articles Order"
+msgid "Articles Shortcode"
+msgstr "Ordre des articles"
+
+#: admin/premium/class-basepress-shortcode-editor.php:240
+#: admin/premium/class-basepress-shortcode-editor.php:267
+#: admin/premium/class-basepress-shortcode-editor.php:300
+#, fuzzy
+#| msgid "Load css with shortcode"
+msgid "Add shortcode"
+msgstr "Charger le CSS avec le shortcode"
+
+#: admin/premium/class-basepress-shortcode-editor.php:263
+#, fuzzy
+#| msgid "Votes Icons"
+msgid "Notice Shortcode"
+msgstr "Icônes des votes"
+
+#: admin/premium/class-basepress-shortcode-editor.php:293
+#, fuzzy
+#| msgid "Width"
+msgid "Max Width"
+msgstr "Largeur"
+
+#: admin/premium/class-basepress-shortcode-editor.php:296
+#, fuzzy
+#| msgid "Search Articles"
+msgid "Search bar Shortcode"
+msgstr "Rechercher des articles"
+
+#: admin/wizard.php:59
+msgid "Setup Wizard"
+msgstr "Assistant d'installation"
+
+#: admin/wizard.php:79
+msgid ""
+"If this is the first time you are using BasePress it is recommended to run the Wizard to get started.\n"
+"Are you sure you want to skip BasePress Wizard?"
+msgstr ""
+"Si c’est la première fois que vous utilisez BasePress, il est recommandé d’exécuter l’assistant de configuration.\n"
+"Voulez-vous vraiment ignorer l’assistant BasePress ?"
+
+#: admin/wizard.php:115
+msgid "Your Knowledge Base is not set up yet. Use the Setup Wizard to get started."
+msgstr "Votre Base de Connaissances n’est pas encore paramétrée. Utilisez l’Assistant de configuration ou allez à la page de paramétrage si vous voulez le faire manuellement."
+
+#: admin/wizard.php:117 admin/wizard.php:224
+msgid "Skip Wizard"
+msgstr "Ignorer l’Assistant"
+
+#: admin/wizard.php:135
+msgid "Knowledge Base Setup Wizard"
+msgstr "Assistant d'installation de la Base de Connaissances"
+
+#: admin/wizard.php:136
+msgid "Welcome to BasePress Setup Wizard!<br>Follow the few easy steps below to set up your Knowledge Base and start to add your content."
+msgstr "Bienvenue dans l’assistant de configuration de BasePress !<br>Suivez les quelques étapes ci-dessous pour configurer votre Base de Connaissances et commencer à ajouter du contenu."
+
+#: admin/wizard.php:139
+msgid "Title & Slug"
+msgstr "Titre & Permalien"
+
+#: admin/wizard.php:140
+msgid "Menu Item"
+msgstr "Élément du menu"
+
+#: admin/wizard.php:142
+msgid "Misc"
+msgstr "Divers"
+
+#: admin/wizard.php:143
+msgid "Finish"
+msgstr "Terminé"
+
+#: admin/wizard.php:149
+msgid "Knowledge Base Title"
+msgstr "Titre de la Base de Connaissances"
+
+#: admin/wizard.php:151
+msgid "This is the title used in the Knowledge base entry page.<br>Examples: Knowledge Base, Docs, Help, Support etc."
+msgstr "C'est le titre utilisé dans la page d'accueil de la Base de Connaissances.<br>Exemples : Base de connaissances, Aide, Support, etc."
+
+#: admin/wizard.php:154
+msgid "Knowledge Base Slug"
+msgstr "Permalien de la Base de Connaissances"
+
+#: admin/wizard.php:156
+msgid "This is the slug used in your site URL for your Knowledge base pages.<br>Accepted characters are small letters, numbers and dashes.<br>Example: www.your-domain.com/knowledge-base/"
+msgstr "Il s'agit du permalien utilisé dans l'URL de votre site pour les pages de votre Base de Connaissances.<br> Exemple: www.votre-domaine.fr/base-de-connaissances/.<br>Les caractères acceptés sont les lettres minuscules, les chiffres et les tirets."
+
+#: admin/wizard.php:162
+msgid "Knowledge Base Menu Item"
+msgstr "Menu de la Base de Connaissances"
+
+#: admin/wizard.php:164
+msgid "Select Menu"
+msgstr "Sélectionner un menu"
+
+#: admin/wizard.php:167
+msgid "Choose the menu where to add the Knowledge Base.<br>This gives users access to the knowledge base.<br>You can change it at any time from WordPress > Appearance > Menus."
+msgstr "Choisissez le menu dans lequel vous voulez ajouter un lien vers votre Base de Connaissances.<br>Cela permettra à vos utilisateurs d'accéder au contenu de votre Base de Connaissances.<br>Vous pourrez le modifier à tout moment à partir du Tableau de bord de WordPress > Apparence > Menus."
+
+#: admin/wizard.php:173
+msgid "Knowledge Base Theme"
+msgstr "Thème de la Base de Connaissances"
+
+#: admin/wizard.php:177
+msgid "Choose one of the available themes to style your content.<br>You can change the theme at any time from BasePress > Appearance settings."
+msgstr "Sélectionnez un des thèmes disponibles pour personnaliser votre contenu.<br>Vous pourrez modifier ce thème à tout moment à partir du Tableau de bord > BasePress > Paramètres."
+
+#: admin/wizard.php:184
+msgid "I need a single Knowledge Base"
+msgstr "J'ai besoin d'une Base de Connaissances unique"
+
+#: admin/wizard.php:185
+msgid "When enabled the plugin will work as a single knowledge base.<br>If you decide to build more than one Knowledge Base you can disable this option from BasePress > General settings."
+msgstr "Lorsque cette option est activée, l'extension fonctionnera comme une Base de Connaissances classique.<br />Si vous décidez de créer plus d'une Base de Connaissances, vous pourrez désactiver cette option à partir de Tableau de bord > BasePress > Paramètres."
+
+#: admin/wizard.php:189
+msgid "Import demo content"
+msgstr "Importer du contenu de démonstration"
+
+#: admin/wizard.php:190
+msgid "If enabled the wizard will populate your Knowledge Base with some demo content.<br>This will help you to quickly understand how the knowledge base works."
+msgstr "Lorsque cette option est activée, l'assistant va remplir votre Base de Connaissances avec du contenu de démonstration fictif.<br>Cela va vous aider à mieux comprendre comment fonctionne BasePress."
+
+#: admin/wizard.php:193
+msgid "Minimum word length for searches"
+msgstr ""
+
+#: admin/wizard.php:199
+#, fuzzy
+#| msgid "Enable wildcard before search terms"
+msgid "Use wild card before search terms"
+msgstr "Activer le caractère générique avant les termes de recherche"
+
+#: admin/wizard.php:205
+msgid "When enabled only admin users would be able to access the knowledge base.<br>You can disable this option once the knowledge base is ready for the public from BasePress > General settings."
+msgstr "Lorsque cette option est activée, seuls les administrateurs peuvent accéder à la Base de Connaissances.<br>Vous pourrez désactiver cette option une fois que la Base de Connaissances sera prête à devenir publique à partir de Tableau de bord > BasePress > Paramètres."
+
+#: admin/wizard.php:218
+msgid "Previous"
+msgstr "Précédent"
+
+#: admin/wizard.php:219
+msgid "Next"
+msgstr "Suivant"
+
+#: admin/wizard.php:220
+msgid "Proceed"
+msgstr "Démarrer"
+
+#: admin/wizard.php:469
+msgid "We encountered some problems while settings up the Knowledge Base!<br>Please follow the instructions in the manual to set it up manually."
+msgstr "Nous avons rencontré des problèmes pendant la mise en place de la Base de Connaissances.<br>Merci de suivre les instructions de la documentation pour réaliser un paramétrage manuel."
+
+#: admin/wizard.php:474
+msgid "Error: Unable to create a new page with the Knowledge Base shortcode/block and relative menu item."
+msgstr "Erreur : Impossible de créer une nouvelle page à l'aide du shortcode / bloc de la Base de Connaissances et du menu associé."
+
+#: admin/wizard.php:479
+msgid "Error: Unable to create a new menu item for your Knowledge Base."
+msgstr "Erreur : Impossible de créer un nouvel élément de menu pour votre Base de Connaissances."
+
+#: admin/wizard.php:486
+msgid "Your Knowledge Base is ready for action!<br>If you need to change any of the settings please go to BasePress settings page."
+msgstr "Votre Base de Connaissances est prête à fonctionner !<br />Si vous devez modifier l'un des paramètres, rendez-vous sur la page des paramètres de BasePress."
+
+#: admin/wizard.php:488
+msgid "View Knowledge Base"
+msgstr "Accéder à la Base de Connaissances"
+
+#: admin/wizard.php:494
+msgid "You didn't select any menu where to add your Knowledge Base. Remember to add one when ready!"
+msgstr "Vous n'avez pas choisi de menu dans lequel ajouter un accès à votre Base de Connaissances. Pensez à le faire quand vous serez prêt !"
+
+#: admin/wizard.php:712
+msgid "We have found some pages that already contain the shortcode/block for your Knowledge Base.<br>We suggest to delete them as a new page was created by the Wizard:"
+msgstr "Nous avons trouvé des pages contenant déjà un shortcode pour votre Base de Connaissances.<br>Nous vous suggérons de les supprimer car une nouvelle page a été créée par l'Assistant :"
+
+#: blocks/gb-blocks.php:101
+msgid "Select KB"
+msgstr "Sélectionnez une Base de Connaissances"
+
+#: blocks/js/basepress-products-block.js:14
+msgid "Knowledge Bases List"
+msgstr "Liste des Bases de Connaissances"
+
+#: blocks/js/basepress-products-block.js:16
+msgid "Displays the list of active Knowledge Bases."
+msgstr "Affiche la liste des toutes les Bases de Connaissances actives."
+
+#: blocks/js/basepress-searchbar-block.js:104
+msgid "KB Search Bar"
+msgstr "Barre de recherche de la BdC"
+
+#: blocks/js/basepress-searchbar-block.js:106
+msgid "Adds a search bar to find articles in your knowledge base"
+msgstr "Ajoute une barre de recherche pour trouver des articles au sein de la Base de Connaissances."
+
+#: blocks/js/basepress-searchbar-block.js:157
+msgid "KB Search bar settings"
+msgstr "Paramètres de la barre de recherche"
+
+#: blocks/js/basepress-searchbar-block.js:166
+msgid "Width"
+msgstr "Largeur"
+
+#: blocks/premium/gutenberg-notices-block.php:154
+msgid "BasePress Notices block requires at least WordPress 5.3 to work."
+msgstr ""
+
+#: blocks/premium/js/basepress-articles-list-block.js:120
+msgid "KB Articles List"
+msgstr "Liste des articles de la BdC"
+
+#: blocks/premium/js/basepress-articles-list-block.js:122
+msgid "Adds a list of articles from the Knowledge Base"
+msgstr "Ajoute une liste d'articles à partir de la Base de Connaissances."
+
+#: blocks/premium/js/basepress-articles-list-block.js:158
+msgid "KB Articles List settings"
+msgstr "Paramètres de la liste d'articles"
+
+#: blocks/premium/js/basepress-articles-list-block.js:192
+msgid "Number of articles"
+msgstr "Nombre d'articles :"
+
+#: blocks/premium/js/basepress-notices-block.js:40
+msgid "KB Notices"
+msgstr ""
+
+#: blocks/premium/js/basepress-notices-block.js:42
+#, fuzzy
+#| msgid "Adds a search bar to find articles in your knowledge base"
+msgid "Adds a Notice to your knowledge base article"
+msgstr "Ajoute une barre de recherche pour trouver des articles au sein de la Base de Connaissances."
+
+#: includes/class-basepress-build-mode.php:50
+msgid "BasePress Build Mode is ON!"
+msgstr "BasePress est en mode construction !"
+
+#: includes/class-basepress-build-mode.php:57
+msgid "The knowledge base is visible to Admin users only!"
+msgstr "La Base de Connaissances est visible uniquement par les administrateurs !"
+
+#: includes/class-basepress-cpt.php:295 includes/class-basepress-cpt.php:297
+msgid "Knowledge Base categories"
+msgstr "Catégories de la Base de Connaissances"
+
+#: includes/class-basepress-cpt.php:296
+msgid "Knowledge Base category"
+msgstr "Catégorie de la Base de Connaissances"
+
+#: includes/class-basepress-cpt.php:326
+msgid "Knowledge Base Tags"
+msgstr "Mots-clés de la Base de Connaissances"
+
+#: includes/class-basepress-cpt.php:327
+msgid "Knowledge Base Tag"
+msgstr "Mot-clé de la Base de Connaissances"
+
+#: includes/class-basepress-cpt.php:370
+msgid "Knowledge Base Article"
+msgstr "Article de la Base de Connaissances"
+
+#: includes/class-basepress-cpt.php:371
+msgid "All Articles"
+msgstr "Tous les articles"
+
+#: includes/class-basepress-cpt.php:372
+msgid "Edit Article"
+msgstr "Modifier l'article"
+
+#: includes/class-basepress-cpt.php:373
+msgid "View Article"
+msgstr "Voir l'article"
+
+#: includes/class-basepress-cpt.php:374
+msgid "Search Articles"
+msgstr "Rechercher des articles"
+
+#: includes/class-basepress-cpt.php:375
+#, fuzzy
+#| msgid "View Article"
+msgid "Add New Article"
+msgstr "Voir l'article"
+
+#: includes/class-basepress-cpt.php:377
+msgid "These are the Knowledge base articles from BasePress."
+msgstr "Ce sont les articles de la Base de Connaissances BasePress."
+
+#: includes/class-basepress-cpt.php:813
+msgid "Show all Knowledge Bases"
+msgstr "Afficher toutes les Bases de Connaissances"
+
+#: includes/class-basepress-cpt.php:856
+msgid "Show all sections"
+msgstr "Afficher toutes les sections"
+
+#: includes/class-basepress-cpt.php:1138
+msgid "&mdash; No Change &mdash;"
+msgstr ""
+
+#: includes/class-basepress-cpt.php:1183
+msgid "This article was saved without the following data:"
+msgstr "Cet article a été enregistré sans les données suivantes :"
+
+#: includes/class-basepress-cpt.php:1223
+msgid "Knowledge Base Page"
+msgstr "Page de la Base de Connaissances"
+
+#: includes/class-basepress-nav-widget.php:24
+msgid "Knowledge Base - Accordion Menu"
+msgstr "BdC - Menu Accordéon"
+
+#: includes/class-basepress-nav-widget.php:25
+msgid "A single accordion menu to move inside the Knowledge Base"
+msgstr "Un seul menu accordéon pour se déplacer dans la base de connaissances"
+
+#: includes/class-basepress-nav-widget.php:78
+#: includes/class-basepress-products-widget.php:87
+#: includes/class-basepress-related-articles-widget.php:96
+#: includes/class-basepress-sections-widget.php:87
+#: includes/premium/class-basepress-popular-articles-widget.php:73
+#: includes/premium/class-basepress-tags-widget.php:87
+#: includes/premium/class-basepress-toc-widget.php:78
+msgid "Title:"
+msgstr "Titre :"
+
+#: includes/class-basepress-nav-widget.php:84
+msgid "Add link to sections"
+msgstr "Ajouter un lien aux sections"
+
+#: includes/class-basepress-nav-widget.php:89
+msgid "Display articles before sub-sections"
+msgstr "Afficher les articles avant les sous-sections"
+
+#: includes/class-basepress-post-views.php:211
+#: includes/class-basepress-post-views.php:215
+msgid "Reset Views (Selected)"
+msgstr "Réinitialiser les vues (sélectionnées)"
+
+#: includes/class-basepress-post-views.php:212
+#: includes/class-basepress-post-views.php:216
+msgid "Reset Views (All)"
+msgstr "Réinitialiser les vues (Toutes)"
+
+#: includes/class-basepress-post-views.php:280
+msgid "Error resetting views."
+msgstr "Erreur lors de la réinitialisation des vues."
+
+#: includes/class-basepress-post-views.php:319
+#: includes/premium/class-basepress-votings.php:411
+#: includes/premium/class-basepress-votings.php:450
+msgid "Error resetting votes."
+msgstr "Erreur lors de la réinitialisation des votes."
+
+#: includes/class-basepress-products-widget.php:21
+msgid "Knowledge Base - KB Selector"
+msgstr "BdC - Sélection des Bases"
+
+#: includes/class-basepress-products-widget.php:22
+msgid "Lists all available knowledge bases"
+msgstr "Affiche toutes les Bases de Connaissances disponibles"
+
+#: includes/class-basepress-products-widget.php:92
+msgid "Number of products to show:"
+msgstr "Nombre de produits à afficher :"
+
+#: includes/class-basepress-products-widget.php:97
+#: includes/class-basepress-related-articles-widget.php:106
+#: includes/class-basepress-sections-widget.php:97
+msgid "Order by:"
+msgstr "Trier par :"
+
+#: includes/class-basepress-products-widget.php:100
+#: includes/class-basepress-related-articles-widget.php:109
+#: includes/class-basepress-sections-widget.php:100
+msgid "Date Ascending"
+msgstr "Date croissante"
+
+#: includes/class-basepress-products-widget.php:101
+#: includes/class-basepress-related-articles-widget.php:110
+#: includes/class-basepress-sections-widget.php:101
+msgid "Date Descending"
+msgstr "Date décroissante"
+
+#: includes/class-basepress-products-widget.php:107
+msgid "Display as dropdown"
+msgstr "Afficher en liste déroulante"
+
+#: includes/class-basepress-products-widget.php:112
+msgid "Exclude current product"
+msgstr "Exclure le produit actuel"
+
+#: includes/class-basepress-related-articles-widget.php:21
+msgid "Knowledge Base - Related Articles"
+msgstr "BdC - Articles associés"
+
+#: includes/class-basepress-related-articles-widget.php:22
+msgid "Lists articles related to the current one in the Knowledge Base"
+msgstr "Liste les articles qui sont en relation avec celui en cours dans la Base de Connaissances"
+
+#: includes/class-basepress-related-articles-widget.php:101
+#: includes/premium/class-basepress-popular-articles-widget.php:78
+msgid "Number of articles to show:"
+msgstr "Nombre d'articles à afficher :"
+
+#: includes/class-basepress-related-articles-widget.php:111
+msgid "Alphabetically"
+msgstr "Alphabétiquement"
+
+#: includes/class-basepress-related-articles-widget.php:116
+msgid "Include current article"
+msgstr "Inclure l'article en cours"
+
+#: includes/class-basepress-related-articles-widget.php:120
+msgid "Include sub-sections articles"
+msgstr "Inclure les articles des sous-sections"
+
+#: includes/class-basepress-sections-widget.php:18
+msgid "Knowledge Base - Sections"
+msgstr "BdC - Sections"
+
+#: includes/class-basepress-sections-widget.php:19
+msgid "Lists all sections for the current Knowledge Base"
+msgstr "toutes les sections de la base de connaissances actuelle"
+
+#: includes/class-basepress-sections-widget.php:92
+msgid "Number of sections to show:"
+msgstr "Nombre de sections à afficher :"
+
+#: includes/class-basepress-sections-widget.php:107
+msgid "Display articles count"
+msgstr "Afficher le nombre d'articles"
+
+#: includes/class-basepress-sections-widget.php:112
+msgid "Show up to level:"
+msgstr "Afficher jusqu'au niveau :"
+
+#: includes/class-basepress-utils.php:634
+msgid "There are no Knowledge Bases yet!<br>Once you have at least a Knowledge Base with some content it will appear here."
+msgstr "Il n'y a pas encore de Bases de Connaissances !<br>Une fois que vous aurez créé au moins une Base de Connaissances avec du contenu, elle apparaîtra ici."
+
+#: includes/class-basepress-walker-comment.php:194
+msgid "Pingback:"
+msgstr "Rétrolien :"
+
+#: includes/class-basepress-walker-comment.php:194
+#: includes/class-basepress-walker-comment.php:307
+msgid "Edit"
+msgstr "Modifier"
+
+#: includes/class-basepress-walker-comment.php:225
+#, php-format
+msgid "<cite class=\"fn\">%s</cite> <span class=\"says\">says:</span>"
+msgstr "<cite class=\"fn\">%s</cite> <span class=\"says\">dit :</span>"
+
+#: includes/class-basepress-walker-comment.php:228
+#: includes/class-basepress-walker-comment.php:311
+msgid "Your comment is awaiting moderation."
+msgstr "Votre commentaire est en attente de modération."
+
+#: includes/class-basepress-walker-comment.php:236
+#: includes/class-basepress-walker-comment.php:303
+#, php-format
+msgid "%1$s at %2$s"
+msgstr "%1$s à %2$s"
+
+#: includes/class-basepress-walker-comment.php:241
+msgid "(Edit)"
+msgstr "(Modifier)"
+
+#: includes/class-basepress-walker-comment.php:295
+#, php-format
+msgid "%s <span class=\"says\">says:</span>"
+msgstr "%s <span class=\"says\">dit :</span>"
+
+#: includes/class-basepress-widgets.php:47 themes/zen/functions.php:36
+msgid "Knowledge Base Sidebar"
+msgstr "Barre latérale de la Base de Connaissances"
+
+#: includes/class-basepress-widgets.php:49 themes/zen/functions.php:38
+msgid "Add here the widgets to appear on the knowledge base pages"
+msgstr "Ajoutez ici les Widgets que vous voulez voir apparaître sur vos pages de la Base de Connaissances"
+
+#: includes/premium/class-basepress-content-restriction.php:340
+msgid "Visible to anyone"
+msgstr "Visible de tous"
+
+#: includes/premium/class-basepress-content-restriction.php:349
+msgid "Filter by:"
+msgstr "Trier par :"
+
+#: includes/premium/class-basepress-content-restriction.php:350
+msgid "Articles roles only"
+msgstr "Uniquement les articles du rôle"
+
+#: includes/premium/class-basepress-content-restriction.php:351
+msgid "All hierarchy roles"
+msgstr "Tous les rôles de la hiérarchie"
+
+#: includes/premium/class-basepress-content-restriction.php:371
+#: includes/premium/class-basepress-content-restriction.php:436
+#: includes/premium/class-basepress-content-restriction.php:535
+msgid "Visible to:"
+msgstr "Visible pour :"
+
+#: includes/premium/class-basepress-content-restriction.php:416
+msgid "Unset. Visible to all."
+msgstr "Non paramétré. Visible pour tous."
+
+#: includes/premium/class-basepress-content-restriction.php:541
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+#: includes/premium/class-basepress-content-restriction.php:542
+msgid "Deselect All"
+msgstr "Tout désélectionner"
+
+#: includes/premium/class-basepress-content-restriction.php:543
+msgid "Presets"
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:572
+msgid "Save current selection as:"
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:575
+msgid "Save"
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:634
+#, fuzzy
+#| msgid "The icons options could not be saved. Please try again."
+msgid "The request could not be processed. Please try again."
+msgstr "Les options d'icônes n'ont pas été enregistrées. Merci de recommencer."
+
+#: includes/premium/class-basepress-content-restriction.php:645
+#, php-format
+msgid "The %s preset was saved."
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:652
+#, php-format
+msgid "The %s preset already exists."
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:663
+#, php-format
+msgid "The preset %s was updated."
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:670
+#, fuzzy, php-format
+#| msgid "The settings could not be saved. Try Again."
+msgid "The preset %s could not be updated."
+msgstr "Les paramètres n'ont pas pu être enregistrés. Veuillez réessayer."
+
+#: includes/premium/class-basepress-content-restriction.php:680
+#, php-format
+msgid "The preset %s was deleted."
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:706
+msgid "Apply Preset"
+msgstr ""
+
+#: includes/premium/class-basepress-content-restriction.php:707
+#, fuzzy
+#| msgid "Update Product"
+msgid "Update Preset"
+msgstr "Mettre à jour le produit"
+
+#: includes/premium/class-basepress-content-restriction.php:708
+#, fuzzy
+#| msgid "Delete Logs"
+msgid "Delete Preset"
+msgstr "Supprimer les logs"
+
+#: includes/premium/class-basepress-notices.php:34 premium-options.php:24
+msgid "Info"
+msgstr ""
+
+#: includes/premium/class-basepress-notices.php:35 premium-options.php:25
+msgid "Success"
+msgstr ""
+
+#: includes/premium/class-basepress-notices.php:36 premium-options.php:26
+msgid "Warning"
+msgstr ""
+
+#: includes/premium/class-basepress-notices.php:37 premium-options.php:27
+#, fuzzy
+#| msgid "Date Range"
+msgid "Danger"
+msgstr "Période"
+
+#: includes/premium/class-basepress-notices.php:41
+msgid "Default"
+msgstr ""
+
+#: includes/premium/class-basepress-popular-articles-widget.php:21
+msgid "Knowledge Base - Popular Articles"
+msgstr "BdC - Article populaires"
+
+#: includes/premium/class-basepress-popular-articles-widget.php:23
+msgid "Lists articles with most views and/or best score for the current product in the Knowledge Base"
+msgstr "Liste les articles avec le plus de vues et/ou le meilleur score pour le produit en cours dans la Base de Connaissances"
+
+#: includes/premium/class-basepress-table-of-content.php:270
+msgid "Disable on this article"
+msgstr "Désactiver pour cet article"
+
+#: includes/premium/class-basepress-tags-widget.php:15
+msgid "A cloud of your most used Knowledge Base tags."
+msgstr "Une nuage des mots-clés les plus utilisés dans votre Base de Connaissances."
+
+#: includes/premium/class-basepress-tags-widget.php:18
+msgid "Knowledge Base - Tag Cloud"
+msgstr "BdC - Nuage de mots-clés"
+
+#: includes/premium/class-basepress-tags-widget.php:96
+msgid "Show tag counts"
+msgstr "Afficher le nombre de mots-clés"
+
+#: includes/premium/class-basepress-toc-widget.php:21
+msgid "knowledge Base - Table of Content"
+msgstr "BdC - Table des Matières"
+
+#: includes/premium/class-basepress-toc-widget.php:23
+msgid "Generates a Table of content for the current article."
+msgstr "Génère une table des matières pour le produit en cours."
+
+#: includes/premium/class-basepress-toc-widget.php:83
+msgid "Highlight items on page scroll"
+msgstr ""
+
+#: includes/premium/class-basepress-users-feedback.php:65
+msgid ""
+"Hi,\n"
+"\n"
+"You have received a new feedback on:\n"
+"\n"
+"{{article_title}}\n"
+"{{article_link}}\n"
+"\n"
+"Message:\n"
+"\n"
+"{{feedback_text}}\n"
+"\n"
+"From: {{submitter_email}}"
+msgstr ""
+
+#: includes/premium/class-basepress-users-feedback.php:66
+msgid "Your email:"
+msgstr ""
+
+#: includes/premium/class-basepress-users-feedback.php:84
+#: includes/premium/class-basepress-users-feedback.php:110
+msgid "Users Feedback"
+msgstr "Avis des utilisateurs"
+
+#: includes/premium/class-basepress-users-feedback.php:126
+msgid "Are you sure you want to delete this feedback?"
+msgstr "Vous êtes certain de vouloir supprimer cet avis ?"
+
+#: includes/premium/class-basepress-users-feedback.php:162
+msgid "Knowledge Base Users Feedback"
+msgstr "Avis des utilisateurs sur la Base de Connaissances"
+
+#: includes/premium/class-basepress-users-feedback.php:167
+msgid "Open"
+msgstr "Ouvert"
+
+#: includes/premium/class-basepress-users-feedback.php:172
+msgid "Archived"
+msgstr "Archivés"
+
+#: includes/premium/class-basepress-users-feedback.php:199
+#: includes/premium/class-basepress-users-feedback.php:204
+msgid "Search feedback"
+msgstr "Rechercher dans les avis"
+
+#: includes/premium/class-basepress-users-feedback.php:297
+msgid "This article has been deleted from the Knowledge Base"
+msgstr "Cet article a été supprimé de la Base de Connaissances"
+
+#: includes/premium/class-basepress-users-feedback.php:391
+msgid "There was a problem deleting the feedback. Please try again after refreshing the page."
+msgstr "Il y a eu un problème pour supprimer cet avis. Merci de réessayer après avoir rafraîchi la page."
+
+#: includes/premium/class-basepress-users-feedback.php:792
+msgid "Not specified"
+msgstr ""
+
+#: includes/premium/class-basepress-votings.php:235
+msgid "Score %"
+msgstr "Score %"
+
+#: includes/premium/class-basepress-votings.php:341
+#: includes/premium/class-basepress-votings.php:345
+msgid "Reset Votes (Selected)"
+msgstr "Réinitialiser les votes (Sélectionnés)"
+
+#: includes/premium/class-basepress-votings.php:342
+#: includes/premium/class-basepress-votings.php:346
+msgid "Reset Votes (All)"
+msgstr "Réinitialiser les votes (Tous)"
+
+#: includes/premium/class-basepress-widget-visibility.php:40
+#, fuzzy
+#| msgid "Show all sections"
+msgid "Main sections"
+msgstr "Afficher toutes les sections"
+
+#: includes/premium/class-basepress-widget-visibility.php:41
+#, fuzzy
+#| msgid "Select Section"
+msgid "Single section"
+msgstr "Sélectionner la section"
+
+#: includes/premium/class-basepress-widget-visibility.php:44
+#, fuzzy
+#| msgid "Search Products"
+msgid "Search results"
+msgstr "Rechercher des produits"
+
+#: includes/premium/class-basepress-widget-visibility.php:45
+#, fuzzy
+#| msgid "Max live search results"
+msgid "Global search results"
+msgstr "Max résultats de recherche en direct"
+
+#: includes/premium/class-basepress-widget-visibility.php:46
+#, fuzzy
+#| msgid "All pages"
+msgid "Other pages"
+msgstr "Toutes les pages"
+
+#: includes/premium/class-basepress-widget-visibility.php:96
+#, fuzzy
+#| msgid "Visible to:"
+msgid "Visible in:"
+msgstr "Visible pour :"
+
+#: public/public-functions.php:61
+msgid "Choose"
+msgstr "Choisissez"
+
+#: public/public-functions.php:130
+#, php-format
+msgid "View %d article"
+msgid_plural "View all %d articles"
+msgstr[0] "Voir %d article"
+msgstr[1] "Voir tous les %d articles"
+
+#: themes/default/comments.php:21 themes/modern/comments.php:21
+#: themes/zen/comments.php:21
+#, php-format
+msgid "%1$s response to %2$s"
+msgid_plural "%1$s responses to %2$s"
+msgstr[0] "%1$s réponse à %2$s"
+msgstr[1] "%1$s réponses à %2$s"
+
+#: themes/default/comments.php:46 themes/modern/comments.php:46
+#: themes/zen/comments.php:46
+msgid "Comments are closed."
+msgstr "Les commentaires sont fermés."
+
+#: themes/default/settings/theme-settings.php:108
+msgid "Default Theme Settings"
+msgstr "Paramètres du thème Default"
+
+#: themes/default/settings/theme-settings.php:113
+#: themes/modern/settings/theme-settings.php:119
+#: themes/zen/settings/theme-settings.php:112
+msgid "Enable Settings"
+msgstr "Activer les paramètres"
+
+#: themes/default/settings/theme-settings.php:121
+#: themes/modern/settings/theme-settings.php:127
+#: themes/zen/settings/theme-settings.php:120
+msgid "Google Font @import"
+msgstr "Google Font @import"
+
+#: themes/default/settings/theme-settings.php:124
+#: themes/modern/settings/theme-settings.php:130
+#: themes/zen/settings/theme-settings.php:123
+msgid "Go to fonts.google.com, choose the font you like with a regular and bold size. Paste here the @import code for the font you chose.<br>Leave empty to inherit the font family from the website theme."
+msgstr "Allez sur fonts.google.com, choisissez la police que vous préférez en graisse normale et en gras. Collez ici le code @import de la police que vous avez choisie.<br>Laissez ce champ vide pour utiliser la polices de caractères définie dans votre thème."
+
+#: themes/default/settings/theme-settings.php:129
+#: themes/modern/settings/theme-settings.php:135
+#: themes/zen/settings/theme-settings.php:128
+msgid "Font Size"
+msgstr "Taille de caractère"
+
+#: themes/default/settings/theme-settings.php:132
+#: themes/modern/settings/theme-settings.php:138
+#: themes/zen/settings/theme-settings.php:131
+msgid "Insert the size in pixels for the knowledge base font.<br>Leave empty to inherit size from the website theme."
+msgstr "Indiquez la taille de la police de la Base de Connaissances en pixels.<br>Laissez vide pour utiliser la taille par défaut définie dans votre thème."
+
+#: themes/default/settings/theme-settings.php:137
+#: themes/modern/settings/theme-settings.php:179
+#: themes/zen/settings/theme-settings.php:136
+msgid "Make Sidebar Sticky"
+msgstr "Rendre la barre latérale fixe"
+
+#: themes/default/settings/theme-settings.php:140
+#: themes/modern/settings/theme-settings.php:182
+#: themes/zen/settings/theme-settings.php:139
+msgid "If activated the sidebar will remain fixed in the page while scrolling."
+msgstr "Si cette option est activée, la barre latérale restera fixe dans la page pendant le défilement."
+
+#: themes/default/settings/theme-settings.php:146
+#: themes/modern/settings/theme-settings.php:188
+#: themes/zen/settings/theme-settings.php:145
+#, fuzzy
+#| msgid "Table of Content title"
+msgid "Make Table of Content Sticky"
+msgstr "Titre de la table des matières"
+
+#: themes/default/settings/theme-settings.php:149
+#: themes/modern/settings/theme-settings.php:191
+#: themes/zen/settings/theme-settings.php:148
+#, fuzzy
+#| msgid "If activated the sidebar will remain fixed in the page while scrolling."
+msgid "If activated the Table Of Content in the article body will remain fixed in the page while scrolling."
+msgstr "Si cette option est activée, la barre latérale restera fixe dans la page pendant le défilement."
+
+#: themes/default/settings/theme-settings.php:155
+#: themes/modern/settings/theme-settings.php:197
+#: themes/zen/settings/theme-settings.php:154
+#, fuzzy
+#| msgid "Sticky Sidebar Threshold"
+msgid "Sticky Elements Threshold"
+msgstr "Seuil de la barre latérale fixe"
+
+#: themes/default/settings/theme-settings.php:158
+#: themes/modern/settings/theme-settings.php:200
+#: themes/zen/settings/theme-settings.php:157
+msgid "Distance from top of screen including unit( px, %, em etc.) before sidebar becomes sticky."
+msgstr "Distance depuis le haut de l'écran, en indiquant l'unité utilisée (px,%, em, etc.), à partir laquelle la barre latérale devient fixe."
+
+#: themes/default/settings/theme-settings.php:163
+#: themes/modern/settings/theme-settings.php:205
+#: themes/zen/settings/theme-settings.php:162
+msgid "Enable Custom Colors"
+msgstr "Activer les couleurs personnalisées"
+
+#: themes/default/settings/theme-settings.php:166
+#: themes/modern/settings/theme-settings.php:208
+#: themes/zen/settings/theme-settings.php:165
+msgid "Enable this to apply the custom colors below."
+msgstr "Activez cette option pour appliquer les couleurs personnalisées ci-dessous."
+
+#: themes/default/settings/theme-settings.php:171
+#: themes/modern/settings/theme-settings.php:227
+#: themes/zen/settings/theme-settings.php:170
+msgid "Accent Color"
+msgstr "Couleur accentuée"
+
+#: themes/default/settings/theme-settings.php:178
+#: themes/modern/settings/theme-settings.php:234
+#: themes/zen/settings/theme-settings.php:177
+msgid "Buttons Text Color"
+msgstr "Couleur du texte des boutons"
+
+#: themes/default/settings/theme-settings.php:185
+#: themes/modern/settings/theme-settings.php:241
+#: themes/zen/settings/theme-settings.php:184
+msgid "Custom Css"
+msgstr "CSS personnalisé"
+
+#: themes/default/settings/theme-settings.php:225
+#: themes/modern/settings/theme-settings.php:283
+#: themes/zen/settings/theme-settings.php:226
+msgid "Settings saved!"
+msgstr "Paramètres enregistrés !"
+
+#: themes/default/settings/theme-settings.php:227
+#: themes/modern/settings/theme-settings.php:285
+#: themes/zen/settings/theme-settings.php:228
+msgid "The settings could not be saved. Try Again."
+msgstr "Les paramètres n'ont pas pu être enregistrés. Veuillez réessayer."
+
+#: themes/modern/settings/theme-settings.php:114
+msgid "Modern Theme Settings"
+msgstr "Paramètres du thème Moderne"
+
+#: themes/modern/settings/theme-settings.php:143
+msgid "Header Title"
+msgstr "Entête"
+
+#: themes/modern/settings/theme-settings.php:146
+msgid "Default is <b>Knowledge Base</b>."
+msgstr "La valeur par défaut est <b>Base de Connaissances</b>."
+
+#: themes/modern/settings/theme-settings.php:151
+msgid "Force Full Width Header"
+msgstr "Forcer l'entête en pleine largeur"
+
+#: themes/modern/settings/theme-settings.php:154
+msgid "This will force the header to stretch over website container and take full window width.<br> Will also set the body overflow-x to hidden."
+msgstr "Cela forcera l'entête à s'étendre sur toute la largeur de la fenêtre.<br>Définira également la balise \"overflow-x\" sur \"hidden\"."
+
+#: themes/modern/settings/theme-settings.php:159
+msgid "Header top offset"
+msgstr "Espace au-dessus de l'entête"
+
+#: themes/modern/settings/theme-settings.php:162
+msgid "Insert the top offset value including unit( px, %, em etc.) to properly distance the header from the top of the page.<br>You can use positive and negative values."
+msgstr "Indiquez la valeur de l'espace au-dessus, avec l'unité utilisée (px,%, em, etc.) afin de décaler correctement l’en-tête du haut de la page.<br>Vous pouvez utiliser des valeurs positives comme négatives."
+
+#: themes/modern/settings/theme-settings.php:167
+msgid "Header Background Image"
+msgstr "Image d'arrière-plan de l’en-tête"
+
+#: themes/modern/settings/theme-settings.php:213
+msgid "Header Background Color"
+msgstr "Couleur d’arrière-plan de l’en-tête"
+
+#: themes/modern/settings/theme-settings.php:220
+msgid "Header Text Color"
+msgstr "Couleur du texte de l’Entête"
+
+#: themes/zen/settings/theme-settings.php:107
+msgid "Zen Theme Settings"
+msgstr "Paramètres du thème Zen"
+
+#: update.php:131
+msgid "needs to update your database to take full advantage of its features!"
+msgstr "doit mettre à jour votre base de données pour fonctionner pleinement avec toutes les fonctionnalités !"
+
+#: update.php:132
+msgid "your database has been updated!"
+msgstr "votre base de données a été mise à jour !"
+
+#: update.php:133
+msgid "Update Database"
+msgstr "Mettre à jour la base de données"
+
+#~ msgid "Enable automatic 301 redirection"
+#~ msgstr "Activer la redirection 301 automatique"
+
+#~ msgid "If you are passing from a single KB to multiple ones or vice versa enable this option to automatically redirect requests to old links to the new ones.<br><b>IMPORTANT! This feature may conflict with other plugins. Test it to make sure it works in your setup.</b>"
+#~ msgstr "Si vous passez d’une Base de Connaissances unique à une Base de Connaissances multiples ou vice versa, activez cette option pour rediriger automatiquement les demandes des anciens liens vers les nouveaux.<br><b>IMPORTANT ! Cette fonctionnalité peut entrer en conflit avec d’autres plugins. Testez-la pour vous assurer qu’elle fonctionne dans votre configuration.</b>"
+
+#, php-format
+#~ msgid "Shortcodes can be used to add a list of articles to your posts or pages. To build the knowledge base consult the <a href=%s>Quick Start Guide</a>."
+#~ msgstr "Les shortcodes peuvent être utilisés pour ajouter des articles de la Base de Connaissances à vos publications ou à vos pages. Pour construire la Base de Connaissances, consultez le <a href=%s> Guide de démarrage</a>."
+
+#~ msgid "Please select a Knowledge Base to start!"
+#~ msgstr "Veuillez sélectionner une Base de Connaissances pour commencer !"
+
+#~ msgid "Please select a product to start!"
+#~ msgstr "Veuillez sélectionner un produit pour commencer !"
+
+#~ msgid "Search Optimisation"
+#~ msgstr "Optimisation de la recherche"
+
+#~ msgid "Order Articles alphabetically"
+#~ msgstr "Afficher les articles dans l'ordre alphabétique"
+
+#~ msgid "When visitors access restricted content they will be redirected to 404 pages.<br>Select <b>None</b> or <b>Sections only</b> if you want articles to be visible showing the restricted page notice."
+#~ msgstr "Lorsque les visiteurs accèdent à du contenu restreint, ils sont redirigés normalement vers les pages d'erreur 404.<br>Sélectionner <b>Aucune</b> ou <b>Sections uniquement</b> si vous souhaitez que les articles restent visibles mais avec une notification de restriction."
+
+#~ msgid "Use smart search suggestions"
+#~ msgstr "Utiliser la recherche assistée"
+
+#~ msgid "Limit smart search suggestions"
+#~ msgstr "Limiter le nombre de suggestions à"
+
+#~ msgid "Test it"
+#~ msgstr "Affichez-le"
+
+#~ msgid "Order by Views"
+#~ msgstr "Trier par vues"
+
+#~ msgid "Order by Score"
+#~ msgstr "Trier par score"
+
+#~ msgid "Manual"
+#~ msgstr "Documentation"
+
+#~ msgid "Username"
+#~ msgstr "Identifiant"
+
+#~ msgid "Password"
+#~ msgstr "Mot de passe"
+
+#~ msgid "Remember Me"
+#~ msgstr "Se souvenir de moi"
+
+#~ msgid "Log In"
+#~ msgstr "Connexion"
+
+#~ msgid "Aspect"
+#~ msgstr "Aspect"
+
+#~ msgid "Insights"
+#~ msgstr "Statistiques"
+
+#~ msgid "Insight"
+#~ msgstr "Statistiques"
+
+#~ msgid "Activate Insights"
+#~ msgstr "Activer les statistiques"
+
+#~ msgid "Restore Category Screen"
+#~ msgstr "Réinitialiser l'écran des catégories"
+
+#~ msgid "Restores the standard WordPress Category screen for the Knowledge Base."
+#~ msgstr "Restaure l'écran standard des catégories de WordPress pour la Base de Connaissances."
+
+#~ msgid "Post Icon"
+#~ msgstr "Icône de publication"
+
+#~ msgid "Product"
+#~ msgstr "Produit"
+
+#~ msgid "Products"
+#~ msgstr "Produits"
+
+#~ msgid "Knowledge Base Products"
+#~ msgstr "Produits de la Base de connaissances"
+
+#~ msgid "Add New Product"
+#~ msgstr "Ajouter un nouveau produit"
+
+#~ msgid "Product image"
+#~ msgstr "Image du produit"
+
+#~ msgid "Edit Product"
+#~ msgstr "Modifier le produit"
+
+#~ msgid "Select Product"
+#~ msgstr "Sélectionner le produit"
+
+#~ msgid "Single product mode"
+#~ msgstr "Mode produit unique"
+
+#~ msgid "Products Columns"
+#~ msgstr "Nb de colonnes de produits"
+
+#~ msgid "This text appears at the bottom of the search bar suggestions."
+#~ msgstr "Ce texte apparaît en bas des suggestions de la barre de recherche."
+
+#~ msgid "Post Meta Icons"
+#~ msgstr "Méta-icônes des publications"
+
+#~ msgid "Number of Posts"
+#~ msgstr "Nombre de publications"
+
+#~ msgid "Number of posts"
+#~ msgstr "Nombre de publications"
+
+#~ msgid "KB Products List"
+#~ msgstr "Liste des produits de la BdC"
+
+#~ msgid "Show all products"
+#~ msgstr "Voir tous les produits"
+
+#~ msgid "knowledge Base - Products"
+#~ msgstr "Base de connaissances - Produits"
+
+#~ msgid "All Products"
+#~ msgstr "Tous les produits"
+
+#~ msgid "View Product"
+#~ msgstr "Voir le produit"
+
+#~ msgid "New Product Name"
+#~ msgstr "Nouveau nom du produit"
+
+#~ msgid "Parent Product"
+#~ msgstr "Produit parent"
+
+#~ msgid "All Posts"
+#~ msgstr "Tous les articles"
+
+#~ msgid "New title"
+#~ msgstr "Nouveau Titre"

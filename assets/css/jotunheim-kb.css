@@ -1,0 +1,129 @@
+/**
+ * Jotunheim Knowledge Base Custom Styling
+ */
+
+/* Main KB container */
+.jotunheim-kb-container {
+    width: 100%;
+    clear: both;
+}
+
+/* Content wrapper */
+.jotunheim-kb-content-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 15px;
+}
+
+/* Override BasePress default styles */
+.bpress-wrap {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.bpress-content-area {
+    float: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Improve article styling */
+.bpress-content-wrap {
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+/* Better breadcrumbs */
+.bpress-crumbs {
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Article header */
+.bpress-post-title {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Article content */
+.bpress-post-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+}
+
+/* Fix article headings */
+.bpress-post-content h1,
+.bpress-post-content h2,
+.bpress-post-content h3,
+.bpress-post-content h4,
+.bpress-post-content h5,
+.bpress-post-content h6 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Fix paragraph spacing */
+.bpress-post-content p {
+    margin-bottom: 1.5em;
+}
+
+/* Make sure images stay within boundaries */
+.bpress-post-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Fix lists */
+.bpress-post-content ul,
+.bpress-post-content ol {
+    margin-left: 25px;
+    margin-bottom: 20px;
+}
+
+/* Fix code blocks */
+.bpress-post-content pre {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 15px;
+    overflow: auto;
+    border-radius: 4px;
+}
+
+/* Adjacent articles navigation */
+.bpress-adjacent-article {
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.bpress-adjacent-article:hover {
+    background-color: #f9f9f9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .jotunheim-kb-content-wrapper {
+        padding: 10px;
+    }
+    
+    .bpress-content-wrap {
+        padding: 15px;
+    }
+    
+    .bpress-post-title {
+        font-size: 24px;
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "translation-revision-date": "+0000",
+  "generator": "",
+  "domain": "basepress",
+  "locale_data": {
+    "messages": {
+      "":                                                             {
+        "domain":       "basepress",
+        "lang":         "it-it",
+        "plural-forms": "n != 1"
+      },
+      "KB Notices": ["KB Notifiche"],
+      "Adds a Notice to your knowledge base article": ["Aggiunge una casella di avviso al tuo articolo"]
+    }
+  }
+}

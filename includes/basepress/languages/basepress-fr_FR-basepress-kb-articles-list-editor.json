@@ -1,0 +1,29 @@
+{
+  "translation-revision-date": "+0000",
+  "generator": "",
+  "domain": "basepress",
+  "locale_data": {
+    "messages": {
+      "":                                                             {
+        "domain":       "basepress",
+        "plural-forms": "n != 1",
+        "lang":         "fr-FR"
+      },
+      "Knowledge Base": ["Base de Connaissances"],
+      "Section": ["Section"],
+      "KB Articles List": ["Liste des Articles - BdC"],
+      "Adds a list of articles from the Knowledge Base": ["Ajoute une liste d'articles à partir de la Base de Connaissances."],
+      "KB Articles List settings": ["Paramètres de la liste d'articles - BdC"],
+      "Order by": ["Trier par"],
+      "Custom": ["Personnel"],
+      "Title": ["Titre"],
+      "Date": ["Date"],
+      "Views": ["Vues"],
+      "Score": ["Score"],
+      "Order": ["Classement"],
+      "Ascending": ["Croissant"],
+      "Descending": ["Décroissant"],
+      "Number of articles": ["Nombre d'articles"]
+    }
+  }
+}
