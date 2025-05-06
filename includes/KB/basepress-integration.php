@@ -37,18 +37,48 @@ class Jotunheim_BasePress_Integration {
         // Add custom CSS with high priority
         add_action('wp_enqueue_scripts', array(__CLASS__, 'add_custom_styles'), 999);
         
-        // Add specific template filters
+        // CRITICAL: Force normal theme header/footer instead of BasePress ones
+        remove_all_filters('basepress_get_header');
+        remove_all_filters('basepress_get_footer');
         add_filter('basepress_get_header', array(__CLASS__, 'override_get_header'), 1);
         add_filter('basepress_get_footer', array(__CLASS__, 'override_get_footer'), 1);
+        
+        // IMPORTANT: Completely remove the basepress_theme_wrapper
+        remove_all_filters('template_include');
+        add_filter('template_include', array(__CLASS__, 'force_theme_template'), 1);
         
         // Register update function hooks to ensure update.php can run
         add_filter('basepress_update_function', array(__CLASS__, 'provide_update_function'));
         
-        // Force full-width template on all KB pages
-        add_filter('basepress_template_include', array(__CLASS__, 'force_fullwidth_template'), 999);
-        
         // Add language support
         add_filter('load_textdomain_mofile', array(__CLASS__, 'load_basepress_textdomain'), 10, 2);
+        
+        // Add body class for BasePress pages
+        add_filter('body_class', array(__CLASS__, 'add_body_class'));
+        
+        // If user is trying to access basepress directly, redirect to our custom implementation
+        if (isset($_GET['bpress_template'])) {
+            add_action('template_redirect', array(__CLASS__, 'redirect_from_basepress_template'));
+        }
+    }
+
+    /**
+     * Redirect from direct BasePress template access
+     */
+    public static function redirect_from_basepress_template() {
+        global $wp;
+        wp_redirect(home_url($wp->request), 301);
+        exit;
+    }
+
+    /**
+     * Add a custom body class for BasePress pages
+     */
+    public static function add_body_class($classes) {
+        if (function_exists('basepress_is_knowledge_base') && basepress_is_knowledge_base()) {
+            $classes[] = 'jotunheim-kb';
+        }
+        return $classes;
     }
 
     /**
@@ -87,27 +117,47 @@ class Jotunheim_BasePress_Integration {
                 'jotunheim-kb-styles', 
                 plugin_dir_url(dirname(__DIR__)) . 'assets/css/jotunheim-kb.css',
                 array(),
-                '1.0.0'
+                '1.0.1'
             );
         }
     }
 
     /**
      * Override the get_header function in BasePress
+     * Force the use of the regular theme header
      */
     public static function override_get_header($name) {
-        get_header(); // Use theme header
-        echo '<div class="jotunheim-kb-wrapper">';
+        // Use null to allow the normal header to be used
         return null;
     }
 
     /**
      * Override the get_footer function in BasePress
+     * Force the use of the regular theme footer
      */
     public static function override_get_footer($name) {
-        echo '</div><!-- .jotunheim-kb-wrapper -->';
-        get_footer(); // Use theme footer
+        // Use null to allow the normal footer to be used
         return null;
+    }
+
+    /**
+     * Force using our template file that will properly include the theme header
+     */
+    public static function force_theme_template($template) {
+        // Only apply on BasePress pages
+        if (function_exists('basepress_is_knowledge_base') && basepress_is_knowledge_base()) {
+            if (is_single()) {
+                return plugin_dir_path(dirname(__DIR__)) . 'templates/basepress-single.php';
+            } elseif (is_search() && isset($_GET['bp_search'])) {
+                return plugin_dir_path(dirname(__DIR__)) . 'templates/basepress-search.php';
+            } elseif (is_tax('knowledgebase_cat')) {
+                return plugin_dir_path(dirname(__DIR__)) . 'templates/basepress-category.php';
+            } elseif (basepress_is_knowledge_base_page()) {
+                return plugin_dir_path(dirname(__DIR__)) . 'templates/basepress-home.php';
+            }
+        }
+        
+        return $template;
     }
 
     /**
@@ -127,27 +177,11 @@ class Jotunheim_BasePress_Integration {
     }
 
     /**
-     * Force full-width template for all KB pages
-     */
-    public static function force_fullwidth_template($template) {
-        if (function_exists('basepress_is_knowledge_base') && basepress_is_knowledge_base()) {
-            $our_template = plugin_dir_path(dirname(__DIR__)) . 'templates/basepress/full-width.php';
-            
-            if (file_exists($our_template)) {
-                return $our_template;
-            }
-        }
-        
-        return $template;
-    }
-
-    /**
      * Provide our update function to BasePress 
      */
     public static function provide_update_function($function) {
         if (!function_exists('basepress_update')) {
             function basepress_update($old_ver, $old_db_ver, $old_plan, $current_ver, $current_db_ver, $current_plan) {
-
                 // Update settings if coming from older version or from free to premium
                 if (!empty($old_ver) 
                     && version_compare($old_ver, $current_ver, '<')
