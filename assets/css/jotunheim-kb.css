@@ -1,0 +1,273 @@
+/**
+ * Jotunheim Knowledge Base Custom Styling
+ */
+
+/* Main KB container - ensure it works with the site header */
+.jotunheim-kb-container {
+    width: 100%;
+    clear: both;
+    margin-top: 20px;
+}
+
+/* Content wrapper */
+.jotunheim-kb-content-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 15px;
+}
+
+/* Override BasePress default styles */
+.basepress-wrap,
+.bpress-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    float: none !important;
+}
+
+.bpress-content-area {
+    float: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Improve article styling */
+.bpress-content-wrap {
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+/* Article styling */
+.kb-article {
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.kb-article-header {
+    margin-bottom: 25px;
+}
+
+.kb-article-title {
+    margin-top: 0;
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+}
+
+.kb-article-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+}
+
+/* Fix article headings */
+.bpress-post-content h1,
+.bpress-post-content h2,
+.bpress-post-content h3,
+.bpress-post-content h4,
+.bpress-post-content h5,
+.bpress-post-content h6,
+.kb-article-content h1,
+.kb-article-content h2,
+.kb-article-content h3,
+.kb-article-content h4,
+.kb-article-content h5,
+.kb-article-content h6 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Fix paragraph spacing */
+.bpress-post-content p {
+    margin-bottom: 1.5em;
+}
+
+/* Make sure images stay within boundaries */
+.bpress-post-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Fix lists */
+.bpress-post-content ul,
+.bpress-post-content ol {
+    margin-left: 25px;
+    margin-bottom: 20px;
+}
+
+/* Fix code blocks */
+.bpress-post-content pre {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 15px;
+    overflow: auto;
+    border-radius: 4px;
+}
+
+/* Adjacent articles navigation */
+.bpress-adjacent-article {
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.bpress-adjacent-article:hover {
+    background-color: #f9f9f9;
+}
+
+/* Better breadcrumbs */
+.bpress-crumbs {
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Hide any duplicate headers/footers from BasePress */
+body.jotunheim-kb .bpress-header,
+body.jotunheim-kb #bpress-header,
+body.jotunheim-kb .basepress-header,
+body.jotunheim-kb #basepress-header {
+    display: none !important;
+}
+
+/* Search form styling */
+.basepress-searchform,
+.bpress-searchform {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.basepress-searchform input[type="text"],
+.bpress-searchform input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.basepress-searchform button,
+.bpress-searchform button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Search results styling */
+.kb-search-header {
+    margin-bottom: 25px;
+}
+
+.kb-search-title {
+    font-size: 28px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.kb-search-item {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.kb-search-item-title {
+    margin-top: 0;
+}
+
+/* Category page styling */
+.kb-category-header {
+    margin-bottom: 25px;
+}
+
+.kb-category-title {
+    font-size: 28px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.kb-category-description {
+    margin-bottom: 25px;
+}
+
+.kb-articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.kb-article-item {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kb-article-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.kb-article-item-title {
+    margin-top: 0;
+}
+
+/* Home page styling */
+.kb-home-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.kb-home-title {
+    font-size: 36px;
+    margin-bottom: 25px;
+}
+
+.kb-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .jotunheim-kb-content-wrapper {
+        padding: 10px;
+    }
+    
+    .bpress-content-wrap {
+        padding: 15px;
+    }
+    
+    .bpress-post-title,
+    .kb-article-title {
+        font-size: 24px;
+    }
+    
+    .kb-articles-grid,
+    .kb-categories-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .kb-article {
+        padding: 15px;
+    }
+}
