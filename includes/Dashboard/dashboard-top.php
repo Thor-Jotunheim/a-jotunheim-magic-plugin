@@ -43,6 +43,14 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'title'  => 'Event Zone Editor',
             'href'   => admin_url('admin.php?page=event_zone_editor'),
         ]);
+
+        // Add Event Zone Add New submenu
+        $wp_admin_bar->add_node([
+            'id'     => 'event-zone-add-new',
+            'parent' => 'admin-magic',
+            'title'  => 'Event Zone Add New',
+            'href'   => admin_url('admin.php?page=add_event_zone'),
+        ]);
     }
 
     // Ensure Administrator, Editor, and Moderator roles can access Moderator Magic
