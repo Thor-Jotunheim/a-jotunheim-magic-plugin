@@ -62,7 +62,7 @@ function itemlist_editor_interface() {
                         $('#itemlist-container').empty();
                         response.data.forEach(function (item) {
                             // Ensure data-id is set correctly for each checkbox
-                            const checkbox = `<div><label style="display: flex; align-items: center;"><input type="checkbox" class="item-checkbox" data-id="${item.id}" value="${item.item_name}" style="margin-right: 10px; transform: scale(1.8); cursor: pointer;">${item.item_name}</label></div>`;
+                            const checkbox = `<div><label style="display: flex; align-items: center;"><input type="checkbox" class="item-checkbox" data-id="${item.id}" value="${item.item_name}" style="margin-right: 10px; cursor: pointer;">${item.item_name}</label></div>`;
 
                             $('#itemlist-container').append(checkbox);
                         });
@@ -85,7 +85,7 @@ function itemlist_editor_interface() {
                             $('#itemlist-container').empty();
                             response.data.forEach(function (item) {
                                 // Correctly set the data-id in search results
-                                const checkbox = `<div><label style="display: flex; align-items: center;"><input type="checkbox" class="item-checkbox" data-id="${item.id}" value="${item.item_name}" style="margin-right: 10px; transform: scale(1.8); cursor: pointer;">${item.item_name}</label></div>`;
+                                const checkbox = `<div><label style="display: flex; align-items: center;"><input type="checkbox" class="item-checkbox" data-id="${item.id}" value="${item.item_name}" style="margin-right: 10px; cursor: pointer;">${item.item_name}</label></div>`;
                                 $('#itemlist-container').append(checkbox);
                             });
                         } else {
@@ -167,7 +167,7 @@ $('#load-item-btn').click(function () {
                                 <input type="number" id="stack-size-${item.id}" name="stack_size" class="stack-size" value="${item.stack_size || 0}" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #666;">
 
                                 <label for="undercut-${item.id}" style="font-weight: bold;">Can Be Undercut:</label>
-                               <input type="checkbox" id="undercut-${item.id}" name="undercut" class="undercut" ${item.undercut == '1' ? 'checked' : ''} style="transform: scale(1.8); margin-top: 5px;">
+                               <input type="checkbox" id="undercut-${item.id}" name="undercut" class="undercut" ${item.undercut == '1' ? 'checked' : ''} style="margin-top: 5px;">
 
 
                                 <label for="unit-price-${item.id}" style="font-weight: bold;">Unit Price:</label>
