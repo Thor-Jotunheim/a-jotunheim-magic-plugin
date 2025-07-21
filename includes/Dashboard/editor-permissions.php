@@ -136,7 +136,8 @@ function jotunheim_block_editor_admin_access() {
             'wp-file-manager',
             'wp_file_manager',
             'file-manager',
-            'filemanager'
+            'filemanager',
+            'file_manager_advanced_ui'  // This is the actual File Manager page slug
         ];
         
         // Check if they're trying to access a blocked page
@@ -170,6 +171,7 @@ function jotunheim_remove_editor_plugin_menus() {
         remove_menu_page('filemanager');
         remove_menu_page('wp-file-manager-pro');
         remove_menu_page('wp-file-manager-root');
+        remove_menu_page('file_manager_advanced_ui'); // Add the correct slug
         
         // Debug: Log what menus are available
         global $menu;
