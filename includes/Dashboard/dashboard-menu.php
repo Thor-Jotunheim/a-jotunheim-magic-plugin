@@ -10,7 +10,7 @@ function jotunheim_magic_plugin_menu() {
     add_menu_page(
         'Jotunheim Magic',              // Page title
         'Jotunheim Magic',              // Menu title in admin sidebar
-        'manage_options',               // Capability required (restricted to admins by default)
+        'edit_posts',                   // Capability required (allows editors and admins)
         'jotunheim_magic',              // Menu slug
         'jotunheim_magic_dashboard',    // Callback function for main page
         'dashicons-hammer',             // Icon URL or Dashicon
@@ -75,7 +75,7 @@ function jotunheim_magic_plugin_menu() {
             'jotunheim_magic',   // Parent slug
             $submenu['title'],          // Page title
             $submenu['menu_title'],     // Menu title
-            'manage_options',           // Capability required (restricted to admins by default)
+            'edit_posts',               // Capability required (allows editors and admins)
             $submenu['slug'],           // Submenu slug
             $submenu['callback']        // Callback function
         );
