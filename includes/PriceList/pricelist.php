@@ -176,3 +176,86 @@ function section3_items_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('section3_items', 'section3_items_shortcode');
+
+// Function to generate shortcode for combined Section 2 and 3 items
+function section2and3_items_shortcode() {
+    global $wpdb;
+    $table_name = 'jotun_itemlist';
+
+    // Get both Section 2 and Section 3 items
+    $section2_items = $wpdb->get_results("SELECT item_name, item_type, unit_price, lv2_price, lv3_price, lv4_price, lv5_price FROM $table_name WHERE undercut = 0 AND item_type != 'Untradable' ORDER BY tech_tier");
+    $section3_items = $wpdb->get_results("SELECT item_name, item_type, unit_price, lv2_price, lv3_price, lv4_price, lv5_price FROM $table_name WHERE undercut = 1 AND item_type != 'Untradable' ORDER BY tech_tier");
+
+    // Combine both sections
+    $all_items = array_merge($section2_items, $section3_items);
+
+    $types = [];
+    foreach ($all_items as $item) {
+        $types[$item->item_type][] = $item;
+    }
+
+    ob_start();
+
+    echo '<div class="section2-items-container">';
+    foreach ($types as $type => $items) {
+        echo '<div class="section2-items">';
+        echo '<h2>' . esc_html($type) . '</h2>';
+        echo '<div class="tabs">';
+        $tiers = [
+            'Tier 1' => 'unit_price',
+            'Tier 2' => 'lv2_price',
+            'Tier 3' => 'lv3_price',
+            'Tier 4' => 'lv4_price',
+            'Tier 5' => 'lv5_price'
+        ];
+        foreach ($tiers as $tier_name => $tier_column) {
+            $show_tier = false;
+            foreach ($items as $item) {
+                if ($item->$tier_column > 0) {
+                    $show_tier = true;
+                    break;
+                }
+            }
+            if ($show_tier) {
+                echo '<button class="tier-tab" onclick="showTier(event, \'' . esc_attr($type . '-' . $tier_name) . '\')">' . esc_html($tier_name) . '</button>';
+            }
+        }
+        echo '</div>';
+
+        foreach ($tiers as $tier_name => $tier_column) {
+            echo '<div id="' . esc_attr($type . '-' . $tier_name) . '" class="tier-content" style="display: ' . ($tier_name === 'Tier 1' ? 'block' : 'none') . ';">';
+            echo '<div class="item-grid">';
+            foreach ($items as $item) {
+                if ($item->$tier_column > 0) {
+                    echo '<div class="item-box">';
+                    echo '<span>' . esc_html($item->item_name) . '</span><br>';
+                    echo '<span>' . esc_html($item->$tier_column) . ' g</span>';
+                    echo '</div>';
+                }
+            }
+            echo '</div></div>';
+        }
+        echo '</div>';
+    }
+    echo '</div>';
+
+    // Inline JavaScript for the tab functionality
+    echo '<script>
+    function showTier(evt, tierName) {
+        var parentContainer = evt.currentTarget.closest(".section2-items");
+        var tierContent = parentContainer.getElementsByClassName("tier-content");
+        for (var i = 0; i < tierContent.length; i++) {
+            tierContent[i].style.display = "none";
+        }
+        var tierTabs = parentContainer.getElementsByClassName("tier-tab");
+        for (var i = 0; i < tierTabs.length; i++) {
+            tierTabs[i].classList.remove("active");
+        }
+        document.getElementById(tierName).style.display = "block";
+        evt.currentTarget.classList.add("active");
+    }
+    </script>';
+
+    return ob_get_clean();
+}
+add_shortcode('section2and3_items', 'section2and3_items_shortcode');
