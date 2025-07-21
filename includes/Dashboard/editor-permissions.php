@@ -66,10 +66,12 @@ function jotunheim_ensure_editor_menu_visibility() {
     $current_user = wp_get_current_user();
     
     // If user is an editor, give them the capability to see the menu
-    if (in_array('editor', $current_user->roles)) {
+    if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
         add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
             if ($user->ID === $current_user->ID) {
+                // Only add the menu capability, don't override existing editor capabilities
                 $allcaps['edit_pages'] = true;
+                $allcaps['edit_posts'] = true;
             }
             return $allcaps;
         }, 10, 4);
@@ -94,7 +96,7 @@ function jotunheim_block_editor_admin_access() {
         // Get current page
         $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
         
-        // Pages editors should NOT access
+        // Pages editors should NOT access (only admin settings, not core editing)
         $blocked_pages = [
             'plugins.php',
             'themes.php', 
@@ -107,7 +109,12 @@ function jotunheim_block_editor_admin_access() {
             'options-permalink.php',
             'tools.php',
             'import.php',
-            'export.php'
+            'export.php',
+            'update-core.php',
+            'plugin-install.php',
+            'plugin-editor.php',
+            'theme-install.php',
+            'theme-editor.php'
         ];
         
         // Check if they're trying to access a blocked page
