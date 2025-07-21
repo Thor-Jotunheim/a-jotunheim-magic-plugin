@@ -19,7 +19,7 @@ function can_manage_eventzones($request) {
     }
 
     // Check user capabilities if no valid API key is provided
-    if (is_user_logged_in() && (current_user_can('edit_posts') || current_user_can('manage_options'))) {
+    if (is_user_logged_in() && (current_user_can('editor') || current_user_can('administrator'))) {
         return true;
     }
 
