@@ -6,18 +6,26 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Override capability check only for specific Jotunheim Magic pages
+ * Allow editors to access specific Jotunheim Magic admin pages only
  */
-function jotunheim_override_specific_page_access($caps, $cap, $user_id, $args) {
-    // Only apply to admin area
-    if (!is_admin()) {
-        return $caps;
+function jotunheim_allow_editor_specific_page_access() {
+    // Check if we're in admin area and user is logged in
+    if (!is_admin() || !is_user_logged_in()) {
+        return;
     }
 
-    // Get the current page
-    $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+    // Get current user
+    $current_user = wp_get_current_user();
     
-    // Pages that editors should access
+    // Check if user has editor role (but not administrator)
+    if (!in_array('editor', $current_user->roles) || in_array('administrator', $current_user->roles)) {
+        return;
+    }
+
+    // Get the current page parameter
+    $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+
+    // List of pages that editors should have access to
     $allowed_pages = [
         'event_zone_editor',
         'item_list_editor', 
@@ -25,25 +33,96 @@ function jotunheim_override_specific_page_access($caps, $cap, $user_id, $args) {
         'add_event_zone'
     ];
 
-    // Only override if we're on one of the allowed pages
+    // If the current page is in our allowed list, temporarily grant manage_options capability
     if (in_array($page, $allowed_pages)) {
-        $user = get_userdata($user_id);
-        if ($user && in_array('editor', $user->roles)) {
-            // If checking for manage_options or edit_pages, allow it for these specific pages only
-            if (in_array($cap, ['manage_options', 'edit_pages'])) {
-                return ['edit_posts']; // Return a capability the editor has
+        // Add capability filter only for this specific request
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user, $page) {
+            if ($user->ID === $current_user->ID) {
+                // Only add manage_options for the current page request
+                $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+                $allowed_pages = ['event_zone_editor', 'item_list_editor', 'item_list_add_new_item', 'add_event_zone'];
+                
+                if (in_array($current_page, $allowed_pages)) {
+                    $allcaps['manage_options'] = true;
+                    $allcaps['edit_pages'] = true;
+                }
             }
-        }
+            return $allcaps;
+        }, 10, 4);
     }
-
-    return $caps;
 }
 
-// Hook the capability filter
-add_filter('map_meta_cap', 'jotunheim_override_specific_page_access', 10, 4);
+// Hook this function to run early in the admin initialization
+add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
 
 /**
- * Debug function to log access attempts (remove this in production)
+ * Ensure editors can see the Jotunheim Magic menu
+ */
+function jotunheim_ensure_editor_menu_visibility() {
+    if (!is_admin() || !is_user_logged_in()) {
+        return;
+    }
+
+    $current_user = wp_get_current_user();
+    
+    // If user is an editor, give them the capability to see the menu
+    if (in_array('editor', $current_user->roles)) {
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
+            if ($user->ID === $current_user->ID) {
+                $allcaps['edit_pages'] = true;
+            }
+            return $allcaps;
+        }, 10, 4);
+    }
+}
+
+// Hook early to ensure menu visibility
+add_action('admin_menu', 'jotunheim_ensure_editor_menu_visibility', 5);
+
+/**
+ * Block editors from accessing admin settings pages they shouldn't see
+ */
+function jotunheim_block_editor_admin_access() {
+    if (!is_admin() || !is_user_logged_in()) {
+        return;
+    }
+
+    $current_user = wp_get_current_user();
+    
+    // Only apply to editors, not administrators
+    if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
+        // Get current page
+        $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+        
+        // Pages editors should NOT access
+        $blocked_pages = [
+            'plugins.php',
+            'themes.php', 
+            'users.php',
+            'options-general.php',
+            'options-writing.php',
+            'options-reading.php',
+            'options-discussion.php',
+            'options-media.php',
+            'options-permalink.php',
+            'tools.php',
+            'import.php',
+            'export.php'
+        ];
+        
+        // Check if they're trying to access a blocked page
+        global $pagenow;
+        if (in_array($pagenow, $blocked_pages) || in_array($page, $blocked_pages)) {
+            wp_die(__('Sorry, you are not allowed to access this page.'), 403);
+        }
+    }
+}
+
+// Hook to block admin access
+add_action('admin_init', 'jotunheim_block_editor_admin_access', 5);
+
+/**
+ * Debug function to log access attempts
  */
 function jotunheim_debug_editor_access() {
     if (is_admin() && is_user_logged_in()) {
@@ -56,5 +135,5 @@ function jotunheim_debug_editor_access() {
     }
 }
 
-// Hook for debugging (comment out in production)
+// Hook for debugging
 add_action('admin_init', 'jotunheim_debug_editor_access');
