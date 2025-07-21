@@ -169,9 +169,10 @@ function render_item_list_add_new_item_page() {
 
 // EventZone Editor Page
 function render_event_zone_editor_page() {
-    // Check if user has permission
+    // Explicitly check if user has edit_posts capability
     if (!current_user_can('edit_posts')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
+        wp_die(__('Sorry, you are not allowed to access this page.'), 403);
+        return;
     }
     echo '<h1>Event Zone Editor</h1>';
     echo do_shortcode('[eventzones_editor]');
@@ -179,9 +180,10 @@ function render_event_zone_editor_page() {
 
 // Add Event Zone Page
 function render_add_event_zone_page() {
-    // Check if user has permission
+    // Explicitly check if user has edit_posts capability
     if (!current_user_can('edit_posts')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
+        wp_die(__('Sorry, you are not allowed to access this page.'), 403);
+        return;
     }
     echo '<h1>Add Event Zone</h1>';
     echo do_shortcode('[jotunheim_add_new_zone]');
