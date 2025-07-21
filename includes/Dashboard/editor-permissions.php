@@ -43,52 +43,6 @@ function jotunheim_override_specific_page_access($caps, $cap, $user_id, $args) {
 add_filter('map_meta_cap', 'jotunheim_override_specific_page_access', 10, 4);
 
 /**
- * Ensure editors can see the Jotunheim Magic menu and have proper page access
- */
-function jotunheim_ensure_editor_capabilities() {
-    if (!is_admin() || !is_user_logged_in()) {
-        return;
-    }
-
-    $current_user = wp_get_current_user();
-    
-    // If user is an editor, ensure they have proper capabilities
-    if (in_array('editor', $current_user->roles)) {
-        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
-            if ($user->ID === $current_user->ID) {
-                // Standard editor capabilities they should keep
-                $allcaps['edit_pages'] = true;
-                $allcaps['edit_posts'] = true;
-                $allcaps['edit_published_pages'] = true;
-                $allcaps['edit_published_posts'] = true;
-                $allcaps['edit_others_pages'] = true;
-                $allcaps['edit_others_posts'] = true;
-                $allcaps['publish_pages'] = true;
-                $allcaps['publish_posts'] = true;
-                $allcaps['delete_pages'] = true;
-                $allcaps['delete_posts'] = true;
-                $allcaps['delete_published_pages'] = true;
-                $allcaps['delete_published_posts'] = true;
-                $allcaps['delete_others_pages'] = true;
-                $allcaps['delete_others_posts'] = true;
-                $allcaps['manage_categories'] = true;
-                $allcaps['manage_links'] = true;
-                $allcaps['moderate_comments'] = true;
-                $allcaps['upload_files'] = true;
-                $allcaps['edit_comments'] = true;
-                $allcaps['edit_others_comments'] = true;
-                $allcaps['delete_comments'] = true;
-                $allcaps['delete_others_comments'] = true;
-            }
-            return $allcaps;
-        }, 10, 4);
-    }
-}
-
-// Hook early to ensure proper capabilities
-add_action('admin_menu', 'jotunheim_ensure_editor_capabilities', 5);
-
-/**
  * Debug function to log access attempts (remove this in production)
  */
 function jotunheim_debug_editor_access() {
