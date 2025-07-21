@@ -66,22 +66,34 @@ function jotunheim_restore_editor_pages_menu() {
     
     // Only apply to editors
     if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
-        // Ensure editors can see and access Pages
+        // Ensure editors can see and access Pages - add capabilities permanently for this session
         add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
             if ($user->ID === $current_user->ID) {
+                // Add all standard editor page capabilities
                 $allcaps['edit_pages'] = true;
                 $allcaps['edit_published_pages'] = true;
+                $allcaps['edit_others_pages'] = true;
                 $allcaps['publish_pages'] = true;
                 $allcaps['delete_pages'] = true;
                 $allcaps['delete_published_pages'] = true;
+                $allcaps['delete_others_pages'] = true;
+                $allcaps['read'] = true;
+                $allcaps['upload_files'] = true;
+                $allcaps['edit_posts'] = true;
+                $allcaps['edit_published_posts'] = true;
+                $allcaps['edit_others_posts'] = true;
+                $allcaps['publish_posts'] = true;
+                $allcaps['delete_posts'] = true;
+                $allcaps['delete_published_posts'] = true;
+                $allcaps['delete_others_posts'] = true;
             }
             return $allcaps;
-        }, 10, 4);
+        }, 1, 4); // Higher priority to run earlier
     }
 }
 
-// Hook to restore Pages menu for editors
-add_action('admin_menu', 'jotunheim_restore_editor_pages_menu', 1);
+// Hook to restore Pages menu for editors - run very early
+add_action('init', 'jotunheim_restore_editor_pages_menu', 1);
 
 /**
  * Block editors from accessing admin settings pages they shouldn't see
