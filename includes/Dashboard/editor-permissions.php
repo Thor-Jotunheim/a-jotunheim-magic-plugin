@@ -44,7 +44,6 @@ function jotunheim_allow_editor_specific_page_access() {
                 
                 if (in_array($current_page, $allowed_pages)) {
                     $allcaps['manage_options'] = true;
-                    $allcaps['edit_pages'] = true;
                 }
             }
             return $allcaps;
@@ -54,32 +53,6 @@ function jotunheim_allow_editor_specific_page_access() {
 
 // Hook this function to run early in the admin initialization
 add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
-
-/**
- * Ensure editors can see the Jotunheim Magic menu
- */
-function jotunheim_ensure_editor_menu_visibility() {
-    if (!is_admin() || !is_user_logged_in()) {
-        return;
-    }
-
-    $current_user = wp_get_current_user();
-    
-    // If user is an editor, give them the capability to see the menu
-    if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
-        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
-            if ($user->ID === $current_user->ID) {
-                // Only add the menu capability, don't override existing editor capabilities
-                $allcaps['edit_pages'] = true;
-                $allcaps['edit_posts'] = true;
-            }
-            return $allcaps;
-        }, 10, 4);
-    }
-}
-
-// Hook early to ensure menu visibility
-add_action('admin_menu', 'jotunheim_ensure_editor_menu_visibility', 5);
 
 /**
  * Block editors from accessing admin settings pages they shouldn't see
