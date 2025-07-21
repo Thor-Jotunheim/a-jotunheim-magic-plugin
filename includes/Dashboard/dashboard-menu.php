@@ -10,7 +10,7 @@ function jotunheim_magic_plugin_menu() {
     add_menu_page(
         'Jotunheim Magic',              // Page title
         'Jotunheim Magic',              // Menu title in admin sidebar
-        'edit_posts',                   // Capability required (allows editors and admins)
+        'edit_pages',                   // Capability required (editors and admins have this)
         'jotunheim_magic',              // Menu slug
         'jotunheim_magic_dashboard',    // Callback function for main page
         'dashicons-hammer',             // Icon URL or Dashicon
@@ -75,7 +75,7 @@ function jotunheim_magic_plugin_menu() {
             'jotunheim_magic',   // Parent slug
             $submenu['title'],          // Page title
             $submenu['menu_title'],     // Menu title
-            'edit_posts',               // Capability required (allows editors and admins)
+            'edit_pages',               // Capability required (editors and admins have this)
             $submenu['slug'],           // Submenu slug
             $submenu['callback']        // Callback function
         );
@@ -169,22 +169,12 @@ function render_item_list_add_new_item_page() {
 
 // EventZone Editor Page
 function render_event_zone_editor_page() {
-    // Explicitly check if user has edit_posts capability
-    if (!current_user_can('edit_posts')) {
-        wp_die(__('Sorry, you are not allowed to access this page.'), 403);
-        return;
-    }
     echo '<h1>Event Zone Editor</h1>';
     echo do_shortcode('[eventzones_editor]');
 }
 
 // Add Event Zone Page
 function render_add_event_zone_page() {
-    // Explicitly check if user has edit_posts capability
-    if (!current_user_can('edit_posts')) {
-        wp_die(__('Sorry, you are not allowed to access this page.'), 403);
-        return;
-    }
     echo '<h1>Add Event Zone</h1>';
     echo do_shortcode('[jotunheim_add_new_zone]');
 }

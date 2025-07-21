@@ -5,14 +5,6 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Validate API key from request headers
- */
-function validate_api_key($request) {
-    $api_key = $request->get_header('X-API-KEY');
-    return defined('EVENTZONES_API_KEY') && $api_key === EVENTZONES_API_KEY;
-}
-
-/**
  * Permission callback for managing event zones (create, update, delete).
  * Ensures a valid API key is present OR the user has administrator or editor capabilities.
  *
