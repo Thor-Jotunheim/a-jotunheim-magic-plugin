@@ -55,6 +55,35 @@ function jotunheim_allow_editor_specific_page_access() {
 add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
 
 /**
+ * Ensure editors can see Pages in their menu
+ */
+function jotunheim_restore_editor_pages_menu() {
+    if (!is_admin() || !is_user_logged_in()) {
+        return;
+    }
+
+    $current_user = wp_get_current_user();
+    
+    // Only apply to editors
+    if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
+        // Ensure editors can see and access Pages
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
+            if ($user->ID === $current_user->ID) {
+                $allcaps['edit_pages'] = true;
+                $allcaps['edit_published_pages'] = true;
+                $allcaps['publish_pages'] = true;
+                $allcaps['delete_pages'] = true;
+                $allcaps['delete_published_pages'] = true;
+            }
+            return $allcaps;
+        }, 10, 4);
+    }
+}
+
+// Hook to restore Pages menu for editors
+add_action('admin_menu', 'jotunheim_restore_editor_pages_menu', 1);
+
+/**
  * Block editors from accessing admin settings pages they shouldn't see
  */
 function jotunheim_block_editor_admin_access() {
@@ -90,9 +119,17 @@ function jotunheim_block_editor_admin_access() {
             'theme-editor.php'
         ];
         
+        // Also block File Manager and other plugin pages
+        $blocked_plugin_pages = [
+            'wp-file-manager',
+            'wp_file_manager',
+            'file-manager',
+            'filemanager'
+        ];
+        
         // Check if they're trying to access a blocked page
         global $pagenow;
-        if (in_array($pagenow, $blocked_pages) || in_array($page, $blocked_pages)) {
+        if (in_array($pagenow, $blocked_pages) || in_array($page, $blocked_pages) || in_array($page, $blocked_plugin_pages)) {
             wp_die(__('Sorry, you are not allowed to access this page.'), 403);
         }
     }
@@ -100,6 +137,28 @@ function jotunheim_block_editor_admin_access() {
 
 // Hook to block admin access
 add_action('admin_init', 'jotunheim_block_editor_admin_access', 5);
+
+/**
+ * Remove File Manager and other plugin menus from editors
+ */
+function jotunheim_remove_editor_plugin_menus() {
+    if (!is_admin() || !is_user_logged_in()) {
+        return;
+    }
+
+    $current_user = wp_get_current_user();
+    
+    // Only apply to editors, not administrators
+    if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
+        // Remove File Manager menu
+        remove_menu_page('wp-file-manager/file_manager.php');
+        remove_menu_page('wp_file_manager');
+        remove_menu_page('file-manager');
+    }
+}
+
+// Hook to remove plugin menus from editors
+add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 999);
 
 /**
  * Debug function to log access attempts
