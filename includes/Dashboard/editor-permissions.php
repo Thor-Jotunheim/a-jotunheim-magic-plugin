@@ -162,15 +162,60 @@ function jotunheim_remove_editor_plugin_menus() {
     
     // Only apply to editors, not administrators
     if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
-        // Remove File Manager menu
+        // Remove File Manager menu - try multiple possible slugs
+        remove_menu_page('wp-file-manager');
         remove_menu_page('wp-file-manager/file_manager.php');
         remove_menu_page('wp_file_manager');
         remove_menu_page('file-manager');
+        remove_menu_page('filemanager');
+        remove_menu_page('wp-file-manager-pro');
+        remove_menu_page('wp-file-manager-root');
+        
+        // Debug: Log what menus are available
+        global $menu;
+        if (!empty($menu)) {
+            foreach ($menu as $menu_item) {
+                if (isset($menu_item[2]) && stripos($menu_item[2], 'file') !== false) {
+                    error_log("File Manager menu found: " . $menu_item[2]);
+                    remove_menu_page($menu_item[2]);
+                }
+            }
+        }
     }
 }
 
-// Hook to remove plugin menus from editors
+// Hook to remove plugin menus from editors - try multiple priority levels
 add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 999);
+add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 9999);
+
+/**
+ * Hide File Manager menu with CSS if remove_menu_page doesn't work
+ */
+function jotunheim_hide_file_manager_css() {
+    if (!is_admin() || !is_user_logged_in()) {
+        return;
+    }
+
+    $current_user = wp_get_current_user();
+    
+    // Only apply to editors, not administrators
+    if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
+        echo '<style>
+            /* Hide File Manager menu items */
+            #adminmenu li[class*="wp-file-manager"],
+            #adminmenu li a[href*="wp-file-manager"],
+            #adminmenu li a[href*="file-manager"],
+            #adminmenu li a[href*="filemanager"],
+            #adminmenu .toplevel_page_wp-file-manager,
+            #adminmenu .toplevel_page_file-manager {
+                display: none !important;
+            }
+        </style>';
+    }
+}
+
+// Hook to add CSS hiding
+add_action('admin_head', 'jotunheim_hide_file_manager_css');
 
 /**
  * Debug function to log access attempts
