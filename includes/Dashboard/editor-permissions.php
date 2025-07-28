@@ -9,12 +9,7 @@ if (!defined('ABSPATH')) exit;
  * Allow editors to access specific Jotunheim Magic admin pages only
  */
 function jotunheim_allow_editor_specific_page_access() {
-    // Don't run during Discord OAuth process
-    if (isset($_GET['action']) && $_GET['action'] === 'oauth2callback') {
-        return;
-    }
-    
-    // Check if we're in admin area and user is logged in
+    // Only run in admin area for logged-in users
     if (!is_admin() || !is_user_logged_in()) {
         return;
     }
@@ -22,7 +17,7 @@ function jotunheim_allow_editor_specific_page_access() {
     // Get current user
     $current_user = wp_get_current_user();
     
-    // Check if user has editor role (but not administrator)
+    // Only apply to users with editor role (but not administrator)
     if (!in_array('editor', $current_user->roles) || in_array('administrator', $current_user->roles)) {
         return;
     }
@@ -38,26 +33,20 @@ function jotunheim_allow_editor_specific_page_access() {
         'add_event_zone'
     ];
 
-    // If the current page is in our allowed list, temporarily grant manage_options capability
+    // Only grant manage_options if we're on one of the allowed pages
     if (in_array($page, $allowed_pages)) {
-        // Add capability filter only for this specific request
-        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user, $page) {
-            if ($user->ID === $current_user->ID) {
-                // Only add manage_options for the current page request
-                $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
-                $allowed_pages = ['event_zone_editor', 'item_list_editor', 'item_list_add_new_item', 'add_event_zone'];
-                
-                if (in_array($current_page, $allowed_pages)) {
-                    $allcaps['manage_options'] = true;
-                }
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
+            // Only modify capabilities for the current user and only for manage_options
+            if ($user->ID === $current_user->ID && isset($caps[0]) && $caps[0] === 'manage_options') {
+                $allcaps['manage_options'] = true;
             }
             return $allcaps;
         }, 10, 4);
     }
 }
 
-// Hook this function to run early in the admin initialization
-add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
+// Hook this function to run during admin initialization
+add_action('admin_init', 'jotunheim_allow_editor_specific_page_access');
 
 /**
  * Ensure editors can see Pages in their menu
@@ -65,6 +54,11 @@ add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
 function jotunheim_restore_editor_pages_menu() {
     // Don't run during Discord OAuth process
     if (isset($_GET['action']) && $_GET['action'] === 'oauth2callback') {
+        return;
+    }
+    
+    // Don't run during AJAX requests to avoid interfering with Discord OAuth
+    if (wp_doing_ajax()) {
         return;
     }
     
