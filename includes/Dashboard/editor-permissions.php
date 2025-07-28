@@ -17,13 +17,19 @@ function jotunheim_allow_editor_specific_page_access() {
     // Get current user
     $current_user = wp_get_current_user();
     
+    // Debug: Log user info for troubleshooting
+    error_log("Permission check - User: {$current_user->user_login}, ID: {$current_user->ID}, Roles: " . implode(', ', $current_user->roles));
+    error_log("User capabilities: " . implode(', ', array_keys($current_user->caps)));
+    
     // Check if user has editor role (but not administrator)
     if (!in_array('editor', $current_user->roles) || in_array('administrator', $current_user->roles)) {
+        error_log("User {$current_user->user_login} does not meet editor criteria - skipping permission grant");
         return;
     }
 
     // Get the current page parameter
     $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+    error_log("Current page: {$page}");
 
     // List of pages that editors should have access to
     $allowed_pages = [
@@ -33,22 +39,24 @@ function jotunheim_allow_editor_specific_page_access() {
         'add_event_zone'
     ];
 
-    // If the current page is in our allowed list, temporarily grant manage_options capability
-    if (in_array($page, $allowed_pages)) {
-        // Add capability filter only for this specific request
-        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user, $page) {
-            if ($user->ID === $current_user->ID) {
-                // Only add manage_options for the current page request
+    // Grant manage_options capability for editors, but ONLY for specific pages
+    add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user, $allowed_pages) {
+        // Only modify capabilities for the current user
+        if ($user->ID === $current_user->ID) {
+            // Check if we're requesting manage_options capability
+            if (isset($caps[0]) && $caps[0] === 'manage_options') {
+                // Get the current page
                 $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
-                $allowed_pages = ['event_zone_editor', 'item_list_editor', 'item_list_add_new_item', 'add_event_zone'];
                 
+                // Only grant manage_options if we're on one of the allowed pages
                 if (in_array($current_page, $allowed_pages)) {
+                    error_log("Granting manage_options to {$current_user->user_login} for page {$current_page}");
                     $allcaps['manage_options'] = true;
                 }
             }
-            return $allcaps;
-        }, 10, 4);
-    }
+        }
+        return $allcaps;
+    }, 10, 4);
 }
 
 // Hook this function to run early in the admin initialization

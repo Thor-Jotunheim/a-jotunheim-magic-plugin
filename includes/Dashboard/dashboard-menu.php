@@ -6,6 +6,14 @@ if (!defined('ABSPATH')) {
 
 // Function to add the main menu item and submenu items
 function jotunheim_magic_plugin_menu() {
+    // Debug current user info during menu registration
+    if (is_user_logged_in()) {
+        $current_user = wp_get_current_user();
+        error_log("Menu registration - User: {$current_user->user_login}, Roles: " . implode(', ', $current_user->roles));
+        error_log("User has manage_options: " . (current_user_can('manage_options') ? 'Yes' : 'No'));
+        error_log("User has editor capability: " . (current_user_can('editor') ? 'Yes' : 'No'));
+    }
+
     // Main Menu Page for Jotunheim Magic Plugin
     add_menu_page(
         'Jotunheim Magic',              // Page title
