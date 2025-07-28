@@ -9,6 +9,11 @@ if (!defined('ABSPATH')) exit;
  * Allow editors to access specific Jotunheim Magic admin pages only
  */
 function jotunheim_allow_editor_specific_page_access() {
+    // Don't run during Discord OAuth process
+    if (isset($_GET['action']) && $_GET['action'] === 'oauth2callback') {
+        return;
+    }
+    
     // Check if we're in admin area and user is logged in
     if (!is_admin() || !is_user_logged_in()) {
         return;
@@ -58,6 +63,11 @@ add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
  * Ensure editors can see Pages in their menu
  */
 function jotunheim_restore_editor_pages_menu() {
+    // Don't run during Discord OAuth process
+    if (isset($_GET['action']) && $_GET['action'] === 'oauth2callback') {
+        return;
+    }
+    
     if (!is_admin() || !is_user_logged_in()) {
         return;
     }
