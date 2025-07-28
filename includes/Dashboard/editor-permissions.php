@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) exit;
  * Allow editors to access specific Jotunheim Magic admin pages only
  */
 function jotunheim_allow_editor_specific_page_access() {
-    // Check if we're in admin area and user is logged in
+    // Only run in admin area for logged-in users
     if (!is_admin() || !is_user_logged_in()) {
         return;
     }
@@ -17,19 +17,10 @@ function jotunheim_allow_editor_specific_page_access() {
     // Get current user
     $current_user = wp_get_current_user();
     
-    // Debug: Log user info for troubleshooting
-    error_log("Permission check - User: {$current_user->user_login}, ID: {$current_user->ID}, Roles: " . implode(', ', $current_user->roles));
-    error_log("User capabilities: " . implode(', ', array_keys($current_user->caps)));
-    
-    // Check if user has editor role (but not administrator)
+    // Only apply to users with editor role (but not administrator)
     if (!in_array('editor', $current_user->roles) || in_array('administrator', $current_user->roles)) {
-        error_log("User {$current_user->user_login} does not meet editor criteria - skipping permission grant");
         return;
     }
-
-    // Get the current page parameter
-    $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
-    error_log("Current page: {$page}");
 
     // List of pages that editors should have access to
     $allowed_pages = [
@@ -50,7 +41,6 @@ function jotunheim_allow_editor_specific_page_access() {
                 
                 // Only grant manage_options if we're on one of the allowed pages
                 if (in_array($current_page, $allowed_pages)) {
-                    error_log("Granting manage_options to {$current_user->user_login} for page {$current_page}");
                     $allcaps['manage_options'] = true;
                 }
             }
@@ -59,8 +49,8 @@ function jotunheim_allow_editor_specific_page_access() {
     }, 10, 4);
 }
 
-// Hook this function to run early in the admin initialization
-add_action('admin_init', 'jotunheim_allow_editor_specific_page_access', 1);
+// Hook this function to run very early, before menu registration
+add_action('init', 'jotunheim_allow_editor_specific_page_access', 1);
 
 /**
  * Ensure editors can see Pages in their menu
