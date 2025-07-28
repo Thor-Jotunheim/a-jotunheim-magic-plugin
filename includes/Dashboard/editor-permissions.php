@@ -5,6 +5,9 @@
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
+// TEMPORARILY DISABLED FOR DEBUGGING DISCORD ROLE ASSIGNMENT
+return;
+
 /**
  * Allow editors to access specific Jotunheim Magic admin pages only
  */
