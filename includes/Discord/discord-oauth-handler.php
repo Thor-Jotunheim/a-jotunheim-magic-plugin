@@ -113,6 +113,7 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     wp_update_user(array(
         'ID' => $user_id,
         'display_name' => $discord_display_name,
+        'user_login' => $discord_display_name, // Also update the username
     ));
 
     // Assign roles based on Discord roles
