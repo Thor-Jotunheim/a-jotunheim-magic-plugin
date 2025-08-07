@@ -28,7 +28,6 @@ define('JOTUNHEIM_PLUGIN_FILE', __FILE__);
 require_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/helpers.php');
 include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/dev-environment.php');
 include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/dark-mode.php');
-include_once(JOTUNHEIM_PLUGIN_DIR . 'includes/Utility/media-fixes.php'); // Include the new media fix utilities
 
 // Include ItemList files
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-scripts.php');
@@ -104,6 +103,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-rest-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-integration.php');
 
 // Include POS files
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-database-utils.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-scripts.php');

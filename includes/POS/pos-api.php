@@ -201,15 +201,13 @@ function pos_admin_record($request) {
                 'transaction_date' => current_time('mysql')
             ];
             
-            // Check if transaction_type column exists before adding it
-            $columns = $wpdb->get_col("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$transaction_table' AND TABLE_SCHEMA = DATABASE()");
-            if (in_array('transaction_type', $columns)) {
+            // Use database utilities for safe column handling
+            $include_transaction_type = POS_Database_Utils::column_exists('jotun_transactions', 'transaction_type');
+            if ($include_transaction_type) {
                 $transaction_data_to_insert['transaction_type'] = $no_buys ? 'claim' : ($no_claims ? 'buy' : 'buy_and_claim');
-                $format = ['%s', '%s', '%d', '%f', '%s', '%s', '%s', '%s'];
-            } else {
-                $format = ['%s', '%s', '%d', '%f', '%s', '%s', '%s'];
             }
             
+            $format = POS_Database_Utils::get_transaction_insert_format($include_transaction_type);
             $result = $wpdb->insert($transaction_table, $transaction_data_to_insert, $format);
             
             if (!$result) {
@@ -261,15 +259,13 @@ function pos_spell_record($request) {
                 'transaction_date' => current_time('mysql')
             ];
             
-            // Check if transaction_type column exists before adding it
-            $columns = $wpdb->get_col("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$transaction_table' AND TABLE_SCHEMA = DATABASE()");
-            if (in_array('transaction_type', $columns)) {
+            // Use database utilities for safe column handling
+            $include_transaction_type = POS_Database_Utils::column_exists('jotun_transactions', 'transaction_type');
+            if ($include_transaction_type) {
                 $transaction_data_to_insert['transaction_type'] = 'spell';
-                $format = ['%s', '%s', '%d', '%f', '%s', '%s', '%s', '%s'];
-            } else {
-                $format = ['%s', '%s', '%d', '%f', '%s', '%s', '%s'];
             }
             
+            $format = POS_Database_Utils::get_transaction_insert_format($include_transaction_type);
             $result = $wpdb->insert($transaction_table, $transaction_data_to_insert, $format);
             
             if (!$result) {
