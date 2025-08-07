@@ -27,6 +27,16 @@ function jotunheim_magic_plugin_menu() {
         'render_prefab_image_import_page' // Callback function for image import
     );
 
+    // Add Point of Sale submenu
+    add_submenu_page(
+        'jotunheim_magic_plugin',       // Parent slug
+        'Point of Sale',                // Page title
+        'Point of Sale',                // Menu title
+        'edit_posts',                   // Capability required (lower than manage_options)
+        'pos_interface',                // Submenu slug
+        'render_pos_interface_page'     // Callback function for POS
+    );
+
     // Add more submenu pages as needed
 }
 
@@ -34,6 +44,14 @@ function jotunheim_magic_plugin_menu() {
 function jotunheim_magic_dashboard() {
     echo '<h1>Welcome to Jotunheim Magic Plugin</h1>';
     echo '<p>Use the available tools to manage the plugin functionalities.</p>';
+}
+
+// Point of Sale interface page
+function render_pos_interface_page() {
+    echo '<div class="wrap">';
+    echo '<h1>Point of Sale System</h1>';
+    echo do_shortcode('[pos_interface]');
+    echo '</div>';
 }
 
 // Hook the menu function to WordPress admin menu

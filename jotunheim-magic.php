@@ -103,6 +103,11 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-core.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-rest-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Wiki/wiki-integration.php');
 
+// Include POS files
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-api.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-scripts.php');
+
 // Register shortcode for EventZones Editor
 add_shortcode('eventzones_editor', 'eventzones_editor_shortcode');
 
@@ -111,6 +116,9 @@ add_shortcode('eventzones_add_new_zone', 'eventzones_add_new_zone_shortcode');
 
 // Register shortcode for Wiki
 add_shortcode('wiki', 'wiki_shortcode');
+
+// Register shortcode for POS
+add_shortcode('pos_interface', 'pos_interface_shortcode');
 
 // Ensure the Wiki core outputs content
 function wiki_shortcode() {
