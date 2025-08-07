@@ -30,6 +30,10 @@ require_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefablist-api-get
 // Include pricelist file
 include_once(plugin_dir_path(__FILE__) . 'includes/PriceList/pricelist.php');
 
+// Include Google Sheets service
+include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-service.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-admin.php');
+
 // Include the dashboard menu file
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
