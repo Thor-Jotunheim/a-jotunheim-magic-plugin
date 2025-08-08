@@ -68,6 +68,7 @@ function pos_register_player($request) {
     $player_name = sanitize_text_field(trim($request['playerName']));
     
     if (empty($player_name)) {
+        error_log("POS: Player registration failed - empty player name");
         return new WP_REST_Response(['error' => 'Player name must not be blank'], 400);
     }
 
@@ -80,6 +81,7 @@ function pos_register_player($request) {
     ));
     
     if ($existing_player) {
+        error_log("POS: Player registration failed - player '$player_name' already exists");
         return new WP_REST_Response(['error' => 'Name already exists'], 409);
     }
     
@@ -89,8 +91,10 @@ function pos_register_player($request) {
     $inserted = $wpdb->insert($table_name, $default_values, array_fill(0, count($default_values), '%s'));
     
     if ($inserted) {
+        error_log("POS: Successfully registered new player: $player_name");
         return new WP_REST_Response(['message' => "Successfully added player '$player_name'"], 201);
     } else {
+        error_log("POS: Database error while registering player '$player_name': " . $wpdb->last_error);
         return new WP_REST_Response(['error' => 'Failed to add player'], 500);
     }
 }

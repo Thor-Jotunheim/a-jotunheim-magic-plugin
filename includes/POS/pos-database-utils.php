@@ -43,6 +43,17 @@ class POS_Database_Utils {
         
         $table_name = 'jotun_transactions';
         
+        // Check if table exists first
+        $table_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s",
+            $table_name
+        ));
+        
+        if (!$table_exists) {
+            error_log("POS: Table $table_name does not exist");
+            return false;
+        }
+        
         if (!self::column_exists($table_name, 'transaction_type')) {
             $sql = "ALTER TABLE $table_name ADD COLUMN transaction_type VARCHAR(50) DEFAULT 'general'";
             $result = $wpdb->query($sql);
