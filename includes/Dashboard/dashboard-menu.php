@@ -67,6 +67,12 @@ function jotunheim_magic_plugin_menu() {
             'slug'        => 'universal_ui_table_config',
             'callback'    => 'render_universal_ui_table_config_page',
         ],
+        [
+            'title'       => 'Point of Sale',
+            'menu_title'  => 'Point of Sale',
+            'slug'        => 'pos_interface',
+            'callback'    => 'render_pos_interface_page',
+        ],
     ];
 
     // Register each submenu
@@ -189,6 +195,14 @@ function render_trade_page() {
 function render_barter_page() {
     echo '<h1>Barter</h1>';
     echo do_shortcode('[jotunheim_barter_page]');
+}
+
+// Point of Sale interface page
+function render_pos_interface_page() {
+    echo '<div class="wrap">';
+    echo '<h1>Point of Sale System</h1>';
+    echo do_shortcode('[pos_interface]');
+    echo '</div>';
 }
 
 // Hook the menu function to WordPress admin menu
