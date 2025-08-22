@@ -340,7 +340,7 @@ var ENV_STATES = {
     'Clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
-    'Misty': { emoji: '☁️', name: 'Fog', wind: [0.0, 0.5] },
+    'Misty': { emoji: '🌫️', name: 'Fog', wind: [0.0, 0.5] },
     'DeepForest_Mist': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
     'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
     'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
@@ -356,7 +356,7 @@ var ENV_STATES = {
     'Mistlands_thunder': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.5, 1.0] },
     // Ashlands weather types (from kirilloid)
     'Ashlands_ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] },
-    'Ashlands_misty': { emoji: '☁️', name: 'Ash Fog', wind: [0.1, 0.3] },
+    'Ashlands_misty': { emoji: '🌫️', name: 'Ash Fog', wind: [0.1, 0.3] },
     'Ashlands_CinderRain': { emoji: '🌋', name: 'Cinder Rain', wind: [0.6, 1.0] },
     'Ashlands_storm': { emoji: '🌪️', name: 'Ash Storm', wind: [0.8, 1.0] },
     // Legacy support
@@ -383,7 +383,7 @@ var BIOMES = {
     'Ocean': { name: 'Ocean', icon: '🌊' },
     'Mountain': { name: 'Mountain', icon: '🏔️' },
     'Plains': { name: 'Plains', icon: '🌺' },
-    'Mistlands': { name: 'Mistlands', icon: '☁️' },
+    'Mistlands': { name: 'Mistlands', icon: '🌫️' },
     'Ashlands': { name: 'Ashlands', icon: '🔥' }
 };
 
@@ -491,19 +491,6 @@ function formatWindDirection(angle) {
     return directions[index % 16] || 'N';
 }
 
-// Format weather period duration in a user-friendly way
-function formatWeatherDuration(period) {
-    // Each weather period is 2 hours of game time
-    var gameHours = period * 2;
-    if (gameHours === 0) {
-        return 'Start';
-    } else if (gameHours < 10) {
-        return '0' + gameHours + ':00';
-    } else {
-        return gameHours + ':00';
-    }
-}
-
 // Format wind direction with rotated wind symbol
 function formatWindWithSymbol(angle, intensity) {
     var direction = formatWindDirection(angle);
@@ -534,16 +521,16 @@ function createWeatherDisplay() {
     
     var biomeKeys = Object.keys(BIOMES);
     
-    var tableHTML = '<table style="width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
+    var tableHTML = '<table style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
         '<thead><tr>';
     
-    // Time column header - fixed width for Safari compatibility
-    tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; width: 80px;">Time</th>';
+    // Time column header
+    tableHTML += '<th style="padding: 12px 8px; text-align: center; border: 1px solid #444; font-size: 0.9em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 80px;">Time</th>';
     
     // Biome headers (horizontal text for cross-browser compatibility)
     biomeKeys.forEach(function(biomeKey) {
         var biome = BIOMES[biomeKey];
-        tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; width: 12.5%;">' + 
+        tableHTML += '<th style="padding: 12px 8px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 100px;">' + 
             biome.icon + ' ' + biome.name + '</th>';
     });
     
@@ -614,10 +601,10 @@ function updateWeatherTable(day) {
         
         // Time cell
         var timeCell = document.createElement('td');
-        timeCell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.75em; font-weight: bold; color: #d4af37;';
+        timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            timeString + '<br><small>' + formatWeatherDuration(period) + '</small>';
+            timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
         row.appendChild(timeCell);
         
         // Weather for each biome
@@ -626,7 +613,7 @@ function updateWeatherTable(day) {
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             var cell = document.createElement('td');
             
-            cell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.7em;';
+            cell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em;';
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
@@ -671,15 +658,15 @@ function updateWeatherTable(day) {
         row.style.opacity = '0.6';
         
         var timeCell = document.createElement('td');
-        timeCell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.75em; font-weight: bold; color: #d4af37;';
-        timeCell.innerHTML = timeString + '<br><small>' + formatWeatherDuration(period) + '</small>';
+        timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
+        timeCell.innerHTML = timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
         row.appendChild(timeCell);
         
         biomeKeys.forEach(function(biomeKey, index) {
             var weather = weathers[index];
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             var cell = document.createElement('td');
-            cell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.7em;';
+            cell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em;';
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
