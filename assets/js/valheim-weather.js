@@ -496,12 +496,14 @@ function formatWindWithSymbol(angle, intensity) {
     var direction = formatWindDirection(angle);
     var windPercent = Math.round(intensity * 100);
     
-    // Create a rotated wind symbol using CSS transform
-    // Subtract 90 degrees to make the wind blow in the correct direction (0° = North = upward)
-    var rotationAngle = angle - 90;
-    var windSymbol = '<span style="display: inline-block; transform: rotate(' + rotationAngle + 'deg); font-size: 1.1em; margin-right: 4px;">🌬️</span>';
+    // Create a rotated arrow icon using SVG (based on kirilloid's design)
+    var windArrow = '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" ' +
+        'style="display: inline-block; width: 16px; height: 16px; transform: rotate(' + angle + 'deg); margin-right: 4px; vertical-align: middle;">' +
+        '<path stroke="currentColor" fill="currentColor" ' +
+        'd="M 16,4 L24,12 L22,14 L17.5,9.5 L17.5,25.5 L14.5,25.5 L14.5,9.5 L10,14 L8,12 L16,4 z" />' +
+        '</svg>';
     
-    return windSymbol + direction + ' ' + Math.round(angle) + '° ' + windPercent + '%';
+    return windArrow + direction + ' ' + Math.round(angle) + '° ' + windPercent + '%';
 }
 
 // Get sunrise/sunset times (Valheim uses 15% and 85% of day)
