@@ -71,6 +71,7 @@ var CONFIG = {
     manualEnabled: false,
     manualStartDay: 1,
     manualStartDate: new Date('2025-08-22T00:00'),
+    manualProgressionType: 'game-time', // 'static', 'real-days', or 'game-time'
     
     // Server Start Date (Priority 3 - Default)
     serverStartDate: new Date('2025-08-01T19:30')
@@ -217,6 +218,62 @@ async function getCurrentGameDay() {
     }
 }
 
+// Calculate current in-game time (total game seconds elapsed since server start)
+async function getCurrentGameTime() {
+    try {
+        // Priority 1: API Override
+        if (CONFIG.apiEnabled && CONFIG.apiEndpoint) {
+            // For API, we can only get the day, so calculate time within that day based on real time
+            // This isn't perfect but it's the best we can do without time-within-day from the API
+            var cachedDay = getCachedApiData();
+            if (cachedDay) {
+                var currentDay = Math.max(1, Math.floor(cachedDay));
+                var baseTime = (currentDay - 1) * GAME_DAY;
+                // Add current time within the day based on real time progression
+                var now = new Date();
+                var millisecondsIntoDay = (now.getTime() % (20 * 60 * 1000)); // 20 minutes per game day
+                var gameSecondsIntoDay = (millisecondsIntoDay / 1000) * (GAME_DAY / (20 * 60));
+                return baseTime + gameSecondsIntoDay;
+            }
+        }
+        
+        // Priority 2: Manual Day Override
+        if (CONFIG.manualEnabled) {
+            var now = new Date();
+            var timeElapsed = now - CONFIG.manualStartDate; // milliseconds
+            var baseTime = (CONFIG.manualStartDay - 1) * GAME_DAY; // Start of the manual start day
+            
+            if (CONFIG.manualProgressionType === 'real-days') {
+                // 1 real day = 1 in-game day, but we need time within day
+                var realDaysElapsed = timeElapsed / (1000 * 60 * 60 * 24); // convert to real days
+                var totalGameTime = baseTime + (realDaysElapsed * GAME_DAY);
+                return Math.max(0, totalGameTime);
+            } else if (CONFIG.manualProgressionType === 'game-time') {
+                // 20 minutes real time = 1 in-game day (1200 seconds)
+                var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
+                var scaledGameTime = gameSecondsElapsed * (GAME_DAY / (20 * 60)); // Scale real seconds to game seconds
+                return Math.max(0, baseTime + scaledGameTime);
+            } else {
+                // Static - no progression, but we still calculate time within the current day
+                var millisecondsIntoDay = (now.getTime() % (20 * 60 * 1000)); // 20 minutes per game day
+                var gameSecondsIntoDay = (millisecondsIntoDay / 1000) * (GAME_DAY / (20 * 60));
+                return baseTime + gameSecondsIntoDay;
+            }
+        }
+        
+        // Priority 3: Server Start Date (Default)
+        var now = new Date();
+        var timeElapsed = now - CONFIG.serverStartDate; // milliseconds
+        var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
+        var scaledGameTime = gameSecondsElapsed * (GAME_DAY / (20 * 60)); // Scale real seconds to game seconds (20 min = 1 game day)
+        return Math.max(0, scaledGameTime);
+        
+    } catch (error) {
+        console.error('Error calculating current game time:', error);
+        return 0;
+    }
+}
+
 // Update configuration status message
 function updateConfigStatus(message) {
     var statusElement = document.getElementById('configStatus');
@@ -330,7 +387,7 @@ function formatDateForInput(date) {
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
-var GAME_DAY = 1800; // Game seconds in a day (kirilloid authentic)
+var GAME_DAY = 1200; // Game seconds in a day - 20 minutes real time (kirilloid authentic)
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
@@ -557,11 +614,71 @@ function createWeatherDisplay() {
 }
 
 // UI Update functions
-function updateCurrentInfo(day) {
+async function updateCurrentInfo(day) {
     var currentInfo = document.getElementById('currentInfo');
     if (!currentInfo) return;
     
-    currentInfo.innerHTML = '<strong>Day ' + day + '</strong>';
+    try {
+        // Get current game time (total seconds since server start)
+        var currentGameTime = await getCurrentGameTime();
+        var currentTimeInDay = currentGameTime % GAME_DAY;
+        var currentWeatherIndex = Math.floor(currentGameTime / WEATHER_PERIOD);
+        
+        // Calculate display time (in-game time of day)
+        var dayProgress = currentTimeInDay / GAME_DAY;
+        var displayHour = Math.floor(dayProgress * 24);
+        var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+        var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+        
+        // Get current weather for all biomes
+        var weathers = getWeathersAt(currentWeatherIndex);
+        var wind = getGlobalWind(currentGameTime);
+        var biomeKeys = Object.keys(BIOMES);
+        
+        // Build HTML for current conditions
+        var html = '<div style="font-size: 1.2em; margin-bottom: 15px;">';
+        html += '<strong>Day ' + day + '</strong> - <span style="color: #d4af37;">' + timeString + '</span>';
+        html += '</div>';
+        
+        // Add current weather for each biome in a compact format
+        html += '<div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">';
+        
+        for (var i = 0; i < biomeKeys.length; i++) {
+            var biomeKey = biomeKeys[i];
+            var biome = BIOMES[biomeKey];
+            var weather = weathers[i];
+            var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+            
+            // Calculate wind for this biome
+            var windRange = envData.wind || [0.0, 1.0];
+            var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
+            
+            html += '<div style="background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 6px; border: 1px solid #555; text-align: center; min-width: 120px;">';
+            html += '<div style="font-size: 0.8em; color: #ccc;">' + biome.icon + ' ' + biome.name + '</div>';
+            html += '<div style="font-size: 1.1em; margin: 2px 0;">' + envData.emoji + ' ' + envData.name + '</div>';
+            html += '<div style="font-size: 0.8em; color: #b0c4de;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</div>';
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        
+        // Add next weather change info
+        var nextWeatherTime = (currentWeatherIndex + 1) * WEATHER_PERIOD;
+        var timeToNext = nextWeatherTime - currentGameTime;
+        if (timeToNext > 0) {
+            var minutesToNext = Math.floor(timeToNext / 60);
+            var secondsToNext = Math.floor(timeToNext % 60);
+            html += '<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">';
+            html += 'Next weather change in: ' + minutesToNext + 'm ' + secondsToNext + 's';
+            html += '</div>';
+        }
+        
+        currentInfo.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error updating current info:', error);
+        currentInfo.innerHTML = '<strong>Day ' + day + '</strong> - <span style="color: #f44336;">Error loading current weather</span>';
+    }
 }
 
 function updateWeatherTable(day) {
