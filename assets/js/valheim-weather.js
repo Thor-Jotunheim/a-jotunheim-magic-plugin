@@ -461,18 +461,13 @@ function getWeathersAt(index) {
     random.init(index);
     var rng = random.rangeFloat(0, 1);
 
-    // --- DEBUG: Print server start time and offsets ---
-    if (typeof CONFIG !== 'undefined') {
-        console.log('[DEBUG] CONFIG.serverStartDate:', CONFIG.serverStartDate);
-        if (CONFIG.manualEnabled) {
-            console.log('[DEBUG] CONFIG.manualStartDate:', CONFIG.manualStartDate, 'manualStartDay:', CONFIG.manualStartDay);
-        }
-    }
+    // (removed per-call CONFIG debug to avoid flooding the console)
 
     // --- Targeted debug for Day 984 13:41 (non-spammy) ---
     var targetDay = 984;
     var targetMins = 13 * 60 + 41; // 13:41
-    var targetGameTime = targetDay * GAME_DAY + targetMins * 60;
+    // UI uses 1-based days but internal calculations use 0-based (day - 1)
+    var targetGameTime = (targetDay - 1) * GAME_DAY + targetMins * 60;
     var targetIndex = getWeatherPeriodIndex(targetGameTime);
     if (index === targetIndex) {
         var blackForestWeather = rollWeather(ENV_SETUP['BlackForest'] || ENV_SETUP['Meadows'], rng);
@@ -480,9 +475,11 @@ function getWeathersAt(index) {
     }
 
     // --- Existing debug for day 984 area (reduced verbosity) ---
-    var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
+    // Match UI convention: day 984 start (0-based)
+    var day984StartTime = (984 - 1) * GAME_DAY; // Day 984 starts at this game time (0-based)
     var day984StartIndex = getWeatherPeriodIndex(day984StartTime);
-    if (index >= day984StartIndex && index <= day984StartIndex + 20) {
+    // Only log for the start of the day or the specific target index to avoid noise
+    if (index === day984StartIndex || index === targetIndex) {
         console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
         var timeFromDayStart = (index - day984StartIndex) * WEATHER_PERIOD;
         var hours = Math.floor((timeFromDayStart / GAME_DAY) * 24);
@@ -708,7 +705,8 @@ function updateWeatherTable(day) {
     var nextStartTime = day * GAME_DAY;
     for (var period = 0; period < 3; period++) {
         var gameTime = nextStartTime + period * displayInterval;
-        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        // Use centralized helper so the same epoch/offset is applied everywhere
+        var weatherIndex = getWeatherPeriodIndex(gameTime);
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
         
@@ -767,9 +765,10 @@ function showForecast() {
         
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
-        for (var period = 0; period < 12; period++) {
+            for (var period = 0; period < 12; period++) {
             var gameTime = startTime + period * WEATHER_PERIOD * 2;
-            var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+            // Ensure forecast uses the same period index calculation (apply epoch/offset)
+            var weatherIndex = getWeatherPeriodIndex(gameTime);
             var weathers = getWeathersAt(weatherIndex);
             var wind = getGlobalWind(gameTime);
             
