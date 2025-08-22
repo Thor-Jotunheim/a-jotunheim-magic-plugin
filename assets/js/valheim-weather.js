@@ -8,10 +8,10 @@ let config = {
         endpoint: ''
     },
     manualOverride: {
-        enabled: true,  // Enable manual override for testing
-        startDay: 984,   // Set to 984 as configured
+        enabled: false,
+        startDay: 1,
         startDate: '2025-08-22T09:00',
-        progression: 'static'  // 'static' means no time progression for testing
+        progression: 'game-time'  // 'static', 'real-days', or 'game-time'
     },
     serverStartDate: '2025-08-01T19:30'  // Default server start
 };
@@ -33,7 +33,6 @@ async function loadWordPressConfig() {
             
             if (response.ok) {
                 const wpConfig = await response.json();
-                console.log('Raw WordPress config response:', wpConfig);
                 if (wpConfig.success) {
                     // Update config with WordPress settings
                     config.apiConfig.enabled = wpConfig.data.api_enabled;
@@ -44,9 +43,7 @@ async function loadWordPressConfig() {
                     config.manualOverride.progression = wpConfig.data.manual_progression;
                     config.serverStartDate = wpConfig.data.server_start_date;
                     
-                    console.log('Loaded WordPress weather configuration:', config);
-                } else {
-                    console.warn('WordPress config request failed:', wpConfig);
+                    console.log('Loaded WordPress weather configuration');
                 }
             }
         }
@@ -71,10 +68,9 @@ var CONFIG = {
     apiEndpoint: '',
     
     // Manual Day Override (Priority 2)
-    manualEnabled: true,   // Enable for testing
-    manualStartDay: 984,   // Set to 984 as configured
+    manualEnabled: false,
+    manualStartDay: 1,
     manualStartDate: new Date('2025-08-22T00:00'),
-    manualProgressionType: 'static', // 'static', 'real-days', or 'game-time'
     
     // Server Start Date (Priority 3 - Default)
     serverStartDate: new Date('2025-08-01T19:30')
@@ -221,62 +217,6 @@ async function getCurrentGameDay() {
     }
 }
 
-// Calculate current in-game time (total game seconds elapsed since server start)
-async function getCurrentGameTime() {
-    try {
-        // Priority 1: API Override
-        if (CONFIG.apiEnabled && CONFIG.apiEndpoint) {
-            // For API, we can only get the day, so calculate time within that day based on real time
-            // This isn't perfect but it's the best we can do without time-within-day from the API
-            var cachedDay = getCachedApiData();
-            if (cachedDay) {
-                var currentDay = Math.max(1, Math.floor(cachedDay));
-                var baseTime = (currentDay - 1) * GAME_DAY;
-                // Add current time within the day based on real time progression
-                var now = new Date();
-                var millisecondsIntoDay = (now.getTime() % (20 * 60 * 1000)); // 20 minutes per game day
-                var gameSecondsIntoDay = (millisecondsIntoDay / 1000) * (GAME_DAY / (20 * 60));
-                return baseTime + gameSecondsIntoDay;
-            }
-        }
-        
-        // Priority 2: Manual Day Override
-        if (CONFIG.manualEnabled) {
-            var now = new Date();
-            var timeElapsed = now - CONFIG.manualStartDate; // milliseconds
-            var baseTime = (CONFIG.manualStartDay - 1) * GAME_DAY; // Start of the manual start day
-            
-            if (CONFIG.manualProgressionType === 'real-days') {
-                // 1 real day = 1 in-game day, but we need time within day
-                var realDaysElapsed = timeElapsed / (1000 * 60 * 60 * 24); // convert to real days
-                var totalGameTime = baseTime + (realDaysElapsed * GAME_DAY);
-                return Math.max(0, totalGameTime);
-            } else if (CONFIG.manualProgressionType === 'game-time') {
-                // 20 minutes real time = 1 in-game day (1200 seconds)
-                var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
-                var scaledGameTime = gameSecondsElapsed * (GAME_DAY / (20 * 60)); // Scale real seconds to game seconds
-                return Math.max(0, baseTime + scaledGameTime);
-            } else {
-                // Static - no progression, but we still calculate time within the current day
-                var millisecondsIntoDay = (now.getTime() % (20 * 60 * 1000)); // 20 minutes per game day
-                var gameSecondsIntoDay = (millisecondsIntoDay / 1000) * (GAME_DAY / (20 * 60));
-                return baseTime + gameSecondsIntoDay;
-            }
-        }
-        
-        // Priority 3: Server Start Date (Default)
-        var now = new Date();
-        var timeElapsed = now - CONFIG.serverStartDate; // milliseconds
-        var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
-        var scaledGameTime = gameSecondsElapsed * (GAME_DAY / (20 * 60)); // Scale real seconds to game seconds (20 min = 1 game day)
-        return Math.max(0, scaledGameTime);
-        
-    } catch (error) {
-        console.error('Error calculating current game time:', error);
-        return 0;
-    }
-}
-
 // Update configuration status message
 function updateConfigStatus(message) {
     var statusElement = document.getElementById('configStatus');
@@ -390,50 +330,40 @@ function formatDateForInput(date) {
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
-var GAME_DAY = 1200; // Game seconds in a day - 20 minutes real time (kirilloid authentic)
+var GAME_DAY = 1800; // Game seconds in a day (kirilloid authentic)
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
-var INTRO_WEATHER = 'Clear'; // Default weather during intro
 
-// Random class implementation (from kirilloid)
-function Random(seed) {
-    this.init(seed || 0);
-}
-
-Random.prototype.init = function(seed) {
-    // XORShift implementation matching Unity's Random
-    this._a = ((seed * 0x343fd) + 0x269ec3) >>> 0;
-    this._b = this._a;
-    this._c = this._a;
-    this._d = this._a;
+// Weather types and their data (from actual Valheim)
+var ENV_STATES = {
+    'Clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
+    'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
+    'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
+    'Misty': { emoji: '☁️', name: 'Fog', wind: [0.0, 0.5] },
+    'DeepForest_Mist': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
+    'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
+    'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
+    'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
+    'SwampRain': { emoji: '🌧️', name: 'Heavy Rain', wind: [0.2, 0.8] },
+    'Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
+    'Twilight_Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
+    'SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
+    'Twilight_SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
+    // Mistlands weather types (from kirilloid)
+    'Mistlands_clear': { emoji: '☀️', name: 'Clear', wind: [0.05, 0.2] },
+    'Mistlands_rain': { emoji: '🌧️', name: 'Rain', wind: [0.05, 0.2] },
+    'Mistlands_thunder': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.5, 1.0] },
+    // Ashlands weather types (from kirilloid)
+    'Ashlands_ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] },
+    'Ashlands_misty': { emoji: '☁️', name: 'Ash Fog', wind: [0.1, 0.3] },
+    'Ashlands_CinderRain': { emoji: '🌋', name: 'Cinder Rain', wind: [0.6, 1.0] },
+    'Ashlands_storm': { emoji: '🌪️', name: 'Ash Storm', wind: [0.8, 1.0] },
+    // Legacy support
+    'Ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] }
 };
 
-Random.prototype.nextUInt = function() {
-    var t = this._d;
-    var s = this._a;
-    this._d = this._c;
-    this._c = this._b;
-    this._b = s;
-    t ^= t << 11;
-    t ^= t >>> 8;
-    return this._a = t ^ s ^ (s >>> 19);
-};
-
-Random.prototype.random = function() {
-    return (this.nextUInt() >>> 0) / 0x100000000;
-};
-
-Random.prototype.rangeFloat = function(min, max) {
-    return min + this.random() * (max - min);
-};
-
-var random = new Random(0);
-
-// Biome setup (kirilloid authentic) - matching BIOMES object
-var biomeIds = ['Meadows', 'BlackForest', 'Swamp', 'Mountain', 'Plains', 'Ocean', 'Mistlands', 'Ashlands'];
-
-// Environment setup with exact kirilloid weights
+// Biome weather configurations (ACTUAL kirilloid/valheim algorithm)
 var ENV_SETUP = {
     'Meadows': [['Clear', 25], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1], ['LightRain', 1]],
     'BlackForest': [['DeepForest_Mist', 20], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1]],
@@ -441,89 +371,8 @@ var ENV_SETUP = {
     'Mountain': [['SnowStorm', 1], ['Snow', 5]],
     'Plains': [['Heath_clear', 5], ['Misty', 1], ['LightRain', 1]],
     'Ocean': [['Rain', 1], ['LightRain', 1], ['Misty', 1], ['Clear', 10], ['ThunderStorm', 1]],
-    'Mistlands': [['Clear', 15], ['Rain', 1], ['ThunderStorm', 1]],
-    'Ashlands': [['Ashrain', 30], ['Misty', 2], ['CinderRain', 4], ['storm', 1]]
-};
-
-// Constants for kirilloid algorithm
-var INTRO_WEATHER = 'ThunderStorm';
-var INTRO_DURATION = 3600; // Reduced from 432000 - intro weather for first hour only (not 5 days!)
-var WIND_PERIOD = 10; // Wind changes every 10 seconds
-
-// Roll weather function (kirilloid authentic)
-function rollWeather(weathers, roll) {
-    var totalWeight = weathers.reduce(function(weight, weather) { return weight + weather[1]; }, 0);
-    var randomWeight = totalWeight * roll;
-    var sum = 0;
-    for (var i = 0; i < weathers.length; i++) {
-        var env = weathers[i][0];
-        var weight = weathers[i][1];
-        sum += weight;
-        if (randomWeight < sum) return env;
-    }
-    return weathers[weathers.length - 1][0];
-}
-
-// Get weathers at specific index (kirilloid authentic)
-function getWeathersAt(index) {
-    if (index < INTRO_DURATION / WEATHER_PERIOD) {
-        return biomeIds.map(function() { return INTRO_WEATHER; });
-    }
-    
-    // Use index directly as seed for deterministic weather (kirilloid method)
-    random.init(index);
-    var rng = random.rangeFloat(0, 1);
-    
-    return biomeIds.map(function(biome) {
-        return rollWeather(ENV_SETUP[biome], rng);
-    });
-}
-
-// Wind calculation functions (kirilloid authentic)
-function addOctave(time, octave, wind) {
-    var period = Math.floor(time / (WIND_PERIOD * 8 / octave));
-    random.init(period);
-    wind.angle += random.random() * 2 * Math.PI / octave;
-    wind.intensity += (random.random() - 0.5) / octave;
-}
-
-function clamp01(value) {
-    return Math.max(0, Math.min(1, value));
-}
-
-function getGlobalWind(time) {
-    var wind = {
-        angle: 0,
-        intensity: 0.5
-    };
-    addOctave(time, 1, wind);
-    addOctave(time, 2, wind);
-    addOctave(time, 4, wind);
-    addOctave(time, 8, wind);
-    wind.intensity = clamp01(wind.intensity);
-    wind.angle = (wind.angle * 180 / Math.PI) % 360;
-    if (wind.angle < 0) wind.angle += 360;
-    return wind;
-}
-
-// Weather types and their data (from actual Valheim)
-var ENV_STATES = {
-    'Clear': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
-    'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
-    'Twilight_Clear': { emoji: '☀️', name: 'Clear', wind: [0.2, 0.6] },
-    'Misty': { emoji: '🌫️', name: 'Fog', wind: [0.1, 0.3] },
-    'DeepForest_Mist': { emoji: '🌫️', name: 'Mist', wind: [0.1, 0.3] },
-    'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
-    'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
-    'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
-    'SwampRain': { emoji: '🌧️', name: 'Heavy Rain', wind: [0.2, 0.8] },
-    'Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
-    'Twilight_Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
-    'SnowStorm': { emoji: '❄️', name: 'Snow Storm', wind: [0.8, 1.0] },
-    'Twilight_SnowStorm': { emoji: '❄️', name: 'Snow Storm', wind: [0.8, 1.0] },
-    'Ashrain': { emoji: '🌋', name: 'Ash Rain', wind: [0.3, 0.8] },
-    'CinderRain': { emoji: '🔥', name: 'Cinder Rain', wind: [0.5, 1.0] },
-    'storm': { emoji: '⛈️', name: 'Storm', wind: [0.8, 1.0] }
+    'Mistlands': [['Mistlands_clear', 15], ['Mistlands_rain', 1], ['Mistlands_thunder', 1]],
+    'Ashlands': [['Ashlands_ashrain', 30], ['Ashlands_misty', 2], ['Ashlands_CinderRain', 4], ['Ashlands_storm', 1]]
 };
 
 // Biome display information
@@ -531,9 +380,9 @@ var BIOMES = {
     'Meadows': { name: 'Meadows', icon: '⛳' },
     'BlackForest': { name: 'Black Forest', icon: '🌳' },
     'Swamp': { name: 'Swamp', icon: '🐸' },
-    'Mountain': { name: 'Mountain', icon: '�️' },
-    'Plains': { name: 'Plains', icon: '�' },
-    'Ocean': { name: 'Ocean', icon: '�' },
+    'Ocean': { name: 'Ocean', icon: '🌊' },
+    'Mountain': { name: 'Mountain', icon: '🏔️' },
+    'Plains': { name: 'Plains', icon: '🌺' },
     'Mistlands': { name: 'Mistlands', icon: '☁️' },
     'Ashlands': { name: 'Ashlands', icon: '🔥' }
 };
@@ -579,6 +428,54 @@ function lerp(a, b, t) {
 
 function clamp01(value) {
     return Math.max(0, Math.min(1, value));
+}
+
+// Roll weather based on weighted probabilities (exact Valheim logic)
+function rollWeather(weathers, roll) {
+    var totalWeight = weathers.reduce(function(sum, weather) { return sum + weather[1]; }, 0);
+    var randomWeight = totalWeight * roll;
+    var sum = 0;
+    
+    for (var i = 0; i < weathers.length; i++) {
+        var env = weathers[i][0];
+        var weight = weathers[i][1];
+        sum += weight;
+        if (randomWeight < sum) return env;
+    }
+    
+    return weathers[weathers.length - 1][0];
+}
+
+// Get weather for all biomes at specific index (exact kirilloid algorithm)
+function getWeathersAt(index) {
+    if (index < INTRO_DURATION / WEATHER_PERIOD) {
+        return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
+    }
+    
+    random.init(index);
+    var rng = random.rangeFloat(0, 1);
+    
+    // Debug log for Day 984 area (around index 2659-2661)
+    var day984StartIndex = Math.floor(984 * GAME_DAY / WEATHER_PERIOD);
+    if (index >= day984StartIndex && index <= day984StartIndex + 10) {
+        console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
+        console.log('  Time offset from day start: ' + ((index - day984StartIndex) * WEATHER_PERIOD) + ' seconds');
+        var hours = Math.floor(((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24);
+        var minutes = Math.floor((((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24 % 1) * 60);
+        console.log('  Approximate time: ' + hours + ':' + String(minutes).padStart(2, '0'));
+    }
+    
+    return Object.keys(BIOMES).map(function(biome) {
+        var biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
+        var weather = rollWeather(biomeWeathers, rng);
+        
+        // Debug for Day 984
+        if (index >= day984StartIndex && index <= day984StartIndex + 10) {
+            console.log('    ' + biome + ': ' + weather);
+        }
+        
+        return weather;
+    });
 }
 
 // Calculate global wind (Valheim algorithm)
@@ -639,7 +536,7 @@ function createWeatherDisplay() {
     var weatherDisplay = document.getElementById('weatherDisplay');
     if (!weatherDisplay) return;
     
-    var biomeKeys = biomeIds;
+    var biomeKeys = Object.keys(BIOMES);
     
     var tableHTML = '<table style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
         '<thead><tr>';
@@ -664,210 +561,30 @@ function updateCurrentInfo(day) {
     var currentInfo = document.getElementById('currentInfo');
     if (!currentInfo) return;
     
-    try {
-        // Use simple approach - same as forecast
-        var currentDay = day || parseInt(document.getElementById('dayInput').value);
-        if (isNaN(currentDay)) currentDay = 984; // Default to configured day
-        
-        // Calculate current time within the day (middle of day for now)
-        var startOfDay = (currentDay - 1) * GAME_DAY;
-        var currentTimeInDay = GAME_DAY / 2; // Middle of day
-        var currentGameTime = startOfDay + currentTimeInDay;
-        var currentWeatherIndex = Math.floor(currentGameTime / WEATHER_PERIOD);
-        
-        // Calculate display time (in-game time of day)
-        var dayProgress = currentTimeInDay / GAME_DAY;
-        var displayHour = Math.floor(dayProgress * 24);
-        var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
-        var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
-        
-        // Get current weather for all biomes
-        var weathers = getWeathersAt(currentWeatherIndex);
-        var wind = getGlobalWind(currentGameTime);
-        var biomeKeys = biomeIds;
-        
-        // Build HTML for current conditions
-        var html = '<div style="font-size: 1.2em; margin-bottom: 15px;">';
-        html += '<strong>Day ' + day + '</strong> - <span style="color: #d4af37;">' + timeString + '</span>';
-        html += '</div>';
-        
-        // Add current weather for each biome in a compact format
-        html += '<div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">';
-        
-        for (var i = 0; i < biomeKeys.length; i++) {
-            var biomeKey = biomeKeys[i];
-            var biome = BIOMES[biomeKey];
-            var weather = weathers[i];
-            var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
-            
-            // Calculate wind for this biome
-            var windRange = envData.wind || [0.0, 1.0];
-            var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
-            
-            html += '<div style="background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 6px; border: 1px solid #555; text-align: center; min-width: 120px;">';
-            html += '<div style="font-size: 0.8em; color: #ccc;">' + biome.icon + ' ' + biome.name + '</div>';
-            html += '<div style="font-size: 1.1em; margin: 2px 0;">' + envData.emoji + ' ' + envData.name + '</div>';
-            html += '<div style="font-size: 0.8em; color: #b0c4de;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</div>';
-            html += '</div>';
-        }
-        
-        html += '</div>';
-        
-        // Add next weather change info
-        var nextWeatherTime = (currentWeatherIndex + 1) * WEATHER_PERIOD;
-        var timeToNext = nextWeatherTime - currentGameTime;
-        if (timeToNext > 0) {
-            var minutesToNext = Math.floor(timeToNext / 60);
-            var secondsToNext = Math.floor(timeToNext % 60);
-            html += '<div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">';
-            html += 'Next weather change in: ' + minutesToNext + 'm ' + secondsToNext + 's';
-            html += '</div>';
-        }
-        
-        currentInfo.innerHTML = html;
-        
-    } catch (error) {
-        console.error('Error updating current info:', error);
-        currentInfo.innerHTML = '<strong>Day ' + day + '</strong> - <span style="color: #f44336;">Error loading current weather</span>';
-    }
+    currentInfo.innerHTML = '<strong>Day ' + day + '</strong>';
 }
 
-function updateWeatherTable(day, hoursInterval) {
+function updateWeatherTable(day) {
     var tableBody = document.getElementById('weatherTableBody');
-    if (!tableBody) {
-        console.error('weatherTableBody not found!');
-        return;
-    }
+    if (!tableBody) return;
     
-    console.log('Updating weather table for day', day);
     tableBody.innerHTML = '';
     
-    try {
-        var gameDay = day - 1;
-        var startTime = gameDay * GAME_DAY;
-        var biomeKeys = biomeIds;
-        
-        console.log('Game day:', gameDay, 'Start time:', startTime);
-        
-        // Find all weather changes during this day by checking each weather period
-        var weatherChanges = [];
-        var startIndex = Math.floor(startTime / WEATHER_PERIOD);
-        var endIndex = Math.floor((startTime + GAME_DAY) / WEATHER_PERIOD) + 1;
-        
-        console.log('Checking weather indices from', startIndex, 'to', endIndex);
-        
-        // Get weather for the first period as baseline
-        var prevWeathers = null;
-        
-        for (var i = startIndex; i <= endIndex && weatherChanges.length < 50; i++) { // Limit to prevent infinite loops
-            var currentTime = i * WEATHER_PERIOD;
-            if (currentTime > startTime + GAME_DAY) break;
-            
-            var currentWeathers = getWeathersAt(i);
-            var hasChange = false;
-            
-            // Check if this is the first entry or if any weather changed
-            if (!prevWeathers) {
-                hasChange = true; // First entry
-            } else {
-                for (var b = 0; b < biomeKeys.length; b++) {
-                    if (prevWeathers[b] !== currentWeathers[b]) {
-                        hasChange = true;
-                        break;
-                    }
-                }
-            }
-            
-            // If weather changed, add this entry
-            if (hasChange) {
-                var timeInDay = currentTime - startTime;
-                
-                // Ensure timeInDay is within valid range
-                if (timeInDay < 0) {
-                    timeInDay = 0;
-                } else if (timeInDay >= GAME_DAY) {
-                    continue; // Skip entries beyond the current day
-                }
-                
-                var dayProgress = timeInDay / GAME_DAY;
-                var displayHour = Math.floor(dayProgress * 24);
-                var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
-                
-                // Ensure valid time values
-                displayHour = Math.max(0, Math.min(23, displayHour));
-                displayMinute = Math.max(0, Math.min(59, displayMinute));
-                
-                var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
-                
-                console.log('Weather change at index', i, 'time:', timeString, 'timeInDay:', timeInDay, 'dayProgress:', dayProgress);
-                
-                // Special debugging for Day 984 around 13:41
-                if (day === 984 && displayHour === 13 && displayMinute >= 40 && displayMinute <= 45) {
-                    console.log('*** FOUND Day 984 13:4X weather change! ***');
-                    console.log('Exact time:', timeString, 'Index:', i, 'Weathers:', currentWeathers);
-                }
-                
-                weatherChanges.push({
-                    time: currentTime,
-                    timeString: timeString,
-                    weathers: currentWeathers,
-                    index: i
-                });
-                
-                prevWeathers = currentWeathers.slice(); // Copy array
-            }
-        }
-        
-        console.log('Found', weatherChanges.length, 'weather changes');
-        
-        if (weatherChanges.length === 0) {
-            // If no weather changes found, add at least one entry at start of day
-            var startWeathers = getWeathersAt(startIndex);
-            weatherChanges.push({
-                time: startTime,
-                timeString: '00:00',
-                weathers: startWeathers,
-                index: startIndex
-            });
-        }
-        
-        // Generate table rows for weather changes
-        weatherChanges.forEach(function(change, changeIndex) {
-            var row = document.createElement('tr');
-            row.style.cssText = 'background: rgba(' + (changeIndex % 2 === 0 ? '255, 255, 255, 0.1' : '0, 0, 0, 0.2') + '); border-bottom: 1px solid rgba(255, 255, 255, 0.1);';
-            
-            // Time cell
-            var timeCell = document.createElement('td');
-            timeCell.style.cssText = 'padding: 8px; text-align: center; color: #d4af37; font-weight: bold; border-right: 1px solid rgba(255, 255, 255, 0.1);';
-            timeCell.textContent = change.timeString;
-            row.appendChild(timeCell);
-            
-            // Weather cells for each biome
-            biomeKeys.forEach(function(biomeKey, biomeIndex) {
-                var weather = change.weathers[biomeIndex];
-                var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
-                
-                var cell = document.createElement('td');
-                cell.style.cssText = 'padding: 6px; text-align: center; color: #fff; border-right: 1px solid rgba(255, 255, 255, 0.1);';
-                cell.innerHTML = '<div style="font-size: 1.1em; margin-bottom: 2px;">' + envData.emoji + '</div>' +
-                    '<div style="font-size: 0.75em; color: #ccc;">' + envData.name + '</div>';
-                row.appendChild(cell);
-            });
-            
-            tableBody.appendChild(row);
-        });
-        
-        console.log('Weather table updated successfully');
-        
-    } catch (error) {
-        console.error('Error in updateWeatherTable:', error);
-        tableBody.innerHTML = '<tr><td colspan="9" style="padding: 20px; text-align: center; color: #ff6b6b;">Error loading weather data: ' + error.message + '</td></tr>';
-    }
+    var gameDay = day - 1;
+    var startTime = gameDay * GAME_DAY;
+    var sunTimes = getSunTimes(day);
+    var biomeKeys = Object.keys(BIOMES);
     
-    // Display all entries
-    for (var i = 0; i < timeEntries.length; i++) {
-        var entry = timeEntries[i];
-        var gameTime = entry.gameTime;
+    // Get selected interval from dropdown (default to 1 hour)
+    var intervalSelect = document.getElementById('intervalSelect');
+    var selectedInterval = intervalSelect ? parseInt(intervalSelect.value) : 60; // minutes
+    
+    // Calculate display parameters
+    var displayInterval = (selectedInterval * 60 * GAME_DAY) / (24 * 60); // Convert to game seconds
+    var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
+    
+    for (var period = 0; period < periodsPerDay; period++) {
+        var gameTime = startTime + period * displayInterval;
         var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
@@ -894,12 +611,7 @@ function updateWeatherTable(day, hoursInterval) {
             row.style.background = 'rgba(255, 165, 0, 0.3)';
             row.style.color = '#ffa500';
             row.style.fontWeight = 'bold';
-        } else if (entry.type === 'weather_change') {
-            // Weather change entries get special highlighting
-            row.style.background = 'rgba(100, 200, 255, 0.2)';
-            row.style.border = '1px solid #64c8ff';
-            specialNote = 'weather';
-        } else if (i % 2 === 0) {
+        } else if (period % 2 === 0) {
             row.style.background = 'rgba(255, 255, 255, 0.05)';
         }
         
@@ -909,7 +621,7 @@ function updateWeatherTable(day, hoursInterval) {
         
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            (entry.type === 'weather_change' ? timeString + '<br><small>weather</small>' : timeString);
+            timeString;
         row.appendChild(timeCell);
         
         // Weather for each biome
@@ -998,8 +710,8 @@ function showForecast() {
     forecastGrid.innerHTML = '';
     
     var currentDay = parseInt(document.getElementById('dayInput').value);
-    var startTime = (currentDay - 1) * GAME_DAY; // Start of the selected day
-    var biomeKeys = biomeIds;
+    var startTime = (currentDay - 1) * GAME_DAY;
+    var biomeKeys = Object.keys(BIOMES);
     
     biomeKeys.forEach(function(biomeKey) {
         var biome = BIOMES[biomeKey];
@@ -1008,12 +720,8 @@ function showForecast() {
         
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
-        // Sample weather at the specified interval
-        var timeInterval = (hoursInterval / 24) * GAME_DAY; // Convert hours to game time
-        var numSamples = Math.floor(24 / hoursInterval); // Number of samples based on interval
-        
-        for (var i = 0; i < numSamples; i++) {
-            var gameTime = startTime + (i * timeInterval);
+        for (var period = 0; period < 12; period++) {
+            var gameTime = startTime + period * WEATHER_PERIOD * 2;
             var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
             var weathers = getWeathersAt(weatherIndex);
             var wind = getGlobalWind(gameTime);
@@ -1022,21 +730,19 @@ function showForecast() {
             var weather = weathers[biomeIndex];
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             
-            // Calculate display time
-            var timeInDay = gameTime - startTime;
-            var dayProgress = timeInDay / GAME_DAY;
+            var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
             var displayHour = Math.floor(dayProgress * 24);
-            var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
-            var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+            var timeString = String(displayHour).padStart(2, '0') + ':00';
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
+            var windPercent = Math.round(biomeWindIntensity * 100);
             
             forecastHTML += 
-                '<div style="margin: 5px 0; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em;">' +
-                '<span style="min-width: 60px;"><strong>' + timeString + '</strong></span>' +
-                '<span style="display: flex; align-items: center; gap: 5px;">' + envData.emoji + ' ' + envData.name + '</span>' +
-                '<span style="color: #b0c4de; text-align: right;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</span>' +
+                '<div style="margin: 5px 0; padding: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em;">' +
+                '<span><strong>' + timeString + '</strong></span>' +
+                '<span>' + envData.emoji + ' ' + envData.name + '</span>' +
+                '<span style="color: #b0c4de;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</span>' +
                 '</div>';
         }
         
@@ -1072,11 +778,8 @@ function updateWeather() {
     if (!dayInput) return;
     
     var day = parseInt(dayInput.value);
-    var intervalSelect = document.getElementById('intervalSelect');
-    var hoursInterval = intervalSelect ? parseFloat(intervalSelect.value) : 2;
-    
     updateCurrentInfo(day);
-    updateWeatherTable(day, hoursInterval);
+    updateWeatherTable(day);
     
     var forecastSection = document.getElementById('forecastSection');
     if (forecastSection) {
@@ -1091,7 +794,6 @@ function updateConfigFromWordPress() {
     CONFIG.manualEnabled = config.manualOverride.enabled;
     CONFIG.manualStartDay = config.manualOverride.startDay;
     CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
-    CONFIG.manualProgressionType = config.manualOverride.progression;
     CONFIG.serverStartDate = new Date(config.serverStartDate);
     
     // Debug log
@@ -1149,136 +851,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 30000);
     }
 });
-
-// Initialize Weather Calculator UI
-function initializeWeatherCalculator() {
-    var weatherApp = document.getElementById('weatherApp');
-    if (!weatherApp) return;
-    
-    weatherApp.innerHTML = `
-        <h2 style="text-align: center; margin-bottom: 20px; color: #ffd700;">
-            🌦️ JOTUNHEIM WEATHER FORECAST
-        </h2>
-        <div style="text-align: center; margin-bottom: 15px;">
-            <em style="color: #bdc3c7;">Plan your Viking adventures with actual Jotunheim weather forecasts</em>
-        </div>
-        
-        <!-- Navigation Controls -->
-        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-            <button onclick="changeDay(-1)" style="padding: 8px 16px; background: #34495e; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">← Previous</button>
-            <span style="color: #bdc3c7;">Day:</span>
-            <input type="number" id="dayInput" value="984" min="1" onchange="updateDay()" style="width: 80px; padding: 6px; background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; border-radius: 4px; text-align: center;">
-            <button onclick="changeDay(1)" style="padding: 8px 16px; background: #34495e; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">Next →</button>
-            <button onclick="goToCurrentDay()" style="padding: 8px 16px; background: #27ae60; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">Current Day</button>
-            <button onclick="showForecast()" style="padding: 8px 16px; background: #2980b9; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">24h Forecast</button>
-            
-            <span style="color: #bdc3c7; margin-left: 10px;">Interval:</span>
-            <select id="intervalSelect" onchange="updateInterval()" style="padding: 6px; background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; border-radius: 4px;">
-                <option value="0.25">15 minutes</option>
-                <option value="0.5">30 minutes</option>
-                <option value="1">1 hour</option>
-                <option value="2" selected>2 hours</option>
-                <option value="3">3 hours</option>
-                <option value="4">4 hours</option>
-                <option value="6">6 hours</option>
-            </select>
-        </div>
-        
-        <!-- Current Weather Info -->
-        <div id="currentInfo" style="text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-            <strong>Day 984</strong> - Loading current weather...
-        </div>
-        
-        <!-- Weather Table -->
-        <div id="weatherDisplay" style="overflow-x: auto; margin-bottom: 20px;">
-            <!-- Table will be inserted here -->
-        </div>
-        
-        <!-- 24h Forecast -->
-        <div id="forecastDisplay" style="display: none; margin-top: 20px;">
-            <h3 style="color: #ffd700; margin-bottom: 15px;">24-Hour Weather Forecast</h3>
-            <div id="forecastGrid"></div>
-        </div>
-    `;
-    
-    // Initialize the weather display
-    loadWordPressConfig().then(function() {
-        updateWeatherDisplay();
-    });
-}
-
-// Main weather display function
-function updateWeatherDisplay(day, hoursInterval) {
-    // Get day from input or use provided/default
-    if (!day) {
-        var dayInput = document.getElementById('dayInput');
-        day = dayInput ? parseInt(dayInput.value) : 984;
-        if (isNaN(day)) day = 984;
-    }
-    
-    // Get interval from dropdown or use provided/default  
-    if (!hoursInterval) {
-        var intervalSelect = document.getElementById('intervalSelect');
-        hoursInterval = intervalSelect ? parseFloat(intervalSelect.value) : 2;
-        if (isNaN(hoursInterval)) hoursInterval = 2;
-    }
-    
-    // Update current info
-    updateCurrentInfo(day);
-    
-    // Create weather table
-    createWeatherTable();
-    
-    // Update weather table with interval-based data
-    updateWeatherTable(day, hoursInterval);
-}
-
-// Update functions for UI controls
-function updateDay() {
-    var dayInput = document.getElementById('dayInput');
-    var day = parseInt(dayInput.value);
-    if (!isNaN(day) && day > 0) {
-        updateWeatherDisplay(day);
-    }
-}
-
-function changeDay(delta) {
-    var dayInput = document.getElementById('dayInput');
-    var currentDay = parseInt(dayInput.value) || 984;
-    var newDay = Math.max(1, currentDay + delta);
-    dayInput.value = newDay;
-    updateWeatherDisplay(newDay);
-}
-
-function goToCurrentDay() {
-    getCurrentDay().then(function(day) {
-        var dayInput = document.getElementById('dayInput');
-        dayInput.value = day;
-        updateWeatherDisplay(day);
-    });
-}
-
-function showForecast() {
-    var forecastDisplay = document.getElementById('forecastDisplay');
-    var isVisible = forecastDisplay.style.display !== 'none';
-    forecastDisplay.style.display = isVisible ? 'none' : 'block';
-    
-    if (!isVisible) {
-        var dayInput = document.getElementById('dayInput');
-        var day = parseInt(dayInput.value) || 984;
-        update24hForecast(day);
-    }
-}
-
-function updateInterval() {
-    var intervalSelect = document.getElementById('intervalSelect');
-    var hours = parseFloat(intervalSelect.value);
-    var dayInput = document.getElementById('dayInput');
-    var day = parseInt(dayInput.value) || 984;
-    
-    // Update the weather display with the new interval
-    updateWeatherDisplay(day, hours);
-}
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
