@@ -1,4 +1,24 @@
-// ==================================
+// =// ==================== EASY CONFIGURATION SECTION ====================
+// ← UPDATE THESE VALUES FOR EASY CONFIGURATION
+
+// API OVERRIDE SETTINGS (Priority 1 - Highest)
+var API_ENABLED = false;  // Set to true to enable API override
+var API_ENDPOINT = '';    // Your API URL (e.g., 'https://your-server.com/api/current-day')
+
+// MANUAL DAY OVERRIDE SETTINGS (Priority 2)
+var MANUAL_ENABLED = false;                              // Set to true to enable manual override
+var MANUAL_START_DAY = 983;                              // What in-game day to start from
+var MANUAL_START_DATE = new Date('2025-08-22 00:00:00'); // ← SET THIS TO CURRENT DATE/TIME for Day 983 to be NOW
+var MANUAL_PROGRESSION_TYPE = 'real-days';              // How days progress: 'real-days', 'game-time', or 'static'
+// 'real-days' = 1 real day = 1 in-game day (recommended for most servers)
+// 'game-time' = 20 real minutes = 1 in-game day (true Valheim time)  
+// 'static' = Always shows MANUAL_START_DAY (no progression)
+
+// SERVER START DATE SETTINGS (Priority 3 - Default)
+var SERVER_START_DATE = new Date('2025-08-01 19:30:00'); // When your server started (Day 1)
+var SERVER_PROGRESSION_TYPE = 'real-days';              // How days progress: 'real-days' or 'game-time'
+
+// ==================== END CONFIGURATION SECTION =====================================
 // VALHEIM WEATHER CALENDAR WITH REAL ALGORITHM
 // ==================================
 
@@ -145,10 +165,25 @@ async function getCurrentGameDay() {
         if (CONFIG.manualEnabled) {
             var now = new Date();
             var timeElapsed = now - CONFIG.manualStartDate; // milliseconds
-            var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
-            var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1200 seconds = 20 minutes
-            var currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + gameDaysElapsed));
-            updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (based on in-game time)');
+            var currentDay = CONFIG.manualStartDay;
+            
+            if (CONFIG.manualProgressionType === 'real-days') {
+                // 1 real day = 1 in-game day
+                var realDaysElapsed = timeElapsed / (1000 * 60 * 60 * 24); // convert to real days
+                currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + realDaysElapsed));
+                updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (real-time progression)');
+            } else if (CONFIG.manualProgressionType === 'game-time') {
+                // 20 minutes real time = 1 in-game day
+                var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
+                var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1200 seconds = 20 minutes
+                currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + gameDaysElapsed));
+                updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (in-game time progression)');
+            } else {
+                // Static - no progression
+                currentDay = CONFIG.manualStartDay;
+                updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (static, no progression)');
+            }
+            
             return currentDay;
         }
         
