@@ -600,13 +600,13 @@ function updateWeatherTable(day) {
         
         var isSpecialTime = false;
         var specialNote = '';
-        if (Math.abs(currentTime - sunTimes.sunrise) < WEATHER_PERIOD / 2) {
+        if (Math.abs(currentTime - sunTimes.sunrise) < 60) { // Within 1 minute of sunrise
             isSpecialTime = true;
             specialNote = 'Sunrise';
             row.style.background = 'rgba(255, 165, 0, 0.3)';
             row.style.color = '#ffa500';
             row.style.fontWeight = 'bold';
-        } else if (Math.abs(currentTime - sunTimes.sunset) < WEATHER_PERIOD / 2) {
+        } else if (Math.abs(currentTime - sunTimes.sunset) < 60) { // Within 1 minute of sunset
             isSpecialTime = true;
             specialNote = 'Sunset';
             row.style.background = 'rgba(255, 165, 0, 0.3)';
