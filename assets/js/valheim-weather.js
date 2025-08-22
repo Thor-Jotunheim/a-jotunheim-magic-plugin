@@ -580,8 +580,8 @@ function updateWeatherTable(day) {
     var selectedInterval = intervalSelect ? parseInt(intervalSelect.value) : 60; // minutes
     
     // Calculate display parameters
-    var displayInterval = (selectedInterval * 60 * GAME_DAY) / (24 * 60); // Convert to game seconds
     var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
+    var displayInterval = GAME_DAY / periodsPerDay; // Game seconds per period
     
     for (var period = 0; period < periodsPerDay; period++) {
         var gameTime = startTime + period * displayInterval;
