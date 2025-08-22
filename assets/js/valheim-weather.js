@@ -394,45 +394,134 @@ var GAME_DAY = 1200; // Game seconds in a day - 20 minutes real time (kirilloid 
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
+var INTRO_WEATHER = 'Clear'; // Default weather during intro
 
-// Weather types and their data (from actual Valheim)
-var ENV_STATES = {
-    'Clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
-    'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
-    'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
-    'Misty': { emoji: '☁️', name: 'Fog', wind: [0.0, 0.5] },
-    'DeepForest_Mist': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
-    'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
-    'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
-    'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
-    'SwampRain': { emoji: '🌧️', name: 'Heavy Rain', wind: [0.2, 0.8] },
-    'Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
-    'Twilight_Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
-    'SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
-    'Twilight_SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
-    // Mistlands weather types (from kirilloid)
-    'Mistlands_clear': { emoji: '☀️', name: 'Clear', wind: [0.05, 0.2] },
-    'Mistlands_rain': { emoji: '🌧️', name: 'Rain', wind: [0.05, 0.2] },
-    'Mistlands_thunder': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.5, 1.0] },
-    // Ashlands weather types (from kirilloid)
-    'Ashlands_ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] },
-    'Ashlands_misty': { emoji: '☁️', name: 'Ash Fog', wind: [0.1, 0.3] },
-    'Ashlands_CinderRain': { emoji: '🌋', name: 'Cinder Rain', wind: [0.6, 1.0] },
-    'Ashlands_storm': { emoji: '🌪️', name: 'Ash Storm', wind: [0.8, 1.0] },
-    // Legacy support
-    'Ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] }
+// Random class implementation (from kirilloid)
+function Random(seed) {
+    this.init(seed || 0);
+}
+
+Random.prototype.init = function(seed) {
+    // XORShift implementation matching Unity's Random
+    this._a = ((seed * 0x343fd) + 0x269ec3) >>> 0;
+    this._b = this._a;
+    this._c = this._a;
+    this._d = this._a;
 };
 
-// Biome weather configurations (ACTUAL kirilloid/valheim algorithm)
+Random.prototype.nextUInt = function() {
+    var t = this._d;
+    var s = this._a;
+    this._d = this._c;
+    this._c = this._b;
+    this._b = s;
+    t ^= t << 11;
+    t ^= t >>> 8;
+    return this._a = t ^ s ^ (s >>> 19);
+};
+
+Random.prototype.random = function() {
+    return (this.nextUInt() >>> 0) / 0x100000000;
+};
+
+Random.prototype.rangeFloat = function(min, max) {
+    return min + this.random() * (max - min);
+};
+
+var random = new Random(0);
+
+// Biome setup (kirilloid authentic)
+var biomeIds = ['Meadows', 'BlackForest', 'Swamp', 'Mountain', 'Plains', 'Ocean', 'Mistlands', 'Ashlands', 'DeepNorth'];
+
+// Environment setup with exact kirilloid weights
 var ENV_SETUP = {
     'Meadows': [['Clear', 25], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1], ['LightRain', 1]],
     'BlackForest': [['DeepForest_Mist', 20], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1]],
     'Swamp': [['SwampRain', 1]],
     'Mountain': [['SnowStorm', 1], ['Snow', 5]],
     'Plains': [['Heath_clear', 5], ['Misty', 1], ['LightRain', 1]],
-    'Ocean': [['Rain', 1], ['LightRain', 1], ['Misty', 1], ['Clear', 10], ['ThunderStorm', 1]],
-    'Mistlands': [['Mistlands_clear', 15], ['Mistlands_rain', 1], ['Mistlands_thunder', 1]],
-    'Ashlands': [['Ashlands_ashrain', 30], ['Ashlands_misty', 2], ['Ashlands_CinderRain', 4], ['Ashlands_storm', 1]]
+    'DeepNorth': [['Twilight_SnowStorm', 1], ['Twilight_Snow', 2], ['Twilight_Clear', 1]],
+    'Ashlands': [['Ashrain', 30], ['Misty', 2], ['CinderRain', 4], ['storm', 1]],
+    'Mistlands': [['Clear', 15], ['Rain', 1], ['ThunderStorm', 1]],
+    'Ocean': [['Rain', 1], ['LightRain', 1], ['Misty', 1], ['Clear', 10], ['ThunderStorm', 1]]
+};
+
+// Constants for kirilloid algorithm
+var INTRO_WEATHER = 'ThunderStorm';
+var INTRO_DURATION = 432000; // Duration of intro weather in seconds (5 days * 86400)
+var WIND_PERIOD = 10; // Wind changes every 10 seconds
+
+// Roll weather function (kirilloid authentic)
+function rollWeather(weathers, roll) {
+    var totalWeight = weathers.reduce(function(weight, weather) { return weight + weather[1]; }, 0);
+    var randomWeight = totalWeight * roll;
+    var sum = 0;
+    for (var i = 0; i < weathers.length; i++) {
+        var env = weathers[i][0];
+        var weight = weathers[i][1];
+        sum += weight;
+        if (randomWeight < sum) return env;
+    }
+    return weathers[weathers.length - 1][0];
+}
+
+// Get weathers at specific index (kirilloid authentic)
+function getWeathersAt(index) {
+    if (index < INTRO_DURATION / WEATHER_PERIOD) {
+        return biomeIds.map(function() { return INTRO_WEATHER; });
+    }
+    random.init(index);
+    var rng = random.rangeFloat(0, 1);
+    return biomeIds.map(function(biome) {
+        return rollWeather(ENV_SETUP[biome], rng);
+    });
+}
+
+// Wind calculation functions (kirilloid authentic)
+function addOctave(time, octave, wind) {
+    var period = Math.floor(time / (WIND_PERIOD * 8 / octave));
+    random.init(period);
+    wind.angle += random.random() * 2 * Math.PI / octave;
+    wind.intensity += (random.random() - 0.5) / octave;
+}
+
+function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
+}
+
+function getGlobalWind(time) {
+    var wind = {
+        angle: 0,
+        intensity: 0.5
+    };
+    addOctave(time, 1, wind);
+    addOctave(time, 2, wind);
+    addOctave(time, 4, wind);
+    addOctave(time, 8, wind);
+    wind.intensity = clamp01(wind.intensity);
+    wind.angle = (wind.angle * 180 / Math.PI) % 360;
+    if (wind.angle < 0) wind.angle += 360;
+    return wind;
+}
+
+// Weather types and their data (from actual Valheim)
+var ENV_STATES = {
+    'Clear': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
+    'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
+    'Twilight_Clear': { emoji: '☀️', name: 'Clear', wind: [0.2, 0.6] },
+    'Misty': { emoji: '🌫️', name: 'Fog', wind: [0.1, 0.3] },
+    'DeepForest_Mist': { emoji: '🌫️', name: 'Mist', wind: [0.1, 0.3] },
+    'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
+    'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
+    'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
+    'SwampRain': { emoji: '🌧️', name: 'Heavy Rain', wind: [0.2, 0.8] },
+    'Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
+    'Twilight_Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
+    'SnowStorm': { emoji: '❄️', name: 'Snow Storm', wind: [0.8, 1.0] },
+    'Twilight_SnowStorm': { emoji: '❄️', name: 'Snow Storm', wind: [0.8, 1.0] },
+    'Ashrain': { emoji: '🌋', name: 'Ash Rain', wind: [0.3, 0.8] },
+    'CinderRain': { emoji: '🔥', name: 'Cinder Rain', wind: [0.5, 1.0] },
+    'storm': { emoji: '⛈️', name: 'Storm', wind: [0.8, 1.0] }
 };
 
 // Biome display information
@@ -488,54 +577,6 @@ function lerp(a, b, t) {
 
 function clamp01(value) {
     return Math.max(0, Math.min(1, value));
-}
-
-// Roll weather based on weighted probabilities (exact Valheim logic)
-function rollWeather(weathers, roll) {
-    var totalWeight = weathers.reduce(function(sum, weather) { return sum + weather[1]; }, 0);
-    var randomWeight = totalWeight * roll;
-    var sum = 0;
-    
-    for (var i = 0; i < weathers.length; i++) {
-        var env = weathers[i][0];
-        var weight = weathers[i][1];
-        sum += weight;
-        if (randomWeight < sum) return env;
-    }
-    
-    return weathers[weathers.length - 1][0];
-}
-
-// Get weather for all biomes at specific index (exact kirilloid algorithm)
-function getWeathersAt(index) {
-    if (index < INTRO_DURATION / WEATHER_PERIOD) {
-        return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
-    }
-    
-    random.init(index);
-    var rng = random.rangeFloat(0, 1);
-    
-    // Debug log for Day 984 area (around index 2659-2661)
-    var day984StartIndex = Math.floor(984 * GAME_DAY / WEATHER_PERIOD);
-    if (index >= day984StartIndex && index <= day984StartIndex + 10) {
-        console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
-        console.log('  Time offset from day start: ' + ((index - day984StartIndex) * WEATHER_PERIOD) + ' seconds');
-        var hours = Math.floor(((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24);
-        var minutes = Math.floor((((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24 % 1) * 60);
-        console.log('  Approximate time: ' + hours + ':' + String(minutes).padStart(2, '0'));
-    }
-    
-    return Object.keys(BIOMES).map(function(biome) {
-        var biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
-        var weather = rollWeather(biomeWeathers, rng);
-        
-        // Debug for Day 984
-        if (index >= day984StartIndex && index <= day984StartIndex + 10) {
-            console.log('    ' + biome + ': ' + weather);
-        }
-        
-        return weather;
-    });
 }
 
 // Calculate global wind (Valheim algorithm)
@@ -596,7 +637,7 @@ function createWeatherDisplay() {
     var weatherDisplay = document.getElementById('weatherDisplay');
     if (!weatherDisplay) return;
     
-    var biomeKeys = Object.keys(BIOMES);
+    var biomeKeys = biomeIds;
     
     var tableHTML = '<table style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
         '<thead><tr>';
@@ -636,7 +677,7 @@ async function updateCurrentInfo(day) {
         // Get current weather for all biomes
         var weathers = getWeathersAt(currentWeatherIndex);
         var wind = getGlobalWind(currentGameTime);
-        var biomeKeys = Object.keys(BIOMES);
+        var biomeKeys = biomeIds;
         
         // Build HTML for current conditions
         var html = '<div style="font-size: 1.2em; margin-bottom: 15px;">';
@@ -693,7 +734,7 @@ function updateWeatherTable(day) {
     var gameDay = day - 1;
     var startTime = gameDay * GAME_DAY;
     var sunTimes = getSunTimes(day);
-    var biomeKeys = Object.keys(BIOMES);
+    var biomeKeys = biomeIds;
     
     // Get selected interval from dropdown (default to 1 hour)
     var intervalSelect = document.getElementById('intervalSelect');
@@ -874,10 +915,7 @@ function showForecast() {
     
     var currentDay = parseInt(document.getElementById('dayInput').value);
     var startTime = (currentDay - 1) * GAME_DAY; // Start of the selected day
-    var biomeKeys = Object.keys(BIOMES);
-    
-    // Calculate how many weather periods we need to cover 24 hours (1 game day)
-    var periodsPerDay = Math.ceil(GAME_DAY / WEATHER_PERIOD); // Should be about 2 periods per day (1200/666 ≈ 1.8)
+    var biomeKeys = biomeIds;
     
     biomeKeys.forEach(function(biomeKey) {
         var biome = BIOMES[biomeKey];
@@ -886,23 +924,14 @@ function showForecast() {
         
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
-        // Show weather changes throughout the day, focusing on when weather actually changes
-        var currentWeatherIndex = Math.floor(startTime / WEATHER_PERIOD);
-        var displayedPeriods = 0;
-        var maxPeriods = 8; // Limit to 8 entries to avoid clutter
+        // Sample weather every 2 hours (2/24 of a game day)
+        var hoursInterval = 2;
+        var timeInterval = (hoursInterval / 24) * GAME_DAY; // 2 hours = 1/12 of game day = 100 seconds
+        var numSamples = Math.floor(24 / hoursInterval); // 12 samples for 2-hour intervals
         
-        for (var periodOffset = 0; periodOffset < periodsPerDay + 2 && displayedPeriods < maxPeriods; periodOffset++) {
-            var weatherIndex = currentWeatherIndex + periodOffset;
-            var periodStartTime = weatherIndex * WEATHER_PERIOD;
-            var periodEndTime = (weatherIndex + 1) * WEATHER_PERIOD;
-            
-            // Skip if this period is before our day starts
-            if (periodEndTime < startTime) continue;
-            
-            // Stop if we're well past the current day
-            if (periodStartTime > startTime + GAME_DAY) break;
-            
-            var gameTime = Math.max(periodStartTime, startTime); // Use start of day or period start, whichever is later
+        for (var i = 0; i < numSamples; i++) {
+            var gameTime = startTime + (i * timeInterval);
+            var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
             var weathers = getWeathersAt(weatherIndex);
             var wind = getGlobalWind(gameTime);
             
@@ -910,33 +939,22 @@ function showForecast() {
             var weather = weathers[biomeIndex];
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             
-            // Calculate display time within the day
+            // Calculate display time
             var timeInDay = gameTime - startTime;
-            var dayProgress = Math.max(0, Math.min(1, timeInDay / GAME_DAY));
+            var dayProgress = timeInDay / GAME_DAY;
             var displayHour = Math.floor(dayProgress * 24);
             var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
             var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
             
-            // Calculate end time for this weather period
-            var endTimeInDay = Math.min(GAME_DAY, periodEndTime - startTime);
-            var endDayProgress = endTimeInDay / GAME_DAY;
-            var endHour = Math.floor(endDayProgress * 24);
-            var endMinute = Math.floor((endDayProgress * 24 * 60) % 60);
-            var endTimeString = String(endHour).padStart(2, '0') + ':' + String(endMinute).padStart(2, '0');
-            
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
             
-            var timeDisplayText = (timeString === endTimeString) ? timeString : timeString + ' - ' + endTimeString;
-            
             forecastHTML += 
                 '<div style="margin: 5px 0; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em;">' +
-                '<span style="min-width: 80px;"><strong>' + timeDisplayText + '</strong></span>' +
+                '<span style="min-width: 60px;"><strong>' + timeString + '</strong></span>' +
                 '<span style="display: flex; align-items: center; gap: 5px;">' + envData.emoji + ' ' + envData.name + '</span>' +
                 '<span style="color: #b0c4de; text-align: right;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</span>' +
                 '</div>';
-                
-            displayedPeriods++;
         }
         
         biomeDiv.innerHTML = forecastHTML;
