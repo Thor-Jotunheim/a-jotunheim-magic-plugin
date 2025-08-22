@@ -80,9 +80,6 @@ var CONFIG = {
     serverStartDate: new Date('2025-08-01T19:30')
 };
 
-// World seed hash for deterministic weather (secure - derived from actual seed)
-var WORLD_SEED_HASH = 0;
-
 // API caching configuration
 var API_CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 var API_CACHE_KEY = 'valheim_weather_api_cache';
@@ -473,10 +470,8 @@ function getWeathersAt(index) {
         return biomeIds.map(function() { return INTRO_WEATHER; });
     }
     
-    // Use world seed hash combined with time index for deterministic weather
-    // This ensures weather matches your actual game world
-    var seed = WORLD_SEED_HASH + index;
-    random.init(seed);
+    // Use index directly as seed for deterministic weather (kirilloid method)
+    random.init(index);
     var rng = random.rangeFloat(0, 1);
     
     return biomeIds.map(function(biome) {
@@ -1096,16 +1091,6 @@ function updateConfigFromWordPress() {
     CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
     CONFIG.manualProgressionType = config.manualOverride.progression;
     CONFIG.serverStartDate = new Date(config.serverStartDate);
-    CONFIG.seedHash = config.seedHash || 0; // Secure seed hash for weather generation
-    
-    // Initialize the random generator with the world seed hash
-    // This ensures weather matches the actual game world
-    if (CONFIG.seedHash > 0) {
-        WORLD_SEED_HASH = CONFIG.seedHash;
-        console.log('World seed hash loaded:', WORLD_SEED_HASH);
-    } else {
-        console.warn('No world seed configured - weather may not match in-game patterns');
-    }
     
     // Debug log
     console.log('Updated CONFIG from WordPress:', CONFIG);
