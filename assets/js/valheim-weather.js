@@ -1,27 +1,3 @@
-// Helper: globally correct period index calculation with offset
-function getWeatherPeriodIndex(gameTime) {
-    var EPOCH_OFFSET = 2 * 3600 + 26 * 60; // 2h26m = 8760s
-    return Math.floor((gameTime - EPOCH_OFFSET) / WEATHER_PERIOD);
-}
-
-// Reverse mapping: get canonical gameTime (period start) for a given weather period index
-function getGameTimeForWeatherIndex(index) {
-    var EPOCH_OFFSET = 2 * 3600 + 26 * 60; // keep in sync with getWeatherPeriodIndex
-    return index * WEATHER_PERIOD + EPOCH_OFFSET;
-}
-
-// Get the range of weather period indices whose period start falls inside the given day (dayStartTime = 0-based gameTime)
-function getWeatherIndexRangeForDay(dayStartTime) {
-    var EPOCH_OFFSET = 2 * 3600 + 26 * 60;
-    var first = Math.ceil((dayStartTime - EPOCH_OFFSET) / WEATHER_PERIOD);
-    var last = Math.floor((dayStartTime + GAME_DAY - 1 - EPOCH_OFFSET) / WEATHER_PERIOD);
-    if (first > last) {
-        // Ensure at least one period (fallback)
-        first = Math.floor((dayStartTime - EPOCH_OFFSET) / WEATHER_PERIOD);
-        last = first;
-    }
-    return { first: first, last: last };
-}
 // =// ==================== WORDPRESS CONFIGURATION LOADING ====================
 // Configuration loaded from WordPress admin settings
 
@@ -354,8 +330,8 @@ function formatDateForInput(date) {
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
-var GAME_DAY = 1800; // Game seconds in a day (30 minutes, Valheim authentic)
-var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (11 minutes 6 seconds, kirilloid authentic)
+var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid authentic)
+var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
 
@@ -476,45 +452,30 @@ function getWeathersAt(index) {
     if (index < INTRO_DURATION / WEATHER_PERIOD) {
         return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
     }
-
+    
     random.init(index);
     var rng = random.rangeFloat(0, 1);
-
-    // (removed per-call CONFIG debug to avoid flooding the console)
-
-    // --- Targeted debug for Day 984 13:41 (non-spammy) ---
-    var targetDay = 984;
-    var targetMins = 13 * 60 + 41; // 13:41
-    // UI uses 1-based days but internal calculations use 0-based (day - 1)
-    var targetGameTime = (targetDay - 1) * GAME_DAY + targetMins * 60;
-    var targetIndex = getWeatherPeriodIndex(targetGameTime);
-    if (index === targetIndex) {
-        var blackForestWeather = rollWeather(ENV_SETUP['BlackForest'] || ENV_SETUP['Meadows'], rng);
-        console.log('[DEBUG][TARGET] day=984 time=13:41 gameTime=' + targetGameTime + ' periodIndex=' + targetIndex + ' seed=' + targetIndex + ' rng=' + rng.toFixed(6) + ' BlackForest=' + blackForestWeather);
-    }
-
-    // --- Existing debug for day 984 area (reduced verbosity) ---
-    // Match UI convention: day 984 start (0-based)
-    var day984StartTime = (984 - 1) * GAME_DAY; // Day 984 starts at this game time (0-based)
-    var day984StartIndex = getWeatherPeriodIndex(day984StartTime);
-    // Only log for the start of the day or the specific target index to avoid noise
-    if (index === day984StartIndex || index === targetIndex) {
+    
+    // Debug log for Day 984 area (around index 2659-2661) with corrected timing
+    var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
+    var day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
+    if (index >= day984StartIndex && index <= day984StartIndex + 20) {
         console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
         var timeFromDayStart = (index - day984StartIndex) * WEATHER_PERIOD;
         var hours = Math.floor((timeFromDayStart / GAME_DAY) * 24);
         var minutes = Math.floor(((timeFromDayStart / GAME_DAY) * 24 % 1) * 60);
         console.log('  Time from day 984 start: ' + timeFromDayStart + ' seconds = ' + hours + ':' + String(minutes).padStart(2, '0'));
     }
-
+    
     return Object.keys(BIOMES).map(function(biome) {
         var biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
         var weather = rollWeather(biomeWeathers, rng);
-
+        
         // Debug for Day 984
         if (index >= day984StartIndex && index <= day984StartIndex + 20) {
             console.log('    ' + biome + ': ' + weather);
         }
-
+        
         return weather;
     });
 }
@@ -611,43 +572,31 @@ function updateWeatherTable(day) {
     
     tableBody.innerHTML = '';
     
-    // Standard day calculation (day is 1-based, so subtract 1 for 0-based calculation)
+    // Standard day calculation with kirilloid timing offset
+    // Add 158 minutes (9480 seconds) to sync with kirilloid reference timing
     var gameDay = day - 1; // Convert to 0-based
-    var startTime = gameDay * GAME_DAY;
-    
-    // DEBUG: Log calculation for Day 984
-    if (day === 984) {
-        console.log('DEBUG Day 984 calculation:');
-        console.log('  day:', day);
-        console.log('  gameDay:', gameDay);
-        console.log('  GAME_DAY:', GAME_DAY);
-        console.log('  startTime:', startTime);
-        console.log('  WEATHER_PERIOD:', WEATHER_PERIOD);
-    }
-    
+    var startTime = gameDay * GAME_DAY + 9480; // +158 minutes offset
     var sunTimes = getSunTimes(day);
     var biomeKeys = Object.keys(BIOMES);
-
-    // Instead of sampling evenly across the day (which can split weather periods),
-    // iterate each weather-period whose period-start falls within this day so displayed
-    // times exactly match the seeds used by getWeathersAt(index).
-    var range = getWeatherIndexRangeForDay(startTime);
-    for (var weatherIndex = range.first; weatherIndex <= range.last; weatherIndex++) {
-        var gameTime = getGameTimeForWeatherIndex(weatherIndex);
+    
+    // Get selected interval from dropdown (default to 1 hour)
+    var intervalSelect = document.getElementById('intervalSelect');
+    var selectedInterval = intervalSelect ? parseInt(intervalSelect.value) : 60; // minutes
+    
+    // Calculate display parameters
+    var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
+    var displayInterval = GAME_DAY / periodsPerDay; // Game seconds per period
+    
+    for (var period = 0; period < periodsPerDay; period++) {
+        var gameTime = startTime + period * displayInterval;
+        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
-
-        // Compute display time relative to day
-        var dayProgress = ((gameTime - startTime) % GAME_DAY) / GAME_DAY;
-        if (dayProgress < 0) dayProgress += 1; // safety for negative remainder
+        
+        var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
         var displayHour = Math.floor(dayProgress * 24);
         var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
         var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
-        
-        // DEBUG: Log specific times for Day 984 (still limited)
-        if (day === 984 && (displayHour === 13 || displayHour === 11)) {
-            console.log('DEBUG Day 984 time ' + timeString + ': gameTime=' + gameTime + ' weatherIndex=' + weatherIndex + ' BlackForest=' + weathers[1]);
-        }
         
         var row = document.createElement('tr');
         var currentTime = gameTime % GAME_DAY;
@@ -699,7 +648,7 @@ function updateWeatherTable(day) {
             row.appendChild(cell);
         });
         
-        if (day === CURRENT_GAME_DAY && weatherIndex === getWeatherPeriodIndex((CURRENT_GAME_DAY-1)*GAME_DAY)) {
+        if (day === CURRENT_GAME_DAY && period === 0) {
             row.style.background = 'rgba(255, 215, 0, 0.2)';
             row.style.border = '2px solid #ffd700';
         }
@@ -715,17 +664,13 @@ function updateWeatherTable(day) {
     
     // Add preview periods (show first 3 30-minute intervals of next day)
     var nextStartTime = day * GAME_DAY;
-    // For next-day preview, show the first few canonical weather periods of the next day
-    var nextRange = getWeatherIndexRangeForDay(nextStartTime);
-    var nextCount = 0;
-    for (var wi = nextRange.first; wi <= nextRange.last && nextCount < 3; wi++, nextCount++) {
-        var gameTime = getGameTimeForWeatherIndex(wi);
-        var weatherIndex = wi;
+    for (var period = 0; period < 3; period++) {
+        var gameTime = nextStartTime + period * displayInterval;
+        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
-
-        var dayProgress = ((gameTime - nextStartTime) % GAME_DAY) / GAME_DAY;
-        if (dayProgress < 0) dayProgress += 1;
+        
+        var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
         var displayHour = Math.floor(dayProgress * 24);
         var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
         var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
@@ -769,8 +714,9 @@ function showForecast() {
     forecastGrid.innerHTML = '';
     
     var currentDay = parseInt(document.getElementById('dayInput').value);
-    // Standard day calculation (remove timing offset, try WEATHER_PERIOD adjustment)
-    var startTime = (currentDay - 1) * GAME_DAY;
+    // Standard day calculation with kirilloid timing offset
+    // Add 158 minutes (9480 seconds) to sync with kirilloid reference timing
+    var startTime = (currentDay - 1) * GAME_DAY + 9480; // +158 minutes offset
     var biomeKeys = Object.keys(BIOMES);
     
     biomeKeys.forEach(function(biomeKey) {
@@ -780,24 +726,19 @@ function showForecast() {
         
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
-            // For forecast, pick the first 12 canonical upcoming weather periods starting at day start
-            var range = getWeatherIndexRangeForDay(startTime);
-            var count = 0;
-            for (var wi = range.first; wi <= range.last && count < 12; wi++, count++) {
-                var gameTime = getGameTimeForWeatherIndex(wi);
-                var weatherIndex = wi;
-                var weathers = getWeathersAt(weatherIndex);
-                var wind = getGlobalWind(gameTime);
-
-                var biomeIndex = biomeKeys.indexOf(biomeKey);
-                var weather = weathers[biomeIndex];
-                var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
-
-                var dayProgress = ((gameTime - startTime) % GAME_DAY) / GAME_DAY;
-                if (dayProgress < 0) dayProgress += 1;
-                var displayHour = Math.floor(dayProgress * 24);
-                var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
-                var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+        for (var period = 0; period < 12; period++) {
+            var gameTime = startTime + period * WEATHER_PERIOD * 2;
+            var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+            var weathers = getWeathersAt(weatherIndex);
+            var wind = getGlobalWind(gameTime);
+            
+            var biomeIndex = biomeKeys.indexOf(biomeKey);
+            var weather = weathers[biomeIndex];
+            var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+            
+            var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
+            var displayHour = Math.floor(dayProgress * 24);
+            var timeString = String(displayHour).padStart(2, '0') + ':00';
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
