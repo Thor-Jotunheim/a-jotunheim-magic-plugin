@@ -578,16 +578,49 @@ function updateWeatherTable(day) {
     var gameDay = day - 1;
     var startTime = gameDay * GAME_DAY;
     var sunTimes = getSunTimes(day);
-    
-    // Show weather every 120 seconds for display, but calculate weather using proper period
-    var displayInterval = 120; // Show updates every 2 minutes
-    var periodsPerDay = Math.floor(GAME_DAY / displayInterval);
     var biomeKeys = Object.keys(BIOMES);
     
-    for (var period = 0; period < periodsPerDay; period++) {
-        var gameTime = startTime + period * displayInterval;
-        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD); // Use correct weather period for calculation
-        var weathers = getWeathersAt(weatherIndex);
+    // Generate combined events like kirilloid: weather changes (666s) + wind changes (125s)
+    var events = [];
+    
+    // Add weather change events (every WEATHER_PERIOD seconds)
+    var weatherPeriods = Math.floor(GAME_DAY / WEATHER_PERIOD);
+    for (var period = 0; period < weatherPeriods; period++) {
+        var gameTime = startTime + period * WEATHER_PERIOD;
+        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        events.push({
+            time: gameTime,
+            type: 'weather',
+            weatherIndex: weatherIndex,
+            weathers: getWeathersAt(weatherIndex)
+        });
+    }
+    
+    // Add wind change events (every WIND_PERIOD seconds)
+    var windPeriods = Math.floor(GAME_DAY / WIND_PERIOD);
+    for (var period = 0; period < windPeriods; period++) {
+        var gameTime = startTime + period * WIND_PERIOD;
+        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        // Only add if it's not already a weather change time
+        var isWeatherTime = (gameTime - startTime) % WEATHER_PERIOD === 0;
+        if (!isWeatherTime) {
+            events.push({
+                time: gameTime,
+                type: 'wind',
+                weatherIndex: weatherIndex,
+                weathers: getWeathersAt(weatherIndex)
+            });
+        }
+    }
+    
+    // Sort events by time
+    events.sort(function(a, b) { return a.time - b.time; });
+    
+    // Display all events
+    for (var i = 0; i < events.length; i++) {
+        var event = events[i];
+        var gameTime = event.time;
+        var weathers = event.weathers;
         var wind = getGlobalWind(gameTime);
         
         var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
@@ -612,16 +645,24 @@ function updateWeatherTable(day) {
             row.style.background = 'rgba(255, 165, 0, 0.3)';
             row.style.color = '#ffa500';
             row.style.fontWeight = 'bold';
-        } else if (period % 2 === 0) {
-            row.style.background = 'rgba(255, 255, 255, 0.05)';
+        } else if (event.type === 'weather') {
+            // Weather change events get stronger highlighting
+            row.style.background = 'rgba(255, 255, 255, 0.1)';
+        } else if (i % 2 === 0) {
+            // Wind-only events get alternating subtle highlighting
+            row.style.background = 'rgba(255, 255, 255, 0.03)';
         }
         
         // Time cell
         var timeCell = document.createElement('td');
         timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
+        
+        var offsetSeconds = gameTime - startTime;
+        var eventTypeLabel = event.type === 'weather' ? 'weather' : 'wind';
+        
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
+            timeString + '<br><small>' + eventTypeLabel + '</small>';
         row.appendChild(timeCell);
         
         // Weather for each biome
@@ -658,8 +699,8 @@ function updateWeatherTable(day) {
     separatorRow.innerHTML = '<td colspan="9" style="padding: 8px; text-align: center; border: 1px solid #444; font-weight: bold;">Day ' + (day + 1) + ' Preview</td>';
     tableBody.appendChild(separatorRow);
     
-    // Add preview periods
-    var nextStartTime = (day) * GAME_DAY - GAME_DAY;
+    // Add preview periods (show first 3 weather change events of next day)
+    var nextStartTime = day * GAME_DAY;
     for (var period = 0; period < 3; period++) {
         var gameTime = nextStartTime + period * WEATHER_PERIOD;
         var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
@@ -676,7 +717,7 @@ function updateWeatherTable(day) {
         
         var timeCell = document.createElement('td');
         timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
-        timeCell.innerHTML = timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
+        timeCell.innerHTML = timeString + '<br><small>weather</small>';
         row.appendChild(timeCell);
         
         biomeKeys.forEach(function(biomeKey, index) {
