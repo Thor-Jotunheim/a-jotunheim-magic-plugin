@@ -1174,6 +1174,7 @@ function initializeWeatherCalculator() {
             
             <span style="color: #bdc3c7; margin-left: 10px;">Interval:</span>
             <select id="intervalSelect" onchange="updateInterval()" style="padding: 6px; background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; border-radius: 4px;">
+                <option value="0.25">15 minutes</option>
                 <option value="0.5">30 minutes</option>
                 <option value="1">1 hour</option>
                 <option value="2" selected>2 hours</option>
