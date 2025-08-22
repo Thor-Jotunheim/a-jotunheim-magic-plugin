@@ -733,93 +733,114 @@ function updateCurrentInfo(day) {
 
 function updateWeatherTable(day) {
     var tableBody = document.getElementById('weatherTableBody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    var gameDay = day - 1;
-    var startTime = gameDay * GAME_DAY;
-    var biomeKeys = biomeIds;
-    
-    // Find all weather changes during this day by checking each weather period
-    var weatherChanges = [];
-    var startIndex = Math.floor(startTime / WEATHER_PERIOD);
-    var endIndex = Math.floor((startTime + GAME_DAY) / WEATHER_PERIOD) + 1;
-    
-    // Get weather for the first period as baseline
-    var prevWeathers = null;
-    
-    for (var i = startIndex; i <= endIndex; i++) {
-        var currentTime = i * WEATHER_PERIOD;
-        if (currentTime > startTime + GAME_DAY) break;
-        
-        var currentWeathers = getWeathersAt(i);
-        var hasChange = false;
-        
-        // Check if this is the first entry or if any weather changed
-        if (!prevWeathers) {
-            hasChange = true; // First entry
-        } else {
-            for (var b = 0; b < biomeKeys.length; b++) {
-                if (prevWeathers[b] !== currentWeathers[b]) {
-                    hasChange = true;
-                    break;
-                }
-            }
-        }
-        
-        // If weather changed, add this entry
-        if (hasChange) {
-            var timeInDay = currentTime - startTime;
-            var dayProgress = timeInDay / GAME_DAY;
-            var displayHour = Math.floor(dayProgress * 24);
-            var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
-            var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
-            
-            weatherChanges.push({
-                time: currentTime,
-                timeString: timeString,
-                weathers: currentWeathers,
-                index: i
-            });
-            
-            // Debug log for Day 984 13:41 area
-            if (day === 984 && displayHour === 13 && displayMinute >= 40 && displayMinute <= 42) {
-                console.log('*** FOUND Day 984 13:41 weather change! ***');
-                console.log('Time:', timeString, 'Index:', i, 'Weathers:', currentWeathers);
-            }
-        }
-        
-        prevWeathers = currentWeathers;
+    if (!tableBody) {
+        console.error('weatherTableBody not found!');
+        return;
     }
     
-    console.log('Weather changes for day', day, ':', weatherChanges.length);
+    console.log('Updating weather table for day', day);
+    tableBody.innerHTML = '';
     
-    // Generate table rows for weather changes
-    weatherChanges.forEach(function(change, changeIndex) {
-        var row = document.createElement('tr');
-        row.style.cssText = 'background: rgba(' + (changeIndex % 2 === 0 ? '255, 255, 255, 0.1' : '0, 0, 0, 0.2') + '); border-bottom: 1px solid rgba(255, 255, 255, 0.1);';
+    try {
+        var gameDay = day - 1;
+        var startTime = gameDay * GAME_DAY;
+        var biomeKeys = biomeIds;
         
-        // Time cell
-        var timeCell = document.createElement('td');
-        timeCell.style.cssText = 'padding: 8px; text-align: center; color: #d4af37; font-weight: bold; border-right: 1px solid rgba(255, 255, 255, 0.1);';
-        timeCell.textContent = change.timeString;
-        row.appendChild(timeCell);
+        console.log('Game day:', gameDay, 'Start time:', startTime);
         
-        // Weather cells for each biome
-        biomeKeys.forEach(function(biomeKey, biomeIndex) {
-            var weather = change.weathers[biomeIndex];
-            var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+        // Find all weather changes during this day by checking each weather period
+        var weatherChanges = [];
+        var startIndex = Math.floor(startTime / WEATHER_PERIOD);
+        var endIndex = Math.floor((startTime + GAME_DAY) / WEATHER_PERIOD) + 1;
+        
+        console.log('Checking weather indices from', startIndex, 'to', endIndex);
+        
+        // Get weather for the first period as baseline
+        var prevWeathers = null;
+        
+        for (var i = startIndex; i <= endIndex && weatherChanges.length < 50; i++) { // Limit to prevent infinite loops
+            var currentTime = i * WEATHER_PERIOD;
+            if (currentTime > startTime + GAME_DAY) break;
             
-            var cell = document.createElement('td');
-            cell.style.cssText = 'padding: 6px; text-align: center; color: #fff; border-right: 1px solid rgba(255, 255, 255, 0.1);';
-            cell.innerHTML = '<div style="font-size: 1.1em; margin-bottom: 2px;">' + envData.emoji + '</div>' +
-                '<div style="font-size: 0.75em; color: #ccc;">' + envData.name + '</div>';
-            row.appendChild(cell);
+            var currentWeathers = getWeathersAt(i);
+            var hasChange = false;
+            
+            // Check if this is the first entry or if any weather changed
+            if (!prevWeathers) {
+                hasChange = true; // First entry
+            } else {
+                for (var b = 0; b < biomeKeys.length; b++) {
+                    if (prevWeathers[b] !== currentWeathers[b]) {
+                        hasChange = true;
+                        break;
+                    }
+                }
+            }
+            
+            // If weather changed, add this entry
+            if (hasChange) {
+                var timeInDay = currentTime - startTime;
+                var dayProgress = timeInDay / GAME_DAY;
+                var displayHour = Math.floor(dayProgress * 24);
+                var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+                var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+                
+                weatherChanges.push({
+                    time: currentTime,
+                    timeString: timeString,
+                    weathers: currentWeathers,
+                    index: i
+                });
+                
+                prevWeathers = currentWeathers.slice(); // Copy array
+            }
+        }
+        
+        console.log('Found', weatherChanges.length, 'weather changes');
+        
+        if (weatherChanges.length === 0) {
+            // If no weather changes found, add at least one entry at start of day
+            var startWeathers = getWeathersAt(startIndex);
+            weatherChanges.push({
+                time: startTime,
+                timeString: '00:00',
+                weathers: startWeathers,
+                index: startIndex
+            });
+        }
+        
+        // Generate table rows for weather changes
+        weatherChanges.forEach(function(change, changeIndex) {
+            var row = document.createElement('tr');
+            row.style.cssText = 'background: rgba(' + (changeIndex % 2 === 0 ? '255, 255, 255, 0.1' : '0, 0, 0, 0.2') + '); border-bottom: 1px solid rgba(255, 255, 255, 0.1);';
+            
+            // Time cell
+            var timeCell = document.createElement('td');
+            timeCell.style.cssText = 'padding: 8px; text-align: center; color: #d4af37; font-weight: bold; border-right: 1px solid rgba(255, 255, 255, 0.1);';
+            timeCell.textContent = change.timeString;
+            row.appendChild(timeCell);
+            
+            // Weather cells for each biome
+            biomeKeys.forEach(function(biomeKey, biomeIndex) {
+                var weather = change.weathers[biomeIndex];
+                var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+                
+                var cell = document.createElement('td');
+                cell.style.cssText = 'padding: 6px; text-align: center; color: #fff; border-right: 1px solid rgba(255, 255, 255, 0.1);';
+                cell.innerHTML = '<div style="font-size: 1.1em; margin-bottom: 2px;">' + envData.emoji + '</div>' +
+                    '<div style="font-size: 0.75em; color: #ccc;">' + envData.name + '</div>';
+                row.appendChild(cell);
+            });
+            
+            tableBody.appendChild(row);
         });
         
-        tableBody.appendChild(row);
-    });
+        console.log('Weather table updated successfully');
+        
+    } catch (error) {
+        console.error('Error in updateWeatherTable:', error);
+        tableBody.innerHTML = '<tr><td colspan="9" style="padding: 20px; text-align: center; color: #ff6b6b;">Error loading weather data: ' + error.message + '</td></tr>';
+    }
     
     // Display all entries
     for (var i = 0; i < timeEntries.length; i++) {
