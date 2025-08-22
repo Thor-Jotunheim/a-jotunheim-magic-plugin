@@ -13,28 +13,25 @@ add_action('rest_api_init', function () {
     ));
 });
 
-// Function to fetch all items from the database
+// Function to fetch all items from Google Sheets with database fallback
 function fetch_all_items_rest() {
-    global $wpdb;
-
+    error_log('fetch_all_items_rest called - Google Sheets integration active');
+    
     // Clear any previously sent output
     ob_clean();
 
-    $table_name = 'jotun_itemlist'; // Ensure table name matches your setup
-
-    // Run a basic SELECT query
-    $query = "SELECT * FROM $table_name";
-    $items = $wpdb->get_results($query, ARRAY_A);
-
-    if ($items === false) {
-        error_log("Database query error: " . $wpdb->last_error);
-        return new WP_Error('db_error', 'Database query error', array('status' => 500));
-    }
-
+    // Initialize Google Sheets service
+    $sheets_service = new JotunheimGoogleSheetsService();
+    
+    // Get items from Google Sheets with caching and fallback
+    $items = $sheets_service->get_items_with_cache();
+    
     if (empty($items)) {
+        error_log('fetch_all_items_rest: No items found');
         return new WP_Error('no_items', 'No items found', array('status' => 404));
     }
 
+    error_log('fetch_all_items_rest: Returning ' . count($items) . ' items');
     return rest_ensure_response($items);
 }
 ?>

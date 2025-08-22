@@ -42,6 +42,10 @@ require_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefablist-api-get
 // Include pricelist file
 include_once(plugin_dir_path(__FILE__) . 'includes/PriceList/pricelist.php');
 
+// Include Google Sheets service
+include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-service.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-admin.php');
+
 // Include the dashboard menu file
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
@@ -101,6 +105,12 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-get.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-put.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-claim.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-player.php');
+
+// Include POS files
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-database-utils.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-api.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-scripts.php');
 
 // Include UniversalUI components
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-ui-scripts.php';
