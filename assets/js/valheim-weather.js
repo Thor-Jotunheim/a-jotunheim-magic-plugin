@@ -455,17 +455,19 @@ function getWeathersAt(index) {
     random.init(index);
     var rng = random.rangeFloat(0, 1);
     
-    // Debug log for Day 984
-    if (index >= 3932 && index <= 3940) {
-        console.log('Weather index ' + index + ', RNG: ' + rng.toFixed(4));
+    // Debug log for Day 984 area
+    var day984StartIndex = Math.floor(984 * GAME_DAY / WEATHER_PERIOD);
+    if (index >= day984StartIndex && index <= day984StartIndex + 5) {
+        console.log('Day 984 - Weather index ' + index + ', RNG: ' + rng.toFixed(4));
+        console.log('  Expected Day 984 start index: ' + day984StartIndex);
     }
     
     return Object.keys(BIOMES).map(function(biome) {
         var biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
         var weather = rollWeather(biomeWeathers, rng);
         
-        // Debug log for Day 984
-        if (index >= 3932 && index <= 3940) {
+        // Debug for Day 984
+        if (index >= day984StartIndex && index <= day984StartIndex + 5) {
             console.log('  ' + biome + ': ' + weather);
         }
         
@@ -576,12 +578,15 @@ function updateWeatherTable(day) {
     var gameDay = day - 1;
     var startTime = gameDay * GAME_DAY;
     var sunTimes = getSunTimes(day);
-    var periodsPerDay = Math.floor(GAME_DAY / WEATHER_PERIOD);
+    
+    // Show weather every 120 seconds for display, but calculate weather using proper period
+    var displayInterval = 120; // Show updates every 2 minutes
+    var periodsPerDay = Math.floor(GAME_DAY / displayInterval);
     var biomeKeys = Object.keys(BIOMES);
     
     for (var period = 0; period < periodsPerDay; period++) {
-        var gameTime = startTime + period * WEATHER_PERIOD;
-        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        var gameTime = startTime + period * displayInterval;
+        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD); // Use correct weather period for calculation
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
         
