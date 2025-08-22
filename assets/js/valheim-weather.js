@@ -2,27 +2,44 @@
 // VALHEIM WEATHER CALENDAR WITH REAL ALGORITHM
 // ==================================
 
+// ==================== EASY CONFIGURATION SECTION ====================
+// ← UPDATE THESE VALUES FOR EASY CONFIGURATION
+
+// API OVERRIDE SETTINGS (Priority 1 - Highest)
+var API_ENABLED = false;  // Set to true to enable API override
+var API_ENDPOINT = '';    // Your API URL (e.g., 'https://your-server.com/api/current-day')
+
+// MANUAL DAY OVERRIDE SETTINGS (Priority 2)
+var MANUAL_ENABLED = false;                              // Set to true to enable manual override
+var MANUAL_START_DAY = 1;                               // What in-game day to start from
+var MANUAL_START_DATE = new Date('2025-08-01 19:30:00'); // Real date/time for that day
+
+// SERVER START DATE SETTINGS (Priority 3 - Default)
+var SERVER_START_DATE = new Date('2025-08-01 19:30:00'); // When your server started (Day 1)
+
+// ==================== END CONFIGURATION SECTION ====================
+
 // CONFIGURATION SYSTEM - Priority order (higher number = higher priority):
 // 1. API Override (highest priority)
 // 2. Manual Day Override 
 // 3. Server Start Date (default/fallback)
 
 // DEFAULT SERVER START DATE - Fallback method (Priority 3)
-var DEFAULT_SERVER_START_DATE = new Date('2025-08-01 19:30:00');
+var DEFAULT_SERVER_START_DATE = SERVER_START_DATE;
 
-// Configuration variables (will be updated from HTML form)
+// Configuration variables (will be updated from HTML form OR use values above)
 var CONFIG = {
     // API Override (Priority 1)
-    apiEnabled: false,
-    apiEndpoint: '',
+    apiEnabled: API_ENABLED,
+    apiEndpoint: API_ENDPOINT,
     
     // Manual Day Override (Priority 2)
-    manualEnabled: false,
-    manualStartDay: 1,
-    manualStartDate: new Date('2025-08-01 19:30:00'),
+    manualEnabled: MANUAL_ENABLED,
+    manualStartDay: MANUAL_START_DAY,
+    manualStartDate: MANUAL_START_DATE,
     
     // Server Start Date (Priority 3 - Default)
-    serverStartDate: DEFAULT_SERVER_START_DATE
+    serverStartDate: SERVER_START_DATE
 };
 
 // Calculate current in-game day based on configuration priority
@@ -128,12 +145,56 @@ function loadConfigurationFromForm() {
     var enableManual = document.getElementById('enableManual');
     var serverStartDate = document.getElementById('serverStartDate');
     
-    if (apiEndpoint) CONFIG.apiEndpoint = apiEndpoint.value.trim();
-    if (enableApi) CONFIG.apiEnabled = enableApi.checked;
-    if (manualStartDay) CONFIG.manualStartDay = parseInt(manualStartDay.value) || 1;
-    if (manualStartDate) CONFIG.manualStartDate = new Date(manualStartDate.value);
-    if (enableManual) CONFIG.manualEnabled = enableManual.checked;
-    if (serverStartDate) CONFIG.serverStartDate = new Date(serverStartDate.value);
+    // If form elements exist, use their values, otherwise use JavaScript defaults
+    if (apiEndpoint && apiEndpoint.value) {
+        CONFIG.apiEndpoint = apiEndpoint.value.trim();
+    } else if (apiEndpoint) {
+        apiEndpoint.value = CONFIG.apiEndpoint; // Set form to JS default
+    }
+    
+    if (enableApi) {
+        CONFIG.apiEnabled = enableApi.checked;
+    } else {
+        CONFIG.apiEnabled = API_ENABLED; // Use JS default
+    }
+    
+    if (manualStartDay && manualStartDay.value) {
+        CONFIG.manualStartDay = parseInt(manualStartDay.value) || 1;
+    } else if (manualStartDay) {
+        manualStartDay.value = CONFIG.manualStartDay; // Set form to JS default
+    }
+    
+    if (manualStartDate && manualStartDate.value) {
+        CONFIG.manualStartDate = new Date(manualStartDate.value);
+    } else if (manualStartDate) {
+        manualStartDate.value = formatDateForInput(CONFIG.manualStartDate); // Set form to JS default
+    }
+    
+    if (enableManual) {
+        CONFIG.manualEnabled = enableManual.checked;
+    } else {
+        CONFIG.manualEnabled = MANUAL_ENABLED; // Use JS default
+    }
+    
+    if (serverStartDate && serverStartDate.value) {
+        CONFIG.serverStartDate = new Date(serverStartDate.value);
+    } else if (serverStartDate) {
+        serverStartDate.value = formatDateForInput(CONFIG.serverStartDate); // Set form to JS default
+    }
+    
+    // Update checkboxes to reflect JS defaults if they exist
+    if (enableApi) enableApi.checked = CONFIG.apiEnabled;
+    if (enableManual) enableManual.checked = CONFIG.manualEnabled;
+}
+
+// Helper function to format date for HTML datetime-local input
+function formatDateForInput(date) {
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    var hours = String(date.getHours()).padStart(2, '0');
+    var minutes = String(date.getMinutes()).padStart(2, '0');
+    return year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
 }
 
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
