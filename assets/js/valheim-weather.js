@@ -452,11 +452,36 @@ function getWeathersAt(index) {
     if (index < INTRO_DURATION / WEATHER_PERIOD) {
         return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
     }
-    
+
     random.init(index);
     var rng = random.rangeFloat(0, 1);
-    
-    // Debug log for Day 984 area (around index 2659-2661) with corrected timing
+
+    // --- DEBUG: Print server start time and offsets ---
+    if (typeof CONFIG !== 'undefined') {
+        console.log('[DEBUG] CONFIG.serverStartDate:', CONFIG.serverStartDate);
+        if (CONFIG.manualEnabled) {
+            console.log('[DEBUG] CONFIG.manualStartDate:', CONFIG.manualStartDate, 'manualStartDay:', CONFIG.manualStartDay);
+        }
+    }
+
+    // --- DEBUG: Print for day 984 at 00:00, 11:15, 13:41 ---
+    var day = 984;
+    var times = [0, 11 * 60 + 15, 13 * 60 + 41]; // minutes since midnight
+    times.forEach(function(mins) {
+        var gameTime = day * GAME_DAY + mins * 60;
+        var periodIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        if (index === periodIndex) {
+            console.log('[DEBUG] Day', day, 'Time', mins, 'min (', (mins/60).toFixed(2), 'h ) => gameTime:', gameTime, 'periodIndex:', periodIndex);
+            var biomeWeathers = Object.keys(BIOMES).map(function(biome) {
+                var ws = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
+                var w = rollWeather(ws, rng);
+                console.log('    [DEBUG]', biome, ':', w);
+                return w;
+            });
+        }
+    });
+
+    // --- Existing debug for day 984 area ---
     var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
     var day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
     if (index >= day984StartIndex && index <= day984StartIndex + 20) {
@@ -466,16 +491,16 @@ function getWeathersAt(index) {
         var minutes = Math.floor(((timeFromDayStart / GAME_DAY) * 24 % 1) * 60);
         console.log('  Time from day 984 start: ' + timeFromDayStart + ' seconds = ' + hours + ':' + String(minutes).padStart(2, '0'));
     }
-    
+
     return Object.keys(BIOMES).map(function(biome) {
         var biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
         var weather = rollWeather(biomeWeathers, rng);
-        
+
         // Debug for Day 984
         if (index >= day984StartIndex && index <= day984StartIndex + 20) {
             console.log('    ' + biome + ': ' + weather);
         }
-        
+
         return weather;
     });
 }
