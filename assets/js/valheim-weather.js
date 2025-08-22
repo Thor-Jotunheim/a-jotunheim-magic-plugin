@@ -537,12 +537,12 @@ function createWeatherDisplay() {
         '<thead><tr>';
     
     // Time column header
-    tableHTML += '<th style="padding: 12px 8px; text-align: center; border: 1px solid #444; font-size: 0.9em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 90px;">Time</th>';
+    tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 70px;">Time</th>';
     
     // Biome headers (horizontal text for cross-browser compatibility)
     biomeKeys.forEach(function(biomeKey) {
         var biome = BIOMES[biomeKey];
-        tableHTML += '<th style="padding: 12px 8px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 100px;">' + 
+        tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 85px;">' + 
             biome.icon + ' ' + biome.name + '</th>';
     });
     
@@ -613,7 +613,7 @@ function updateWeatherTable(day) {
         
         // Time cell
         var timeCell = document.createElement('td');
-        timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
+        timeCell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.75em; font-weight: bold; color: #d4af37;';
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
             timeString + '<br><small>' + formatWeatherDuration(period) + '</small>';
@@ -625,7 +625,7 @@ function updateWeatherTable(day) {
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             var cell = document.createElement('td');
             
-            cell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em;';
+            cell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.7em;';
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
@@ -670,7 +670,7 @@ function updateWeatherTable(day) {
         row.style.opacity = '0.6';
         
         var timeCell = document.createElement('td');
-        timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
+        timeCell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.75em; font-weight: bold; color: #d4af37;';
         timeCell.innerHTML = timeString + '<br><small>' + formatWeatherDuration(period) + '</small>';
         row.appendChild(timeCell);
         
@@ -678,7 +678,7 @@ function updateWeatherTable(day) {
             var weather = weathers[index];
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             var cell = document.createElement('td');
-            cell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em;';
+            cell.style.cssText = 'padding: 6px 3px; text-align: center; border: 1px solid #444; font-size: 0.7em;';
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
