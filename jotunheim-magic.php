@@ -37,6 +37,12 @@ add_action('wp_enqueue_scripts', 'jotunheim_magic_enqueue_scripts');
 // AJAX handler for weather configuration
 function jotunheim_weather_config_ajax() {
     // Get weather configuration from WordPress options
+    $world_seed = get_option('weather_world_seed', '');
+    
+    // SECURITY: Never send the raw seed to frontend
+    // Instead, create a hash that can be used for RNG seeding but can't be reverse-engineered
+    $seed_hash = $world_seed ? abs(crc32($world_seed)) : 0;
+    
     $config = array(
         'api_enabled' => get_option('weather_api_enabled', false),
         'api_endpoint' => get_option('weather_api_endpoint', ''),
@@ -44,7 +50,8 @@ function jotunheim_weather_config_ajax() {
         'manual_start_day' => intval(get_option('weather_manual_start_day', 1)),
         'manual_start_date' => get_option('weather_manual_start_date', '2025-08-22T00:00'),
         'manual_progression' => get_option('weather_manual_progression', 'game-time'),
-        'server_start_date' => get_option('weather_server_start_date', '2025-08-01T19:30')
+        'server_start_date' => get_option('weather_server_start_date', '2025-08-01T19:30'),
+        'seed_hash' => $seed_hash // Secure hash, not the actual seed
     );
     
     wp_send_json_success($config);

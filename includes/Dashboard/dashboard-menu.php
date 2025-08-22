@@ -6,8 +6,25 @@ if (!defined('ABSPATH')) {
 
 // Function to add the main menu item and submenu items
 function jotunheim_magic_plugin_menu() {
-    // Main Menu Page for Jotunheim Magic Plugin
-    add_menu_page(
+    // Main Menu Page for Jotunheim Magic Plu        if (isset($_POST['weather_config_submit'])) {
+            // Update API configuration
+            update_option('weather_api_enabled', isset($_POST['api_enabled']));
+            update_option('weather_api_endpoint', sanitize_url($_POST['api_endpoint']));
+            
+            // Update manual override configuration
+            update_option('weather_manual_enabled', isset($_POST['manual_enabled']));
+            update_option('weather_manual_start_day', intval($_POST['manual_start_day']));
+            update_option('weather_manual_start_date', sanitize_text_field($_POST['manual_start_date']));
+            update_option('weather_manual_progression', sanitize_text_field($_POST['manual_progression']));
+            
+            // Update server start date
+            update_option('weather_server_start_date', sanitize_text_field($_POST['server_start_date']));
+            
+            // Update world seed (SECURE - admin only)
+            update_option('weather_world_seed', sanitize_text_field($_POST['world_seed']));
+            
+            echo '<div class="updated notice"><p>Weather Calendar configuration updated successfully!</p></div>';
+        }_page(
         'Jotunheim Magic',              // Page title
         'Jotunheim Magic',              // Menu title in admin sidebar
         'manage_options',               // Capability required (restricted to admins by default)
@@ -229,6 +246,9 @@ function render_weather_calendar_config_page() {
             // Save Server Start Date
             update_option('weather_server_start_date', sanitize_text_field($_POST['server_start_date']));
             
+            // Save World Seed (SECURE - admin only, never sent to frontend)
+            update_option('weather_world_seed', sanitize_text_field($_POST['world_seed']));
+            
             echo '<div class="updated notice"><p>Weather Calendar configuration updated successfully!</p></div>';
         }
     }
@@ -241,6 +261,7 @@ function render_weather_calendar_config_page() {
     $manual_start_date = get_option('weather_manual_start_date', '2025-08-22T00:00');
     $manual_progression = get_option('weather_manual_progression', 'static');
     $server_start_date = get_option('weather_server_start_date', '2025-08-01T19:30');
+    $world_seed = get_option('weather_world_seed', ''); // SECURE - never sent to frontend
     
     ?>
     <div class="wrap">
@@ -338,6 +359,16 @@ function render_weather_calendar_config_page() {
                                            class="regular-text">
                                     <p class="description">When your Valheim world started (Day 1)<br>
                                     Day counting progresses based on in-game time (20 min = 1 day)</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">🌍 World Seed</th>
+                                <td>
+                                    <input type="text" name="world_seed" value="<?php echo esc_attr($world_seed); ?>" 
+                                           class="regular-text" placeholder="Enter your Valheim world seed">
+                                    <p class="description"><strong>⚠️ CRITICAL:</strong> Enter your exact Valheim world seed for accurate weather.<br>
+                                    <strong>🔒 SECURE:</strong> This seed is never transmitted to public pages - stored securely admin-only.<br>
+                                    Without the correct seed, weather predictions will not match your game.</p>
                                 </td>
                             </tr>
                         </table>

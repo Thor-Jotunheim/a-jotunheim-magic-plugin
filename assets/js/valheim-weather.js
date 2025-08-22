@@ -80,6 +80,9 @@ var CONFIG = {
     serverStartDate: new Date('2025-08-01T19:30')
 };
 
+// World seed hash for deterministic weather (secure - derived from actual seed)
+var WORLD_SEED_HASH = 0;
+
 // API caching configuration
 var API_CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 var API_CACHE_KEY = 'valheim_weather_api_cache';
@@ -470,7 +473,10 @@ function getWeathersAt(index) {
         return biomeIds.map(function() { return INTRO_WEATHER; });
     }
     
-    random.init(index);
+    // Use world seed hash combined with time index for deterministic weather
+    // This ensures weather matches your actual game world
+    var seed = WORLD_SEED_HASH + index;
+    random.init(seed);
     var rng = random.rangeFloat(0, 1);
     
     return biomeIds.map(function(biome) {
@@ -780,10 +786,31 @@ function updateWeatherTable(day) {
             // If weather changed, add this entry
             if (hasChange) {
                 var timeInDay = currentTime - startTime;
+                
+                // Ensure timeInDay is within valid range
+                if (timeInDay < 0) {
+                    timeInDay = 0;
+                } else if (timeInDay >= GAME_DAY) {
+                    continue; // Skip entries beyond the current day
+                }
+                
                 var dayProgress = timeInDay / GAME_DAY;
                 var displayHour = Math.floor(dayProgress * 24);
                 var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+                
+                // Ensure valid time values
+                displayHour = Math.max(0, Math.min(23, displayHour));
+                displayMinute = Math.max(0, Math.min(59, displayMinute));
+                
                 var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+                
+                console.log('Weather change at index', i, 'time:', timeString, 'timeInDay:', timeInDay, 'dayProgress:', dayProgress);
+                
+                // Special debugging for Day 984 around 13:41
+                if (day === 984 && displayHour === 13 && displayMinute >= 40 && displayMinute <= 45) {
+                    console.log('*** FOUND Day 984 13:4X weather change! ***');
+                    console.log('Exact time:', timeString, 'Index:', i, 'Weathers:', currentWeathers);
+                }
                 
                 weatherChanges.push({
                     time: currentTime,
@@ -1069,6 +1096,16 @@ function updateConfigFromWordPress() {
     CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
     CONFIG.manualProgressionType = config.manualOverride.progression;
     CONFIG.serverStartDate = new Date(config.serverStartDate);
+    CONFIG.seedHash = config.seedHash || 0; // Secure seed hash for weather generation
+    
+    // Initialize the random generator with the world seed hash
+    // This ensures weather matches the actual game world
+    if (CONFIG.seedHash > 0) {
+        WORLD_SEED_HASH = CONFIG.seedHash;
+        console.log('World seed hash loaded:', WORLD_SEED_HASH);
+    } else {
+        console.warn('No world seed configured - weather may not match in-game patterns');
+    }
     
     // Debug log
     console.log('Updated CONFIG from WordPress:', CONFIG);
