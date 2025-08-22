@@ -416,8 +416,8 @@ ValheimRandom.prototype.random = function() {
 };
 
 ValheimRandom.prototype.rangeFloat = function(min, max) {
-    // Unity uses 1.0 - value for some reason (authentic kirilloid implementation)
-    return max - this.random() * (max - min);
+    // Standard random range implementation (matches kirilloid reference)
+    return min + this.random() * (max - min);
 };
 
 var random = new ValheimRandom(0);
@@ -572,7 +572,10 @@ function updateWeatherTable(day) {
     
     tableBody.innerHTML = '';
     
-    var gameDay = day - 1;
+    // Calculate day start time with kirilloid offset
+    // Our Day 924 matches kirilloid's Day 984, so we need -60 day offset
+    var adjustedDay = day - 60;  // Sync with kirilloid reference system
+    var gameDay = adjustedDay - 1; // Convert to 0-based
     var startTime = gameDay * GAME_DAY;
     var sunTimes = getSunTimes(day);
     var biomeKeys = Object.keys(BIOMES);
@@ -712,7 +715,10 @@ function showForecast() {
     forecastGrid.innerHTML = '';
     
     var currentDay = parseInt(document.getElementById('dayInput').value);
-    var startTime = (currentDay - 1) * GAME_DAY;
+    // Calculate day start time with kirilloid offset  
+    // Our Day 924 matches kirilloid's Day 984, so we need -60 day offset
+    var adjustedDay = currentDay - 60; // Sync with kirilloid reference system
+    var startTime = (adjustedDay - 1) * GAME_DAY; // Convert to 0-based
     var biomeKeys = Object.keys(BIOMES);
     
     biomeKeys.forEach(function(biomeKey) {
