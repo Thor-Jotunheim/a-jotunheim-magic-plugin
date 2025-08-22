@@ -331,7 +331,7 @@ var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
 var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid authentic)
-var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
+var WEATHER_PERIOD = 540; // Adjusted weather period for kirilloid sync (was 666)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
 
@@ -572,7 +572,7 @@ function updateWeatherTable(day) {
     
     tableBody.innerHTML = '';
     
-    // Standard day calculation (day is 1-based, so subtract 1 for 0-based calculation)
+    // Standard day calculation (remove timing offset, try WEATHER_PERIOD adjustment)
     var gameDay = day - 1; // Convert to 0-based
     var startTime = gameDay * GAME_DAY;
     var sunTimes = getSunTimes(day);
@@ -713,8 +713,8 @@ function showForecast() {
     forecastGrid.innerHTML = '';
     
     var currentDay = parseInt(document.getElementById('dayInput').value);
-    // Standard day calculation (day is 1-based, so subtract 1 for 0-based calculation)
-    var startTime = (currentDay - 1) * GAME_DAY; // Convert to 0-based
+    // Standard day calculation (remove timing offset, try WEATHER_PERIOD adjustment)
+    var startTime = (currentDay - 1) * GAME_DAY;
     var biomeKeys = Object.keys(BIOMES);
     
     biomeKeys.forEach(function(biomeKey) {
