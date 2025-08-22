@@ -455,11 +455,14 @@ function getWeathersAt(index) {
     random.init(index);
     var rng = random.rangeFloat(0, 1);
     
-    // Debug log for Day 984 area
+    // Debug log for Day 984 area (around index 2659-2661)
     var day984StartIndex = Math.floor(984 * GAME_DAY / WEATHER_PERIOD);
-    if (index >= day984StartIndex && index <= day984StartIndex + 5) {
-        console.log('Day 984 - Weather index ' + index + ', RNG: ' + rng.toFixed(4));
-        console.log('  Expected Day 984 start index: ' + day984StartIndex);
+    if (index >= day984StartIndex && index <= day984StartIndex + 10) {
+        console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
+        console.log('  Time offset from day start: ' + ((index - day984StartIndex) * WEATHER_PERIOD) + ' seconds');
+        var hours = Math.floor(((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24);
+        var minutes = Math.floor((((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24 % 1) * 60);
+        console.log('  Approximate time: ' + hours + ':' + String(minutes).padStart(2, '0'));
     }
     
     return Object.keys(BIOMES).map(function(biome) {
@@ -467,8 +470,8 @@ function getWeathersAt(index) {
         var weather = rollWeather(biomeWeathers, rng);
         
         // Debug for Day 984
-        if (index >= day984StartIndex && index <= day984StartIndex + 5) {
-            console.log('  ' + biome + ': ' + weather);
+        if (index >= day984StartIndex && index <= day984StartIndex + 10) {
+            console.log('    ' + biome + ': ' + weather);
         }
         
         return weather;
@@ -572,10 +575,13 @@ function updateWeatherTable(day) {
     var sunTimes = getSunTimes(day);
     var biomeKeys = Object.keys(BIOMES);
     
-    // Display weather every 30 minutes (1800 seconds per day / 24 hours * 30 minutes = 37.5 minutes per slot)
-    // Let's use 30-minute real-time intervals: 1800 seconds / 48 = 37.5 seconds per 30-minute slot
-    var displayInterval = GAME_DAY / 48; // 30-minute intervals (37.5 seconds each)
-    var periodsPerDay = 48; // 24 hours * 2 (every 30 minutes)
+    // Get selected interval from dropdown (default to 1 hour)
+    var intervalSelect = document.getElementById('intervalSelect');
+    var selectedInterval = intervalSelect ? parseInt(intervalSelect.value) : 60; // minutes
+    
+    // Calculate display parameters
+    var displayInterval = (selectedInterval * 60 * GAME_DAY) / (24 * 60); // Convert to game seconds
+    var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
     
     for (var period = 0; period < periodsPerDay; period++) {
         var gameTime = startTime + period * displayInterval;

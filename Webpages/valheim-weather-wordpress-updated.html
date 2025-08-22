@@ -25,6 +25,17 @@
             <button onclick="goToCurrentDay()" style="background: #8b7355; color: #f5f5dc; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Current Day</button>
             <button onclick="showForecast()" style="background: #8b7355; color: #f5f5dc; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">24h Forecast</button>
         </div>
+        <div style="display: flex; align-items: center; gap: 10px; background: rgba(139, 115, 85, 0.3); padding: 10px 15px; border-radius: 8px; border: 1px solid #8b7355;">
+            <label for="intervalSelect" style="color: #f5f5dc;">Interval:</label>
+            <select id="intervalSelect" onchange="updateWeather()" style="background: rgba(0, 0, 0, 0.5); color: #f5f5dc; border: 1px solid #8b7355; padding: 8px 12px; border-radius: 5px; font-weight: bold;">
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="60" selected>1 hour</option>
+                <option value="120">2 hours</option>
+                <option value="240">4 hours</option>
+                <option value="360">6 hours</option>
+            </select>
+        </div>
     </div>
 
     <div id="currentInfo" style="text-align: center; background: rgba(212, 175, 55, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37;">
