@@ -10,7 +10,7 @@ let config = {
     manualOverride: {
         enabled: false,
         startDay: 1,
-        startDate: '2025-08-22T09:00',
+        startDate: '2025-08-01T19:30',
         progression: 'game-time'  // 'static', 'real-days', or 'game-time'
     },
     serverStartDate: '2025-08-01T19:30'  // Default server start
@@ -416,7 +416,8 @@ ValheimRandom.prototype.random = function() {
 };
 
 ValheimRandom.prototype.rangeFloat = function(min, max) {
-    return min + this.random() * (max - min);
+    // Unity uses 1.0 - value for some reason (authentic kirilloid implementation)
+    return max - this.random() * (max - min);
 };
 
 var random = new ValheimRandom(0);
