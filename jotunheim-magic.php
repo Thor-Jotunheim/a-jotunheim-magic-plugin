@@ -34,6 +34,24 @@ function jotunheim_magic_enqueue_scripts() {
 }
 add_action('wp_enqueue_scripts', 'jotunheim_magic_enqueue_scripts');
 
+// AJAX handler for weather configuration
+function jotunheim_weather_config_ajax() {
+    // Get weather configuration from WordPress options
+    $config = array(
+        'api_enabled' => get_option('weather_api_enabled', false),
+        'api_endpoint' => get_option('weather_api_endpoint', ''),
+        'manual_enabled' => get_option('weather_manual_enabled', false),
+        'manual_start_day' => intval(get_option('weather_manual_start_day', 1)),
+        'manual_start_date' => get_option('weather_manual_start_date', '2025-08-22T00:00'),
+        'manual_progression' => get_option('weather_manual_progression', 'game-time'),
+        'server_start_date' => get_option('weather_server_start_date', '2025-08-01T19:30')
+    );
+    
+    wp_send_json_success($config);
+}
+add_action('wp_ajax_get_weather_config', 'jotunheim_weather_config_ajax');
+add_action('wp_ajax_nopriv_get_weather_config', 'jotunheim_weather_config_ajax');
+
 // Include ItemList files
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-scripts.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-interface.php');

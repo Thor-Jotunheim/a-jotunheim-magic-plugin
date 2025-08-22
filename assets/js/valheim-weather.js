@@ -8,10 +8,10 @@ let config = {
         endpoint: ''
     },
     manualOverride: {
-        enabled: false,
-        startDay: 1,
+        enabled: true,  // Enable manual override for testing
+        startDay: 984,   // Set to 984 as configured
         startDate: '2025-08-22T09:00',
-        progression: 'game-time'  // 'static', 'real-days', or 'game-time'
+        progression: 'static'  // 'static' means no time progression for testing
     },
     serverStartDate: '2025-08-01T19:30'  // Default server start
 };
@@ -33,6 +33,7 @@ async function loadWordPressConfig() {
             
             if (response.ok) {
                 const wpConfig = await response.json();
+                console.log('Raw WordPress config response:', wpConfig);
                 if (wpConfig.success) {
                     // Update config with WordPress settings
                     config.apiConfig.enabled = wpConfig.data.api_enabled;
@@ -43,7 +44,9 @@ async function loadWordPressConfig() {
                     config.manualOverride.progression = wpConfig.data.manual_progression;
                     config.serverStartDate = wpConfig.data.server_start_date;
                     
-                    console.log('Loaded WordPress weather configuration');
+                    console.log('Loaded WordPress weather configuration:', config);
+                } else {
+                    console.warn('WordPress config request failed:', wpConfig);
                 }
             }
         }
@@ -68,10 +71,10 @@ var CONFIG = {
     apiEndpoint: '',
     
     // Manual Day Override (Priority 2)
-    manualEnabled: false,
-    manualStartDay: 1,
+    manualEnabled: true,   // Enable for testing
+    manualStartDay: 984,   // Set to 984 as configured
     manualStartDate: new Date('2025-08-22T00:00'),
-    manualProgressionType: 'game-time', // 'static', 'real-days', or 'game-time'
+    manualProgressionType: 'static', // 'static', 'real-days', or 'game-time'
     
     // Server Start Date (Priority 3 - Default)
     serverStartDate: new Date('2025-08-01T19:30')
@@ -954,6 +957,7 @@ function updateConfigFromWordPress() {
     CONFIG.manualEnabled = config.manualOverride.enabled;
     CONFIG.manualStartDay = config.manualOverride.startDay;
     CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
+    CONFIG.manualProgressionType = config.manualOverride.progression;
     CONFIG.serverStartDate = new Date(config.serverStartDate);
     
     // Debug log

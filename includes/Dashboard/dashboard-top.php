@@ -51,6 +51,14 @@ add_action('admin_bar_menu', function ($wp_admin_bar) {
             'title'  => 'Event Zone Add New',
             'href'   => admin_url('admin.php?page=add_event_zone'),
         ]);
+
+        // Add Weather Calendar Config submenu
+        $wp_admin_bar->add_node([
+            'id'     => 'weather-calendar-config',
+            'parent' => 'admin-magic',
+            'title'  => 'Weather Calendar Config',
+            'href'   => admin_url('admin.php?page=weather_calendar_config'),
+        ]);
     }
 
     // Ensure Administrator, Editor, and Moderator roles can access Moderator Magic
