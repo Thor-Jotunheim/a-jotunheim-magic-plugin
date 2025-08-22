@@ -1,3 +1,8 @@
+// Helper: globally correct period index calculation with offset
+function getWeatherPeriodIndex(gameTime) {
+    var EPOCH_OFFSET = 2 * 3600 + 26 * 60; // 2h26m = 8760s
+    return Math.floor((gameTime - EPOCH_OFFSET) / WEATHER_PERIOD);
+}
 // =// ==================== WORDPRESS CONFIGURATION LOADING ====================
 // Configuration loaded from WordPress admin settings
 
@@ -470,8 +475,8 @@ function getWeathersAt(index) {
     var day = 984;
     var times = [0, 11 * 60 + 15, 13 * 60 + 41]; // minutes since midnight
     times.forEach(function(mins) {
-        var gameTime = day * GAME_DAY + mins * 60 - EPOCH_OFFSET;
-        var periodIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        var gameTime = day * GAME_DAY + mins * 60;
+        var periodIndex = getWeatherPeriodIndex(gameTime);
         if (index === periodIndex) {
             console.log('[DEBUG][OFFSET] Day', day, 'Time', mins, 'min (', (mins/60).toFixed(2), 'h ) => gameTime:', gameTime, 'periodIndex:', periodIndex);
             var biomeWeathers = Object.keys(BIOMES).map(function(biome) {
@@ -485,7 +490,7 @@ function getWeathersAt(index) {
 
     // --- Existing debug for day 984 area ---
     var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
-    var day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
+    var day984StartIndex = getWeatherPeriodIndex(day984StartTime);
     if (index >= day984StartIndex && index <= day984StartIndex + 20) {
         console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
         var timeFromDayStart = (index - day984StartIndex) * WEATHER_PERIOD;
