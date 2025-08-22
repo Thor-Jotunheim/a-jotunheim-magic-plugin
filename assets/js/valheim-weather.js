@@ -331,7 +331,7 @@ var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
 var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid authentic)
-var WEATHER_PERIOD = 540; // Adjusted weather period for kirilloid sync (was 666)
+var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
 
@@ -572,9 +572,20 @@ function updateWeatherTable(day) {
     
     tableBody.innerHTML = '';
     
-    // Standard day calculation (remove timing offset, try WEATHER_PERIOD adjustment)
+    // Standard day calculation (day is 1-based, so subtract 1 for 0-based calculation)
     var gameDay = day - 1; // Convert to 0-based
     var startTime = gameDay * GAME_DAY;
+    
+    // DEBUG: Log calculation for Day 984
+    if (day === 984) {
+        console.log('DEBUG Day 984 calculation:');
+        console.log('  day:', day);
+        console.log('  gameDay:', gameDay);
+        console.log('  GAME_DAY:', GAME_DAY);
+        console.log('  startTime:', startTime);
+        console.log('  WEATHER_PERIOD:', WEATHER_PERIOD);
+    }
+    
     var sunTimes = getSunTimes(day);
     var biomeKeys = Object.keys(BIOMES);
     
@@ -596,6 +607,14 @@ function updateWeatherTable(day) {
         var displayHour = Math.floor(dayProgress * 24);
         var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
         var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+        
+        // DEBUG: Log specific times for Day 984
+        if (day === 984 && (displayHour === 13 || displayHour === 11)) {
+            console.log('DEBUG Day 984 time ' + timeString + ':');
+            console.log('  gameTime:', gameTime);
+            console.log('  weatherIndex:', weatherIndex);
+            console.log('  BlackForest weather:', weathers[1]);
+        }
         
         var row = document.createElement('tr');
         var currentTime = gameTime % GAME_DAY;
