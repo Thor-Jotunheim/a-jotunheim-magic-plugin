@@ -341,7 +341,7 @@ var ENV_STATES = {
     'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
     'Misty': { emoji: '🌫️', name: 'Fog', wind: [0.0, 0.5] },
-    'DeepForest_Mist': { emoji: '🌫️', name: 'Fog', wind: [0.0, 0.5] },
+    'DeepForest_Mist': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
     'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
     'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
     'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
