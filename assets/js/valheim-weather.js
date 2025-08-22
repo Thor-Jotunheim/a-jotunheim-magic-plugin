@@ -1,7 +1,28 @@
 // ==================================
 // VALHEIM WEATHER CALENDAR WITH REAL ALGORITHM
 // ==================================
-var CURRENT_GAME_DAY = 1; // ← CHANGE THIS TO SET THE CURRENT IN-GAME DAY
+
+// SERVER START DATE - Set this to when your Valheim world started!
+// Format: new Date('YYYY-MM-DD HH:MM:SS')
+var SERVER_START_DATE = new Date('2025-08-01 19:30:00'); // ← Jotun Games server start: 8/1/25, 7:30 PM
+
+// Alternative: Use a fixed day instead of auto-calculation
+var USE_FIXED_DAY = false; // Set to true if you want to use a fixed day instead
+var FIXED_DAY = 1; // Only used if USE_FIXED_DAY is true
+
+// Calculate current in-game day based on real time elapsed
+function getCurrentGameDay() {
+    if (USE_FIXED_DAY) {
+        return FIXED_DAY;
+    }
+    
+    var now = new Date();
+    var timeElapsed = now - SERVER_START_DATE; // milliseconds
+    var daysElapsed = Math.floor(timeElapsed / (1000 * 60 * 60 * 24)); // convert to days
+    return Math.max(1, daysElapsed + 1); // Day 1 is the first day
+}
+
+var CURRENT_GAME_DAY = getCurrentGameDay();
 
 // Valheim time constants (from the actual game)
 var GAME_DAY = 1200; // Game seconds in a day
@@ -372,6 +393,8 @@ function goToCurrentDay() {
     var dayInput = document.getElementById('dayInput');
     if (!dayInput) return;
     
+    // Recalculate current day in case time has passed
+    CURRENT_GAME_DAY = getCurrentGameDay();
     dayInput.value = CURRENT_GAME_DAY;
     updateWeather();
 }
@@ -394,11 +417,29 @@ function updateWeather() {
 document.addEventListener('DOMContentLoaded', function() {
     var dayInput = document.getElementById('dayInput');
     if (dayInput) {
+        CURRENT_GAME_DAY = getCurrentGameDay(); // Refresh on page load
         dayInput.value = CURRENT_GAME_DAY;
         updateWeather();
         
+        // Update every 30 seconds, and recalculate current day every 5 minutes
+        var updateCount = 0;
         setInterval(function() {
             updateCurrentInfo(parseInt(dayInput.value));
+            updateCount++;
+            
+            // Every 10 intervals (5 minutes), recalculate the current day
+            if (updateCount >= 10) {
+                var newCurrentDay = getCurrentGameDay();
+                if (newCurrentDay !== CURRENT_GAME_DAY) {
+                    CURRENT_GAME_DAY = newCurrentDay;
+                    // If we're viewing the current day, update it
+                    if (parseInt(dayInput.value) === CURRENT_GAME_DAY - 1) {
+                        dayInput.value = CURRENT_GAME_DAY;
+                        updateWeather();
+                    }
+                }
+                updateCount = 0;
+            }
         }, 30000);
     }
 });
