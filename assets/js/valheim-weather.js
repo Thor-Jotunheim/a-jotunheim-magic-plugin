@@ -66,18 +66,20 @@ async function getCurrentGameDay() {
         if (CONFIG.manualEnabled) {
             var now = new Date();
             var timeElapsed = now - CONFIG.manualStartDate; // milliseconds
-            var daysElapsed = timeElapsed / (1000 * 60 * 60 * 24); // convert to days
-            var currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + daysElapsed));
-            updateConfigStatus('📅 Using Manual Override: Day ' + currentDay);
+            var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
+            var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1200 seconds = 20 minutes
+            var currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + gameDaysElapsed));
+            updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (based on in-game time)');
             return currentDay;
         }
         
         // Priority 3: Server Start Date (Default)
         var now = new Date();
-        var timeElapsed = now - CONFIG.serverStartDate;
-        var daysElapsed = Math.floor(timeElapsed / (1000 * 60 * 60 * 24));
-        var currentDay = Math.max(1, daysElapsed + 1);
-        updateConfigStatus('🕐 Using Server Start Date: Day ' + currentDay);
+        var timeElapsed = now - CONFIG.serverStartDate; // milliseconds
+        var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
+        var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1200 seconds = 20 minutes
+        var currentDay = Math.max(1, Math.floor(gameDaysElapsed) + 1); // Day 1 starts at server start
+        updateConfigStatus('🕐 Using Server Start Date: Day ' + currentDay + ' (based on in-game time)');
         return currentDay;
         
     } catch (error) {
