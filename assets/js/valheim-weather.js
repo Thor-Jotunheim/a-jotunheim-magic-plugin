@@ -329,11 +329,11 @@ function formatDateForInput(date) {
 
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
-// Valheim time constants (matching kirilloid website behavior)
-var GAME_DAY = 1200; // Game seconds in a day
-var WEATHER_PERIOD = 300; // Weather changes every 300 game seconds (5 real minutes)
-var WIND_PERIOD = 600; // Wind changes every 600 game seconds  
-var INTRO_DURATION = 300; // First period is always clear
+// Valheim time constants (authentic kirilloid values)
+var GAME_DAY = 1800; // Game seconds in a day (kirilloid authentic)
+var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
+var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
+var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
 
 // Weather types and their data (from actual Valheim)
 var ENV_STATES = {
@@ -449,7 +449,7 @@ function rollWeather(weathers, roll) {
 // Get weather for all biomes at specific index (exact kirilloid algorithm)
 function getWeathersAt(index) {
     if (index < INTRO_DURATION / WEATHER_PERIOD) {
-        return Object.keys(BIOMES).map(function() { return 'Clear'; });
+        return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
     }
     
     random.init(index);
