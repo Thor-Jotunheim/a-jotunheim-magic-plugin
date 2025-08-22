@@ -663,9 +663,25 @@ async function updateCurrentInfo(day) {
     if (!currentInfo) return;
     
     try {
-        // Get current game time (total seconds since server start)
-        var currentGameTime = await getCurrentGameTime();
-        var currentTimeInDay = currentGameTime % GAME_DAY;
+        // Use the same simple approach as the forecast - just use the day input value
+        var currentDay = day || parseInt(document.getElementById('dayInput').value);
+        
+        // Calculate current time within the day based on real time
+        var now = new Date();
+        var startOfDay = (currentDay - 1) * GAME_DAY;
+        
+        // Get current time within day based on configuration
+        var currentTimeInDay = 0;
+        if (CONFIG.manualEnabled && CONFIG.manualProgressionType === 'game-time') {
+            // Use game-time progression (20 min real = 1 game day)
+            var millisecondsIntoDay = (now.getTime() % (20 * 60 * 1000)); // 20 minutes per game day
+            currentTimeInDay = (millisecondsIntoDay / 1000) * (GAME_DAY / (20 * 60));
+        } else {
+            // Default to middle of day for display
+            currentTimeInDay = GAME_DAY / 2;
+        }
+        
+        var currentGameTime = startOfDay + currentTimeInDay;
         var currentWeatherIndex = Math.floor(currentGameTime / WEATHER_PERIOD);
         
         // Calculate display time (in-game time of day)

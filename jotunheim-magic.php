@@ -52,6 +52,30 @@ function jotunheim_weather_config_ajax() {
 add_action('wp_ajax_get_weather_config', 'jotunheim_weather_config_ajax');
 add_action('wp_ajax_nopriv_get_weather_config', 'jotunheim_weather_config_ajax');
 
+// Weather Calculator Shortcode
+function jotunheim_weather_calculator_shortcode($atts) {
+    // Ensure our weather script is enqueued
+    wp_enqueue_script('valheim-weather');
+    
+    ob_start();
+    ?>
+    <div id="weatherApp" style="font-family: Arial, sans-serif; background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: #ecf0f1; padding: 20px; border-radius: 10px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+        <!-- Weather Calculator will be inserted here by JavaScript -->
+    </div>
+    
+    <script>
+    // Initialize weather calculator when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof initializeWeatherCalculator === 'function') {
+            initializeWeatherCalculator();
+        }
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('valheim_weather', 'jotunheim_weather_calculator_shortcode');
+
 // Include ItemList files
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-scripts.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-interface.php');
