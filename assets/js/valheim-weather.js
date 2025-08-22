@@ -873,8 +873,11 @@ function showForecast() {
     forecastGrid.innerHTML = '';
     
     var currentDay = parseInt(document.getElementById('dayInput').value);
-    var startTime = (currentDay - 1) * GAME_DAY;
+    var startTime = (currentDay - 1) * GAME_DAY; // Start of the selected day
     var biomeKeys = Object.keys(BIOMES);
+    
+    // Calculate how many weather periods we need to cover 24 hours (1 game day)
+    var periodsPerDay = Math.ceil(GAME_DAY / WEATHER_PERIOD); // Should be about 2 periods per day (1200/666 ≈ 1.8)
     
     biomeKeys.forEach(function(biomeKey) {
         var biome = BIOMES[biomeKey];
@@ -883,9 +886,23 @@ function showForecast() {
         
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
-        for (var period = 0; period < 12; period++) {
-            var gameTime = startTime + period * WEATHER_PERIOD * 2;
-            var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+        // Show weather changes throughout the day, focusing on when weather actually changes
+        var currentWeatherIndex = Math.floor(startTime / WEATHER_PERIOD);
+        var displayedPeriods = 0;
+        var maxPeriods = 8; // Limit to 8 entries to avoid clutter
+        
+        for (var periodOffset = 0; periodOffset < periodsPerDay + 2 && displayedPeriods < maxPeriods; periodOffset++) {
+            var weatherIndex = currentWeatherIndex + periodOffset;
+            var periodStartTime = weatherIndex * WEATHER_PERIOD;
+            var periodEndTime = (weatherIndex + 1) * WEATHER_PERIOD;
+            
+            // Skip if this period is before our day starts
+            if (periodEndTime < startTime) continue;
+            
+            // Stop if we're well past the current day
+            if (periodStartTime > startTime + GAME_DAY) break;
+            
+            var gameTime = Math.max(periodStartTime, startTime); // Use start of day or period start, whichever is later
             var weathers = getWeathersAt(weatherIndex);
             var wind = getGlobalWind(gameTime);
             
@@ -893,20 +910,33 @@ function showForecast() {
             var weather = weathers[biomeIndex];
             var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
             
-            var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
+            // Calculate display time within the day
+            var timeInDay = gameTime - startTime;
+            var dayProgress = Math.max(0, Math.min(1, timeInDay / GAME_DAY));
             var displayHour = Math.floor(dayProgress * 24);
-            var timeString = String(displayHour).padStart(2, '0') + ':00';
+            var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+            var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+            
+            // Calculate end time for this weather period
+            var endTimeInDay = Math.min(GAME_DAY, periodEndTime - startTime);
+            var endDayProgress = endTimeInDay / GAME_DAY;
+            var endHour = Math.floor(endDayProgress * 24);
+            var endMinute = Math.floor((endDayProgress * 24 * 60) % 60);
+            var endTimeString = String(endHour).padStart(2, '0') + ':' + String(endMinute).padStart(2, '0');
             
             var windRange = envData.wind || [0.0, 1.0];
             var biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
-            var windPercent = Math.round(biomeWindIntensity * 100);
+            
+            var timeDisplayText = (timeString === endTimeString) ? timeString : timeString + ' - ' + endTimeString;
             
             forecastHTML += 
-                '<div style="margin: 5px 0; padding: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em;">' +
-                '<span><strong>' + timeString + '</strong></span>' +
-                '<span>' + envData.emoji + ' ' + envData.name + '</span>' +
-                '<span style="color: #b0c4de;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</span>' +
+                '<div style="margin: 5px 0; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em;">' +
+                '<span style="min-width: 80px;"><strong>' + timeDisplayText + '</strong></span>' +
+                '<span style="display: flex; align-items: center; gap: 5px;">' + envData.emoji + ' ' + envData.name + '</span>' +
+                '<span style="color: #b0c4de; text-align: right;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</span>' +
                 '</div>';
+                
+            displayedPeriods++;
         }
         
         biomeDiv.innerHTML = forecastHTML;
