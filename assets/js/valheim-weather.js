@@ -430,8 +430,8 @@ Random.prototype.rangeFloat = function(min, max) {
 
 var random = new Random(0);
 
-// Biome setup (kirilloid authentic)
-var biomeIds = ['Meadows', 'BlackForest', 'Swamp', 'Mountain', 'Plains', 'Ocean', 'Mistlands', 'Ashlands', 'DeepNorth'];
+// Biome setup (kirilloid authentic) - matching BIOMES object
+var biomeIds = ['Meadows', 'BlackForest', 'Swamp', 'Mountain', 'Plains', 'Ocean', 'Mistlands', 'Ashlands'];
 
 // Environment setup with exact kirilloid weights
 var ENV_SETUP = {
@@ -440,15 +440,14 @@ var ENV_SETUP = {
     'Swamp': [['SwampRain', 1]],
     'Mountain': [['SnowStorm', 1], ['Snow', 5]],
     'Plains': [['Heath_clear', 5], ['Misty', 1], ['LightRain', 1]],
-    'DeepNorth': [['Twilight_SnowStorm', 1], ['Twilight_Snow', 2], ['Twilight_Clear', 1]],
-    'Ashlands': [['Ashrain', 30], ['Misty', 2], ['CinderRain', 4], ['storm', 1]],
+    'Ocean': [['Rain', 1], ['LightRain', 1], ['Misty', 1], ['Clear', 10], ['ThunderStorm', 1]],
     'Mistlands': [['Clear', 15], ['Rain', 1], ['ThunderStorm', 1]],
-    'Ocean': [['Rain', 1], ['LightRain', 1], ['Misty', 1], ['Clear', 10], ['ThunderStorm', 1]]
+    'Ashlands': [['Ashrain', 30], ['Misty', 2], ['CinderRain', 4], ['storm', 1]]
 };
 
 // Constants for kirilloid algorithm
 var INTRO_WEATHER = 'ThunderStorm';
-var INTRO_DURATION = 432000; // Duration of intro weather in seconds (5 days * 86400)
+var INTRO_DURATION = 3600; // Reduced from 432000 - intro weather for first hour only (not 5 days!)
 var WIND_PERIOD = 10; // Wind changes every 10 seconds
 
 // Roll weather function (kirilloid authentic)
@@ -467,14 +466,28 @@ function rollWeather(weathers, roll) {
 
 // Get weathers at specific index (kirilloid authentic)
 function getWeathersAt(index) {
+    // Debug logging
+    console.log('getWeathersAt called with index:', index);
+    console.log('INTRO_DURATION:', INTRO_DURATION, 'WEATHER_PERIOD:', WEATHER_PERIOD);
+    console.log('Intro threshold:', INTRO_DURATION / WEATHER_PERIOD);
+    
     if (index < INTRO_DURATION / WEATHER_PERIOD) {
+        console.log('Using intro weather (ThunderStorm)');
         return biomeIds.map(function() { return INTRO_WEATHER; });
     }
+    
+    console.log('Using normal weather generation');
     random.init(index);
     var rng = random.rangeFloat(0, 1);
-    return biomeIds.map(function(biome) {
-        return rollWeather(ENV_SETUP[biome], rng);
+    console.log('RNG value:', rng);
+    
+    var results = biomeIds.map(function(biome) {
+        var weather = rollWeather(ENV_SETUP[biome], rng);
+        console.log('Biome', biome, 'got weather:', weather);
+        return weather;
     });
+    
+    return results;
 }
 
 // Wind calculation functions (kirilloid authentic)
@@ -529,9 +542,9 @@ var BIOMES = {
     'Meadows': { name: 'Meadows', icon: '⛳' },
     'BlackForest': { name: 'Black Forest', icon: '🌳' },
     'Swamp': { name: 'Swamp', icon: '🐸' },
-    'Ocean': { name: 'Ocean', icon: '🌊' },
-    'Mountain': { name: 'Mountain', icon: '🏔️' },
-    'Plains': { name: 'Plains', icon: '🌺' },
+    'Mountain': { name: 'Mountain', icon: '�️' },
+    'Plains': { name: 'Plains', icon: '�' },
+    'Ocean': { name: 'Ocean', icon: '�' },
     'Mistlands': { name: 'Mistlands', icon: '☁️' },
     'Ashlands': { name: 'Ashlands', icon: '🔥' }
 };
@@ -658,29 +671,18 @@ function createWeatherDisplay() {
 }
 
 // UI Update functions
-async function updateCurrentInfo(day) {
+function updateCurrentInfo(day) {
     var currentInfo = document.getElementById('currentInfo');
     if (!currentInfo) return;
     
     try {
-        // Use the same simple approach as the forecast - just use the day input value
+        // Use simple approach - same as forecast
         var currentDay = day || parseInt(document.getElementById('dayInput').value);
+        if (isNaN(currentDay)) currentDay = 984; // Default to configured day
         
-        // Calculate current time within the day based on real time
-        var now = new Date();
+        // Calculate current time within the day (middle of day for now)
         var startOfDay = (currentDay - 1) * GAME_DAY;
-        
-        // Get current time within day based on configuration
-        var currentTimeInDay = 0;
-        if (CONFIG.manualEnabled && CONFIG.manualProgressionType === 'game-time') {
-            // Use game-time progression (20 min real = 1 game day)
-            var millisecondsIntoDay = (now.getTime() % (20 * 60 * 1000)); // 20 minutes per game day
-            currentTimeInDay = (millisecondsIntoDay / 1000) * (GAME_DAY / (20 * 60));
-        } else {
-            // Default to middle of day for display
-            currentTimeInDay = GAME_DAY / 2;
-        }
-        
+        var currentTimeInDay = GAME_DAY / 2; // Middle of day
         var currentGameTime = startOfDay + currentTimeInDay;
         var currentWeatherIndex = Math.floor(currentGameTime / WEATHER_PERIOD);
         
