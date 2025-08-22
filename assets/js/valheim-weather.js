@@ -453,6 +453,8 @@ function getWeathersAt(index) {
         return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
     }
 
+    // Adjust epoch by subtracting 2 hours 26 minutes (8760 seconds) to align with kirilloid.ru
+    var EPOCH_OFFSET = 2 * 3600 + 26 * 60; // 2 hours 26 min = 8760 seconds
     random.init(index);
     var rng = random.rangeFloat(0, 1);
 
@@ -464,35 +466,22 @@ function getWeathersAt(index) {
         }
     }
 
-    // --- DEBUG: Print for day 984 at 00:00, 11:15, 13:41 ---
+    // --- DEBUG: Print for day 984 at 00:00, 11:15, 13:41 (with offset applied) ---
     var day = 984;
-    var times = [0, 11 * 60 + 15]; // minutes since midnight (keep previous times)
+    var times = [0, 11 * 60 + 15, 13 * 60 + 41]; // minutes since midnight
     times.forEach(function(mins) {
-        var gameTime = day * GAME_DAY + mins * 60;
+        var gameTime = day * GAME_DAY + mins * 60 - EPOCH_OFFSET;
         var periodIndex = Math.floor(gameTime / WEATHER_PERIOD);
         if (index === periodIndex) {
-            console.log('[DEBUG] Day', day, 'Time', mins, 'min (', (mins/60).toFixed(2), 'h ) => gameTime:', gameTime, 'periodIndex:', periodIndex);
+            console.log('[DEBUG][OFFSET] Day', day, 'Time', mins, 'min (', (mins/60).toFixed(2), 'h ) => gameTime:', gameTime, 'periodIndex:', periodIndex);
             var biomeWeathers = Object.keys(BIOMES).map(function(biome) {
                 var ws = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
                 var w = rollWeather(ws, rng);
-                console.log('    [DEBUG]', biome, ':', w);
+                console.log('    [DEBUG][OFFSET]', biome, ':', w);
                 return w;
             });
         }
     });
-
-    // Explicit debug for 13:41 (expected thunderstorm time)
-    var mins_1341 = 13 * 60 + 41;
-    var gameTime_1341 = day * GAME_DAY + mins_1341 * 60;
-    var periodIndex_1341 = Math.floor(gameTime_1341 / WEATHER_PERIOD);
-    if (index === periodIndex_1341) {
-        console.log('[DEBUG][EXACT 13:41] Day', day, 'Time 13:41 (', mins_1341, 'min ) => gameTime:', gameTime_1341, 'periodIndex:', periodIndex_1341);
-        Object.keys(BIOMES).forEach(function(biome) {
-            var ws = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
-            var w = rollWeather(ws, rng);
-            console.log('    [DEBUG][13:41]', biome, ':', w);
-        });
-    }
 
     // --- Existing debug for day 984 area ---
     var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
