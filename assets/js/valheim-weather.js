@@ -493,13 +493,14 @@ function formatWindDirection(angle) {
 
 // Format weather period duration in a user-friendly way
 function formatWeatherDuration(period) {
-    var durationMinutes = Math.round((WEATHER_PERIOD / 60) * 2); // Each weather period is 2 minutes real time
-    if (period === 0) {
-        return '2 min';
-    } else if (period < 6) {
-        return (period + 1) + '/12'; // Show which period of 12 total per day
+    // Each weather period is 2 hours of game time
+    var gameHours = period * 2;
+    if (gameHours === 0) {
+        return 'Start';
+    } else if (gameHours < 10) {
+        return '0' + gameHours + ':00';
     } else {
-        return (durationMinutes * (period + 1)) + ' min';
+        return gameHours + ':00';
     }
 }
 
@@ -533,16 +534,16 @@ function createWeatherDisplay() {
     
     var biomeKeys = Object.keys(BIOMES);
     
-    var tableHTML = '<table style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
+    var tableHTML = '<table style="width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
         '<thead><tr>';
     
-    // Time column header
-    tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 70px;">Time</th>';
+    // Time column header - fixed width for Safari compatibility
+    tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; width: 80px;">Time</th>';
     
     // Biome headers (horizontal text for cross-browser compatibility)
     biomeKeys.forEach(function(biomeKey) {
         var biome = BIOMES[biomeKey];
-        tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 85px;">' + 
+        tableHTML += '<th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.75em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; width: 12.5%;">' + 
             biome.icon + ' ' + biome.name + '</th>';
     });
     
