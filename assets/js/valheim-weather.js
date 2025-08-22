@@ -43,7 +43,7 @@ async function loadWordPressConfig() {
                     config.manualOverride.progression = wpConfig.data.manual_progression;
                     config.serverStartDate = wpConfig.data.server_start_date;
                     
-                    console.log('Loaded WordPress weather configuration');
+                    console.log('Loaded WordPress weather configuration:', config);
                 }
             }
         }
@@ -795,6 +795,7 @@ function updateConfigFromWordPress() {
     CONFIG.manualEnabled = config.manualOverride.enabled;
     CONFIG.manualStartDay = config.manualOverride.startDay;
     CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
+    CONFIG.manualProgressionType = config.manualOverride.progression; // Fixed variable name
     CONFIG.serverStartDate = new Date(config.serverStartDate);
     
     // Debug log
@@ -820,11 +821,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             dayInput.value = CURRENT_GAME_DAY;
             updateWeather();
         }).catch(function(error) {
-            console.log('Error getting current day, using default:', error);
-            // Fallback to a reasonable default
-            CURRENT_GAME_DAY = 983;
+            console.error('Error getting current day from server:', error);
+            // Fallback to calculating from current real-world time
+            const now = new Date();
+            const fallbackDay = Math.floor((now.getTime() - new Date('2021-02-02T00:00:00Z').getTime()) / (1000 * GAME_DAY));
+            CURRENT_GAME_DAY = fallbackDay;
             dayInput.value = CURRENT_GAME_DAY;
             updateWeather();
+            
+            // Show user that we're using fallback calculation
+            console.warn(`Using fallback calculation: Day ${CURRENT_GAME_DAY} (based on current date)`);
         });
         
         // Update every 30 seconds, and recalculate current day every 5 minutes

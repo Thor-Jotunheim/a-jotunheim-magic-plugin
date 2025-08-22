@@ -315,7 +315,7 @@ function render_weather_calendar_config_page() {
                                     <select name="manual_progression">
                                         <option value="static" <?php selected($manual_progression, 'static'); ?>>Static (no progression)</option>
                                         <option value="real-days" <?php selected($manual_progression, 'real-days'); ?>>Real Days (1 real day = 1 game day)</option>
-                                        <option value="game-time" <?php selected($manual_progression, 'game-time'); ?>>Game Time (20 min = 1 game day)</option>
+                                        <option value="game-time" <?php selected($manual_progression, 'game-time'); ?>>Game Time (30 min = 1 game day)</option>
                                     </select>
                                     <p class="description">How the day should progress over time</p>
                                 </td>
@@ -337,7 +337,7 @@ function render_weather_calendar_config_page() {
                                     <input type="datetime-local" name="server_start_date" value="<?php echo esc_attr($server_start_date); ?>" 
                                            class="regular-text">
                                     <p class="description">When your Valheim world started (Day 1)<br>
-                                    Day counting progresses based on in-game time (20 min = 1 day)</p>
+                                    Day counting progresses based on in-game time (30 min = 1 day)</p>
                                 </td>
                             </tr>
                         </table>
