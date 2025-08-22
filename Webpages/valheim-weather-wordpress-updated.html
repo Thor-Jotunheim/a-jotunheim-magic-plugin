@@ -3,57 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jotunheim Weather Forecast - Jotun Games (Real Algorithm)</title>
+    <title>Jotunheim Weather Calendar - Jotun Games (Real Algorithm)</title>
 </head>
 <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2c1810, #4a3728); color: #f5f5dc; min-height: 100vh; padding: 20px; margin: 0; box-sizing: border-box;">
 
 <div style="max-width: 1400px; margin: 0 auto; background: rgba(0, 0, 0, 0.7); border-radius: 15px; padding: 30px; border: 2px solid #8b7355;">
-    
-    <!-- ==================== WEATHER CALENDAR CONFIGURATION ==================== -->
-    <div style="background: rgba(139, 115, 85, 0.2); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 2px solid #d4af37;">
-        <h2 style="color: #ffd700; margin: 0 0 15px 0; text-align: center;">⚙️ Configuration</h2>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            <!-- API Override Configuration -->
-            <div style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 5px; border: 1px solid #8b7355;">
-                <h3 style="color: #d4af37; margin: 0 0 10px 0; font-size: 1.1em;">🔗 API Override (Priority 1)</h3>
-                <label for="apiEndpoint" style="display: block; margin-bottom: 5px; color: #f5f5dc; font-size: 0.9em;">API Endpoint URL:</label>
-                <input type="text" id="apiEndpoint" placeholder="https://your-api.com/current-day" style="width: 100%; padding: 8px; background: rgba(0, 0, 0, 0.5); color: #f5f5dc; border: 1px solid #8b7355; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box;">
-                <label style="display: block; margin-bottom: 5px; color: #f5f5dc; font-size: 0.9em;">
-                    <input type="checkbox" id="enableApi" style="margin-right: 8px;"> Enable API Override
-                </label>
-                <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">API should return JSON: {"currentDay": 123}</div>
-                <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">⚡ Cached for 4 hours to reduce API calls</div>
-                <button onclick="clearApiCache(); applyConfiguration();" style="background: #666; color: #fff; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8em; margin-top: 5px;">Clear Cache</button>
-            </div>
-            
-            <!-- Manual Day Override Configuration -->
-            <div style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 5px; border: 1px solid #8b7355;">
-                <h3 style="color: #d4af37; margin: 0 0 10px 0; font-size: 1.1em;">📅 Manual Day Override (Priority 2)</h3>
-                <label for="manualStartDay" style="display: block; margin-bottom: 5px; color: #f5f5dc; font-size: 0.9em;">Starting In-Game Day:</label>
-                <input type="number" id="manualStartDay" value="1" min="1" style="width: 100%; padding: 8px; background: rgba(0, 0, 0, 0.5); color: #f5f5dc; border: 1px solid #8b7355; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box;">
-                <label for="manualStartDate" style="display: block; margin-bottom: 5px; color: #f5f5dc; font-size: 0.9em;">Real Date/Time for That Day:</label>
-                <input type="datetime-local" id="manualStartDate" value="2025-08-01T19:30" style="width: 100%; padding: 8px; background: rgba(0, 0, 0, 0.5); color: #f5f5dc; border: 1px solid #8b7355; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box;">
-                <label style="display: block; margin-bottom: 5px; color: #f5f5dc; font-size: 0.9em;">
-                    <input type="checkbox" id="enableManual" style="margin-right: 8px;"> Enable Manual Override
-                </label>
-            </div>
-            
-            <!-- Server Start Date Configuration -->
-            <div style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 5px; border: 1px solid #8b7355;">
-                <h3 style="color: #d4af37; margin: 0 0 10px 0; font-size: 1.1em;">🕐 Server Start Date (Priority 3)</h3>
-                <label for="serverStartDate" style="display: block; margin-bottom: 5px; color: #f5f5dc; font-size: 0.9em;">Server Start Date/Time:</label>
-                <input type="datetime-local" id="serverStartDate" value="2025-08-01T19:30" style="width: 100%; padding: 8px; background: rgba(0, 0, 0, 0.5); color: #f5f5dc; border: 1px solid #8b7355; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box;">
-                <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">Default method: Day 1 = Server start date</div>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px;">
-            <button onclick="applyConfiguration()" style="background: #d4af37; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1em;">Apply Configuration</button>
-            <div id="configStatus" style="margin-top: 10px; font-size: 0.9em; color: #aaa;"></div>
-        </div>
-    </div>
-    <!-- ==================== END CONFIGURATION ==================== -->
     
     <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="font-size: 2.5em; color: #ffd700; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); margin: 0 0 10px 0;">🌦️ Jotunheim Weather Forecast</h1>
@@ -77,24 +31,10 @@
         Loading current weather information...
     </div>
 
-    <table id="weatherTable" style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
-        <thead>
-            <tr>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">Time</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">⛳ Meadows</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌳 Black Forest</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🐸 Swamp</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌊 Ocean</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🏔️ Mountain</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌺 Plains</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌫️ Mistlands</th>
-                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🔥 Ashlands</th>
-            </tr>
-        </thead>
-        <tbody id="weatherTableBody">
-            <!-- Weather data will be populated here -->
-        </tbody>
-    </table>
+    <!-- Weather Display Container (JavaScript will create the table here) -->
+    <div id="weatherDisplay">
+        <!-- Weather table will be dynamically created here -->
+    </div>
 
     <div id="forecastSection" style="margin-top: 30px; background: rgba(139, 115, 85, 0.2); padding: 20px; border-radius: 8px; border: 1px solid #8b7355; display: none;">
         <div style="font-size: 1.5em; color: #ffd700; margin-bottom: 15px; text-align: center;">24-Hour Weather Forecast</div>

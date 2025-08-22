@@ -753,6 +753,9 @@ function updateConfigFromWordPress() {
     CONFIG.manualStartDay = config.manualOverride.startDay;
     CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
     CONFIG.serverStartDate = new Date(config.serverStartDate);
+    
+    // Debug log
+    console.log('Updated CONFIG from WordPress:', CONFIG);
 }
 
 // Initialization
@@ -771,6 +774,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         getCurrentGameDay().then(function(currentDay) {
             CURRENT_GAME_DAY = currentDay;
+            dayInput.value = CURRENT_GAME_DAY;
+            updateWeather();
+        }).catch(function(error) {
+            console.log('Error getting current day, using default:', error);
+            // Fallback to a reasonable default
+            CURRENT_GAME_DAY = 983;
             dayInput.value = CURRENT_GAME_DAY;
             updateWeather();
         });
@@ -792,6 +801,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                             updateWeather();
                         }
                     }
+                }).catch(function(error) {
+                    console.log('Error updating current day:', error);
                 });
                 updateCount = 0;
             }
