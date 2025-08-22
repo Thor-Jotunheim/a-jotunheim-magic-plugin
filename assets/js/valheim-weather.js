@@ -330,8 +330,8 @@ function formatDateForInput(date) {
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
-var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid authentic)
-var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
+var GAME_DAY = 1800; // Game seconds in a day (30 minutes, Valheim authentic)
+var WEATHER_PERIOD = 10500; // Weather changes every 10500 game seconds (2 hours 55 minutes, kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
 
