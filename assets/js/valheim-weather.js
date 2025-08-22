@@ -9,7 +9,7 @@ var API_ENDPOINT = '';    // Your API URL (e.g., 'https://your-server.com/api/cu
 var MANUAL_ENABLED = false;                              // Set to true to enable manual override
 var MANUAL_START_DAY = 983;                              // What in-game day to start from
 var MANUAL_START_DATE = new Date('2025-08-22 09:00:00'); // ← SET THIS TO CURRENT DATE/TIME for Day 983 to be NOW
-var MANUAL_PROGRESSION_TYPE = 'real-days';              // How days progress: 'real-days', 'game-time', or 'static'
+var MANUAL_PROGRESSION_TYPE = 'game-time';              // How days progress: 'real-days', 'game-time', or 'static'
 // 'real-days' = 1 real day = 1 in-game day (recommended for most servers)
 // 'game-time' = 20 real minutes = 1 in-game day (true Valheim time)  
 // 'static' = Always shows MANUAL_START_DAY (no progression)
