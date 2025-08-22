@@ -622,7 +622,8 @@ function updateWeatherTable(day) {
     
     for (var period = 0; period < periodsPerDay; period++) {
         var gameTime = startTime + period * displayInterval;
-        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+    // Use global helper so the same epoch/offset is applied everywhere
+    var weatherIndex = getWeatherPeriodIndex(gameTime);
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
         
