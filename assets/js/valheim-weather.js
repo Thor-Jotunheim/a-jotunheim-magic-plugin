@@ -732,7 +732,7 @@ function updateCurrentInfo(day) {
     }
 }
 
-function updateWeatherTable(day) {
+function updateWeatherTable(day, hoursInterval) {
     var tableBody = document.getElementById('weatherTableBody');
     if (!tableBody) {
         console.error('weatherTableBody not found!');
@@ -1008,10 +1008,9 @@ function showForecast() {
         
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
-        // Sample weather every 2 hours (2/24 of a game day)
-        var hoursInterval = 2;
-        var timeInterval = (hoursInterval / 24) * GAME_DAY; // 2 hours = 1/12 of game day = 100 seconds
-        var numSamples = Math.floor(24 / hoursInterval); // 12 samples for 2-hour intervals
+        // Sample weather at the specified interval
+        var timeInterval = (hoursInterval / 24) * GAME_DAY; // Convert hours to game time
+        var numSamples = Math.floor(24 / hoursInterval); // Number of samples based on interval
         
         for (var i = 0; i < numSamples; i++) {
             var gameTime = startTime + (i * timeInterval);
@@ -1073,8 +1072,11 @@ function updateWeather() {
     if (!dayInput) return;
     
     var day = parseInt(dayInput.value);
+    var intervalSelect = document.getElementById('intervalSelect');
+    var hoursInterval = intervalSelect ? parseFloat(intervalSelect.value) : 2;
+    
     updateCurrentInfo(day);
-    updateWeatherTable(day);
+    updateWeatherTable(day, hoursInterval);
     
     var forecastSection = document.getElementById('forecastSection');
     if (forecastSection) {
@@ -1147,6 +1149,135 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 30000);
     }
 });
+
+// Initialize Weather Calculator UI
+function initializeWeatherCalculator() {
+    var weatherApp = document.getElementById('weatherApp');
+    if (!weatherApp) return;
+    
+    weatherApp.innerHTML = `
+        <h2 style="text-align: center; margin-bottom: 20px; color: #ffd700;">
+            🌦️ JOTUNHEIM WEATHER FORECAST
+        </h2>
+        <div style="text-align: center; margin-bottom: 15px;">
+            <em style="color: #bdc3c7;">Plan your Viking adventures with actual Jotunheim weather forecasts</em>
+        </div>
+        
+        <!-- Navigation Controls -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button onclick="changeDay(-1)" style="padding: 8px 16px; background: #34495e; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">← Previous</button>
+            <span style="color: #bdc3c7;">Day:</span>
+            <input type="number" id="dayInput" value="984" min="1" onchange="updateDay()" style="width: 80px; padding: 6px; background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; border-radius: 4px; text-align: center;">
+            <button onclick="changeDay(1)" style="padding: 8px 16px; background: #34495e; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">Next →</button>
+            <button onclick="goToCurrentDay()" style="padding: 8px 16px; background: #27ae60; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">Current Day</button>
+            <button onclick="showForecast()" style="padding: 8px 16px; background: #2980b9; color: #ecf0f1; border: none; border-radius: 4px; cursor: pointer;">24h Forecast</button>
+            
+            <span style="color: #bdc3c7; margin-left: 10px;">Interval:</span>
+            <select id="intervalSelect" onchange="updateInterval()" style="padding: 6px; background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; border-radius: 4px;">
+                <option value="0.5">30 minutes</option>
+                <option value="1">1 hour</option>
+                <option value="2" selected>2 hours</option>
+                <option value="3">3 hours</option>
+                <option value="4">4 hours</option>
+                <option value="6">6 hours</option>
+            </select>
+        </div>
+        
+        <!-- Current Weather Info -->
+        <div id="currentInfo" style="text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+            <strong>Day 984</strong> - Loading current weather...
+        </div>
+        
+        <!-- Weather Table -->
+        <div id="weatherDisplay" style="overflow-x: auto; margin-bottom: 20px;">
+            <!-- Table will be inserted here -->
+        </div>
+        
+        <!-- 24h Forecast -->
+        <div id="forecastDisplay" style="display: none; margin-top: 20px;">
+            <h3 style="color: #ffd700; margin-bottom: 15px;">24-Hour Weather Forecast</h3>
+            <div id="forecastGrid"></div>
+        </div>
+    `;
+    
+    // Initialize the weather display
+    loadWordPressConfig().then(function() {
+        updateWeatherDisplay();
+    });
+}
+
+// Main weather display function
+function updateWeatherDisplay(day, hoursInterval) {
+    // Get day from input or use provided/default
+    if (!day) {
+        var dayInput = document.getElementById('dayInput');
+        day = dayInput ? parseInt(dayInput.value) : 984;
+        if (isNaN(day)) day = 984;
+    }
+    
+    // Get interval from dropdown or use provided/default  
+    if (!hoursInterval) {
+        var intervalSelect = document.getElementById('intervalSelect');
+        hoursInterval = intervalSelect ? parseFloat(intervalSelect.value) : 2;
+        if (isNaN(hoursInterval)) hoursInterval = 2;
+    }
+    
+    // Update current info
+    updateCurrentInfo(day);
+    
+    // Create weather table
+    createWeatherTable();
+    
+    // Update weather table with interval-based data
+    updateWeatherTable(day, hoursInterval);
+}
+
+// Update functions for UI controls
+function updateDay() {
+    var dayInput = document.getElementById('dayInput');
+    var day = parseInt(dayInput.value);
+    if (!isNaN(day) && day > 0) {
+        updateWeatherDisplay(day);
+    }
+}
+
+function changeDay(delta) {
+    var dayInput = document.getElementById('dayInput');
+    var currentDay = parseInt(dayInput.value) || 984;
+    var newDay = Math.max(1, currentDay + delta);
+    dayInput.value = newDay;
+    updateWeatherDisplay(newDay);
+}
+
+function goToCurrentDay() {
+    getCurrentDay().then(function(day) {
+        var dayInput = document.getElementById('dayInput');
+        dayInput.value = day;
+        updateWeatherDisplay(day);
+    });
+}
+
+function showForecast() {
+    var forecastDisplay = document.getElementById('forecastDisplay');
+    var isVisible = forecastDisplay.style.display !== 'none';
+    forecastDisplay.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+        var dayInput = document.getElementById('dayInput');
+        var day = parseInt(dayInput.value) || 984;
+        update24hForecast(day);
+    }
+}
+
+function updateInterval() {
+    var intervalSelect = document.getElementById('intervalSelect');
+    var hours = parseFloat(intervalSelect.value);
+    var dayInput = document.getElementById('dayInput');
+    var day = parseInt(dayInput.value) || 984;
+    
+    // Update the weather display with the new interval
+    updateWeatherDisplay(day, hours);
+}
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
