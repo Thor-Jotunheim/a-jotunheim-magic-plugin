@@ -469,24 +469,17 @@ function getWeathersAt(index) {
         }
     }
 
-    // --- DEBUG: Print for day 984 at 00:00, 11:15, 13:41 (with offset applied) ---
-    var day = 984;
-    var times = [0, 11 * 60 + 15, 13 * 60 + 41]; // minutes since midnight
-    times.forEach(function(mins) {
-        var gameTime = day * GAME_DAY + mins * 60;
-        var periodIndex = getWeatherPeriodIndex(gameTime);
-        if (index === periodIndex) {
-            console.log('[DEBUG][OFFSET] Day', day, 'Time', mins, 'min (', (mins/60).toFixed(2), 'h ) => gameTime:', gameTime, 'periodIndex:', periodIndex);
-            var biomeWeathers = Object.keys(BIOMES).map(function(biome) {
-                var ws = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
-                var w = rollWeather(ws, rng);
-                console.log('    [DEBUG][OFFSET]', biome, ':', w);
-                return w;
-            });
-        }
-    });
+    // --- Targeted debug for Day 984 13:41 (non-spammy) ---
+    var targetDay = 984;
+    var targetMins = 13 * 60 + 41; // 13:41
+    var targetGameTime = targetDay * GAME_DAY + targetMins * 60;
+    var targetIndex = getWeatherPeriodIndex(targetGameTime);
+    if (index === targetIndex) {
+        var blackForestWeather = rollWeather(ENV_SETUP['BlackForest'] || ENV_SETUP['Meadows'], rng);
+        console.log('[DEBUG][TARGET] day=984 time=13:41 gameTime=' + targetGameTime + ' periodIndex=' + targetIndex + ' seed=' + targetIndex + ' rng=' + rng.toFixed(6) + ' BlackForest=' + blackForestWeather);
+    }
 
-    // --- Existing debug for day 984 area ---
+    // --- Existing debug for day 984 area (reduced verbosity) ---
     var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
     var day984StartIndex = getWeatherPeriodIndex(day984StartTime);
     if (index >= day984StartIndex && index <= day984StartIndex + 20) {
