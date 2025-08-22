@@ -583,8 +583,46 @@ function updateWeatherTable(day) {
     var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
     var displayInterval = GAME_DAY / periodsPerDay; // Game seconds per period
     
+    // Generate time entries: regular intervals + exact weather change moments
+    var timeEntries = [];
+    
+    // Add regular interval entries
     for (var period = 0; period < periodsPerDay; period++) {
         var gameTime = startTime + period * displayInterval;
+        timeEntries.push({
+            gameTime: gameTime,
+            type: 'regular',
+            period: period
+        });
+    }
+    
+    // Add exact weather change entries
+    var maxWeatherPeriods = Math.ceil(GAME_DAY / WEATHER_PERIOD) + 1;
+    for (var wp = 0; wp < maxWeatherPeriods; wp++) {
+        var weatherChangeTime = startTime + wp * WEATHER_PERIOD;
+        if (weatherChangeTime >= startTime && weatherChangeTime < startTime + GAME_DAY) {
+            // Check if we already have a regular entry very close to this time
+            var hasNearbyEntry = timeEntries.some(function(entry) {
+                return Math.abs(entry.gameTime - weatherChangeTime) < 30; // Within 30 seconds
+            });
+            
+            if (!hasNearbyEntry) {
+                timeEntries.push({
+                    gameTime: weatherChangeTime,
+                    type: 'weather_change',
+                    weatherPeriod: wp
+                });
+            }
+        }
+    }
+    
+    // Sort all entries by time
+    timeEntries.sort(function(a, b) { return a.gameTime - b.gameTime; });
+    
+    // Display all entries
+    for (var i = 0; i < timeEntries.length; i++) {
+        var entry = timeEntries[i];
+        var gameTime = entry.gameTime;
         var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
         var weathers = getWeathersAt(weatherIndex);
         var wind = getGlobalWind(gameTime);
@@ -611,7 +649,12 @@ function updateWeatherTable(day) {
             row.style.background = 'rgba(255, 165, 0, 0.3)';
             row.style.color = '#ffa500';
             row.style.fontWeight = 'bold';
-        } else if (period % 2 === 0) {
+        } else if (entry.type === 'weather_change') {
+            // Weather change entries get special highlighting
+            row.style.background = 'rgba(100, 200, 255, 0.2)';
+            row.style.border = '1px solid #64c8ff';
+            specialNote = 'weather';
+        } else if (i % 2 === 0) {
             row.style.background = 'rgba(255, 255, 255, 0.05)';
         }
         
@@ -621,7 +664,7 @@ function updateWeatherTable(day) {
         
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            timeString;
+            (entry.type === 'weather_change' ? timeString + '<br><small>weather</small>' : timeString);
         row.appendChild(timeCell);
         
         // Weather for each biome
