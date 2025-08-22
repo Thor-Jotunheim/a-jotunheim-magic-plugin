@@ -9,9 +9,7 @@ let config = {
     },
     manualOverride: {
         enabled: false,
-var WEATHER_PERIOD = 1800; // Weather changes every 1800 game seconds (30 real minutes)
-var WIND_PERIOD = 2400; // Wind changes every 2400 game seconds  
-var INTRO_DURATION = 1800; // First period is always clear     startDay: 1,
+        startDay: 1,
         startDate: '2025-08-22T09:00',
         progression: 'game-time'  // 'static', 'real-days', or 'game-time'
     },
