@@ -187,9 +187,9 @@ async function getCurrentGameDay() {
                 currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + realDaysElapsed));
                 updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (real-time progression)');
             } else if (CONFIG.manualProgressionType === 'game-time') {
-                // 20 minutes real time = 1 in-game day
+                // 30 minutes real time = 1 in-game day (GAME_DAY = 1800 seconds)
                 var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
-                var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1200 seconds = 20 minutes
+                var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1800 seconds = 30 minutes
                 currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + gameDaysElapsed));
                 updateConfigStatus('📅 Using Manual Override: Day ' + currentDay + ' (in-game time progression)');
             } else {
@@ -205,7 +205,7 @@ async function getCurrentGameDay() {
         var now = new Date();
         var timeElapsed = now - CONFIG.serverStartDate; // milliseconds
         var gameSecondsElapsed = timeElapsed / 1000; // convert to seconds
-        var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1200 seconds = 20 minutes
+        var gameDaysElapsed = gameSecondsElapsed / GAME_DAY; // GAME_DAY = 1800 seconds = 30 minutes
         var currentDay = Math.max(1, Math.floor(gameDaysElapsed) + 1); // Day 1 starts at server start
         updateConfigStatus('🕐 Using Server Start Date: Day ' + currentDay + ' (based on in-game time)');
         return currentDay;
@@ -330,7 +330,7 @@ function formatDateForInput(date) {
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (authentic kirilloid values)
-var GAME_DAY = 1200; // Game seconds in a day (20 minutes real time, kirilloid authentic)
+var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid authentic)
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
@@ -455,14 +455,15 @@ function getWeathersAt(index) {
     random.init(index);
     var rng = random.rangeFloat(0, 1);
     
-    // Debug log for Day 984 area (around index 2659-2661)
-    var day984StartIndex = Math.floor(984 * GAME_DAY / WEATHER_PERIOD);
-    if (index >= day984StartIndex && index <= day984StartIndex + 10) {
-        console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
-        console.log('  Time offset from day start: ' + ((index - day984StartIndex) * WEATHER_PERIOD) + ' seconds');
-        var hours = Math.floor(((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24);
-        var minutes = Math.floor((((index - day984StartIndex) * WEATHER_PERIOD) / 3600 * 24 % 1) * 60);
-        console.log('  Approximate time: ' + hours + ':' + String(minutes).padStart(2, '0'));
+    // Debug log for Day 984 area (around index 2659-2661) with corrected timing
+    var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
+    var day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
+    if (index >= day984StartIndex && index <= day984StartIndex + 20) {
+        console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
+        var timeFromDayStart = (index - day984StartIndex) * WEATHER_PERIOD;
+        var hours = Math.floor((timeFromDayStart / GAME_DAY) * 24);
+        var minutes = Math.floor(((timeFromDayStart / GAME_DAY) * 24 % 1) * 60);
+        console.log('  Time from day 984 start: ' + timeFromDayStart + ' seconds = ' + hours + ':' + String(minutes).padStart(2, '0'));
     }
     
     return Object.keys(BIOMES).map(function(biome) {
@@ -470,7 +471,7 @@ function getWeathersAt(index) {
         var weather = rollWeather(biomeWeathers, rng);
         
         // Debug for Day 984
-        if (index >= day984StartIndex && index <= day984StartIndex + 10) {
+        if (index >= day984StartIndex && index <= day984StartIndex + 20) {
             console.log('    ' + biome + ': ' + weather);
         }
         
@@ -526,8 +527,8 @@ function formatWindWithSymbol(angle, intensity) {
 // Get sunrise/sunset times (Valheim uses 15% and 85% of day)
 function getSunTimes(day) {
     return {
-        sunrise: GAME_DAY * 0.15,
-        sunset: GAME_DAY * 0.85
+        sunrise: GAME_DAY * 0.15, // 15% through the day (270 seconds into the day with GAME_DAY=1800)
+        sunset: GAME_DAY * 0.85    // 85% through the day (1530 seconds into the day with GAME_DAY=1800)
     };
 }
 
