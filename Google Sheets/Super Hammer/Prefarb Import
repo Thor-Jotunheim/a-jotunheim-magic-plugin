@@ -1,0 +1,85 @@
+function doGet() {
+  var pageURL = "https://valheim-modding.github.io/Jotunn/data/prefabs/prefab-list.html";
+  var response = UrlFetchApp.fetch(pageURL);
+  var content = response.getContentText();
+  
+  // Target only the first column (Name column) of each table row
+  // This regex captures the first <td> content after each <tr>
+  var regex = /<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>/g;
+  var data = [];
+  var match;
+  
+  while ((match = regex.exec(content)) !== null) {
+    var prefabName = match[1].trim();
+    
+    // Basic validation - just make sure it's not empty and doesn't contain HTML
+    if (prefabName && 
+        prefabName.length > 0 && 
+        !prefabName.includes('<') &&
+        !prefabName.includes('>')) {
+      
+      data.push([prefabName]);
+      
+      // Debug first 10 prefabs
+      if (data.length <= 10) {
+        console.log("Prefab " + data.length + ":", prefabName);
+      }
+    }
+  }
+  
+  console.log("Total prefabs imported:", data.length);
+  
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New Prefabs");
+  var numRows = data.length;
+  
+  if (numRows > 0) {
+    var range = sheet.getRange("B4:B" + (numRows + 3));
+    range.clearContent();
+    range.setValues(data);
+    createFilter();
+  }
+}
+
+function createFilter() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("New Prefabs");
+
+  // Remove existing filters
+  var filter = sheet.getFilter();
+  if (filter !== null) {
+    filter.remove();
+  }
+
+  // Get the data range for columns A and B
+  var rangeA = sheet.getRange("A4:A");
+  var rangeB = sheet.getRange("B4:B");
+
+  var valuesA = rangeA.getValues();
+  var valuesB = rangeB.getValues();
+
+  // Remove duplicates in column B based on column A
+  for (var i = 0; i < valuesB.length; i++) {
+    var valueB = valuesB[i][0];
+    if (valueB !== "") { // Skip empty cells in column B
+      for (var j = 0; j < valuesA.length; j++) {
+        if (valueB === valuesA[j][0]) {
+          // Clear entire row in column B if duplicate is found in column A
+          rangeB.offset(i, 0, 1, 1).clearContent();
+          break; // Exit inner loop after clearing the row
+        }
+      }
+    }
+  }
+
+  // Create a new filter in Column B with sorting
+  var lastRow = sheet.getLastRow();
+  var newRange = sheet.getRange("B3:B" + lastRow);
+  var newFilter = newRange.createFilter();
+
+  // Apply the filter to select all data in column B and sort in ascending order
+  var criteria = SpreadsheetApp.newFilterCriteria()
+    .whenFormulaSatisfied("=NOT(ISBLANK(B:B))")
+    .setHiddenValues([''])
+    .build();
+  newFilter.setColumnFilterCriteria(2, criteria); // Adjust column index to 2 for column B
+}

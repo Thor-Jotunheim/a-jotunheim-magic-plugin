@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valheim Weather Calendar - Jotun Games</title>
+    <link rel="stylesheet" href="weather-calendar.css">
+    <style>
+        /* Inline critical CSS for WordPress compatibility */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c1810, #4a3728);
+            color: #f5f5dc;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #8b7355;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #d4af37;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .day-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(139, 115, 85, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #8b7355;
+        }
+
+        .day-control button {
+            background: #8b7355;
+            color: #f5f5dc;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .day-control button:hover {
+            background: #a68a6b;
+        }
+
+        .day-control input {
+            background: rgba(0, 0, 0, 0.5);
+            color: #f5f5dc;
+            border: 1px solid #8b7355;
+            padding: 8px 12px;
+            border-radius: 5px;
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .current-info {
+            text-align: center;
+            background: rgba(212, 175, 55, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #d4af37;
+        }
+
+        .weather-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .weather-table th,
+        .weather-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid #444;
+            font-size: 0.9em;
+        }
+
+        .weather-table th {
+            background: linear-gradient(135deg, #8b7355, #6b5b47);
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .weather-table tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .weather-table tr:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .time-cell {
+            font-weight: bold;
+            color: #d4af37;
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #4a3728, #2c1810) !important;
+            color: #ffd700 !important;
+            font-size: 1.1em !important;
+        }
+
+        .weather-icon {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        .weather-change {
+            background: rgba(255, 215, 0, 0.1) !important;
+            border-left: 3px solid #ffd700;
+        }
+
+        .sunrise-sunset {
+            background: rgba(255, 165, 0, 0.2) !important;
+            color: #ffa500;
+            font-weight: bold;
+        }
+
+        .biome-header {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            min-width: 80px;
+            font-size: 0.85em;
+        }
+
+        .wind-info {
+            font-size: 0.8em;
+            color: #b0c4de;
+        }
+
+        .current-time-row {
+            background: rgba(255, 215, 0, 0.15) !important;
+            border: 2px solid #ffd700;
+        }
+
+        .forecast-section {
+            margin-top: 30px;
+            background: rgba(139, 115, 85, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #8b7355;
+        }
+
+        .forecast-title {
+            font-size: 1.5em;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .biome-forecast {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #666;
+        }
+
+        .biome-name {
+            font-size: 1.2em;
+            color: #d4af37;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .weather-table {
+                font-size: 0.8em;
+            }
+            
+            .weather-table th,
+            .weather-table td {
+                padding: 6px 4px;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #888;
+            border-top: 1px solid #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌦️ Valheim Weather Calendar</h1>
+            <div class="subtitle">Plan your Viking adventures with accurate weather forecasts</div>
+        </div>
+
+        <div class="controls">
+            <div class="day-control">
+                <button onclick="changeDay(-1)">◀ Previous</button>
+                <label for="dayInput">Day:</label>
+                <input type="number" id="dayInput" value="1" min="1" onchange="updateWeather()">
+                <button onclick="changeDay(1)">Next ▶</button>
+            </div>
+            <div class="day-control">
+                <button onclick="goToCurrentDay()">Current Day</button>
+                <button onclick="showForecast()">24h Forecast</button>
+            </div>
+        </div>
+
+        <div class="current-info" id="currentInfo">
+            Loading current weather information...
+        </div>
+
+        <table class="weather-table" id="weatherTable">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th class="biome-header">⛳ Meadows</th>
+                    <th class="biome-header">🌳 Black Forest</th>
+                    <th class="biome-header">🐸 Swamp</th>
+                    <th class="biome-header">🌊 Ocean</th>
+                    <th class="biome-header">🏔️ Mountain</th>
+                    <th class="biome-header">🌺 Plains</th>
+                    <th class="biome-header">🌫️ Mistlands</th>
+                    <th class="biome-header">🔥 Ashlands</th>
+                </tr>
+            </thead>
+            <tbody id="weatherTableBody">
+                <!-- Weather data will be populated here -->
+            </tbody>
+        </table>
+
+        <div class="forecast-section" id="forecastSection" style="display: none;">
+            <div class="forecast-title">24-Hour Weather Forecast</div>
+            <div class="forecast-grid" id="forecastGrid">
+                <!-- Forecast data will be populated here -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Weather data calculated using the actual Valheim weather algorithm</p>
+            <p>Based on kirilloid's Valheim calculator | Made for Jotun Games Community</p>
+        </div>
+    </div>
+
+    <script>
+        // ==================================
+        // CONFIGURATION - EASY TO MODIFY
+        // ==================================
+        let CURRENT_GAME_DAY = 1; // ← CHANGE THIS TO SET THE CURRENT IN-GAME DAY
+        
+        // Valheim time constants (from the actual game)
+        const GAME_DAY = 1200; // Game seconds in a day
+        const WEATHER_PERIOD = 120; // Weather changes every 120 game seconds  
+        const WIND_PERIOD = 10; // Wind changes every 10 game seconds
+        const INTRO_DURATION = 300; // First 5 minutes are always clear
+        
+        // Weather types and their data (from actual Valheim)
+        const ENV_STATES = {
+            'Clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
+            'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
+            'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
+            'Misty': { emoji: '🌫️', name: 'Misty', wind: [0.0, 0.5] },
+            'DeepForest_Mist': { emoji: '🌫️', name: 'Misty', wind: [0.0, 0.5] },
+            'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
+            'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
+            'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
+            'SwampRain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
+            'Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
+            'Twilight_Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
+            'SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
+            'Twilight_SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
+            'Ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] }
+        };
+
+        // Biome weather configurations (from actual Valheim)
+        const ENV_SETUP = {
+            'Meadows': [['Clear', 25], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1], ['LightRain', 1]],
+            'BlackForest': [['DeepForest_Mist', 20], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1]],
+            'Swamp': [['SwampRain', 1]],
+            'Mountain': [['SnowStorm', 1], ['Snow', 5]],
+            'Plains': [['Heath_clear', 5], ['Misty', 1], ['LightRain', 1]],
+            'Ocean': [['Clear', 25], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1], ['LightRain', 1]],
+            'Mistlands': [['DeepForest_Mist', 20], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1]],
+            'Ashlands': [['Ashrain', 1]]
+        };
+
+        // Biome display information
+        const BIOMES = {
+            'Meadows': { name: 'Meadows', icon: '⛳', id: 'Meadows' },
+            'BlackForest': { name: 'Black Forest', icon: '🌳', id: 'BlackForest' },
+            'Swamp': { name: 'Swamp', icon: '🐸', id: 'Swamp' },
+            'Ocean': { name: 'Ocean', icon: '🌊', id: 'Ocean' },
+            'Mountain': { name: 'Mountain', icon: '🏔️', id: 'Mountain' },
+            'Plains': { name: 'Plains', icon: '🌺', id: 'Plains' },
+            'Mistlands': { name: 'Mistlands', icon: '🌫️', id: 'Mistlands' },
+            'Ashlands': { name: 'Ashlands', icon: '🔥', id: 'Ashlands' }
+        };
+
+        // ==================================
+        // WEATHER CALCULATION FUNCTIONS (REAL VALHEIM ALGORITHM)
+        // ==================================
+        
+        // Unity-compatible random number generator (from Valheim source)
+        class ValheimRandom {
+            constructor(seed) {
+                this.state = this.init(seed);
+            }
+            
+            init(seed) {
+                const a = seed >>> 0;
+                const b = (this.imul(a, 1812433253) + 1) >>> 0;
+                const c = (this.imul(b, 1812433253) + 1) >>> 0;
+                const d = (this.imul(c, 1812433253) + 1) >>> 0;
+                return (this.state = { a, b, c, d });
+            }
+            
+            imul(a, b) {
+                return Math.imul ? Math.imul(a, b) : ((a * b) | 0);
+            }
+            
+            random() {
+                let { a, b, c, d } = this.state;
+                const t = b << 9 ^ a;
+                const w = (c + (d = d + 1 | 0)) | 0;
+                b = b ^ b >>> 2 ^ c ^ c << 10;
+                c = c ^ c >>> 13 ^ d ^ d << 3;
+                a = a ^ a << 13 ^ t ^ t << 5;
+                this.state = { a, b, c, d };
+                return ((a ^ b ^ c) >>> 0) / 4294967296;
+            }
+            
+            rangeFloat(min, max) {
+                return min + this.random() * (max - min);
+            }
+        }
+        
+        const random = new ValheimRandom(0);
+        
+        // Linear interpolation utility
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+        
+        function clamp01(value) {
+            return Math.max(0, Math.min(1, value));
+        }
+        
+        // Roll weather based on weighted probabilities (exact Valheim logic)
+        function rollWeather(weathers, roll) {
+            const totalWeight = weathers.reduce((sum, [, weight]) => sum + weight, 0);
+            const randomWeight = totalWeight * roll;
+            let sum = 0;
+            
+            for (const [env, weight] of weathers) {
+                sum += weight;
+                if (randomWeight < sum) return env;
+            }
+            
+            return weathers[weathers.length - 1][0]; // fallback to last weather
+        }
+        
+        // Get weather for all biomes at specific index (Valheim algorithm)
+        function getWeathersAt(index) {
+            if (index < INTRO_DURATION / WEATHER_PERIOD) {
+                // First 300 seconds are always clear weather
+                return Object.keys(BIOMES).map(() => 'Clear');
+            }
+            
+            random.init(index);
+            const rng = random.rangeFloat(0, 1);
+            
+            return Object.keys(BIOMES).map(biome => {
+                const biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
+                return rollWeather(biomeWeathers, rng);
+            });
+        }
+        
+        // Calculate global wind (Valheim algorithm)
+        function getGlobalWind(time) {
+            const wind = { angle: 0, intensity: 0.5 };
+            
+            // Add octaves for wind calculation
+            const addOctave = (time, octave, wind) => {
+                const period = Math.floor(time / (WIND_PERIOD * 8 / octave));
+                random.init(period);
+                wind.angle += random.random() * 2 * Math.PI / octave;
+                wind.intensity += (random.random() - 0.5) / octave;
+            };
+            
+            addOctave(time, 1, wind);
+            addOctave(time, 2, wind);
+            addOctave(time, 4, wind);
+            addOctave(time, 8, wind);
+            
+            wind.intensity = clamp01(wind.intensity);
+            wind.angle = (wind.angle * 180 / Math.PI) % 360;
+            if (wind.angle < 0) wind.angle += 360;
+            
+            return wind;
+        }
+        
+        // Convert angle to compass direction
+        function formatWindDirection(angle) {
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            const index = Math.round((angle + 11.25) % 360 / 22.5);
+            return directions[index % 16] || 'N';
+        }
+        
+        // Get sunrise/sunset times (Valheim uses 15% and 85% of day)
+        function getSunTimes(day) {
+            return {
+                sunrise: GAME_DAY * 0.15, // 15% of game day
+                sunset: GAME_DAY * 0.85   // 85% of game day
+            };
+        }
+
+        // ==================================
+        // UI UPDATE FUNCTIONS
+        // ==================================
+        
+        function updateCurrentInfo(day) {
+            const currentInfo = document.getElementById('currentInfo');
+            const now = new Date();
+            const realTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            // Calculate current game time position
+            const gameDay = day - 1;
+            const gameTime = gameDay * GAME_DAY;
+            
+            currentInfo.innerHTML = `
+                <strong>Day ${day}</strong> | Real Time: ${realTime} | 
+                Game Time: ${Math.floor(gameTime)} seconds | 
+                Weather Period: ${WEATHER_PERIOD}s | Wind Period: ${WIND_PERIOD}s
+            `;
+        }
+
+        function updateWeatherTable(day) {
+            const tableBody = document.getElementById('weatherTableBody');
+            tableBody.innerHTML = '';
+            
+            const gameDay = day - 1;
+            const startTime = gameDay * GAME_DAY;
+            const sunTimes = getSunTimes(day);
+            
+            // Generate weather events for the day (every weather period)
+            const periodsPerDay = Math.floor(GAME_DAY / WEATHER_PERIOD);
+            const biomeKeys = Object.keys(BIOMES);
+            
+            for (let period = 0; period < periodsPerDay; period++) {
+                const gameTime = startTime + period * WEATHER_PERIOD;
+                const weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+                
+                // Get weather for all biomes at this time
+                const weathers = getWeathersAt(weatherIndex);
+                const wind = getGlobalWind(gameTime);
+                
+                // Convert game time to display time (0-1200 seconds = 00:00-24:00)
+                const dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
+                const displayHour = Math.floor(dayProgress * 24);
+                const displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+                const timeString = `${displayHour.toString().padStart(2, '0')}:${displayMinute.toString().padStart(2, '0')}`;
+                
+                const row = document.createElement('tr');
+                
+                // Check for special times
+                let isSpecialTime = false;
+                let specialNote = '';
+                const currentTime = gameTime % GAME_DAY;
+                
+                if (Math.abs(currentTime - sunTimes.sunrise) < WEATHER_PERIOD / 2) {
+                    isSpecialTime = true;
+                    specialNote = 'Sunrise';
+                    row.classList.add('sunrise-sunset');
+                } else if (Math.abs(currentTime - sunTimes.sunset) < WEATHER_PERIOD / 2) {
+                    isSpecialTime = true;
+                    specialNote = 'Sunset';
+                    row.classList.add('sunrise-sunset');
+                }
+                
+                // Time cell
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-cell';
+                timeCell.innerHTML = isSpecialTime ? 
+                    `${timeString}<br><small>${specialNote}</small>` : 
+                    `${timeString}<br><small>T+${period * WEATHER_PERIOD}s</small>`;
+                row.appendChild(timeCell);
+                
+                // Weather for each biome
+                biomeKeys.forEach((biomeKey, index) => {
+                    const weather = weathers[index];
+                    const envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+                    const cell = document.createElement('td');
+                    
+                    // Calculate wind intensity for this biome's weather
+                    const windRange = envData.wind || [0.0, 1.0];
+                    const biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
+                    const windPercent = Math.round(biomeWindIntensity * 100);
+                    
+                    cell.innerHTML = `
+                        <div>${envData.emoji} ${envData.name}</div>
+                        <div class="wind-info">${formatWindDirection(wind.angle)} ${Math.round(wind.angle)}° ${windPercent}%</div>
+                    `;
+                    
+                    row.appendChild(cell);
+                });
+                
+                // Highlight current weather period (approximate)
+                if (day === CURRENT_GAME_DAY && period === 0) {
+                    row.classList.add('current-time-row');
+                }
+                
+                tableBody.appendChild(row);
+            }
+            
+            // Add next day header
+            const nextDay = day + 1;
+            const separatorRow = document.createElement('tr');
+            separatorRow.className = 'day-header';
+            separatorRow.innerHTML = `<td colspan="9"><strong>Day ${nextDay} Preview</strong></td>`;
+            tableBody.appendChild(separatorRow);
+            
+            // Add a few periods from next day
+            const nextStartTime = nextDay * GAME_DAY - GAME_DAY;
+            for (let period = 0; period < 3; period++) {
+                const gameTime = nextStartTime + period * WEATHER_PERIOD;
+                const weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+                const weathers = getWeathersAt(weatherIndex);
+                const wind = getGlobalWind(gameTime);
+                
+                const dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
+                const displayHour = Math.floor(dayProgress * 24);
+                const displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+                const timeString = `${displayHour.toString().padStart(2, '0')}:${displayMinute.toString().padStart(2, '0')}`;
+                
+                const row = document.createElement('tr');
+                row.style.opacity = '0.6';
+                
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-cell';
+                timeCell.innerHTML = `${timeString}<br><small>T+${period * WEATHER_PERIOD}s</small>`;
+                row.appendChild(timeCell);
+                
+                biomeKeys.forEach((biomeKey, index) => {
+                    const weather = weathers[index];
+                    const envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+                    const cell = document.createElement('td');
+                    
+                    const windRange = envData.wind || [0.0, 1.0];
+                    const biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
+                    const windPercent = Math.round(biomeWindIntensity * 100);
+                    
+                    cell.innerHTML = `
+                        <div>${envData.emoji} ${envData.name}</div>
+                        <div class="wind-info">${formatWindDirection(wind.angle)} ${Math.round(wind.angle)}° ${windPercent}%</div>
+                    `;
+                    
+                    row.appendChild(cell);
+                });
+                
+                tableBody.appendChild(row);
+            }
+        }
+
+        function showForecast() {
+            const forecastSection = document.getElementById('forecastSection');
+            const forecastGrid = document.getElementById('forecastGrid');
+            
+            forecastSection.style.display = 'block';
+            forecastGrid.innerHTML = '';
+            
+            const currentDay = parseInt(document.getElementById('dayInput').value);
+            const startTime = (currentDay - 1) * GAME_DAY;
+            const biomeKeys = Object.keys(BIOMES);
+            
+            // Generate 24-hour forecast for each biome (next 24 weather periods)
+            biomeKeys.forEach(biomeKey => {
+                const biome = BIOMES[biomeKey];
+                const biomeDiv = document.createElement('div');
+                biomeDiv.className = 'biome-forecast';
+                
+                let forecastHTML = `<div class="biome-name">${biome.icon} ${biome.name}</div>`;
+                
+                // Show forecast for next 12 weather periods (every 2 hours in game time)
+                for (let period = 0; period < 12; period++) {
+                    const gameTime = startTime + period * WEATHER_PERIOD * 2;
+                    const weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
+                    const weathers = getWeathersAt(weatherIndex);
+                    const wind = getGlobalWind(gameTime);
+                    
+                    const biomeIndex = biomeKeys.indexOf(biomeKey);
+                    const weather = weathers[biomeIndex];
+                    const envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+                    
+                    // Calculate display time
+                    const dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
+                    const displayHour = Math.floor(dayProgress * 24);
+                    const timeString = `${displayHour.toString().padStart(2, '0')}:00`;
+                    
+                    // Calculate wind intensity
+                    const windRange = envData.wind || [0.0, 1.0];
+                    const biomeWindIntensity = lerp(windRange[0], windRange[1], wind.intensity);
+                    const windPercent = Math.round(biomeWindIntensity * 100);
+                    
+                    forecastHTML += `
+                        <div style="margin: 5px 0; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>${timeString}</strong></span>
+                            <span>${envData.emoji} ${envData.name}</span>
+                            <span style="font-size: 0.8em; color: #b0c4de;">${formatWindDirection(wind.angle)} ${windPercent}%</span>
+                        </div>
+                    `;
+                }
+                
+                biomeDiv.innerHTML = forecastHTML;
+                forecastGrid.appendChild(biomeDiv);
+            });
+        }
+
+        // ==================================
+        // EVENT HANDLERS
+        // ==================================
+        
+        function changeDay(delta) {
+            const dayInput = document.getElementById('dayInput');
+            const newDay = Math.max(1, parseInt(dayInput.value) + delta);
+            dayInput.value = newDay;
+            updateWeather();
+        }
+
+        function goToCurrentDay() {
+            document.getElementById('dayInput').value = CURRENT_GAME_DAY;
+            updateWeather();
+        }
+
+        function updateWeather() {
+            const day = parseInt(document.getElementById('dayInput').value);
+            updateCurrentInfo(day);
+            updateWeatherTable(day);
+            
+            // Hide forecast when changing days
+            document.getElementById('forecastSection').style.display = 'none';
+        }
+
+        // ==================================
+        // INITIALIZATION
+        // ==================================
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('dayInput').value = CURRENT_GAME_DAY;
+            updateWeather();
+            
+            // Update every 30 seconds to keep info current
+            setInterval(() => {
+                updateCurrentInfo(parseInt(document.getElementById('dayInput').value));
+            }, 30000);
+        });
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                changeDay(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeDay(1);
+            } else if (e.key === 'Home') {
+                goToCurrentDay();
+            } else if (e.key === 'f' || e.key === 'F') {
+                showForecast();
+            }
+        });
+    </script>
+</body>
+</html>

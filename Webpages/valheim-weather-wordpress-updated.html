@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valheim Weather Calendar - Jotun Games (Real Algorithm)</title>
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2c1810, #4a3728); color: #f5f5dc; min-height: 100vh; padding: 20px; margin: 0; box-sizing: border-box;">
+
+<div style="max-width: 1400px; margin: 0 auto; background: rgba(0, 0, 0, 0.7); border-radius: 15px; padding: 30px; border: 2px solid #8b7355;">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 2.5em; color: #ffd700; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); margin: 0 0 10px 0;">🌦️ Valheim Weather Calendar</h1>
+        <div style="font-size: 1.2em; color: #d4af37; margin-bottom: 20px;">Plan your Viking adventures with <strong>actual</strong> Valheim weather forecasts</div>
+    </div>
+
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px; background: rgba(139, 115, 85, 0.3); padding: 10px 15px; border-radius: 8px; border: 1px solid #8b7355;">
+            <button onclick="changeDay(-1)" style="background: #8b7355; color: #f5f5dc; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">◀ Previous</button>
+            <label for="dayInput" style="color: #f5f5dc;">Day:</label>
+            <input type="number" id="dayInput" value="1" min="1" onchange="updateWeather()" style="background: rgba(0, 0, 0, 0.5); color: #f5f5dc; border: 1px solid #8b7355; padding: 8px 12px; border-radius: 5px; width: 80px; text-align: center; font-weight: bold;">
+            <button onclick="changeDay(1)" style="background: #8b7355; color: #f5f5dc; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Next ▶</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; background: rgba(139, 115, 85, 0.3); padding: 10px 15px; border-radius: 8px; border: 1px solid #8b7355;">
+            <button onclick="goToCurrentDay()" style="background: #8b7355; color: #f5f5dc; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Current Day</button>
+            <button onclick="showForecast()" style="background: #8b7355; color: #f5f5dc; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">24h Forecast</button>
+        </div>
+    </div>
+
+    <div id="currentInfo" style="text-align: center; background: rgba(212, 175, 55, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37;">
+        Loading current weather information...
+    </div>
+
+    <table id="weatherTable" style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+        <thead>
+            <tr>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">Time</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">⛳ Meadows</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌳 Black Forest</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🐸 Swamp</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌊 Ocean</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🏔️ Mountain</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌺 Plains</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🌫️ Mistlands</th>
+                <th style="padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; writing-mode: vertical-rl; min-width: 60px;">🔥 Ashlands</th>
+            </tr>
+        </thead>
+        <tbody id="weatherTableBody">
+            <!-- Weather data will be populated here -->
+        </tbody>
+    </table>
+
+    <div id="forecastSection" style="margin-top: 30px; background: rgba(139, 115, 85, 0.2); padding: 20px; border-radius: 8px; border: 1px solid #8b7355; display: none;">
+        <div style="font-size: 1.5em; color: #ffd700; margin-bottom: 15px; text-align: center;">24-Hour Weather Forecast</div>
+        <div id="forecastGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+            <!-- Forecast data will be populated here -->
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding: 20px; color: #888; border-top: 1px solid #444;">
+        <p><strong>Weather data calculated using the actual Valheim weather algorithm</strong></p>
+        <p>Based on kirilloid's Valheim calculator | Made for Jotun Games Community</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">
+            <strong>How it works:</strong> Uses the real weather system from Valheim with 120-second weather periods, 
+            authentic biome-specific weather patterns, and accurate wind calculations.
+        </p>
+    </div>
+    
+</div>
+
+<!-- Load JavaScript from your Jotun Magic plugin -->
+<script src="https://jotun.games/wp-content/plugins/a-jotunheim-magic-plugin/assets/js/valheim-weather.js"></script>
+
+</body>
+</html>

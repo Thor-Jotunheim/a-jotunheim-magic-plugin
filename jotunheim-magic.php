@@ -17,6 +17,18 @@ require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 // Include Utility files
 include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
 
+// Enqueue Valheim Weather JavaScript
+function jotunheim_magic_enqueue_scripts() {
+    wp_enqueue_script(
+        'valheim-weather',
+        plugin_dir_url(__FILE__) . 'assets/js/valheim-weather.js',
+        array(),
+        '1.0.0',
+        true
+    );
+}
+add_action('wp_enqueue_scripts', 'jotunheim_magic_enqueue_scripts');
+
 // Include ItemList files
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-scripts.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-interface.php');
