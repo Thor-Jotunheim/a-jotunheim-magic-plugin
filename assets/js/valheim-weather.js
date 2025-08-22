@@ -2,27 +2,141 @@
 // VALHEIM WEATHER CALENDAR WITH REAL ALGORITHM
 // ==================================
 
-// SERVER START DATE - Set this to when your Valheim world started!
-// Format: new Date('YYYY-MM-DD HH:MM:SS')
-var SERVER_START_DATE = new Date('2025-08-01 19:30:00'); // ← Jotun Games server start: 8/1/25, 7:30 PM
+// CONFIGURATION SYSTEM - Priority order (higher number = higher priority):
+// 1. API Override (highest priority)
+// 2. Manual Day Override 
+// 3. Server Start Date (default/fallback)
 
-// Alternative: Use a fixed day instead of auto-calculation
-var USE_FIXED_DAY = false; // Set to true if you want to use a fixed day instead
-var FIXED_DAY = 1; // Only used if USE_FIXED_DAY is true
+// DEFAULT SERVER START DATE - Fallback method (Priority 3)
+var DEFAULT_SERVER_START_DATE = new Date('2025-08-01 19:30:00');
 
-// Calculate current in-game day based on real time elapsed
-function getCurrentGameDay() {
-    if (USE_FIXED_DAY) {
-        return FIXED_DAY;
-    }
+// Configuration variables (will be updated from HTML form)
+var CONFIG = {
+    // API Override (Priority 1)
+    apiEnabled: false,
+    apiEndpoint: '',
     
-    var now = new Date();
-    var timeElapsed = now - SERVER_START_DATE; // milliseconds
-    var daysElapsed = Math.floor(timeElapsed / (1000 * 60 * 60 * 24)); // convert to days
-    return Math.max(1, daysElapsed + 1); // Day 1 is the first day
+    // Manual Day Override (Priority 2)
+    manualEnabled: false,
+    manualStartDay: 1,
+    manualStartDate: new Date('2025-08-01 19:30:00'),
+    
+    // Server Start Date (Priority 3 - Default)
+    serverStartDate: DEFAULT_SERVER_START_DATE
+};
+
+// Calculate current in-game day based on configuration priority
+async function getCurrentGameDay() {
+    try {
+        // Priority 1: API Override
+        if (CONFIG.apiEnabled && CONFIG.apiEndpoint) {
+            try {
+                const response = await fetch(CONFIG.apiEndpoint);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.currentDay && typeof data.currentDay === 'number') {
+                        updateConfigStatus('✅ Using API: Day ' + data.currentDay);
+                        return Math.max(1, Math.floor(data.currentDay));
+                    }
+                }
+            } catch (apiError) {
+                console.warn('API fetch failed, falling back to next method:', apiError);
+                updateConfigStatus('⚠️ API failed, using fallback method');
+            }
+        }
+        
+        // Priority 2: Manual Day Override
+        if (CONFIG.manualEnabled) {
+            var now = new Date();
+            var timeElapsed = now - CONFIG.manualStartDate; // milliseconds
+            var daysElapsed = timeElapsed / (1000 * 60 * 60 * 24); // convert to days
+            var currentDay = Math.max(1, Math.floor(CONFIG.manualStartDay + daysElapsed));
+            updateConfigStatus('📅 Using Manual Override: Day ' + currentDay);
+            return currentDay;
+        }
+        
+        // Priority 3: Server Start Date (Default)
+        var now = new Date();
+        var timeElapsed = now - CONFIG.serverStartDate;
+        var daysElapsed = Math.floor(timeElapsed / (1000 * 60 * 60 * 24));
+        var currentDay = Math.max(1, daysElapsed + 1);
+        updateConfigStatus('🕐 Using Server Start Date: Day ' + currentDay);
+        return currentDay;
+        
+    } catch (error) {
+        console.error('Error calculating current day:', error);
+        updateConfigStatus('❌ Error calculating day, using Day 1');
+        return 1;
+    }
 }
 
-var CURRENT_GAME_DAY = getCurrentGameDay();
+// Update configuration status message
+function updateConfigStatus(message) {
+    var statusElement = document.getElementById('configStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.style.color = message.startsWith('✅') ? '#4CAF50' : 
+                                   message.startsWith('⚠️') ? '#FF9800' : 
+                                   message.startsWith('❌') ? '#F44336' : '#aaa';
+    }
+}
+
+// Apply configuration from HTML form
+function applyConfiguration() {
+    // Get form values
+    var apiEndpoint = document.getElementById('apiEndpoint');
+    var enableApi = document.getElementById('enableApi');
+    var manualStartDay = document.getElementById('manualStartDay');
+    var manualStartDate = document.getElementById('manualStartDate');
+    var enableManual = document.getElementById('enableManual');
+    var serverStartDate = document.getElementById('serverStartDate');
+    
+    if (!apiEndpoint || !enableApi || !manualStartDay || !manualStartDate || !enableManual || !serverStartDate) {
+        console.error('Configuration form elements not found');
+        return;
+    }
+    
+    // Update configuration
+    CONFIG.apiEnabled = enableApi.checked;
+    CONFIG.apiEndpoint = apiEndpoint.value.trim();
+    
+    CONFIG.manualEnabled = enableManual.checked;
+    CONFIG.manualStartDay = parseInt(manualStartDay.value) || 1;
+    CONFIG.manualStartDate = new Date(manualStartDate.value);
+    
+    CONFIG.serverStartDate = new Date(serverStartDate.value);
+    
+    updateConfigStatus('🔄 Configuration updated, recalculating...');
+    
+    // Recalculate and update display
+    getCurrentGameDay().then(function(newCurrentDay) {
+        CURRENT_GAME_DAY = newCurrentDay;
+        var dayInput = document.getElementById('dayInput');
+        if (dayInput) {
+            dayInput.value = CURRENT_GAME_DAY;
+            updateWeather();
+        }
+    });
+}
+
+// Load configuration from HTML form on page load
+function loadConfigurationFromForm() {
+    var apiEndpoint = document.getElementById('apiEndpoint');
+    var enableApi = document.getElementById('enableApi');
+    var manualStartDay = document.getElementById('manualStartDay');
+    var manualStartDate = document.getElementById('manualStartDate');
+    var enableManual = document.getElementById('enableManual');
+    var serverStartDate = document.getElementById('serverStartDate');
+    
+    if (apiEndpoint) CONFIG.apiEndpoint = apiEndpoint.value.trim();
+    if (enableApi) CONFIG.apiEnabled = enableApi.checked;
+    if (manualStartDay) CONFIG.manualStartDay = parseInt(manualStartDay.value) || 1;
+    if (manualStartDate) CONFIG.manualStartDate = new Date(manualStartDate.value);
+    if (enableManual) CONFIG.manualEnabled = enableManual.checked;
+    if (serverStartDate) CONFIG.serverStartDate = new Date(serverStartDate.value);
+}
+
+var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
 // Valheim time constants (from the actual game)
 var GAME_DAY = 1200; // Game seconds in a day
@@ -393,10 +507,12 @@ function goToCurrentDay() {
     var dayInput = document.getElementById('dayInput');
     if (!dayInput) return;
     
-    // Recalculate current day in case time has passed
-    CURRENT_GAME_DAY = getCurrentGameDay();
-    dayInput.value = CURRENT_GAME_DAY;
-    updateWeather();
+    // Recalculate current day in case time has passed or configuration changed
+    getCurrentGameDay().then(function(newCurrentDay) {
+        CURRENT_GAME_DAY = newCurrentDay;
+        dayInput.value = CURRENT_GAME_DAY;
+        updateWeather();
+    });
 }
 
 function updateWeather() {
@@ -417,9 +533,14 @@ function updateWeather() {
 document.addEventListener('DOMContentLoaded', function() {
     var dayInput = document.getElementById('dayInput');
     if (dayInput) {
-        CURRENT_GAME_DAY = getCurrentGameDay(); // Refresh on page load
-        dayInput.value = CURRENT_GAME_DAY;
-        updateWeather();
+        // Load configuration from form and calculate current day
+        loadConfigurationFromForm();
+        
+        getCurrentGameDay().then(function(currentDay) {
+            CURRENT_GAME_DAY = currentDay;
+            dayInput.value = CURRENT_GAME_DAY;
+            updateWeather();
+        });
         
         // Update every 30 seconds, and recalculate current day every 5 minutes
         var updateCount = 0;
@@ -429,15 +550,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Every 10 intervals (5 minutes), recalculate the current day
             if (updateCount >= 10) {
-                var newCurrentDay = getCurrentGameDay();
-                if (newCurrentDay !== CURRENT_GAME_DAY) {
-                    CURRENT_GAME_DAY = newCurrentDay;
-                    // If we're viewing the current day, update it
-                    if (parseInt(dayInput.value) === CURRENT_GAME_DAY - 1) {
-                        dayInput.value = CURRENT_GAME_DAY;
-                        updateWeather();
+                getCurrentGameDay().then(function(newCurrentDay) {
+                    if (newCurrentDay !== CURRENT_GAME_DAY) {
+                        CURRENT_GAME_DAY = newCurrentDay;
+                        // If we're viewing the current day, update it
+                        if (parseInt(dayInput.value) === CURRENT_GAME_DAY - 1) {
+                            dayInput.value = CURRENT_GAME_DAY;
+                            updateWeather();
+                        }
                     }
-                }
+                });
                 updateCount = 0;
             }
         }, 30000);
