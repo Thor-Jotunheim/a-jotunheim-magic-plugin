@@ -42,22 +42,101 @@ var CONFIG = {
     serverStartDate: SERVER_START_DATE
 };
 
+// API caching configuration
+var API_CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+var API_CACHE_KEY = 'valheim_weather_api_cache';
+
+// Check if cached API data is still valid
+function isApiCacheValid() {
+    try {
+        var cached = localStorage.getItem(API_CACHE_KEY);
+        if (!cached) return false;
+        
+        var data = JSON.parse(cached);
+        var now = new Date().getTime();
+        var cacheAge = now - data.timestamp;
+        
+        return cacheAge < API_CACHE_DURATION;
+    } catch (error) {
+        console.warn('Error checking API cache:', error);
+        return false;
+    }
+}
+
+// Get cached API data if valid
+function getCachedApiData() {
+    try {
+        var cached = localStorage.getItem(API_CACHE_KEY);
+        if (!cached) return null;
+        
+        var data = JSON.parse(cached);
+        return data.currentDay;
+    } catch (error) {
+        console.warn('Error reading API cache:', error);
+        return null;
+    }
+}
+
+// Cache API data
+function cacheApiData(currentDay) {
+    try {
+        var cacheData = {
+            currentDay: currentDay,
+            timestamp: new Date().getTime()
+        };
+        localStorage.setItem(API_CACHE_KEY, JSON.stringify(cacheData));
+    } catch (error) {
+        console.warn('Error caching API data:', error);
+    }
+}
+
+// Clear API cache (useful for debugging)
+function clearApiCache() {
+    try {
+        localStorage.removeItem(API_CACHE_KEY);
+        console.log('API cache cleared');
+    } catch (error) {
+        console.warn('Error clearing API cache:', error);
+    }
+}
+
 // Calculate current in-game day based on configuration priority
 async function getCurrentGameDay() {
     try {
         // Priority 1: API Override
         if (CONFIG.apiEnabled && CONFIG.apiEndpoint) {
+            // Check cache first
+            if (isApiCacheValid()) {
+                var cachedDay = getCachedApiData();
+                if (cachedDay) {
+                    updateConfigStatus('✅ Using API (cached): Day ' + cachedDay + ' (cache valid for ' + Math.round((API_CACHE_DURATION - (new Date().getTime() - JSON.parse(localStorage.getItem(API_CACHE_KEY)).timestamp)) / (60 * 60 * 1000)) + ' more hours)');
+                    return Math.max(1, Math.floor(cachedDay));
+                }
+            }
+            
+            // Cache miss or expired, fetch from API
             try {
+                updateConfigStatus('🔄 Fetching from API...');
                 const response = await fetch(CONFIG.apiEndpoint);
                 if (response.ok) {
                     const data = await response.json();
                     if (data.currentDay && typeof data.currentDay === 'number') {
-                        updateConfigStatus('✅ Using API: Day ' + data.currentDay);
+                        // Cache the result
+                        cacheApiData(data.currentDay);
+                        updateConfigStatus('✅ Using API (fresh): Day ' + data.currentDay + ' (cached for 4 hours)');
                         return Math.max(1, Math.floor(data.currentDay));
                     }
                 }
             } catch (apiError) {
                 console.warn('API fetch failed, falling back to next method:', apiError);
+                
+                // Try to use cached data even if expired as fallback
+                var fallbackCache = getCachedApiData();
+                if (fallbackCache) {
+                    updateConfigStatus('⚠️ API failed, using expired cache: Day ' + fallbackCache);
+                    return Math.max(1, Math.floor(fallbackCache));
+                }
+                
                 updateConfigStatus('⚠️ API failed, using fallback method');
             }
         }
