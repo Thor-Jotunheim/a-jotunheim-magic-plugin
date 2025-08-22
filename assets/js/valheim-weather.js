@@ -491,6 +491,19 @@ function formatWindDirection(angle) {
     return directions[index % 16] || 'N';
 }
 
+// Format wind direction with rotated wind symbol
+function formatWindWithSymbol(angle, intensity) {
+    var direction = formatWindDirection(angle);
+    var windPercent = Math.round(intensity * 100);
+    
+    // Create a rotated wind symbol using CSS transform
+    // Subtract 90 degrees to make the wind blow in the correct direction (0° = North = upward)
+    var rotationAngle = angle - 90;
+    var windSymbol = '<span style="display: inline-block; transform: rotate(' + rotationAngle + 'deg); font-size: 1.1em; margin-right: 4px;">🌬️</span>';
+    
+    return windSymbol + direction + ' ' + Math.round(angle) + '° ' + windPercent + '%';
+}
+
 // Get sunrise/sunset times (Valheim uses 15% and 85% of day)
 function getSunTimes(day) {
     return {
@@ -607,7 +620,7 @@ function updateWeatherTable(day) {
             cell.innerHTML = 
                 '<div>' + envData.emoji + ' ' + envData.name + '</div>' +
                 '<div style="font-size: 0.9em; color: #b0c4de;">' + 
-                formatWindDirection(wind.angle) + ' ' + Math.round(wind.angle) + '° ' + windPercent + '%</div>';
+                formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</div>';
             
             row.appendChild(cell);
         });
@@ -660,7 +673,7 @@ function updateWeatherTable(day) {
             cell.innerHTML = 
                 '<div>' + envData.emoji + ' ' + envData.name + '</div>' +
                 '<div style="font-size: 0.9em; color: #b0c4de;">' + 
-                formatWindDirection(wind.angle) + ' ' + Math.round(wind.angle) + '° ' + windPercent + '%</div>';
+                formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</div>';
             
             row.appendChild(cell);
         });
@@ -710,7 +723,7 @@ function showForecast() {
                 '<div style="margin: 5px 0; padding: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em;">' +
                 '<span><strong>' + timeString + '</strong></span>' +
                 '<span>' + envData.emoji + ' ' + envData.name + '</span>' +
-                '<span style="color: #b0c4de;">' + formatWindDirection(wind.angle) + ' ' + windPercent + '%</span>' +
+                '<span style="color: #b0c4de;">' + formatWindWithSymbol(wind.angle, biomeWindIntensity) + '</span>' +
                 '</div>';
         }
         
