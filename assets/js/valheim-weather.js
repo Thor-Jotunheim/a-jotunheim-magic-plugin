@@ -466,7 +466,7 @@ function getWeathersAt(index) {
 
     // --- DEBUG: Print for day 984 at 00:00, 11:15, 13:41 ---
     var day = 984;
-    var times = [0, 11 * 60 + 15, 13 * 60 + 41]; // minutes since midnight
+    var times = [0, 11 * 60 + 15]; // minutes since midnight (keep previous times)
     times.forEach(function(mins) {
         var gameTime = day * GAME_DAY + mins * 60;
         var periodIndex = Math.floor(gameTime / WEATHER_PERIOD);
@@ -480,6 +480,19 @@ function getWeathersAt(index) {
             });
         }
     });
+
+    // Explicit debug for 13:41 (expected thunderstorm time)
+    var mins_1341 = 13 * 60 + 41;
+    var gameTime_1341 = day * GAME_DAY + mins_1341 * 60;
+    var periodIndex_1341 = Math.floor(gameTime_1341 / WEATHER_PERIOD);
+    if (index === periodIndex_1341) {
+        console.log('[DEBUG][EXACT 13:41] Day', day, 'Time 13:41 (', mins_1341, 'min ) => gameTime:', gameTime_1341, 'periodIndex:', periodIndex_1341);
+        Object.keys(BIOMES).forEach(function(biome) {
+            var ws = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
+            var w = rollWeather(ws, rng);
+            console.log('    [DEBUG][13:41]', biome, ':', w);
+        });
+    }
 
     // --- Existing debug for day 984 area ---
     var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
