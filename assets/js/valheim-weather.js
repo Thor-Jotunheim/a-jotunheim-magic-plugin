@@ -458,8 +458,6 @@ function getWeathersAt(index) {
         return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
     }
 
-    // Adjust epoch by subtracting 2 hours 26 minutes (8760 seconds) to align with kirilloid.ru
-    var EPOCH_OFFSET = 2 * 3600 + 26 * 60; // 2 hours 26 min = 8760 seconds
     random.init(index);
     var rng = random.rangeFloat(0, 1);
 
