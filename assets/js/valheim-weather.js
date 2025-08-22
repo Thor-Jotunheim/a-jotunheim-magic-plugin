@@ -340,7 +340,7 @@ var ENV_STATES = {
     'Clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
-    'Misty': { emoji: '🌫️', name: 'Fog', wind: [0.0, 0.5] },
+    'Misty': { emoji: '☁️', name: 'Fog', wind: [0.0, 0.5] },
     'DeepForest_Mist': { emoji: '☀️', name: 'Clear', wind: [0.1, 0.6] },
     'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
     'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
@@ -356,7 +356,7 @@ var ENV_STATES = {
     'Mistlands_thunder': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.5, 1.0] },
     // Ashlands weather types (from kirilloid)
     'Ashlands_ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] },
-    'Ashlands_misty': { emoji: '🌫️', name: 'Ash Fog', wind: [0.1, 0.3] },
+    'Ashlands_misty': { emoji: '☁️', name: 'Ash Fog', wind: [0.1, 0.3] },
     'Ashlands_CinderRain': { emoji: '🌋', name: 'Cinder Rain', wind: [0.6, 1.0] },
     'Ashlands_storm': { emoji: '🌪️', name: 'Ash Storm', wind: [0.8, 1.0] },
     // Legacy support
@@ -383,7 +383,7 @@ var BIOMES = {
     'Ocean': { name: 'Ocean', icon: '🌊' },
     'Mountain': { name: 'Mountain', icon: '🏔️' },
     'Plains': { name: 'Plains', icon: '🌺' },
-    'Mistlands': { name: 'Mistlands', icon: '🌫️' },
+    'Mistlands': { name: 'Mistlands', icon: '☁️' },
     'Ashlands': { name: 'Ashlands', icon: '🔥' }
 };
 
@@ -602,16 +602,9 @@ function updateWeatherTable(day) {
         // Time cell
         var timeCell = document.createElement('td');
         timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
-        
-        // Format time as simple AM/PM
-        var simpleTime = displayHour === 0 ? '12am' : 
-                        displayHour < 12 ? displayHour + 'am' :
-                        displayHour === 12 ? '12pm' :
-                        (displayHour - 12) + 'pm';
-        
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            timeString + '<br><small>' + simpleTime + '</small>';
+            timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
         row.appendChild(timeCell);
         
         // Weather for each biome
