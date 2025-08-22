@@ -340,29 +340,39 @@ var ENV_STATES = {
     'Clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Heath_clear': { emoji: '☀️', name: 'Clear', wind: [0.0, 1.0] },
     'Twilight_Clear': { emoji: '🌕', name: 'Clear', wind: [0.0, 1.0] },
-    'Misty': { emoji: '🌫️', name: 'Misty', wind: [0.0, 0.5] },
-    'DeepForest_Mist': { emoji: '🌫️', name: 'Misty', wind: [0.0, 0.5] },
+    'Misty': { emoji: '🌫️', name: 'Fog', wind: [0.0, 0.5] },
+    'DeepForest_Mist': { emoji: '🌫️', name: 'Fog', wind: [0.0, 0.5] },
     'Rain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
     'LightRain': { emoji: '🌦️', name: 'Light Rain', wind: [0.1, 0.6] },
     'ThunderStorm': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.8, 1.0] },
-    'SwampRain': { emoji: '🌧️', name: 'Rain', wind: [0.2, 0.8] },
+    'SwampRain': { emoji: '🌧️', name: 'Heavy Rain', wind: [0.2, 0.8] },
     'Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
     'Twilight_Snow': { emoji: '🌨️', name: 'Snow', wind: [0.3, 0.8] },
     'SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
     'Twilight_SnowStorm': { emoji: '❄️', name: 'Blizzard', wind: [0.7, 1.0] },
+    // Mistlands weather types (from kirilloid)
+    'Mistlands_clear': { emoji: '☀️', name: 'Clear', wind: [0.05, 0.2] },
+    'Mistlands_rain': { emoji: '🌧️', name: 'Rain', wind: [0.05, 0.2] },
+    'Mistlands_thunder': { emoji: '⛈️', name: 'Thunderstorm', wind: [0.5, 1.0] },
+    // Ashlands weather types (from kirilloid)
+    'Ashlands_ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] },
+    'Ashlands_misty': { emoji: '🌫️', name: 'Ash Fog', wind: [0.1, 0.3] },
+    'Ashlands_CinderRain': { emoji: '🌋', name: 'Cinder Rain', wind: [0.6, 1.0] },
+    'Ashlands_storm': { emoji: '🌪️', name: 'Ash Storm', wind: [0.8, 1.0] },
+    // Legacy support
     'Ashrain': { emoji: '☔', name: 'Ash Rain', wind: [0.4, 0.9] }
 };
 
-// Biome weather configurations (from actual Valheim)
+// Biome weather configurations (ACTUAL kirilloid/valheim algorithm)
 var ENV_SETUP = {
     'Meadows': [['Clear', 25], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1], ['LightRain', 1]],
     'BlackForest': [['DeepForest_Mist', 20], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1]],
     'Swamp': [['SwampRain', 1]],
     'Mountain': [['SnowStorm', 1], ['Snow', 5]],
     'Plains': [['Heath_clear', 5], ['Misty', 1], ['LightRain', 1]],
-    'Ocean': [['Clear', 25], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1], ['LightRain', 1]],
-    'Mistlands': [['DeepForest_Mist', 20], ['Rain', 1], ['Misty', 1], ['ThunderStorm', 1]],
-    'Ashlands': [['Ashrain', 1]]
+    'Ocean': [['Rain', 1], ['LightRain', 1], ['Misty', 1], ['Clear', 10], ['ThunderStorm', 1]],
+    'Mistlands': [['Mistlands_clear', 15], ['Mistlands_rain', 1], ['Mistlands_thunder', 1]],
+    'Ashlands': [['Ashlands_ashrain', 30], ['Ashlands_misty', 2], ['Ashlands_CinderRain', 4], ['Ashlands_storm', 1]]
 };
 
 // Biome display information
