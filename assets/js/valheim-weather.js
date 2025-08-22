@@ -602,9 +602,16 @@ function updateWeatherTable(day) {
         // Time cell
         var timeCell = document.createElement('td');
         timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
+        
+        // Format time as simple AM/PM
+        var simpleTime = displayHour === 0 ? '12am' : 
+                        displayHour < 12 ? displayHour + 'am' :
+                        displayHour === 12 ? '12pm' :
+                        (displayHour - 12) + 'pm';
+        
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
+            timeString + '<br><small>' + simpleTime + '</small>';
         row.appendChild(timeCell);
         
         // Weather for each biome
