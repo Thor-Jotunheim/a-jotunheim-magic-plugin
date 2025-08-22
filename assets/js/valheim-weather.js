@@ -491,6 +491,18 @@ function formatWindDirection(angle) {
     return directions[index % 16] || 'N';
 }
 
+// Format weather period duration in a user-friendly way
+function formatWeatherDuration(period) {
+    var durationMinutes = Math.round((WEATHER_PERIOD / 60) * 2); // Each weather period is 2 minutes real time
+    if (period === 0) {
+        return '2 min';
+    } else if (period < 6) {
+        return (period + 1) + '/12'; // Show which period of 12 total per day
+    } else {
+        return (durationMinutes * (period + 1)) + ' min';
+    }
+}
+
 // Format wind direction with rotated wind symbol
 function formatWindWithSymbol(angle, intensity) {
     var direction = formatWindDirection(angle);
@@ -604,7 +616,7 @@ function updateWeatherTable(day) {
         timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
         timeCell.innerHTML = isSpecialTime ? 
             timeString + '<br><small>' + specialNote + '</small>' : 
-            timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
+            timeString + '<br><small>' + formatWeatherDuration(period) + '</small>';
         row.appendChild(timeCell);
         
         // Weather for each biome
@@ -659,7 +671,7 @@ function updateWeatherTable(day) {
         
         var timeCell = document.createElement('td');
         timeCell.style.cssText = 'padding: 8px 4px; text-align: center; border: 1px solid #444; font-size: 0.8em; font-weight: bold; color: #d4af37;';
-        timeCell.innerHTML = timeString + '<br><small>+' + (period * WEATHER_PERIOD) + 's</small>';
+        timeCell.innerHTML = timeString + '<br><small>' + formatWeatherDuration(period) + '</small>';
         row.appendChild(timeCell);
         
         biomeKeys.forEach(function(biomeKey, index) {
