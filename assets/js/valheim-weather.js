@@ -1,65 +1,79 @@
-// =// ==================== EASY CONFIGURATION SECTION ====================
-// ← UPDATE THESE VALUES FOR EASY CONFIGURATION
+// =// ==================== WORDPRESS CONFIGURATION LOADING ====================
+// Configuration loaded from WordPress admin settings
 
-// API OVERRIDE SETTINGS (Priority 1 - Highest)
-var API_ENABLED = false;  // Set to true to enable API override
-var API_ENDPOINT = '';    // Your API URL (e.g., 'https://your-server.com/api/current-day')
+// Configuration - WordPress settings will override these defaults
+let config = {
+    apiConfig: {
+        enabled: false,
+        endpoint: ''
+    },
+    manualOverride: {
+        enabled: false,
+        startDay: 1,
+        startDate: '2025-08-22T00:00',
+        progression: 'static'  // 'static', 'real-days', or 'game-time'
+    },
+    serverStartDate: '2025-08-01T19:30'  // Default server start
+};
 
-// MANUAL DAY OVERRIDE SETTINGS (Priority 2)
-var MANUAL_ENABLED = false;                              // Set to true to enable manual override
-var MANUAL_START_DAY = 983;                              // What in-game day to start from
-var MANUAL_START_DATE = new Date('2025-08-22 09:00:00'); // ← SET THIS TO CURRENT DATE/TIME for Day 983 to be NOW
-var MANUAL_PROGRESSION_TYPE = 'game-time';              // How days progress: 'real-days', 'game-time', or 'static'
-// 'real-days' = 1 real day = 1 in-game day (recommended for most servers)
-// 'game-time' = 20 real minutes = 1 in-game day (true Valheim time)  
-// 'static' = Always shows MANUAL_START_DAY (no progression)
-
-// SERVER START DATE SETTINGS (Priority 3 - Default)
-var SERVER_START_DATE = new Date('2025-08-01 19:30:00'); // When your server started (Day 1)
-var SERVER_PROGRESSION_TYPE = 'real-days';              // How days progress: 'real-days' or 'game-time'
+// Load WordPress configuration if available
+async function loadWordPressConfig() {
+    try {
+        // Check if we're in a WordPress environment with our plugin
+        const ajaxurl = weather_ajax ? weather_ajax.ajaxurl : (typeof ajaxurl !== 'undefined' ? ajaxurl : null);
+        
+        if (ajaxurl) {
+            const response = await fetch(ajaxurl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'action=get_weather_config'
+            });
+            
+            if (response.ok) {
+                const wpConfig = await response.json();
+                if (wpConfig.success) {
+                    // Update config with WordPress settings
+                    config.apiConfig.enabled = wpConfig.data.api_enabled;
+                    config.apiConfig.endpoint = wpConfig.data.api_endpoint;
+                    config.manualOverride.enabled = wpConfig.data.manual_enabled;
+                    config.manualOverride.startDay = wpConfig.data.manual_start_day;
+                    config.manualOverride.startDate = wpConfig.data.manual_start_date;
+                    config.manualOverride.progression = wpConfig.data.manual_progression;
+                    config.serverStartDate = wpConfig.data.server_start_date;
+                    
+                    console.log('Loaded WordPress weather configuration');
+                }
+            }
+        }
+    } catch (error) {
+        console.log('Using default weather configuration (WordPress config not available)');
+    }
+}
 
 // ==================== END CONFIGURATION SECTION =====================================
 // VALHEIM WEATHER CALENDAR WITH REAL ALGORITHM
 // ==================================
 
-// ==================== EASY CONFIGURATION SECTION ====================
-// ← UPDATE THESE VALUES FOR EASY CONFIGURATION
-
-// API OVERRIDE SETTINGS (Priority 1 - Highest)
-var API_ENABLED = false;  // Set to true to enable API override
-var API_ENDPOINT = '';    // Your API URL (e.g., 'https://your-server.com/api/current-day')
-
-// MANUAL DAY OVERRIDE SETTINGS (Priority 2)
-var MANUAL_ENABLED = true;                              // Set to true to enable manual override
-var MANUAL_START_DAY = 983;                               // What in-game day to start from
-var MANUAL_START_DATE = new Date('2025-08-01 19:30:00'); // Real date/time for that day
-
-// SERVER START DATE SETTINGS (Priority 3 - Default)
-var SERVER_START_DATE = new Date('2025-08-01 19:30:00'); // When your server started (Day 1)
-
-// ==================== END CONFIGURATION SECTION ====================
-
 // CONFIGURATION SYSTEM - Priority order (higher number = higher priority):
-// 1. API Override (highest priority)
-// 2. Manual Day Override 
-// 3. Server Start Date (default/fallback)
+// 1. API Override (highest priority) - from WordPress admin
+// 2. Manual Day Override - from WordPress admin
+// 3. Server Start Date (default/fallback) - from WordPress admin
 
-// DEFAULT SERVER START DATE - Fallback method (Priority 3)
-var DEFAULT_SERVER_START_DATE = SERVER_START_DATE;
-
-// Configuration variables (will be updated from HTML form OR use values above)
+// Configuration variables (will be updated from WordPress admin OR use defaults)
 var CONFIG = {
     // API Override (Priority 1)
-    apiEnabled: API_ENABLED,
-    apiEndpoint: API_ENDPOINT,
+    apiEnabled: false,
+    apiEndpoint: '',
     
     // Manual Day Override (Priority 2)
-    manualEnabled: MANUAL_ENABLED,
-    manualStartDay: MANUAL_START_DAY,
-    manualStartDate: MANUAL_START_DATE,
+    manualEnabled: false,
+    manualStartDay: 1,
+    manualStartDate: new Date('2025-08-22T00:00'),
     
     // Server Start Date (Priority 3 - Default)
-    serverStartDate: SERVER_START_DATE
+    serverStartDate: new Date('2025-08-01T19:30')
 };
 
 // API caching configuration
@@ -271,7 +285,7 @@ function loadConfigurationFromForm() {
     if (enableApi) {
         CONFIG.apiEnabled = enableApi.checked;
     } else {
-        CONFIG.apiEnabled = API_ENABLED; // Use JS default
+        CONFIG.apiEnabled = config.apiConfig.enabled; // Use WordPress default
     }
     
     if (manualStartDay && manualStartDay.value) {
@@ -289,7 +303,7 @@ function loadConfigurationFromForm() {
     if (enableManual) {
         CONFIG.manualEnabled = enableManual.checked;
     } else {
-        CONFIG.manualEnabled = MANUAL_ENABLED; // Use JS default
+        CONFIG.manualEnabled = config.manualOverride.enabled; // Use WordPress default
     }
     
     if (serverStartDate && serverStartDate.value) {
@@ -473,6 +487,31 @@ function getSunTimes(day) {
         sunrise: GAME_DAY * 0.15,
         sunset: GAME_DAY * 0.85
     };
+}
+
+// Create the weather display table (cross-browser compatible)
+function createWeatherDisplay() {
+    var weatherDisplay = document.getElementById('weatherDisplay');
+    if (!weatherDisplay) return;
+    
+    var biomeKeys = Object.keys(BIOMES);
+    
+    var tableHTML = '<table style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">' +
+        '<thead><tr>';
+    
+    // Time column header
+    tableHTML += '<th style="padding: 12px 8px; text-align: center; border: 1px solid #444; font-size: 0.9em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 80px;">Time</th>';
+    
+    // Biome headers (horizontal text for cross-browser compatibility)
+    biomeKeys.forEach(function(biomeKey) {
+        var biome = BIOMES[biomeKey];
+        tableHTML += '<th style="padding: 12px 8px; text-align: center; border: 1px solid #444; font-size: 0.85em; background: linear-gradient(135deg, #8b7355, #6b5b47); color: #ffd700; font-weight: bold; min-width: 100px;">' + 
+            biome.icon + ' ' + biome.name + '</th>';
+    });
+    
+    tableHTML += '</tr></thead><tbody id="weatherTableBody"></tbody></table>';
+    
+    weatherDisplay.innerHTML = tableHTML;
 }
 
 // UI Update functions
@@ -706,8 +745,25 @@ function updateWeather() {
     }
 }
 
+// Function to update CONFIG from WordPress config
+function updateConfigFromWordPress() {
+    CONFIG.apiEnabled = config.apiConfig.enabled;
+    CONFIG.apiEndpoint = config.apiConfig.endpoint;
+    CONFIG.manualEnabled = config.manualOverride.enabled;
+    CONFIG.manualStartDay = config.manualOverride.startDay;
+    CONFIG.manualStartDate = new Date(config.manualOverride.startDate);
+    CONFIG.serverStartDate = new Date(config.serverStartDate);
+}
+
 // Initialization
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Load WordPress configuration first
+    await loadWordPressConfig();
+    updateConfigFromWordPress();
+    
+    // Create the weather display table
+    createWeatherDisplay();
+    
     var dayInput = document.getElementById('dayInput');
     if (dayInput) {
         // Load configuration from form and calculate current day

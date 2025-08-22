@@ -26,6 +26,11 @@ function jotunheim_magic_enqueue_scripts() {
         '1.0.0',
         true
     );
+    
+    // Localize script to provide ajaxurl for weather configuration
+    wp_localize_script('valheim-weather', 'weather_ajax', array(
+        'ajaxurl' => admin_url('admin-ajax.php')
+    ));
 }
 add_action('wp_enqueue_scripts', 'jotunheim_magic_enqueue_scripts');
 
@@ -158,6 +163,22 @@ function jotunheim_magic_assign_capabilities() {
 }
 
 register_activation_hook(__FILE__, 'jotunheim_magic_assign_capabilities');
+
+// AJAX handler for getting weather configuration
+function get_weather_config() {
+    wp_send_json_success(array(
+        'api_enabled' => get_option('weather_api_enabled', false),
+        'api_endpoint' => get_option('weather_api_endpoint', ''),
+        'manual_enabled' => get_option('weather_manual_enabled', false),
+        'manual_start_day' => get_option('weather_manual_start_day', 1),
+        'manual_start_date' => get_option('weather_manual_start_date', '2025-08-22T00:00'),
+        'manual_progression' => get_option('weather_manual_progression', 'static'),
+        'server_start_date' => get_option('weather_server_start_date', '2025-08-01T19:30')
+    ));
+}
+
+add_action('wp_ajax_get_weather_config', 'get_weather_config');
+add_action('wp_ajax_nopriv_get_weather_config', 'get_weather_config');
 add_action('admin_init', 'jotunheim_magic_assign_capabilities');
 
 // Temporarily elevate editor capabilities on specific editor pages

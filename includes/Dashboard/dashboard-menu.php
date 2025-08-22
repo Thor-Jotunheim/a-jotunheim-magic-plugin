@@ -73,6 +73,12 @@ function jotunheim_magic_plugin_menu() {
             'slug'        => 'pos_interface',
             'callback'    => 'render_pos_interface_page',
         ],
+        [
+            'title'       => 'Weather Calendar Config',
+            'menu_title'  => 'Weather Calendar Config',
+            'slug'        => 'weather_calendar_config',
+            'callback'    => 'render_weather_calendar_config_page',
+        ],
     ];
 
     // Register each submenu
@@ -203,6 +209,173 @@ function render_pos_interface_page() {
     echo '<h1>Point of Sale System</h1>';
     echo do_shortcode('[pos_interface]');
     echo '</div>';
+}
+
+// Weather Calendar Configuration Page
+function render_weather_calendar_config_page() {
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['weather_config_nonce'])) {
+        if (wp_verify_nonce($_POST['weather_config_nonce'], 'save_weather_config')) {
+            // Save API settings
+            update_option('weather_api_enabled', isset($_POST['api_enabled']));
+            update_option('weather_api_endpoint', sanitize_url($_POST['api_endpoint']));
+            
+            // Save Manual Override settings
+            update_option('weather_manual_enabled', isset($_POST['manual_enabled']));
+            update_option('weather_manual_start_day', intval($_POST['manual_start_day']));
+            update_option('weather_manual_start_date', sanitize_text_field($_POST['manual_start_date']));
+            update_option('weather_manual_progression', sanitize_text_field($_POST['manual_progression']));
+            
+            // Save Server Start Date
+            update_option('weather_server_start_date', sanitize_text_field($_POST['server_start_date']));
+            
+            echo '<div class="updated notice"><p>Weather Calendar configuration updated successfully!</p></div>';
+        }
+    }
+    
+    // Get current settings
+    $api_enabled = get_option('weather_api_enabled', false);
+    $api_endpoint = get_option('weather_api_endpoint', '');
+    $manual_enabled = get_option('weather_manual_enabled', false);
+    $manual_start_day = get_option('weather_manual_start_day', 1);
+    $manual_start_date = get_option('weather_manual_start_date', '2025-08-22T00:00');
+    $manual_progression = get_option('weather_manual_progression', 'static');
+    $server_start_date = get_option('weather_server_start_date', '2025-08-01T19:30');
+    
+    ?>
+    <div class="wrap">
+        <h1>🌦️ Valheim Weather Calendar Configuration</h1>
+        <p>Configure how the weather calendar determines the current in-game day. Settings are applied in priority order.</p>
+        
+        <form method="POST" action="">
+            <?php wp_nonce_field('save_weather_config', 'weather_config_nonce'); ?>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                
+                <!-- API Override Configuration -->
+                <div class="postbox">
+                    <div class="postbox-header">
+                        <h2>🔗 API Override (Priority 1 - Highest)</h2>
+                    </div>
+                    <div class="inside">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Enable API Override</th>
+                                <td>
+                                    <input type="checkbox" name="api_enabled" value="1" <?php checked($api_enabled); ?>>
+                                    <p class="description">Use external API to get current day</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">API Endpoint URL</th>
+                                <td>
+                                    <input type="url" name="api_endpoint" value="<?php echo esc_attr($api_endpoint); ?>" 
+                                           class="regular-text" placeholder="https://your-api.com/current-day">
+                                    <p class="description">API should return JSON: {"currentDay": 123}<br>
+                                    <strong>Cached for 4 hours</strong> to reduce API calls</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Manual Day Override Configuration -->
+                <div class="postbox">
+                    <div class="postbox-header">
+                        <h2>📅 Manual Day Override (Priority 2)</h2>
+                    </div>
+                    <div class="inside">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Enable Manual Override</th>
+                                <td>
+                                    <input type="checkbox" name="manual_enabled" value="1" <?php checked($manual_enabled); ?>>
+                                    <p class="description">Manually set current in-game day</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Starting In-Game Day</th>
+                                <td>
+                                    <input type="number" name="manual_start_day" value="<?php echo esc_attr($manual_start_day); ?>" 
+                                           min="1" class="small-text">
+                                    <p class="description">What day number to start from</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Date/Time for That Day</th>
+                                <td>
+                                    <input type="datetime-local" name="manual_start_date" value="<?php echo esc_attr($manual_start_date); ?>" 
+                                           class="regular-text">
+                                    <p class="description">When that day occurred in real time</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Progression Type</th>
+                                <td>
+                                    <select name="manual_progression">
+                                        <option value="static" <?php selected($manual_progression, 'static'); ?>>Static (no progression)</option>
+                                        <option value="real-days" <?php selected($manual_progression, 'real-days'); ?>>Real Days (1 real day = 1 game day)</option>
+                                        <option value="game-time" <?php selected($manual_progression, 'game-time'); ?>>Game Time (20 min = 1 game day)</option>
+                                    </select>
+                                    <p class="description">How the day should progress over time</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Server Start Date Configuration -->
+                <div class="postbox">
+                    <div class="postbox-header">
+                        <h2>🕐 Server Start Date (Priority 3 - Default)</h2>
+                    </div>
+                    <div class="inside">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Server Start Date</th>
+                                <td>
+                                    <input type="datetime-local" name="server_start_date" value="<?php echo esc_attr($server_start_date); ?>" 
+                                           class="regular-text">
+                                    <p class="description">When your Valheim world started (Day 1)<br>
+                                    Day counting progresses based on in-game time (20 min = 1 day)</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="submit">
+                <input type="submit" class="button-primary" value="Save Configuration">
+                <a href="javascript:void(0)" onclick="clearWeatherCache()" class="button">Clear API Cache</a>
+            </p>
+        </form>
+        
+        <div class="postbox" style="margin-top: 20px;">
+            <div class="postbox-header">
+                <h2>📊 Current Status</h2>
+            </div>
+            <div class="inside">
+                <p><strong>Priority System:</strong></p>
+                <ol>
+                    <li><strong>API Override</strong> - If enabled and working, uses external API data</li>
+                    <li><strong>Manual Override</strong> - If enabled, uses your manual day settings</li>
+                    <li><strong>Server Start Date</strong> - Default method, calculates from server start</li>
+                </ol>
+                <p><em>The system automatically falls back to the next priority if a higher one fails.</em></p>
+            </div>
+        </div>
+        
+        <script>
+        function clearWeatherCache() {
+            if (confirm('Clear the weather API cache? This will force a fresh API call on next page load.')) {
+                // This would need to be implemented via AJAX if needed
+                alert('Cache clearing would be implemented via AJAX call to your API cache clearing function.');
+            }
+        }
+        </script>
+    </div>
+    <?php
 }
 
 // Hook the menu function to WordPress admin menu
