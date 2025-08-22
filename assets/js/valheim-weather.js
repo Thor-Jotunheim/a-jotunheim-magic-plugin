@@ -10,8 +10,8 @@ var API_ENABLED = false;  // Set to true to enable API override
 var API_ENDPOINT = '';    // Your API URL (e.g., 'https://your-server.com/api/current-day')
 
 // MANUAL DAY OVERRIDE SETTINGS (Priority 2)
-var MANUAL_ENABLED = false;                              // Set to true to enable manual override
-var MANUAL_START_DAY = 1;                               // What in-game day to start from
+var MANUAL_ENABLED = true;                              // Set to true to enable manual override
+var MANUAL_START_DAY = 983;                               // What in-game day to start from
 var MANUAL_START_DATE = new Date('2025-08-01 19:30:00'); // Real date/time for that day
 
 // SERVER START DATE SETTINGS (Priority 3 - Default)
