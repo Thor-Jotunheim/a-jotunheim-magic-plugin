@@ -9,9 +9,11 @@ let config = {
     },
     manualOverride: {
         enabled: false,
-        startDay: 1,
-        startDate: '2025-08-22T00:00',
-        progression: 'static'  // 'static', 'real-days', or 'game-time'
+var WEATHER_PERIOD = 1800; // Weather changes every 1800 game seconds (30 real minutes)
+var WIND_PERIOD = 2400; // Wind changes every 2400 game seconds  
+var INTRO_DURATION = 1800; // First period is always clear     startDay: 1,
+        startDate: '2025-08-22T09:00',
+        progression: 'game-time'  // 'static', 'real-days', or 'game-time'
     },
     serverStartDate: '2025-08-01T19:30'  // Default server start
 };
@@ -329,11 +331,11 @@ function formatDateForInput(date) {
 
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
-// Valheim time constants (from the actual game)
+// Valheim time constants (matching kirilloid website behavior)
 var GAME_DAY = 1200; // Game seconds in a day
-var WEATHER_PERIOD = 120; // Weather changes every 120 game seconds  
-var WIND_PERIOD = 10; // Wind changes every 10 game seconds
-var INTRO_DURATION = 300; // First 5 minutes are always clear
+var WEATHER_PERIOD = 300; // Weather changes every 300 game seconds (5 real minutes)
+var WIND_PERIOD = 600; // Wind changes every 600 game seconds  
+var INTRO_DURATION = 300; // First period is always clear
 
 // Weather types and their data (from actual Valheim)
 var ENV_STATES = {
@@ -446,7 +448,7 @@ function rollWeather(weathers, roll) {
     return weathers[weathers.length - 1][0];
 }
 
-// Get weather for all biomes at specific index (Valheim algorithm)
+// Get weather for all biomes at specific index (exact kirilloid algorithm)
 function getWeathersAt(index) {
     if (index < INTRO_DURATION / WEATHER_PERIOD) {
         return Object.keys(BIOMES).map(function() { return 'Clear'; });
@@ -455,9 +457,21 @@ function getWeathersAt(index) {
     random.init(index);
     var rng = random.rangeFloat(0, 1);
     
+    // Debug log for Day 984
+    if (index >= 3932 && index <= 3940) {
+        console.log('Weather index ' + index + ', RNG: ' + rng.toFixed(4));
+    }
+    
     return Object.keys(BIOMES).map(function(biome) {
         var biomeWeathers = ENV_SETUP[biome] || ENV_SETUP['Meadows'];
-        return rollWeather(biomeWeathers, rng);
+        var weather = rollWeather(biomeWeathers, rng);
+        
+        // Debug log for Day 984
+        if (index >= 3932 && index <= 3940) {
+            console.log('  ' + biome + ': ' + weather);
+        }
+        
+        return weather;
     });
 }
 
