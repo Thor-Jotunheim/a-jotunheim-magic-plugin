@@ -466,28 +466,16 @@ function rollWeather(weathers, roll) {
 
 // Get weathers at specific index (kirilloid authentic)
 function getWeathersAt(index) {
-    // Debug logging
-    console.log('getWeathersAt called with index:', index);
-    console.log('INTRO_DURATION:', INTRO_DURATION, 'WEATHER_PERIOD:', WEATHER_PERIOD);
-    console.log('Intro threshold:', INTRO_DURATION / WEATHER_PERIOD);
-    
     if (index < INTRO_DURATION / WEATHER_PERIOD) {
-        console.log('Using intro weather (ThunderStorm)');
         return biomeIds.map(function() { return INTRO_WEATHER; });
     }
     
-    console.log('Using normal weather generation');
     random.init(index);
     var rng = random.rangeFloat(0, 1);
-    console.log('RNG value:', rng);
     
-    var results = biomeIds.map(function(biome) {
-        var weather = rollWeather(ENV_SETUP[biome], rng);
-        console.log('Biome', biome, 'got weather:', weather);
-        return weather;
+    return biomeIds.map(function(biome) {
+        return rollWeather(ENV_SETUP[biome], rng);
     });
-    
-    return results;
 }
 
 // Wind calculation functions (kirilloid authentic)
@@ -751,52 +739,87 @@ function updateWeatherTable(day) {
     
     var gameDay = day - 1;
     var startTime = gameDay * GAME_DAY;
-    var sunTimes = getSunTimes(day);
     var biomeKeys = biomeIds;
     
-    // Get selected interval from dropdown (default to 1 hour)
-    var intervalSelect = document.getElementById('intervalSelect');
-    var selectedInterval = intervalSelect ? parseInt(intervalSelect.value) : 60; // minutes
+    // Find all weather changes during this day by checking each weather period
+    var weatherChanges = [];
+    var startIndex = Math.floor(startTime / WEATHER_PERIOD);
+    var endIndex = Math.floor((startTime + GAME_DAY) / WEATHER_PERIOD) + 1;
     
-    // Calculate display parameters
-    var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
-    var displayInterval = GAME_DAY / periodsPerDay; // Game seconds per period
+    // Get weather for the first period as baseline
+    var prevWeathers = null;
     
-    // Generate time entries: regular intervals + exact weather change moments
-    var timeEntries = [];
-    
-    // Add regular interval entries
-    for (var period = 0; period < periodsPerDay; period++) {
-        var gameTime = startTime + period * displayInterval;
-        timeEntries.push({
-            gameTime: gameTime,
-            type: 'regular',
-            period: period
-        });
-    }
-    
-    // Add exact weather change entries
-    var maxWeatherPeriods = Math.ceil(GAME_DAY / WEATHER_PERIOD) + 1;
-    for (var wp = 0; wp < maxWeatherPeriods; wp++) {
-        var weatherChangeTime = startTime + wp * WEATHER_PERIOD;
-        if (weatherChangeTime >= startTime && weatherChangeTime < startTime + GAME_DAY) {
-            // Check if we already have a regular entry very close to this time
-            var hasNearbyEntry = timeEntries.some(function(entry) {
-                return Math.abs(entry.gameTime - weatherChangeTime) < 30; // Within 30 seconds
-            });
-            
-            if (!hasNearbyEntry) {
-                timeEntries.push({
-                    gameTime: weatherChangeTime,
-                    type: 'weather_change',
-                    weatherPeriod: wp
-                });
+    for (var i = startIndex; i <= endIndex; i++) {
+        var currentTime = i * WEATHER_PERIOD;
+        if (currentTime > startTime + GAME_DAY) break;
+        
+        var currentWeathers = getWeathersAt(i);
+        var hasChange = false;
+        
+        // Check if this is the first entry or if any weather changed
+        if (!prevWeathers) {
+            hasChange = true; // First entry
+        } else {
+            for (var b = 0; b < biomeKeys.length; b++) {
+                if (prevWeathers[b] !== currentWeathers[b]) {
+                    hasChange = true;
+                    break;
+                }
             }
         }
+        
+        // If weather changed, add this entry
+        if (hasChange) {
+            var timeInDay = currentTime - startTime;
+            var dayProgress = timeInDay / GAME_DAY;
+            var displayHour = Math.floor(dayProgress * 24);
+            var displayMinute = Math.floor((dayProgress * 24 * 60) % 60);
+            var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
+            
+            weatherChanges.push({
+                time: currentTime,
+                timeString: timeString,
+                weathers: currentWeathers,
+                index: i
+            });
+            
+            // Debug log for Day 984 13:41 area
+            if (day === 984 && displayHour === 13 && displayMinute >= 40 && displayMinute <= 42) {
+                console.log('*** FOUND Day 984 13:41 weather change! ***');
+                console.log('Time:', timeString, 'Index:', i, 'Weathers:', currentWeathers);
+            }
+        }
+        
+        prevWeathers = currentWeathers;
     }
     
-    // Sort all entries by time
-    timeEntries.sort(function(a, b) { return a.gameTime - b.gameTime; });
+    console.log('Weather changes for day', day, ':', weatherChanges.length);
+    
+    // Generate table rows for weather changes
+    weatherChanges.forEach(function(change, changeIndex) {
+        var row = document.createElement('tr');
+        row.style.cssText = 'background: rgba(' + (changeIndex % 2 === 0 ? '255, 255, 255, 0.1' : '0, 0, 0, 0.2') + '); border-bottom: 1px solid rgba(255, 255, 255, 0.1);';
+        
+        // Time cell
+        var timeCell = document.createElement('td');
+        timeCell.style.cssText = 'padding: 8px; text-align: center; color: #d4af37; font-weight: bold; border-right: 1px solid rgba(255, 255, 255, 0.1);';
+        timeCell.textContent = change.timeString;
+        row.appendChild(timeCell);
+        
+        // Weather cells for each biome
+        biomeKeys.forEach(function(biomeKey, biomeIndex) {
+            var weather = change.weathers[biomeIndex];
+            var envData = ENV_STATES[weather] || { emoji: '❓', name: weather };
+            
+            var cell = document.createElement('td');
+            cell.style.cssText = 'padding: 6px; text-align: center; color: #fff; border-right: 1px solid rgba(255, 255, 255, 0.1);';
+            cell.innerHTML = '<div style="font-size: 1.1em; margin-bottom: 2px;">' + envData.emoji + '</div>' +
+                '<div style="font-size: 0.75em; color: #ccc;">' + envData.name + '</div>';
+            row.appendChild(cell);
+        });
+        
+        tableBody.appendChild(row);
+    });
     
     // Display all entries
     for (var i = 0; i < timeEntries.length; i++) {
