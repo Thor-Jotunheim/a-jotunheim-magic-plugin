@@ -5,7 +5,8 @@ if (!defined('ABSPATH')) exit;
 add_action('rest_api_init', function() {
     register_rest_route('jotunheim/v1', '/weather', array(
         'methods' => 'GET',
-        'callback' => '\Jotunheim\Utility\jotunheim_weather_rest_handler',
+        // The handler function is defined in the global namespace in this file
+        'callback' => 'jotunheim_weather_rest_handler',
         'args' => array(
             'day' => array('required' => false, 'default' => 1, 'sanitize_callback' => 'absint'),
             'seed' => array('required' => false, 'sanitize_callback' => 'sanitize_text_field')
