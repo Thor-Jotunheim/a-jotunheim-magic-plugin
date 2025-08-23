@@ -80,6 +80,9 @@ var CONFIG = {
 var API_CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 var API_CACHE_KEY = 'valheim_weather_api_cache';
 
+// In-memory cache for server-provided weather payload for a specific day
+var SERVER_WEATHER_CACHE = null; // { day: Number, data: Object, timestamp: Number }
+
 // Check if cached API data is still valid
 function isApiCacheValid() {
     try {
@@ -112,15 +115,66 @@ function getCachedApiData() {
 }
 
 // Cache API data
-function cacheApiData(currentDay) {
+function cacheApiData(currentDay, payload) {
     try {
         var cacheData = {
             currentDay: currentDay,
+            payload: payload || null,
             timestamp: new Date().getTime()
         };
         localStorage.setItem(API_CACHE_KEY, JSON.stringify(cacheData));
     } catch (error) {
         console.warn('Error caching API data:', error);
+    }
+}
+
+function getCachedApiPayload() {
+    try {
+        var cached = localStorage.getItem(API_CACHE_KEY);
+        if (!cached) return null;
+        var data = JSON.parse(cached);
+        return data.payload || null;
+    } catch (error) {
+        console.warn('Error reading API payload from cache:', error);
+        return null;
+    }
+}
+
+// Fetch server weather payload for a given day and populate SERVER_WEATHER_CACHE
+async function fetchWeatherForDay(day) {
+    try {
+        if (!CONFIG.apiEnabled || !CONFIG.apiEndpoint) return null;
+        // If already cached in memory and fresh, return it
+        if (SERVER_WEATHER_CACHE && SERVER_WEATHER_CACHE.day === day && (Date.now() - SERVER_WEATHER_CACHE.timestamp) < API_CACHE_DURATION) {
+            return SERVER_WEATHER_CACHE.data;
+        }
+
+        // Try fetching server endpoint with optional day query
+        var url = CONFIG.apiEndpoint;
+        try {
+            var parsed = new URL(url, window.location.origin);
+            parsed.searchParams.set('day', String(day));
+            url = parsed.toString();
+        } catch (e) {
+            // If endpoint is relative or malformed, append query in simple way
+            if (url.indexOf('?') === -1) url += '?day=' + String(day); else url += '&day=' + String(day);
+        }
+
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        const payload = await resp.json();
+
+        // Normalize day if not present
+        var payloadDay = null;
+        if (typeof payload.day === 'number') payloadDay = payload.day;
+        else if (typeof payload.currentDay === 'number') payloadDay = payload.currentDay;
+        else if (typeof payload.tick === 'number') payloadDay = Math.max(1, Math.floor(payload.tick / GAME_DAY) + 1);
+
+        SERVER_WEATHER_CACHE = { day: payloadDay || day, data: payload, timestamp: Date.now() };
+        return payload;
+    } catch (err) {
+        console.warn('fetchWeatherForDay error', err);
+        return null;
     }
 }
 
@@ -154,23 +208,53 @@ async function getCurrentGameDay() {
                 const response = await fetch(CONFIG.apiEndpoint);
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.currentDay && typeof data.currentDay === 'number') {
-                        // Cache the result
-                        cacheApiData(data.currentDay);
+
+                    // Support multiple response shapes for backward/forward compatibility:
+                    // 1) { currentDay: N }  <-- existing client expectation
+                    // 2) { day: N }         <-- server may return full weather JSON with day
+                    // 3) full weather JSON with numericSeed and tick, derive day from tick if necessary
+                    if (typeof data.currentDay === 'number') {
+                        cacheApiData(data.currentDay, data);
                         updateConfigStatus('✅ Using API (fresh): Day ' + data.currentDay + ' (cached for 4 hours)');
+                        // store payload in memory if it includes weather info
+                        if (data.weathers || data.wind || data.tick) {
+                            SERVER_WEATHER_CACHE = { day: data.currentDay, data: data, timestamp: Date.now() };
+                        }
                         return Math.max(1, Math.floor(data.currentDay));
+                    } else if (typeof data.day === 'number') {
+                        cacheApiData(data.day, data);
+                        if (data.weathers || data.wind || data.tick) {
+                            SERVER_WEATHER_CACHE = { day: data.day, data: data, timestamp: Date.now() };
+                        }
+                        updateConfigStatus('✅ Using API (fresh): Day ' + data.day + ' (cached for 4 hours)');
+                        return Math.max(1, Math.floor(data.day));
+                    } else if (data && typeof data.numericSeed === 'number' && typeof data.tick === 'number') {
+                        // Derive a day from returned tick if the server returned full weather JSON but not "day"
+                        var derivedDay = Math.max(1, Math.floor(data.tick / GAME_DAY) + 1);
+                        cacheApiData(derivedDay, data);
+                        SERVER_WEATHER_CACHE = { day: derivedDay, data: data, timestamp: Date.now() };
+                        updateConfigStatus('✅ Using API (fresh - derived): Day ' + derivedDay + ' (cached for 4 hours)');
+                        return derivedDay;
                     }
                 }
             } catch (apiError) {
                 console.warn('API fetch failed, falling back to next method:', apiError);
-                
+
                 // Try to use cached data even if expired as fallback
                 var fallbackCache = getCachedApiData();
+                var fallbackPayload = getCachedApiPayload();
+                if (fallbackPayload && fallbackPayload.weathers && fallbackPayload.tick) {
+                    var fallbackDay = fallbackCache || Math.max(1, Math.floor(fallbackPayload.tick / GAME_DAY) + 1);
+                    SERVER_WEATHER_CACHE = { day: fallbackDay, data: fallbackPayload, timestamp: Date.now() };
+                    updateConfigStatus('⚠️ API failed, using expired cached payload: Day ' + fallbackDay);
+                    return Math.max(1, Math.floor(fallbackDay));
+                }
+
                 if (fallbackCache) {
                     updateConfigStatus('⚠️ API failed, using expired cache: Day ' + fallbackCache);
                     return Math.max(1, Math.floor(fallbackCache));
                 }
-                
+
                 updateConfigStatus('⚠️ API failed, using fallback method');
             }
         }
@@ -256,12 +340,12 @@ function applyConfiguration() {
     updateConfigStatus('🔄 Configuration updated, recalculating...');
     
     // Recalculate and update display
-    getCurrentGameDay().then(function(newCurrentDay) {
+    getCurrentGameDay().then(async function(newCurrentDay) {
         CURRENT_GAME_DAY = newCurrentDay;
         var dayInput = document.getElementById('dayInput');
         if (dayInput) {
             dayInput.value = CURRENT_GAME_DAY;
-            updateWeather();
+            await updateWeather();
         }
     });
 }
@@ -578,7 +662,7 @@ function updateCurrentInfo(day) {
     currentInfo.innerHTML = '<strong>Day ' + day + '</strong>';
 }
 
-function updateWeatherTable(day) {
+async function updateWeatherTable(day) {
     var tableBody = document.getElementById('weatherTableBody');
     if (!tableBody) { console.warn('valheim-weather: #weatherTableBody not found'); return; }
     
@@ -609,12 +693,39 @@ function updateWeatherTable(day) {
     var periodsPerDay = Math.floor((24 * 60) / selectedInterval); // How many periods fit in 24 hours
     var displayInterval = GAME_DAY / periodsPerDay; // Game seconds per period
     
+    // Try to prefetch server payload for this day
+    var serverPayload = null;
+    try { serverPayload = await fetchWeatherForDay(day); } catch (e) { serverPayload = null; }
+
     for (var period = 0; period < periodsPerDay; period++) {
         var gameTime = startTime + period * displayInterval;
     // Align both weather and wind to the wind tick timeline
     var windTick = Math.floor(gameTime / WIND_PERIOD);
-    var wind = getGlobalWind(windTick);
-    var weathers = getWeathersAt(windTick);
+    var wind = null;
+    var weathers = null;
+
+    // Prefer server-provided data when available and matching
+    if (serverPayload) {
+        // If server provided a single snapshot (tick) matching this timeslice
+        if (serverPayload.tick && Math.floor(serverPayload.tick / WIND_PERIOD) === windTick) {
+            wind = serverPayload.wind || null;
+            weathers = serverPayload.weathers || null;
+        }
+        // If server returned indexed mapping keyed by windTick
+        if (!weathers && serverPayload.indexed && serverPayload.indexed[windTick]) {
+            var entry = serverPayload.indexed[windTick];
+            weathers = entry.weathers || entry;
+            wind = entry.wind || wind;
+        }
+        // If server returned a single-day snapshot array (weathers length matches biomes), use as fallback
+        if (!weathers && Array.isArray(serverPayload.weathers) && serverPayload.weathers.length === Object.keys(BIOMES).length) {
+            weathers = serverPayload.weathers;
+            wind = serverPayload.wind || wind;
+        }
+    }
+
+    if (!wind) wind = getGlobalWind(windTick);
+    if (!weathers) weathers = getWeathersAt(windTick);
         
         var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
         var displayHour = Math.floor(dayProgress * 24);
@@ -699,8 +810,20 @@ function updateWeatherTable(day) {
     for (var period = 0; period < 3; period++) {
         var gameTime = nextStartTime + period * displayInterval;
     var windTick = Math.floor(gameTime / WIND_PERIOD);
-    var wind = getGlobalWind(windTick);
-    var weathers = getWeathersAt(windTick);
+    var wind = null;
+    var weathers = null;
+    if (SERVER_WEATHER_CACHE && SERVER_WEATHER_CACHE.day === day && SERVER_WEATHER_CACHE.data) {
+        var sp = SERVER_WEATHER_CACHE.data;
+        if (sp.indexed && sp.indexed[windTick]) {
+            weathers = sp.indexed[windTick].weathers || sp.indexed[windTick];
+            wind = sp.indexed[windTick].wind || wind;
+        } else if (Array.isArray(sp.weathers) && sp.weathers.length === Object.keys(BIOMES).length) {
+            weathers = sp.weathers;
+            wind = sp.wind || wind;
+        }
+    }
+    if (!wind) wind = getGlobalWind(windTick);
+    if (!weathers) weathers = getWeathersAt(windTick);
         
         var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
         var displayHour = Math.floor(dayProgress * 24);
@@ -748,6 +871,8 @@ function showForecast() {
     var dayInputEl = document.getElementById('dayInput');
     if (!dayInputEl) { console.warn('valheim-weather: #dayInput missing in forecast'); return; }
     var currentDay = parseInt(dayInputEl.value);
+    // Prefetch server payload for the current day to populate SERVER_WEATHER_CACHE
+    fetchWeatherForDay(currentDay).then(function(p) { /* cached */ }).catch(function(){});
     // Standard day calculation (remove timing offset, try WEATHER_PERIOD adjustment)
     var startTime = (currentDay - 1) * GAME_DAY;
     var biomeKeys = Object.keys(BIOMES);
@@ -762,8 +887,20 @@ function showForecast() {
         for (var period = 0; period < 12; period++) {
                 var gameTime = startTime + period * WEATHER_PERIOD * 2;
                 var windTick = Math.floor(gameTime / WIND_PERIOD);
-                var weathers = getWeathersAt(windTick);
-                var wind = getGlobalWind(windTick);
+                var weathers = null;
+                var wind = null;
+                if (SERVER_WEATHER_CACHE && SERVER_WEATHER_CACHE.day === currentDay && SERVER_WEATHER_CACHE.data) {
+                    var sp = SERVER_WEATHER_CACHE.data;
+                    if (sp.indexed && sp.indexed[windTick]) {
+                        weathers = sp.indexed[windTick].weathers || sp.indexed[windTick];
+                        wind = sp.indexed[windTick].wind || wind;
+                    } else if (Array.isArray(sp.weathers) && sp.weathers.length === Object.keys(BIOMES).length) {
+                        weathers = sp.weathers;
+                        wind = sp.wind || wind;
+                    }
+                }
+                if (!weathers) weathers = getWeathersAt(windTick);
+                if (!wind) wind = getGlobalWind(windTick);
             
             var biomeIndex = biomeKeys.indexOf(biomeKey);
             var weather = weathers[biomeIndex];
@@ -791,34 +928,37 @@ function showForecast() {
 }
 
 // Event handlers
-function changeDay(delta) {
+async function changeDay(delta) {
     var dayInput = document.getElementById('dayInput');
     if (!dayInput) { console.warn('valheim-weather: #dayInput not found (changeDay)'); return; }
     
     var newDay = Math.max(1, parseInt(dayInput.value) + delta);
     dayInput.value = newDay;
-    updateWeather();
+    await updateWeather();
 }
 
-function goToCurrentDay() {
+async function goToCurrentDay() {
     var dayInput = document.getElementById('dayInput');
     if (!dayInput) { console.warn('valheim-weather: #dayInput not found (goToCurrentDay)'); return; }
     
     // Recalculate current day in case time has passed or configuration changed
-    getCurrentGameDay().then(function(newCurrentDay) {
+    try {
+        var newCurrentDay = await getCurrentGameDay();
         CURRENT_GAME_DAY = newCurrentDay;
         dayInput.value = CURRENT_GAME_DAY;
-        updateWeather();
-    });
+        await updateWeather();
+    } catch (e) {
+        console.warn('goToCurrentDay failed', e);
+    }
 }
 
-function updateWeather() {
+async function updateWeather() {
     var dayInput = document.getElementById('dayInput');
     if (!dayInput) { console.warn('valheim-weather: #dayInput not found (updateWeather)'); return; }
     
     var day = parseInt(dayInput.value);
     updateCurrentInfo(day);
-    updateWeatherTable(day);
+    await updateWeatherTable(day);
     
     var forecastSection = document.getElementById('forecastSection');
     if (forecastSection) {
@@ -907,11 +1047,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowLeft') {
-        changeDay(-1);
+    changeDay(-1).catch(function(){/*ignore*/});
     } else if (e.key === 'ArrowRight') {
-        changeDay(1);
+    changeDay(1).catch(function(){/*ignore*/});
     } else if (e.key === 'Home') {
-        goToCurrentDay();
+    goToCurrentDay().catch(function(){/*ignore*/});
     } else if (e.key === 'f' || e.key === 'F') {
         showForecast();
     }
