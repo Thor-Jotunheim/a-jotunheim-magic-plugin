@@ -431,6 +431,27 @@ function formatDateForInput(date) {
 
 var CURRENT_GAME_DAY = 1; // Will be updated by getCurrentGameDay()
 
+// URL hash helpers: allow linking to specific day via #<day>
+function getDayFromHash() {
+    try {
+        var h = window.location.hash;
+        if (!h || h.length <= 1) return null;
+        var n = parseInt(h.replace('#', ''), 10);
+        if (!isNaN(n) && n > 0) return n;
+    } catch (e) { /* ignore */ }
+    return null;
+}
+
+function setHashForDay(day) {
+    try {
+        if (history && history.replaceState) {
+            history.replaceState(null, null, '#' + day);
+            return;
+        }
+    } catch (e) { /* ignore */ }
+    window.location.hash = '#' + day;
+}
+
 // Valheim time constants (authentic kirilloid values)
 var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid authentic)
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
@@ -952,6 +973,7 @@ async function changeDay(delta) {
     
     var newDay = Math.max(1, parseInt(dayInput.value) + delta);
     dayInput.value = newDay;
+    setHashForDay(newDay);
     await updateWeather();
 }
 
@@ -1013,10 +1035,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Load configuration from form and calculate current day
         loadConfigurationFromForm();
         
-        getCurrentGameDay().then(function(currentDay) {
+        getCurrentGameDay().then(async function(currentDay) {
             CURRENT_GAME_DAY = currentDay;
+            // If URL hash specifies a day, prefer that
+            var hashDay = getDayFromHash();
+            if (hashDay) {
+                CURRENT_GAME_DAY = hashDay;
+            }
             dayInput.value = CURRENT_GAME_DAY;
-            updateWeather();
+            await updateWeather();
         }).catch(function(error) {
             console.error('Error getting current day from server:', error);
             // Fallback to calculating from current real-world time
@@ -1030,6 +1057,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn(`Using fallback calculation: Day ${CURRENT_GAME_DAY} (based on current date)`);
         });
         
+        // Listen for hash changes so external links like #42 update the UI
+        window.addEventListener('hashchange', function() {
+            var hashDay = getDayFromHash();
+            if (hashDay) {
+                var di = document.getElementById('dayInput'); if (di) { di.value = hashDay; }
+                updateWeather().catch(function(){});
+            }
+        });
+
         // Update every 30 seconds, and recalculate current day every 5 minutes
         var updateCount = 0;
         setInterval(function() {

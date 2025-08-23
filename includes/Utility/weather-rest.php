@@ -40,16 +40,12 @@ function jotunheim_weather_rest_handler($request) {
     // compute base tick: use GAME_DAY=1800 seconds; sample tick use day*3600 to match prior usage
     $tick = max(0, $day) * 3600;
 
-    // derive numeric seed: prefer stored option helper; only accept seed override from authorized users
+    // Determine numeric seed only if admin provided an override; default behavior is seed-agnostic
+    $numericSeed = 0;
+    $seed_used_label = '';
     if ($seedParam && current_user_can('manage_options')) {
         $numericSeed = jotunheim_get_numeric_seed_from_string($seedParam);
-    } else {
-        // try calling the plugin helper (namespaced) if available
-        if (function_exists('\Jotunheim\Utility\jotunheim_get_numeric_seed')) {
-            $numericSeed = \Jotunheim\Utility\jotunheim_get_numeric_seed();
-        } else {
-            $numericSeed = 0;
-        }
+        $seed_used_label = '_' . md5($seedParam);
     }
 
     // compute wind and weather using the same math as the PHP generator (without double-reading option)
@@ -65,25 +61,35 @@ function jotunheim_weather_rest_handler($request) {
     }
 
     // Transient caching for single-day requests
-    $cache_key = 'jhm_weather_' . md5($numericSeed . '_' . $day);
+    // include seed label in cache key only if an admin override was used
+    $cache_key = 'jhm_weather_' . md5($day . $seed_used_label);
     $cached = get_transient($cache_key);
     if ($cached !== false) {
         return rest_ensure_response($cached);
     }
 
-    // Wind: ng(($tick + numericSeed) * 125, $ig)
+    // Wind: follow kirilloid/Valheim — depends on tick/time only. If admin provided seed override,
+    // apply it by offsetting the tick multiplication (explicit opt-in).
     $ig = new \Jotunheim\Utility\Yj(0);
     if (!function_exists('\\Jotunheim\\Utility\\ng')) {
         return new WP_Error('no_generator_fn', 'Wind generator function missing after include', array('status' => 500));
     }
-    $wind = \Jotunheim\Utility\ng(($tick + $numericSeed) * 125, $ig);
+    $windTickSeed = $tick * 125;
+    if ($numericSeed !== 0) {
+        $windTickSeed = ($tick + $numericSeed) * 125;
+    }
+    $wind = \Jotunheim\Utility\ng($windTickSeed, $ig);
 
     // Weather: weatherSeed = floor((($tick + numericSeed) * 125) / 666); og(weatherSeed, $ig2)
     if (!function_exists('\\Jotunheim\\Utility\\og')) {
         return new WP_Error('no_generator_fn2', 'Weather generator function missing after include', array('status' => 500));
     }
     $ig2 = new \Jotunheim\Utility\Yj(0);
-    $weatherSeed = intval(floor((($tick + $numericSeed) * 125) / 666));
+    $weatherSeedBase = ($tick * 125);
+    if ($numericSeed !== 0) {
+        $weatherSeedBase = (($tick + $numericSeed) * 125);
+    }
+    $weatherSeed = intval(floor($weatherSeedBase / 666));
     $weathers = \Jotunheim\Utility\og($weatherSeed, $ig2);
 
     $data = array(
@@ -115,14 +121,11 @@ function jotunheim_weather_range_handler($request) {
     }
 
     $seedParam = isset($request['seed']) ? $request['seed'] : '';
+    $numericSeed = 0;
+    $seed_used_label = '';
     if ($seedParam && current_user_can('manage_options')) {
         $numericSeed = jotunheim_get_numeric_seed_from_string($seedParam);
-    } else {
-        if (function_exists('\Jotunheim\Utility\jotunheim_get_numeric_seed')) {
-            $numericSeed = \Jotunheim\Utility\jotunheim_get_numeric_seed();
-        } else {
-            $numericSeed = 0;
-        }
+        $seed_used_label = '_' . md5($seedParam);
     }
 
     // Ensure generator code is loaded
@@ -135,7 +138,8 @@ function jotunheim_weather_range_handler($request) {
     }
 
     // Transient caching for range responses (includes from/to and numericSeed in key)
-    $range_cache_key = 'jhm_weather_range_' . md5($numericSeed . '_' . $from . '_' . $to);
+    // include seed label in cache key only if an admin override was used
+    $range_cache_key = 'jhm_weather_range_' . md5($from . '_' . $to . $seed_used_label);
     $range_cached = get_transient($range_cache_key);
     if ($range_cached !== false) {
         return rest_ensure_response($range_cached);
@@ -156,13 +160,21 @@ function jotunheim_weather_range_handler($request) {
         for ($windTick = $startTick; $windTick <= $endTick; $windTick++) {
             $tick = $windTick * $WIND_PERIOD;
 
-            // compute wind using existing functions
+            // compute wind and weather using tick/time only unless admin provided an explicit seed override
             $ig = new \Jotunheim\Utility\Yj(0);
-            $wind = \Jotunheim\Utility\ng((($tick + $numericSeed) * $WIND_PERIOD), $ig);
+            $windTickSeed = ($tick * $WIND_PERIOD);
+            if ($numericSeed !== 0) {
+                $windTickSeed = (($tick + $numericSeed) * $WIND_PERIOD);
+            }
+            $wind = \Jotunheim\Utility\ng($windTickSeed, $ig);
 
             // weather seed
             $ig2 = new \Jotunheim\Utility\Yj(0);
-            $weatherSeed = intval(floor((($tick + $numericSeed) * $WIND_PERIOD) / $WEATHER_PERIOD));
+            $weatherSeedBase = ($tick * $WIND_PERIOD);
+            if ($numericSeed !== 0) {
+                $weatherSeedBase = (($tick + $numericSeed) * $WIND_PERIOD);
+            }
+            $weatherSeed = intval(floor($weatherSeedBase / $WEATHER_PERIOD));
             $weathers = \Jotunheim\Utility\og($weatherSeed, $ig2);
 
             $indexed[strval($windTick)] = array(

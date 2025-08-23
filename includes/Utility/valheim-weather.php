@@ -107,19 +107,17 @@ function ng($e,$ig){
 
 // exposed functions
 function getWeathersAt($idx){
-    // If a world seed option exists, use it to derive a deterministic offset
-    $numericSeed = jotunheim_get_numeric_seed();
+    // Core kirilloid/Valheim behavior: weather depends on time index only (not world seed)
+    // Use the incoming index (interpreted as windTick) to compute the weather seed.
     $ig = new Yj(0);
-    // combine index with numeric seed to produce per-world weather sequence
-    $weatherSeed = intval(floor((($idx + $numericSeed) * 125) / 666));
+    $weatherSeed = intval(floor((($idx * 125) / 666)));
     return og($weatherSeed, $ig);
 }
 
 function getGlobalWind($idx){
-    $numericSeed = jotunheim_get_numeric_seed();
+    // Core kirilloid/Valheim behavior: wind depends on time index only (not world seed)
     $ig = new Yj(0);
-    // combine index with numeric seed so wind sequence is world-specific
-    return ng(($idx + $numericSeed) * 125, $ig);
+    return ng($idx * 125, $ig);
 }
 
 // Helper: Read stored world seed option and convert to a 32-bit numeric seed.
