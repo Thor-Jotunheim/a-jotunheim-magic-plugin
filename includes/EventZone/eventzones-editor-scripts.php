@@ -32,41 +32,51 @@ function enqueue_eventzones_editor_scripts() {
             const apiKey = "<?php echo EVENTZONES_API_KEY; ?>";
 
             // Search functionality with call to external refreshZoneList() in interface file
-            document.getElementById('eventzones-search').addEventListener('input', function () {
-                const searchValue = this.value;
-                if (searchValue.length >= 2) {
-                    searchEventZones(searchValue);
-                } else {
-                    refreshZoneList();  // Calls refreshZoneList() from the interface file
-                }
-            });
+            const eventzonesSearchEl = document.getElementById('eventzones-search');
+            if (eventzonesSearchEl) {
+                eventzonesSearchEl.addEventListener('input', function () {
+                    const searchValue = this.value;
+                    if (searchValue.length >= 2) {
+                        searchEventZones(searchValue);
+                    } else {
+                        refreshZoneList();  // Calls refreshZoneList() from the interface file
+                    }
+                });
+            }
 
             // Load selected zones and display their details
-            document.getElementById('load-zone-btn').addEventListener('click', function () {
-                const selectedZones = Array.from(document.querySelectorAll('.zone-selection-checkbox:checked')).map(checkbox => checkbox.dataset.id);
-                if (selectedZones.length > 0) {
-                    document.getElementById('edit-sections-container').innerHTML = '';
-                    selectedZones.forEach(zoneId => fetchEventZoneDetails(zoneId));
-                }
-            });
+            const loadZoneBtn = document.getElementById('load-zone-btn');
+            if (loadZoneBtn) {
+                loadZoneBtn.addEventListener('click', function () {
+                    const selectedZones = Array.from(document.querySelectorAll('.zone-selection-checkbox:checked')).map(checkbox => checkbox.dataset.id);
+                    if (selectedZones.length > 0) {
+                        const editContainer = document.getElementById('edit-sections-container');
+                        if (editContainer) editContainer.innerHTML = '';
+                        selectedZones.forEach(zoneId => fetchEventZoneDetails(zoneId));
+                    }
+                });
+            }
 
             // Save the modified zone details
-            document.getElementById('save-zone-btn').addEventListener('click', function () {
-                const zonesData = Array.from(document.querySelectorAll('.zone-details-form')).map(form => {
-                    const formData = {};
+            const saveZoneBtn = document.getElementById('save-zone-btn');
+            if (saveZoneBtn) {
+                saveZoneBtn.addEventListener('click', function () {
+                    const zonesData = Array.from(document.querySelectorAll('.zone-details-form')).map(form => {
+                        const formData = {};
 
-                    Array.from(form.elements).forEach(input => {
-                        if (input.name) {
-                            formData[input.name] = input.type === 'checkbox' ? (input.checked ? 1 : 0) : input.value;
-                        }
+                        Array.from(form.elements).forEach(input => {
+                            if (input.name) {
+                                formData[input.name] = input.type === 'checkbox' ? (input.checked ? 1 : 0) : input.value;
+                            }
+                        });
+
+                        formData.id = form.dataset.zoneId;
+                        return formData;
                     });
 
-                    formData.id = form.dataset.zoneId;
-                    return formData;
+                    saveEventZoneDetails(zonesData);
                 });
-
-                saveEventZoneDetails(zonesData);
-            });
+            }
         });
     </script>
     <?php
