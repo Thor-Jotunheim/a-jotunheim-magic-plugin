@@ -138,32 +138,3 @@ function jotunheim_get_numeric_seed(){
 }
 
 // end of file
-
-        // combine index with numeric seed to produce per-world weather sequence
-        $weatherSeed = intval(floor((($idx + $numericSeed) * 125) / 666));
-        return og($weatherSeed, $ig);
-    }
-
-    function getGlobalWind($idx){
-        $numericSeed = jotunheim_get_numeric_seed();
-        $ig = new Yj(0);
-        // combine index with numeric seed so wind sequence is world-specific
-        return ng(($idx + $numericSeed) * 125, $ig);
-    }
-
-    // Helper: Read stored world seed option and convert to a 32-bit numeric seed.
-    function jotunheim_get_numeric_seed(){
-        // Attempt to read option; fall back to 0
-        $seed = get_option('jotunheim_world_seed', '');
-        if (!$seed) return 0;
-        // If the seed is purely numeric, use its modulo 2^31 value
-        if (is_numeric($seed)) {
-            return intval($seed) & 0x7FFFFFFF;
-        }
-        // Otherwise compute a simple crc32-like integer from the string
-        $hash = crc32($seed);
-        // crc32 can return negative on 32-bit PHP; ensure unsigned
-        return $hash & 0x7FFFFFFF;
-    }
-
-    // end of file
