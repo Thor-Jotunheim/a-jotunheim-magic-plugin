@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Valheim Weather Parity Check</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#111; color:#eee; padding:18px }
+    table { border-collapse:collapse; width:100%; margin-top:12px }
+    th, td { padding:6px 8px; border:1px solid #333; text-align:left }
+    th { background:#222 }
+    tr.mismatch { background:#3b1b1b }
+    .ok { color:#6fdc6f }
+    .bad { color:#ff7b7b }
+    .controls { margin-bottom:12px }
+    .log { white-space:pre-wrap; background:#0b0b0b; padding:8px; border:1px solid #222; max-height:240px; overflow:auto }
+  </style>
+</head>
+<body>
+  <h2>Valheim Weather Parity Check</h2>
+  <p>Drop this file in your WordPress site (same domain) and open it. It will load the plugin's <code>valheim-weather.js</code> from the plugin path and run parity checks against a kirilloid-compatible JS implementation embedded here.</p>
+
+  <div class="controls">
+    <label>Start windTick (default 0): <input id="startIdx" type="number" value="0" style="width:80px" /></label>
+    <label>Count: <input id="count" type="number" value="30" style="width:80px" /></label>
+    <button id="runBtn">Run parity</button>
+    <button id="reloadBtn">Reload plugin script</button>
+    <span id="status">Not started</span>
+  </div>
+
+  <div id="summary"></div>
+  <div id="tableWrap"></div>
+  <h3>Console log</h3>
+  <div id="log" class="log"></div>
+
+<script>
+(function(){
+  function log(...args){
+    const s = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+    const el = document.getElementById('log');
+    el.textContent += s + '\n';
+    el.scrollTop = el.scrollHeight;
+    console.log(...args);
+  }
+
+  // kirilloid RNG and functions (copied from run-kirilloid-core.js)
+  class Yj {
+    constructor(t){ this.init(t); }
+    init(e){ const t = e >>> 0; const r = Math.imul(t,1812433253) + 1 >>> 0; const i = Math.imul(r,1812433253) + 1 >>> 0; const a = Math.imul(i,1812433253) + 1 >>> 0; this.state = {a:t,b:r,c:i,d:a}; return this.state; }
+    next(){ const e = this.state.a ^ (this.state.a << 11); this.state.a = this.state.b; this.state.b = this.state.c; this.state.c = this.state.d; this.state.d = (this.state.d ^ (this.state.d >>> 19) ^ e ^ (e >>> 8)); return this.state.d; }
+    random(){ return (this.next() << 9 >>> 0) / 4294966784; }
+    rangeFloat(a,b){ return b - this.random() * (b - a); }
+  }
+
+  // kirilloid constants / data (trimmed to what we need)
+  const g = { q:125, p:666, h:1800, j:'Clear', i:3600 };
+  const rg = ["Meadows","BlackForest","Swamp","Mountain","DeepNorth","Plains","Ashlands","Mistlands","Ocean"];
+  const om = {
+    Meadows:[["Clear",25],["Rain",1],["Misty",1],["ThunderStorm",1],["LightRain",1]],
+    BlackForest:[["DeepForest_Mist",20],["Rain",1],["Misty",1],["ThunderStorm",1]],
+    Swamp:[["SwampRain",1]],
+    Mountain:[["SnowStorm",1],["Snow",5]],
+    DeepNorth:[["Twilight_SnowStorm",1],["Twilight_Snow",2],["Twilight_Clear",1]],
+    Plains:[["Heath_clear",5],["Misty",1],["LightRain",1]],
+    Ashlands:[["Ashlands_ashrain",30],["Ashlands_misty",2],["Ashlands_CinderRain",4],["Ashlands_storm",1]],
+    Mistlands:[["Mistlands_clear",15],["Mistlands_rain",1],["Mistlands_thunder",1]],
+    Ocean:[["Rain",1],["LightRain",1],["Misty",1],["Clear",10],["ThunderStorm",1]]
+  };
+
+  function og(weatherSeed, ig){
+    if (!weatherSeed || weatherSeed < g.i / g.p) { return rg.map(()=>g.j); }
+    ig.init(weatherSeed);
+    var t = ig.rangeFloat(0,1);
+    return rg.map(function(b){ var list = om[b]; var total = list.reduce((s,x)=>s+x[1],0) * t; var acc=0; for(var i=0;i<list.length;i++){ acc += list[i][1]; if (total < acc) return list[i][0]; } return list.at(-1)[0]; });
+  }
+  function ag(e,t,r,ig){ var i = Math.floor(e / (8 * g.q / t)); ig.init(i); r.angle += 2 * ig.random() * Math.PI / t; r.intensity += (ig.random() - .5) / t; }
+  function ng(e,ig){ var t = {angle:0,intensity:.5}; ag(e,1,t,ig); ag(e,2,t,ig); ag(e,4,t,ig); ag(e,8,t,ig); t.intensity = Math.max(0,Math.min(1,t.intensity)); t.angle = 180 * t.angle / Math.PI % 360; return t; }
+
+  // attempt to load plugin script from expected plugin URL
+  const pluginPaths = [
+    '/wp-content/plugins/a-jotunheim-magic-plugin/assets/js/valheim-weather.js',
+    '/assets/js/valheim-weather.js',
+    '/wp-content/plugins/a-jotunheim-magic-plugin/assets/js/valheim-weather.js?ver='+Date.now()
+  ];
+
+  function loadPluginScript(callback){
+    // if functions already exist, skip
+    if (window.getGlobalWind && window.getWeathersAt) { log('Plugin functions already present in page.'); callback(true); return; }
+    let tried=0;
+    function tryNext(){
+      if (tried >= pluginPaths.length) { log('Failed to load plugin script from expected locations.'); callback(false); return; }
+      const src = pluginPaths[tried++];
+      log('Trying to load plugin script at', src);
+      const s = document.createElement('script'); s.src = src; s.onload = ()=>{ log('Loaded', src); setTimeout(()=>callback(!!(window.getGlobalWind && window.getWeathersAt)),50); };
+      s.onerror = ()=>{ log('Failed to load', src); tryNext(); };
+      document.head.appendChild(s);
+    }
+    tryNext();
+  }
+
+  function runParity(startIdx, count){
+    const results = [];
+    const ig = new Yj(0);
+    for (let i=0;i<count;i++){
+      const idx = startIdx + i;
+      try{
+        // our site
+        let ourWind = null, ourWeathers = null;
+        if (window.getGlobalWind) ourWind = window.getGlobalWind(idx);
+        if (window.getWeathersAt) ourWeathers = window.getWeathersAt(idx);
+
+        // kirilloid
+        const kirIg = new Yj(0);
+        const kirWind = ng(idx * g.q, kirIg);
+        const weatherSeed = Math.floor((idx * g.q) / g.p);
+        const kirWeathers = og(weatherSeed, kirIg);
+
+        const ourAngle = ourWind ? Math.round(ourWind.angle) : null;
+        const kirAngle = Math.round(kirWind.angle);
+        const ourInt = ourWind ? Math.round(ourWind.intensity*100) : null;
+        const kirInt = Math.round(kirWind.intensity*100);
+        const ourBF = ourWeathers ? ourWeathers[1] : null;
+        const kirBF = kirWeathers[1];
+        const match = ourAngle === kirAngle && ourInt === kirInt && ourBF === kirBF;
+        results.push({idx, our:{angle:ourAngle,int:ourInt,bf:ourBF}, kir:{angle:kirAngle,int:kirInt,bf:kirBF}, match});
+      }catch(ex){ log('Error computing idx', idx, ex); results.push({idx, error: String(ex)}); }
+    }
+    return results;
+  }
+
+  function renderResults(results){
+    const tableWrap = document.getElementById('tableWrap');
+    let html = '<table><thead><tr><th>idx</th><th>our angle</th><th>kir angle</th><th>our int</th><th>kir int</th><th>our BF</th><th>kir BF</th><th>match</th></tr></thead><tbody>';
+    let mismatches = 0;
+    results.forEach(r=>{
+      const bad = !r.match;
+      if (bad) mismatches++;
+      html += `<tr class="${bad?'mismatch':''}"><td>${r.idx}</td><td>${r.our.angle ?? '-'} </td><td>${r.kir.angle}</td><td>${r.our.int ?? '-'}%</td><td>${r.kir.int}%</td><td>${r.our.bf ?? '-'} </td><td>${r.kir.bf}</td><td>${r.match?'<span class="ok">OK</span>':'<span class="bad">DIFF</span>'}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    tableWrap.innerHTML = `<div>Checked ${results.length} entries — mismatches: <strong>${mismatches}</strong></div>` + html;
+    document.getElementById('summary').textContent = `Checked ${results.length} entries — mismatches: ${mismatches}`;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', ()=>{
+    document.getElementById('log').textContent = '';
+    const start = parseInt(document.getElementById('startIdx').value,10) || 0;
+    const count = parseInt(document.getElementById('count').value,10) || 30;
+    log('Running parity for idx', start, 'count', count);
+    loadPluginScript(function(loaded){
+      if (!loaded) log('Warning: plugin functions not available — results will show null for "our" entries');
+      const res = runParity(start, count);
+      renderResults(res);
+      log('Done');
+    });
+  });
+
+  document.getElementById('reloadBtn').addEventListener('click', ()=>{
+    // force reload plugin script by adding timestamped query param
+    const s = document.createElement('script'); s.src = '/wp-content/plugins/a-jotunheim-magic-plugin/assets/js/valheim-weather.js?ver=' + Date.now();
+    s.onload = ()=>{ log('Reloaded plugin script'); };
+    s.onerror = ()=>{ log('Reload attempt failed'); };
+    document.head.appendChild(s);
+  });
+
+})();
+</script>
+</body>
+</html>
