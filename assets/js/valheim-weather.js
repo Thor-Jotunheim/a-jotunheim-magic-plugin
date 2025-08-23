@@ -392,32 +392,39 @@ function ValheimRandom(seed) {
     this.state = this.init(seed);
 }
 
-ValheimRandom.prototype.init = function(seed) {
-    var a = seed >>> 0;
-    var b = (this.imul(a, 1812433253) + 1) >>> 0;
-    var c = (this.imul(b, 1812433253) + 1) >>> 0;
-    var d = (this.imul(c, 1812433253) + 1) >>> 0;
-    return (this.state = { a: a, b: b, c: c, d: d });
+ValheimRandom.prototype.init = function(e) {
+    var t = e >>> 0;
+    var r = Math.imul(t, 1812433253) + 1 >>> 0;
+    var i = Math.imul(r, 1812433253) + 1 >>> 0;
+    var a = Math.imul(i, 1812433253) + 1 >>> 0;
+    this.state = { a: t, b: r, c: i, d: a };
+    return this.state;
 };
 
-ValheimRandom.prototype.imul = function(a, b) {
-    return Math.imul ? Math.imul(a, b) : ((a * b) | 0);
+ValheimRandom.prototype.next = function() {
+    var e = this.state.a ^ (this.state.a << 11);
+    this.state.a = this.state.b;
+    this.state.b = this.state.c;
+    this.state.c = this.state.d;
+    this.state.d = this.state.d ^ (this.state.d >>> 19) ^ e ^ (e >>> 8);
+    return this.state.d;
 };
 
 ValheimRandom.prototype.random = function() {
-    var a = this.state.a, b = this.state.b, c = this.state.c, d = this.state.d;
-    var t = b << 9 ^ a;
-    var w = (c + (d = d + 1 | 0)) | 0;
-    b = b ^ b >>> 2 ^ c ^ c << 10;
-    c = c ^ c >>> 13 ^ d ^ d << 3;
-    a = a ^ a << 13 ^ t ^ t << 5;
-    this.state = { a: a, b: b, c: c, d: d };
-    return ((a ^ b ^ c) >>> 0) / 4294967296;
+    return ((this.next() << 9) >>> 0) / 4294966784;
 };
 
 ValheimRandom.prototype.rangeFloat = function(min, max) {
-    // Standard random range implementation (matches kirilloid reference)
-    return min + this.random() * (max - min);
+    // match snapshot semantics
+    return max - this.random() * (max - min);
+};
+
+ValheimRandom.prototype.rangeInt = function(min, max) { return min + (this.next() >>> 0) % (max - min); };
+
+ValheimRandom.prototype.insideUnitCircle = function() {
+    var e = this.rangeFloat(0, 2 * Math.PI);
+    var t = Math.sqrt(this.rangeFloat(0, 1));
+    return { x: Math.cos(e) * t, y: Math.sin(e) * t };
 };
 
 var random = new ValheimRandom(0);
@@ -447,21 +454,23 @@ function rollWeather(weathers, roll) {
     return weathers[weathers.length - 1][0];
 }
 
-// Get weather for all biomes at specific index (exact kirilloid algorithm)
-function getWeathersAt(index) {
-    if (index < INTRO_DURATION / WEATHER_PERIOD) {
-        return Object.keys(BIOMES).map(function() { return 'ThunderStorm'; });
-    }
-    
-    random.init(index);
+// Get weather for all biomes at specific wind-tick index
+// Note: kirilloid seeds weather based off the wind-tick timeline. To match
+// their behavior we treat the incoming `index` as the wind tick (Math.floor(gameTime / WIND_PERIOD))
+// and compute the weather seed as Math.floor(windTick * WIND_PERIOD / WEATHER_PERIOD).
+function getWeathersAt(windTick) {
+    // Compute weather seed aligned to wind ticks (matches kirilloid: og(r / g.p) where r = windTick * WIND_PERIOD)
+    var weatherSeed = Math.floor((windTick * WIND_PERIOD) / WEATHER_PERIOD);
+    random.init(weatherSeed);
     var rng = random.rangeFloat(0, 1);
     
-    // Debug log for Day 984 area (around index 2659-2661) with corrected timing
+    // Debug log for Day 984 area (aligned to weather index computed from windTick)
     var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
     var day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
-    if (index >= day984StartIndex && index <= day984StartIndex + 20) {
-        console.log('Day 984 Debug - Weather index ' + index + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
-        var timeFromDayStart = (index - day984StartIndex) * WEATHER_PERIOD;
+    var weatherIndex = Math.floor((windTick * WIND_PERIOD) / WEATHER_PERIOD);
+    if (weatherIndex >= day984StartIndex && weatherIndex <= day984StartIndex + 20) {
+        console.log('Day 984 Debug - Weather index ' + weatherIndex + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
+        var timeFromDayStart = (weatherIndex - day984StartIndex) * WEATHER_PERIOD;
         var hours = Math.floor((timeFromDayStart / GAME_DAY) * 24);
         var minutes = Math.floor(((timeFromDayStart / GAME_DAY) * 24 % 1) * 60);
         console.log('  Time from day 984 start: ' + timeFromDayStart + ' seconds = ' + hours + ':' + String(minutes).padStart(2, '0'));
@@ -472,7 +481,7 @@ function getWeathersAt(index) {
         var weather = rollWeather(biomeWeathers, rng);
         
         // Debug for Day 984
-        if (index >= day984StartIndex && index <= day984StartIndex + 20) {
+        if (weatherIndex >= day984StartIndex && weatherIndex <= day984StartIndex + 20) {
             console.log('    ' + biome + ': ' + weather);
         }
         
@@ -481,25 +490,28 @@ function getWeathersAt(index) {
 }
 
 // Calculate global wind (Valheim algorithm)
-function getGlobalWind(time) {
+// Accepts a windTick (integer) = Math.floor(gameTime / WIND_PERIOD) to ensure
+// seeding is aligned exactly to the wind timeline like kirilloid does.
+function getGlobalWind(windTick) {
     var wind = { angle: 0, intensity: 0.5 };
-    
-    function addOctave(time, octave, wind) {
-        var period = Math.floor(time / (WIND_PERIOD * 8 / octave));
+
+    function addOctave(windTick, octave, wind) {
+        // Matches kirilloid: Math.floor(e / (8 * g.q / t)) where e is time in wind ticks
+        var period = Math.floor(windTick / (8 / octave));
         random.init(period);
         wind.angle += random.random() * 2 * Math.PI / octave;
         wind.intensity += (random.random() - 0.5) / octave;
     }
-    
-    addOctave(time, 1, wind);
-    addOctave(time, 2, wind);
-    addOctave(time, 4, wind);
-    addOctave(time, 8, wind);
-    
+
+    addOctave(windTick, 1, wind);
+    addOctave(windTick, 2, wind);
+    addOctave(windTick, 4, wind);
+    addOctave(windTick, 8, wind);
+
     wind.intensity = clamp01(wind.intensity);
     wind.angle = (wind.angle * 180 / Math.PI) % 360;
     if (wind.angle < 0) wind.angle += 360;
-    
+
     return wind;
 }
 
@@ -599,9 +611,10 @@ function updateWeatherTable(day) {
     
     for (var period = 0; period < periodsPerDay; period++) {
         var gameTime = startTime + period * displayInterval;
-        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
-        var weathers = getWeathersAt(weatherIndex);
-        var wind = getGlobalWind(gameTime);
+    // Align both weather and wind to the wind tick timeline
+    var windTick = Math.floor(gameTime / WIND_PERIOD);
+    var wind = getGlobalWind(windTick);
+    var weathers = getWeathersAt(windTick);
         
         var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
         var displayHour = Math.floor(dayProgress * 24);
@@ -684,9 +697,9 @@ function updateWeatherTable(day) {
     var nextStartTime = day * GAME_DAY;
     for (var period = 0; period < 3; period++) {
         var gameTime = nextStartTime + period * displayInterval;
-        var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
-        var weathers = getWeathersAt(weatherIndex);
-        var wind = getGlobalWind(gameTime);
+    var windTick = Math.floor(gameTime / WIND_PERIOD);
+    var wind = getGlobalWind(windTick);
+    var weathers = getWeathersAt(windTick);
         
         var dayProgress = (gameTime % GAME_DAY) / GAME_DAY;
         var displayHour = Math.floor(dayProgress * 24);
@@ -744,10 +757,10 @@ function showForecast() {
         var forecastHTML = '<div style="font-size: 1.2em; color: #d4af37; margin-bottom: 10px; text-align: center;">' + biome.icon + ' ' + biome.name + '</div>';
         
         for (var period = 0; period < 12; period++) {
-            var gameTime = startTime + period * WEATHER_PERIOD * 2;
-            var weatherIndex = Math.floor(gameTime / WEATHER_PERIOD);
-            var weathers = getWeathersAt(weatherIndex);
-            var wind = getGlobalWind(gameTime);
+                var gameTime = startTime + period * WEATHER_PERIOD * 2;
+                var windTick = Math.floor(gameTime / WIND_PERIOD);
+                var weathers = getWeathersAt(windTick);
+                var wind = getGlobalWind(windTick);
             
             var biomeIndex = biomeKeys.indexOf(biomeKey);
             var weather = weathers[biomeIndex];
