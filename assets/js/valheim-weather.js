@@ -906,3 +906,11 @@ document.addEventListener('keydown', function(e) {
         showForecast();
     }
 });
+
+// paste in browser console on your page
+var day = 1;
+var gameTime = (day - 1) * GAME_DAY + 11 * (GAME_DAY / 24); // 11:00
+var windTick = Math.floor(gameTime / WIND_PERIOD);
+console.log('windTick', windTick);
+console.log('getGlobalWind', getGlobalWind(windTick));
+console.log('getWeathersAt', getWeathersAt(windTick));
