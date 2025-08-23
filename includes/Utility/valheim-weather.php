@@ -106,18 +106,25 @@ function ng($e,$ig){
 }
 
 // exposed functions
+// Compatibility shim: integer shift applied to windTick to match observed live-site alignment
+define('JHM_WIND_TICK_SHIFT', -6);
+
 function getWeathersAt($idx){
     // Core kirilloid/Valheim behavior: weather depends on time index only (not world seed)
     // Use the incoming index (interpreted as windTick) to compute the weather seed.
     $ig = new Yj(0);
-    $weatherSeed = intval(floor((($idx * 125) / 666)));
+    // apply small compatibility shift to align with live site
+    $shifted = $idx + JHM_WIND_TICK_SHIFT;
+    $weatherSeed = intval(floor(((($shifted) * 125) / 666)));
     return og($weatherSeed, $ig);
 }
 
 function getGlobalWind($idx){
     // Core kirilloid/Valheim behavior: wind depends on time index only (not world seed)
     $ig = new Yj(0);
-    return ng($idx * 125, $ig);
+    // apply same windTick shift as weather to match live site parity
+    $shifted = $idx + JHM_WIND_TICK_SHIFT;
+    return ng($shifted * 125, $ig);
 }
 
 // Helper: Read stored world seed option and convert to a 32-bit numeric seed.

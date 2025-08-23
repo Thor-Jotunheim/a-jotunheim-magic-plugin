@@ -457,6 +457,8 @@ var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid a
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
+// Compatibility shim: integer shift applied to windTick to match observed live-site alignment
+var WIND_TICK_SHIFT = -6;
 
 // Weather types and their data (from actual Valheim)
 var ENV_STATES = {
@@ -582,8 +584,9 @@ function rollWeather(weathers, roll) {
 // their behavior we treat the incoming `index` as the wind tick (Math.floor(gameTime / WIND_PERIOD))
 // and compute the weather seed as Math.floor(windTick * WIND_PERIOD / WEATHER_PERIOD).
 function getWeathersAt(windTick) {
-    // Compute weather seed aligned to wind ticks (matches kirilloid: og(r / g.p) where r = windTick * WIND_PERIOD)
-    var weatherSeed = Math.floor((windTick * WIND_PERIOD) / WEATHER_PERIOD);
+    // Apply compatibility shift to windTick before computing weather seed
+    var shifted = windTick + WIND_TICK_SHIFT;
+    var weatherSeed = Math.floor((shifted * WIND_PERIOD) / WEATHER_PERIOD);
     random.init(weatherSeed);
     var rng = random.rangeFloat(0, 1);
     
@@ -626,10 +629,12 @@ function getGlobalWind(windTick) {
         wind.intensity += (random.random() - 0.5) / octave;
     }
 
-    addOctave(windTick, 1, wind);
-    addOctave(windTick, 2, wind);
-    addOctave(windTick, 4, wind);
-    addOctave(windTick, 8, wind);
+    // Apply compatibility shift to windTick for octave seeding
+    var shifted = windTick + WIND_TICK_SHIFT;
+    addOctave(shifted, 1, wind);
+    addOctave(shifted, 2, wind);
+    addOctave(shifted, 4, wind);
+    addOctave(shifted, 8, wind);
 
     wind.intensity = clamp01(wind.intensity);
     wind.angle = (wind.angle * 180 / Math.PI) % 360;
