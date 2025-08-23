@@ -1,0 +1,11 @@
+# Ignore node modules inside scripts
+/scripts/node_modules/
+
+# Scrap/debug artifacts
+/scripts/debug-*/
+/scraped-*.jsonl
+/scripts/*.log
+
+# OS files
+.DS_Store
+Thumbs.db

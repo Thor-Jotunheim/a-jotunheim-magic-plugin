@@ -228,6 +228,10 @@ function render_weather_calendar_config_page() {
             
             // Save Server Start Date
             update_option('weather_server_start_date', sanitize_text_field($_POST['server_start_date']));
+            // Save World Seed (optional)
+            if (isset($_POST['world_seed'])) {
+                update_option('jotunheim_world_seed', sanitize_text_field($_POST['world_seed']));
+            }
             
             echo '<div class="updated notice"><p>Weather Calendar configuration updated successfully!</p></div>';
         }
@@ -241,6 +245,7 @@ function render_weather_calendar_config_page() {
     $manual_start_date = get_option('weather_manual_start_date', '2025-08-22T00:00');
     $manual_progression = get_option('weather_manual_progression', 'static');
     $server_start_date = get_option('weather_server_start_date', '2025-08-01T19:30');
+    $world_seed = get_option('jotunheim_world_seed', '');
     
     ?>
     <div class="wrap">
@@ -340,6 +345,13 @@ function render_weather_calendar_config_page() {
                                     Day counting progresses based on in-game time (30 min = 1 day)</p>
                                 </td>
                             </tr>
+                            <tr>
+                                <th scope="row">World Seed (optional)</th>
+                                <td>
+                                    <input type="text" name="world_seed" value="<?php echo esc_attr($world_seed); ?>" class="regular-text" placeholder="e.g. 9BCp6a4KQo">
+                                    <p class="description">Optional: store your Valheim world seed here so the plugin can deterministically generate weather/wind for your world.</p>
+                                </td>
+                            </tr>
                         </table>
                     </div>
                 </div>
@@ -363,6 +375,32 @@ function render_weather_calendar_config_page() {
                     <li><strong>Server Start Date</strong> - Default method, calculates from server start</li>
                 </ol>
                 <p><em>The system automatically falls back to the next priority if a higher one fails.</em></p>
+            </div>
+        </div>
+        
+        <div class="postbox" style="margin-top: 20px;">
+            <div class="postbox-header"><h2>🔎 Seed Preview</h2></div>
+            <div class="inside">
+                <p>Sample weather and wind computed using the saved world seed (<strong><?php echo esc_html($world_seed ?: 'none'); ?></strong>).</p>
+                <?php
+                // Show a small preview using server-side generator if available
+                if (function_exists('\Jotunheim\Utility\getWeathersAt') && function_exists('\Jotunheim\Utility\getGlobalWind')) {
+                    echo '<table class="widefat"><thead><tr><th>Day Index</th><th>Wind (angle,int)</th><th>Biome[0]</th><th>Biome[1]</th></tr></thead><tbody>';
+                    for ($d = 0; $d < 3; $d++) {
+                        $idx = $d * 3600; // sample tick for day
+                        $wind = \Jotunheim\Utility\getGlobalWind($idx);
+                        $weathers = \Jotunheim\Utility\getWeathersAt($idx);
+                        $wa = isset($wind['angle']) ? round($wind['angle']) : 'n/a';
+                        $wi = isset($wind['intensity']) ? round($wind['intensity']*100)."%" : 'n/a';
+                        $b0 = isset($weathers[0]) ? esc_html($weathers[0]) : 'n/a';
+                        $b1 = isset($weathers[1]) ? esc_html($weathers[1]) : 'n/a';
+                        echo "<tr><td>{$d}</td><td>{$wa}°, {$wi}</td><td>{$b0}</td><td>{$b1}</td></tr>";
+                    }
+                    echo '</tbody></table>';
+                } else {
+                    echo '<p><em>Server-side weather generator not available.</em></p>';
+                }
+                ?>
             </div>
         </div>
         

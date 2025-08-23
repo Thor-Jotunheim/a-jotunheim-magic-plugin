@@ -16,6 +16,9 @@ require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 
 // Include Utility files
 include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
+// Include Valheim weather PHP utility (server-side generator)
+include_once(plugin_dir_path(__FILE__) . 'includes/Utility/valheim-weather.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Utility/weather-rest.php');
 
 // Enqueue Valheim Weather JavaScript
 function jotunheim_magic_enqueue_scripts() {
