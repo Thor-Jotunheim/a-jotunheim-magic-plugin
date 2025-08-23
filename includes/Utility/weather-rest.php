@@ -35,7 +35,7 @@ function jotunheim_weather_rest_handler($request) {
     } else {
         // try calling the plugin helper (namespaced) if available
         if (function_exists('\\Jotunheim\\Utility\\jotunheim_get_numeric_seed')) {
-            $numericSeed = \\Jotunheim\\Utility\\jotunheim_get_numeric_seed();
+            $numericSeed = \Jotunheim\Utility\jotunheim_get_numeric_seed();
         } else {
             $numericSeed = 0;
         }
@@ -54,19 +54,19 @@ function jotunheim_weather_rest_handler($request) {
     }
 
     // Wind: ng(($tick + numericSeed) * 125, $ig)
-    $ig = new \\Jotunheim\\Utility\\Yj(0);
+    $ig = new \Jotunheim\Utility\Yj(0);
     if (!function_exists('\\Jotunheim\\Utility\\ng')) {
         return new WP_Error('no_generator_fn', 'Wind generator function missing after include', array('status' => 500));
     }
-    $wind = \\Jotunheim\\Utility\\ng(($tick + $numericSeed) * 125, $ig);
+    $wind = \Jotunheim\Utility\ng(($tick + $numericSeed) * 125, $ig);
 
     // Weather: weatherSeed = floor((($tick + numericSeed) * 125) / 666); og(weatherSeed, $ig2)
     if (!function_exists('\\Jotunheim\\Utility\\og')) {
         return new WP_Error('no_generator_fn2', 'Weather generator function missing after include', array('status' => 500));
     }
-    $ig2 = new \\Jotunheim\\Utility\\Yj(0);
+    $ig2 = new \Jotunheim\Utility\Yj(0);
     $weatherSeed = intval(floor((($tick + $numericSeed) * 125) / 666));
-    $weathers = \\Jotunheim\\Utility\\og($weatherSeed, $ig2);
+    $weathers = \Jotunheim\Utility\og($weatherSeed, $ig2);
 
     $data = array(
         'day' => $day,
