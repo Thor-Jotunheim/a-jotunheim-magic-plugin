@@ -117,9 +117,19 @@ function getCachedApiData() {
 // Cache API data
 function cacheApiData(currentDay, payload) {
     try {
+        // Do not store seed or numericSeed in client cache
+        var safePayload = null;
+        if (payload) {
+            try {
+                safePayload = JSON.parse(JSON.stringify(payload));
+                if (safePayload.numericSeed) delete safePayload.numericSeed;
+                if (safePayload.seed) delete safePayload.seed;
+            } catch (e) { safePayload = null; }
+        }
+
         var cacheData = {
             currentDay: currentDay,
-            payload: payload || null,
+            payload: safePayload,
             timestamp: new Date().getTime()
         };
         localStorage.setItem(API_CACHE_KEY, JSON.stringify(cacheData));
@@ -151,14 +161,22 @@ async function fetchWeatherForDay(day) {
 
         // Try fetching server endpoint with optional day query
         var url = CONFIG.apiEndpoint;
-        try {
-            var parsed = new URL(url, window.location.origin);
-            parsed.searchParams.set('day', String(day));
-            url = parsed.toString();
-        } catch (e) {
-            // If endpoint is relative or malformed, append query in simple way
-            if (url.indexOf('?') === -1) url += '?day=' + String(day); else url += '&day=' + String(day);
-        }
+            // If apiEndpoint looks like .../weather, prefer .../weather-range for bulk/indexed payloads
+            try {
+                var p = new URL(url, window.location.origin);
+                if (p.pathname.match(/\/weather\/?$/)) {
+                    p.pathname = p.pathname.replace(/\/weather\/?$/, '/weather-range');
+                    p.searchParams.set('day', String(day));
+                    url = p.toString();
+                } else {
+                    // append day param to original
+                    p.searchParams.set('day', String(day));
+                    url = p.toString();
+                }
+            } catch (e) {
+                // fallback simple append
+                if (url.indexOf('?') === -1) url += '?day=' + String(day); else url += '&day=' + String(day);
+            }
 
         const resp = await fetch(url);
         if (!resp.ok) return null;
