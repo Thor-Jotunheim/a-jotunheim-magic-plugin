@@ -1,0 +1,645 @@
+{
+  "source": "kirilloid-scrolled-v2",
+  "url": "http://valheim.kirilloid.ru/weather#1",
+  "days": {
+    "1": [
+      {
+        "time": "00:00",
+        "byBiome": {
+          "Meadows": "Day 1",
+          "Black forest": "00:00",
+          "Swamp": "⛈️",
+          "Ocean": "⛈️",
+          "Mountain": "⛈️",
+          "Plains": "⛈️",
+          "Mistlands": "⛈️",
+          "Ashlands": "⛈️"
+        }
+      },
+      {
+        "time": "01:00",
+        "byBiome": {
+          "Meadows": "100%",
+          "Black forest": "100%",
+          "Swamp": "100%",
+          "Ocean": "100%",
+          "Mountain": "100%",
+          "Plains": "100%",
+          "Mistlands": "100%",
+          "Ashlands": "100%"
+        }
+      },
+      {
+        "time": "02:40",
+        "byBiome": {
+          "Meadows": "84%",
+          "Black forest": "84%",
+          "Swamp": "84%",
+          "Ocean": "84%",
+          "Mountain": "84%",
+          "Plains": "84%",
+          "Mistlands": "84%",
+          "Ashlands": "84%"
+        }
+      },
+      {
+        "time": "03:12",
+        "byBiome": {
+          "Meadows": "🌕",
+          "Black forest": "🌕",
+          "Swamp": "🌧️",
+          "Ocean": "🌫️",
+          "Mountain": "🌨️",
+          "Plains": "🌕",
+          "Mistlands": "🌕",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "03:36",
+        "byBiome": {
+          "Meadows": "Sunrise",
+          "Black forest": "04:20",
+          "Swamp": "16%",
+          "Ocean": "16%",
+          "Mountain": "13%",
+          "Plains": "13%",
+          "Mistlands": "16%",
+          "Ashlands": "45%"
+        }
+      },
+      {
+        "time": "06:00",
+        "byBiome": {
+          "Meadows": "23%",
+          "Black forest": "23%",
+          "Swamp": "15%",
+          "Ocean": "15%",
+          "Mountain": "23%",
+          "Plains": "50%",
+          "Mistlands": "9%",
+          "Ashlands": "20%"
+        }
+      },
+      {
+        "time": "07:40",
+        "byBiome": {
+          "Meadows": "22%",
+          "Black forest": "22%",
+          "Swamp": "15%",
+          "Ocean": "15%",
+          "Mountain": "22%",
+          "Plains": "49%",
+          "Mistlands": "9%",
+          "Ashlands": "19%"
+        }
+      },
+      {
+        "time": "09:20",
+        "byBiome": {
+          "Meadows": "13%",
+          "Black forest": "13%",
+          "Swamp": "11%",
+          "Ocean": "11%",
+          "Mountain": "13%",
+          "Plains": "42%",
+          "Mistlands": "6%",
+          "Ashlands": "12%"
+        }
+      },
+      {
+        "time": "11:00",
+        "byBiome": {
+          "Meadows": "10%",
+          "Black forest": "10%",
+          "Swamp": "10%",
+          "Ocean": "10%",
+          "Mountain": "10%",
+          "Plains": "40%",
+          "Mistlands": "5%",
+          "Ashlands": "10%"
+        }
+      },
+      {
+        "time": "11:31",
+        "byBiome": {
+          "Meadows": "☀️",
+          "Black forest": "☀️",
+          "Swamp": "🌧️",
+          "Ocean": "☀️",
+          "Mountain": "🌨️",
+          "Plains": "🌫️",
+          "Mistlands": "☀️",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "12:40",
+        "byBiome": {
+          "Meadows": "17%",
+          "Black forest": "17%",
+          "Swamp": "13%",
+          "Ocean": "17%",
+          "Mountain": "17%",
+          "Plains": "13%",
+          "Mistlands": "7%",
+          "Ashlands": "15%"
+        }
+      },
+      {
+        "time": "14:20",
+        "byBiome": {
+          "Meadows": "13%",
+          "Black forest": "13%",
+          "Swamp": "11%",
+          "Ocean": "13%",
+          "Mountain": "13%",
+          "Plains": "11%",
+          "Mistlands": "6%",
+          "Ashlands": "12%"
+        }
+      },
+      {
+        "time": "16:00",
+        "byBiome": {
+          "Meadows": "47%",
+          "Black forest": "47%",
+          "Swamp": "25%",
+          "Ocean": "47%",
+          "Mountain": "47%",
+          "Plains": "25%",
+          "Mistlands": "16%",
+          "Ashlands": "39%"
+        }
+      },
+      {
+        "time": "17:40",
+        "byBiome": {
+          "Meadows": "47%",
+          "Black forest": "47%",
+          "Swamp": "25%",
+          "Ocean": "47%",
+          "Mountain": "47%",
+          "Plains": "25%",
+          "Mistlands": "16%",
+          "Ashlands": "40%"
+        }
+      },
+      {
+        "time": "19:20",
+        "byBiome": {
+          "Meadows": "41%",
+          "Black forest": "41%",
+          "Swamp": "22%",
+          "Ocean": "41%",
+          "Mountain": "41%",
+          "Plains": "22%",
+          "Mistlands": "14%",
+          "Ashlands": "34%"
+        }
+      },
+      {
+        "time": "20:24",
+        "byBiome": {
+          "Meadows": "Sunset",
+          "Black forest": "20:24",
+          "Swamp": "🌕",
+          "Ocean": "🌕",
+          "Mountain": "🌧️",
+          "Plains": "🌕",
+          "Mistlands": "🌨️",
+          "Ashlands": "🌕"
+        }
+      },
+      {
+        "time": "21:00",
+        "byBiome": {
+          "Meadows": "45%",
+          "Black forest": "45%",
+          "Swamp": "24%",
+          "Ocean": "45%",
+          "Mountain": "45%",
+          "Plains": "68%",
+          "Mistlands": "15%",
+          "Ashlands": "38%"
+        }
+      },
+      {
+        "time": "22:40",
+        "byBiome": {
+          "Meadows": "60%",
+          "Black forest": "60%",
+          "Swamp": "30%",
+          "Ocean": "60%",
+          "Mountain": "60%",
+          "Plains": "80%",
+          "Mistlands": "20%",
+          "Ashlands": "50%"
+        }
+      },
+      {
+        "time": "00:00",
+        "byBiome": {
+          "Meadows": "Day 2",
+          "Black forest": "00:20",
+          "Swamp": "60%",
+          "Ocean": "60%",
+          "Mountain": "30%",
+          "Plains": "60%",
+          "Mistlands": "60%",
+          "Ashlands": "80%"
+        }
+      },
+      {
+        "time": "02:00",
+        "byBiome": {
+          "Meadows": "53%",
+          "Black forest": "53%",
+          "Swamp": "27%",
+          "Ocean": "53%",
+          "Mountain": "53%",
+          "Plains": "75%",
+          "Mistlands": "18%",
+          "Ashlands": "45%"
+        }
+      },
+      {
+        "time": "03:36",
+        "byBiome": {
+          "Meadows": "Sunrise",
+          "Black forest": "03:40",
+          "Swamp": "53%",
+          "Ocean": "53%",
+          "Mountain": "27%",
+          "Plains": "53%",
+          "Mistlands": "53%",
+          "Ashlands": "75%"
+        }
+      },
+      {
+        "time": "05:17",
+        "byBiome": {
+          "Meadows": "🌫️",
+          "Black forest": "🌫️",
+          "Swamp": "🌧️",
+          "Ocean": "☀️",
+          "Mountain": "🌨️",
+          "Plains": "🌦️",
+          "Mistlands": "🌧️",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "05:20",
+        "byBiome": {
+          "Meadows": "25%",
+          "Black forest": "25%",
+          "Swamp": "25%",
+          "Ocean": "48%",
+          "Mountain": "48%",
+          "Plains": "48%",
+          "Mistlands": "16%",
+          "Ashlands": "71%"
+        }
+      },
+      {
+        "time": "07:00",
+        "byBiome": {
+          "Meadows": "24%",
+          "Black forest": "24%",
+          "Swamp": "24%",
+          "Ocean": "46%",
+          "Mountain": "46%",
+          "Plains": "46%",
+          "Mistlands": "16%",
+          "Ashlands": "71%"
+        }
+      },
+      {
+        "time": "08:40",
+        "byBiome": {
+          "Meadows": "22%",
+          "Black forest": "22%",
+          "Swamp": "22%",
+          "Ocean": "41%",
+          "Mountain": "41%",
+          "Plains": "41%",
+          "Mistlands": "14%",
+          "Ashlands": "72%"
+        }
+      },
+      {
+        "time": "10:20",
+        "byBiome": {
+          "Meadows": "21%",
+          "Black forest": "21%",
+          "Swamp": "21%",
+          "Ocean": "37%",
+          "Mountain": "37%",
+          "Plains": "37%",
+          "Mistlands": "13%",
+          "Ashlands": "72%"
+        }
+      },
+      {
+        "time": "12:00",
+        "byBiome": {
+          "Meadows": "25%",
+          "Black forest": "25%",
+          "Swamp": "25%",
+          "Ocean": "48%",
+          "Mountain": "48%",
+          "Plains": "48%",
+          "Mistlands": "16%",
+          "Ashlands": "71%"
+        }
+      },
+      {
+        "time": "13:40",
+        "byBiome": {
+          "Meadows": "25%",
+          "Black forest": "25%",
+          "Swamp": "25%",
+          "Ocean": "48%",
+          "Mountain": "48%",
+          "Plains": "48%",
+          "Mistlands": "16%",
+          "Ashlands": "71%"
+        }
+      },
+      {
+        "time": "14:10",
+        "byBiome": {
+          "Meadows": "☀️",
+          "Black forest": "☀️",
+          "Swamp": "🌧️",
+          "Ocean": "☀️",
+          "Mountain": "🌨️",
+          "Plains": "☀️",
+          "Mistlands": "☀️",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "15:20",
+        "byBiome": {
+          "Meadows": "51%",
+          "Black forest": "51%",
+          "Swamp": "26%",
+          "Ocean": "51%",
+          "Mountain": "51%",
+          "Plains": "73%",
+          "Mistlands": "17%",
+          "Ashlands": "43%"
+        }
+      },
+      {
+        "time": "17:00",
+        "byBiome": {
+          "Meadows": "51%",
+          "Black forest": "51%",
+          "Swamp": "26%",
+          "Ocean": "51%",
+          "Mountain": "51%",
+          "Plains": "73%",
+          "Mistlands": "17%",
+          "Ashlands": "43%"
+        }
+      },
+      {
+        "time": "18:40",
+        "byBiome": {
+          "Meadows": "28%",
+          "Black forest": "28%",
+          "Swamp": "17%",
+          "Ocean": "28%",
+          "Mountain": "28%",
+          "Plains": "55%",
+          "Mistlands": "10%",
+          "Ashlands": "25%"
+        }
+      },
+      {
+        "time": "20:20",
+        "byBiome": {
+          "Meadows": "28%",
+          "Black forest": "28%",
+          "Swamp": "17%",
+          "Ocean": "28%",
+          "Mountain": "28%",
+          "Plains": "55%",
+          "Mistlands": "11%",
+          "Ashlands": "25%"
+        }
+      },
+      {
+        "time": "20:24",
+        "byBiome": {
+          "Meadows": "Sunset",
+          "Black forest": "22:00",
+          "Swamp": "24%",
+          "Ocean": "24%",
+          "Mountain": "15%",
+          "Plains": "24%",
+          "Mistlands": "24%",
+          "Ashlands": "51%"
+        }
+      },
+      {
+        "time": "23:02",
+        "byBiome": {
+          "Meadows": "🌕",
+          "Black forest": "🌕",
+          "Swamp": "🌧️",
+          "Ocean": "🌦️",
+          "Mountain": "❄️",
+          "Plains": "🌕",
+          "Mistlands": "🌕",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "23:40",
+        "byBiome": {
+          "Meadows": "26%",
+          "Black forest": "26%",
+          "Swamp": "16%",
+          "Ocean": "26%",
+          "Mountain": "86%",
+          "Plains": "53%",
+          "Mistlands": "10%",
+          "Ashlands": "23%"
+        }
+      },
+      {
+        "time": "00:00",
+        "byBiome": {
+          "Meadows": "Day 3",
+          "Black forest": "01:20",
+          "Swamp": "35%",
+          "Ocean": "35%",
+          "Mountain": "20%",
+          "Plains": "35%",
+          "Mistlands": "90%",
+          "Ashlands": "60%"
+        }
+      },
+      {
+        "time": "03:00",
+        "byBiome": {
+          "Meadows": "37%",
+          "Black forest": "37%",
+          "Swamp": "21%",
+          "Ocean": "37%",
+          "Mountain": "91%",
+          "Plains": "61%",
+          "Mistlands": "13%",
+          "Ashlands": "31%"
+        }
+      },
+      {
+        "time": "03:36",
+        "byBiome": {
+          "Meadows": "Sunrise",
+          "Black forest": "04:40",
+          "Swamp": "30%",
+          "Ocean": "30%",
+          "Mountain": "18%",
+          "Plains": "30%",
+          "Mistlands": "88%",
+          "Ashlands": "56%"
+        }
+      },
+      {
+        "time": "06:20",
+        "byBiome": {
+          "Meadows": "32%",
+          "Black forest": "32%",
+          "Swamp": "19%",
+          "Ocean": "32%",
+          "Mountain": "89%",
+          "Plains": "58%",
+          "Mistlands": "12%",
+          "Ashlands": "28%"
+        }
+      },
+      {
+        "time": "07:55",
+        "byBiome": {
+          "Meadows": "☀️",
+          "Black forest": "☀️",
+          "Swamp": "🌧️",
+          "Ocean": "☀️",
+          "Mountain": "🌨️",
+          "Plains": "☀️",
+          "Mistlands": "☀️",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "08:00",
+        "byBiome": {
+          "Meadows": "24%",
+          "Black forest": "24%",
+          "Swamp": "15%",
+          "Ocean": "24%",
+          "Mountain": "24%",
+          "Plains": "51%",
+          "Mistlands": "9%",
+          "Ashlands": "21%"
+        }
+      },
+      {
+        "time": "09:40",
+        "byBiome": {
+          "Meadows": "23%",
+          "Black forest": "23%",
+          "Swamp": "15%",
+          "Ocean": "23%",
+          "Mountain": "23%",
+          "Plains": "50%",
+          "Mistlands": "9%",
+          "Ashlands": "20%"
+        }
+      },
+      {
+        "time": "11:20",
+        "byBiome": {
+          "Meadows": "22%",
+          "Black forest": "22%",
+          "Swamp": "15%",
+          "Ocean": "22%",
+          "Mountain": "22%",
+          "Plains": "49%",
+          "Mistlands": "8%",
+          "Ashlands": "19%"
+        }
+      },
+      {
+        "time": "13:00",
+        "byBiome": {
+          "Meadows": "22%",
+          "Black forest": "22%",
+          "Swamp": "15%",
+          "Ocean": "22%",
+          "Mountain": "22%",
+          "Plains": "49%",
+          "Mistlands": "8%",
+          "Ashlands": "19%"
+        }
+      },
+      {
+        "time": "14:40",
+        "byBiome": {
+          "Meadows": "10%",
+          "Black forest": "10%",
+          "Swamp": "10%",
+          "Ocean": "10%",
+          "Mountain": "10%",
+          "Plains": "40%",
+          "Mistlands": "5%",
+          "Ashlands": "10%"
+        }
+      },
+      {
+        "time": "16:20",
+        "byBiome": {
+          "Meadows": "13%",
+          "Black forest": "13%",
+          "Swamp": "11%",
+          "Ocean": "13%",
+          "Mountain": "13%",
+          "Plains": "42%",
+          "Mistlands": "6%",
+          "Ashlands": "12%"
+        }
+      },
+      {
+        "time": "16:48",
+        "byBiome": {
+          "Meadows": "☀️",
+          "Black forest": "☀️",
+          "Swamp": "🌧️",
+          "Ocean": "☀️",
+          "Mountain": "🌨️",
+          "Plains": "☀️",
+          "Mistlands": "☀️",
+          "Ashlands": "☔"
+        }
+      },
+      {
+        "time": "18:00",
+        "byBiome": {
+          "Meadows": "19%",
+          "Black forest": "19%",
+          "Swamp": "14%",
+          "Ocean": "19%",
+          "Mountain": "19%",
+          "Plains": "47%",
+          "Mistlands": null,
+          "Ashlands": null
+        }
+      }
+    ]
+  }
+}
