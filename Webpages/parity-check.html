@@ -43,6 +43,39 @@
     console.log(...args);
   }
 
+  // global error handler to capture parse/load errors and resource URLs
+  window.addEventListener('error', function(e){
+    try{
+      // script parse errors often have filename in e.filename, resource load errors have e.target.src
+      const src = e.filename || (e.target && (e.target.src || e.target.href)) || '<unknown>';
+      log('Global error:', e.message || e.type, 'source:', src);
+      // show full event for debugging
+      console.error('Global error event', e);
+    }catch(_){ console.error('Error in global error handler', _); }
+  }, true);
+
+  window.addEventListener('unhandledrejection', function(ev){
+    log('Unhandled promise rejection:', ev.reason && (ev.reason.message || ev.reason));
+    console.error('Unhandled rejection', ev);
+  });
+
+  // detect any stray <script> tags on the page that reference valheim-weather.js or /assets/js/
+  function detectStrayScriptTags(){
+    const scripts = Array.from(document.getElementsByTagName('script'));
+    scripts.forEach(s => {
+      try{
+        if (s.src && s.src.includes('valheim-weather.js')) {
+          log('Found script tag referencing valheim-weather.js:', s.src);
+        }
+        if (s.src && s.src.includes('/assets/js/')) {
+          log('Found script tag in /assets/js/:', s.src);
+        }
+      }catch(_){ /* ignore */ }
+    });
+  }
+  // run detection early
+  detectStrayScriptTags();
+
   // kirilloid RNG and functions (copied from run-kirilloid-core.js)
   class Yj {
     constructor(t){ this.init(t); }
@@ -91,9 +124,35 @@
       if (tried >= pluginPaths.length) { log('Failed to load plugin script from expected locations.'); callback(false); return; }
       const src = pluginPaths[tried++];
       log('Trying to load plugin script at', src);
-      const s = document.createElement('script'); s.src = src; s.onload = ()=>{ log('Loaded', src); setTimeout(()=>callback(!!(window.getGlobalWind && window.getWeathersAt)),50); };
-      s.onerror = ()=>{ log('Failed to load', src); tryNext(); };
-      document.head.appendChild(s);
+      // fetch first to detect HTML error pages (which would throw SyntaxError when injected as script)
+      fetch(src, {cache: 'no-store'}).then(function(resp){
+        if (!resp.ok) {
+          log('HTTP', resp.status, 'loading', src);
+          tryNext();
+          return;
+        }
+        return resp.text();
+      }).then(function(text){
+        if (!text) return;
+        const sample = text.trim().slice(0,200);
+        if (sample.startsWith('<')) {
+          log('Received HTML instead of JS from', src);
+          log('Response preview:', sample);
+          tryNext();
+          return;
+        }
+        // safe to inject
+        const blob = new Blob([text], {type: 'application/javascript'});
+        const blobUrl = URL.createObjectURL(blob);
+        const s = document.createElement('script');
+        s.src = blobUrl;
+        s.onload = ()=>{ log('Loaded', src, '(injected blob)'); setTimeout(()=>callback(!!(window.getGlobalWind && window.getWeathersAt)),50); };
+        s.onerror = ()=>{ log('Failed to execute injected script for', src); tryNext(); };
+        document.head.appendChild(s);
+      }).catch(function(err){
+        log('Fetch error for', src, err);
+        tryNext();
+      });
     }
     tryNext();
   }
@@ -147,20 +206,45 @@
     const start = parseInt(document.getElementById('startIdx').value,10) || 0;
     const count = parseInt(document.getElementById('count').value,10) || 30;
     log('Running parity for idx', start, 'count', count);
+    document.getElementById('status').textContent = 'Loading plugin script...';
     loadPluginScript(function(loaded){
-      if (!loaded) log('Warning: plugin functions not available — results will show null for "our" entries');
+      if (!loaded) {
+        log('Warning: plugin functions not available — results will show null for "our" entries');
+        document.getElementById('status').textContent = 'Plugin script NOT loaded — check server path / logs';
+      } else {
+        document.getElementById('status').textContent = 'Plugin script loaded — running parity';
+      }
       const res = runParity(start, count);
       renderResults(res);
       log('Done');
+      document.getElementById('status').textContent = 'Completed';
     });
   });
 
   document.getElementById('reloadBtn').addEventListener('click', ()=>{
-    // force reload plugin script by adding timestamped query param
-    const s = document.createElement('script'); s.src = '/wp-content/plugins/a-jotunheim-magic-plugin/assets/js/valheim-weather.js?ver=' + Date.now();
-    s.onload = ()=>{ log('Reloaded plugin script'); };
-    s.onerror = ()=>{ log('Reload attempt failed'); };
-    document.head.appendChild(s);
+    // safer reload: fetch the script first and validate it's JS before injecting
+    const src = '/wp-content/plugins/a-jotunheim-magic-plugin/assets/js/valheim-weather.js?ver=' + Date.now();
+    log('Attempting safe reload from', src);
+    fetch(src, {cache: 'no-store'}).then(r=>{
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(text=>{
+      const sample = (text||'').trim().slice(0,200);
+      if (sample.startsWith('<')) {
+        log('Reload blocked: received HTML instead of JS from', src);
+        log('Preview:', sample);
+        return;
+      }
+      const blob = new Blob([text], {type: 'application/javascript'});
+      const blobUrl = URL.createObjectURL(blob);
+      const s = document.createElement('script');
+      s.src = blobUrl;
+      s.onload = ()=>{ log('Reloaded plugin script (injected blob) from', src); };
+      s.onerror = (err)=>{ log('Reload injection failed for', src, err); };
+      document.head.appendChild(s);
+    }).catch(err=>{
+      log('Reload fetch error for', src, err && err.message ? err.message : err);
+    });
   });
 
 })();
