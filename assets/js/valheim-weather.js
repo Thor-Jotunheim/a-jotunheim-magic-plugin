@@ -529,7 +529,7 @@ function formatWindWithSymbol(angle, intensity) {
     
     // Create a rotated arrow icon using SVG (based on kirilloid's design)
     var windArrow = '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" ' +
-        'style="display: inline-block; width: 16px; height: 16px; transform: rotate(' + angle + 'deg); margin-right: 4px; vertical-align: middle;">' +
+        'style="display: inline-block; width: 16px; height: 16px; transform: rotate(' + (angle - 90) + 'deg); margin-right: 4px; vertical-align: middle;">' +
         '<path stroke="currentColor" fill="currentColor" ' +
         'd="M 16,4 L24,12 L22,14 L17.5,9.5 L17.5,25.5 L14.5,25.5 L14.5,9.5 L10,14 L8,12 L16,4 z" />' +
         '</svg>';
@@ -548,7 +548,7 @@ function getSunTimes(day) {
 // Create the weather display table (cross-browser compatible)
 function createWeatherDisplay() {
     var weatherDisplay = document.getElementById('weatherDisplay');
-    if (!weatherDisplay) return;
+    if (!weatherDisplay) { console.warn('valheim-weather: #weatherDisplay not found'); return; }
     
     var biomeKeys = Object.keys(BIOMES);
     
@@ -580,7 +580,7 @@ function updateCurrentInfo(day) {
 
 function updateWeatherTable(day) {
     var tableBody = document.getElementById('weatherTableBody');
-    if (!tableBody) return;
+    if (!tableBody) { console.warn('valheim-weather: #weatherTableBody not found'); return; }
     
     tableBody.innerHTML = '';
     
@@ -739,12 +739,14 @@ function updateWeatherTable(day) {
 function showForecast() {
     var forecastSection = document.getElementById('forecastSection');
     var forecastGrid = document.getElementById('forecastGrid');
-    if (!forecastSection || !forecastGrid) return;
+    if (!forecastSection || !forecastGrid) { console.warn('valheim-weather: #forecastSection or #forecastGrid missing'); return; }
     
     forecastSection.style.display = 'block';
     forecastGrid.innerHTML = '';
     
-    var currentDay = parseInt(document.getElementById('dayInput').value);
+    var dayInputEl = document.getElementById('dayInput');
+    if (!dayInputEl) { console.warn('valheim-weather: #dayInput missing in forecast'); return; }
+    var currentDay = parseInt(dayInputEl.value);
     // Standard day calculation (remove timing offset, try WEATHER_PERIOD adjustment)
     var startTime = (currentDay - 1) * GAME_DAY;
     var biomeKeys = Object.keys(BIOMES);
@@ -790,7 +792,7 @@ function showForecast() {
 // Event handlers
 function changeDay(delta) {
     var dayInput = document.getElementById('dayInput');
-    if (!dayInput) return;
+    if (!dayInput) { console.warn('valheim-weather: #dayInput not found (changeDay)'); return; }
     
     var newDay = Math.max(1, parseInt(dayInput.value) + delta);
     dayInput.value = newDay;
@@ -799,7 +801,7 @@ function changeDay(delta) {
 
 function goToCurrentDay() {
     var dayInput = document.getElementById('dayInput');
-    if (!dayInput) return;
+    if (!dayInput) { console.warn('valheim-weather: #dayInput not found (goToCurrentDay)'); return; }
     
     // Recalculate current day in case time has passed or configuration changed
     getCurrentGameDay().then(function(newCurrentDay) {
@@ -811,7 +813,7 @@ function goToCurrentDay() {
 
 function updateWeather() {
     var dayInput = document.getElementById('dayInput');
-    if (!dayInput) return;
+    if (!dayInput) { console.warn('valheim-weather: #dayInput not found (updateWeather)'); return; }
     
     var day = parseInt(dayInput.value);
     updateCurrentInfo(day);
@@ -871,7 +873,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Update every 30 seconds, and recalculate current day every 5 minutes
         var updateCount = 0;
         setInterval(function() {
-            updateCurrentInfo(parseInt(dayInput.value));
+            try { updateCurrentInfo(parseInt(dayInput.value)); } catch (e) { console.warn('updateCurrentInfo failed', e); }
             updateCount++;
             
             // Every 10 intervals (5 minutes), recalculate the current day
@@ -891,6 +893,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 updateCount = 0;
             }
         }, 30000);
+    }
+    else {
+        console.warn('valheim-weather: #dayInput not found in DOM; some interactive features disabled.');
     }
 });
 
