@@ -19,11 +19,18 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Utility/dark-mode.php');
 
 // Enqueue Valheim Weather JavaScript
 function jotunheim_magic_enqueue_scripts() {
+    $weather_js_path = plugin_dir_path(__FILE__) . 'assets/js/valheim-weather.js';
+    $weather_js_url = plugin_dir_url(__FILE__) . 'assets/js/valheim-weather.js';
+    $script_version = '1.0.0';
+    if (file_exists($weather_js_path)) {
+        $script_version = filemtime($weather_js_path);
+    }
+
     wp_enqueue_script(
         'valheim-weather',
-        plugin_dir_url(__FILE__) . 'assets/js/valheim-weather.js',
+        $weather_js_url,
         array(),
-        '1.0.0',
+        $script_version,
         true
     );
     

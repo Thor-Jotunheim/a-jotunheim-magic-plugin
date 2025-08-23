@@ -465,14 +465,14 @@ function getWeathersAt(windTick) {
     var rng = random.rangeFloat(0, 1);
     
     // Debug log for Day 984 area (aligned to weather index computed from windTick)
-    var day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
-    var day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
-    var weatherIndex = Math.floor((windTick * WIND_PERIOD) / WEATHER_PERIOD);
+    const day984StartTime = 984 * GAME_DAY; // Day 984 starts at this game time
+    const day984StartIndex = Math.floor(day984StartTime / WEATHER_PERIOD);
+    const weatherIndex = Math.floor((windTick * WIND_PERIOD) / WEATHER_PERIOD);
     if (weatherIndex >= day984StartIndex && weatherIndex <= day984StartIndex + 20) {
         console.log('Day 984 Debug - Weather index ' + weatherIndex + ', Day 984 start index: ' + day984StartIndex + ', RNG: ' + rng.toFixed(4));
-        var timeFromDayStart = (weatherIndex - day984StartIndex) * WEATHER_PERIOD;
-        var hours = Math.floor((timeFromDayStart / GAME_DAY) * 24);
-        var minutes = Math.floor(((timeFromDayStart / GAME_DAY) * 24 % 1) * 60);
+        const timeFromDayStart = (weatherIndex - day984StartIndex) * WEATHER_PERIOD;
+        const hours = Math.floor((timeFromDayStart / GAME_DAY) * 24);
+        const minutes = Math.floor(((timeFromDayStart / GAME_DAY) * 24 % 1) * 60);
         console.log('  Time from day 984 start: ' + timeFromDayStart + ' seconds = ' + hours + ':' + String(minutes).padStart(2, '0'));
     }
     
@@ -622,6 +622,7 @@ function updateWeatherTable(day) {
         var timeString = String(displayHour).padStart(2, '0') + ':' + String(displayMinute).padStart(2, '0');
         
         // DEBUG: Log specific times for Day 984
+        const weatherIndex = Math.floor((windTick * WIND_PERIOD) / WEATHER_PERIOD);
         if (day === 984 && (displayHour === 13 || displayHour === 11)) {
             console.log('DEBUG Day 984 time ' + timeString + ':');
             console.log('  gameTime:', gameTime);
@@ -841,15 +842,16 @@ function updateConfigFromWordPress() {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', async function() {
-    // Load WordPress configuration first
-    await loadWordPressConfig();
-    updateConfigFromWordPress();
-    
-    // Create the weather display table
-    createWeatherDisplay();
-    
-    var dayInput = document.getElementById('dayInput');
-    if (dayInput) {
+    try {
+        // Load WordPress configuration first
+        await loadWordPressConfig();
+        updateConfigFromWordPress();
+        
+        // Create the weather display table
+        createWeatherDisplay();
+        
+        var dayInput = document.getElementById('dayInput');
+        if (dayInput) {
         // Load configuration from form and calculate current day
         loadConfigurationFromForm();
         
@@ -893,9 +895,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 updateCount = 0;
             }
         }, 30000);
-    }
-    else {
-        console.warn('valheim-weather: #dayInput not found in DOM; some interactive features disabled.');
+        }
+        else {
+            console.warn('valheim-weather: #dayInput not found in DOM; some interactive features disabled.');
+        }
+    } catch (err) {
+        console.error('valheim-weather initialization failed:', err);
     }
 });
 
