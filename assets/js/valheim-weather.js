@@ -457,7 +457,13 @@ var GAME_DAY = 1800; // Game seconds in a day (30 minutes real time, kirilloid a
 var WEATHER_PERIOD = 666; // Weather changes every 666 game seconds (kirilloid authentic)
 var WIND_PERIOD = 125; // Wind changes every 125 game seconds (kirilloid authentic)
 var INTRO_DURATION = 2040; // First intro period (kirilloid authentic)
-// Compatibility shim: integer shift applied to windTick to match observed live-site alignment
+// Compatibility shim: integer shift applied to windTick to match observed live-site alignment.
+// Rationale: kirilloid's runtime uses the same Unity/xorshift PRNG; local parity
+// testing against a saved snapshot (day 984) showed best biome agreement when
+// the windTick is shifted by -6 before computing weather/wind seeds. See
+// scripts/shift-sweep.js and tmp_live_weather_984.json for the parity checks
+// that produced this recommendation. Keep this as a compatibility shim until
+// more snapshots are available.
 var WIND_TICK_SHIFT = -6;
 
 // Weather types and their data (from actual Valheim)

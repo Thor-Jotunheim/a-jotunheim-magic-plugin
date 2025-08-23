@@ -106,7 +106,14 @@ function ng($e,$ig){
 }
 
 // exposed functions
-// Compatibility shim: integer shift applied to windTick to match observed live-site alignment
+// Compatibility shim: integer shift applied to windTick to match observed live-site alignment.
+// Rationale: kirilloid's runtime uses the same Unity/xorshift PRNG; parity testing
+// against a saved snapshot for day 984 shows best biome-level agreement when
+// windTick is shifted by -6 before computing weather/wind seeds. See
+// scripts/shift-sweep.js and tmp_live_weather_984.json for the parity check that
+// produced: shift -6 => 119/135 biome matches (≈88.15%). Keep this constant
+// as a compatibility measure until further evidence (more snapshots) suggests
+// a different global mapping.
 define('JHM_WIND_TICK_SHIFT', -6);
 
 function getWeathersAt($idx){
