@@ -33,33 +33,40 @@ function jotunheim_weather_rest_handler($request) {
     if ($seedParam) {
         $numericSeed = jotunheim_get_numeric_seed_from_string($seedParam);
     } else {
-        // use existing helper if available
-        if (function_exists('\Jotunheim\Utility\jotunheim_get_numeric_seed')) {
-            $numericSeed = \Jotunheim\Utility\jotunheim_get_numeric_seed();
+        // try calling the plugin helper if available
+        if (function_exists('jotunheim_get_numeric_seed')) {
+            $numericSeed = jotunheim_get_numeric_seed();
         } else {
             $numericSeed = 0;
         }
     }
 
     // compute wind and weather using the same math as the PHP generator (without double-reading option)
+    // Ensure generator code is loaded
+    if (!class_exists('\Jotunheim\Utility\Yj') || !function_exists('og') || !function_exists('ng')) {
+        // attempt to include the file directly
+        $maybe = plugin_dir_path(__DIR__ . '/../../') . 'includes/Utility/valheim-weather.php';
+        if (file_exists($maybe)) require_once($maybe);
+    }
+
     if (!class_exists('\Jotunheim\Utility\Yj')) {
-        return new WP_Error('no_generator', 'Weather generator not available on server', array('status' => 500));
+        return new WP_Error('no_generator', 'Weather generator not available on server after include', array('status' => 500));
     }
 
     // Wind: ng(($tick + numericSeed) * 125, $ig)
     $ig = new \Jotunheim\Utility\Yj(0);
-    if (!function_exists('\Jotunheim\Utility\ng')) {
-        return new WP_Error('no_generator_fn', 'Wind generator function missing', array('status' => 500));
+    if (!function_exists('ng')) {
+        return new WP_Error('no_generator_fn', 'Wind generator function missing after include', array('status' => 500));
     }
-    $wind = \Jotunheim\Utility\ng(($tick + $numericSeed) * 125, $ig);
+    $wind = ng(($tick + $numericSeed) * 125, $ig);
 
     // Weather: weatherSeed = floor((($tick + numericSeed) * 125) / 666); og(weatherSeed, $ig2)
-    if (!function_exists('\Jotunheim\Utility\og')) {
-        return new WP_Error('no_generator_fn2', 'Weather generator function missing', array('status' => 500));
+    if (!function_exists('og')) {
+        return new WP_Error('no_generator_fn2', 'Weather generator function missing after include', array('status' => 500));
     }
     $ig2 = new \Jotunheim\Utility\Yj(0);
     $weatherSeed = intval(floor((($tick + $numericSeed) * 125) / 666));
-    $weathers = \Jotunheim\Utility\og($weatherSeed, $ig2);
+    $weathers = og($weatherSeed, $ig2);
 
     $data = array(
         'day' => $day,
