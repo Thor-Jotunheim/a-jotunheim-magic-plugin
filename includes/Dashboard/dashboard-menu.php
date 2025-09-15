@@ -626,10 +626,6 @@ function render_eventzone_field_config_page() {
                     $conditional_fields = $_POST['conditional_field'];
                     $conditional_values = $_POST['conditional_value'];
                     
-                    // Debug logging
-                    error_log('Conditional fields submitted: ' . print_r($conditional_fields, true));
-                    error_log('Conditional values submitted: ' . print_r($conditional_values, true));
-                    
                     for ($i = 0; $i < count($conditional_fields); $i++) {
                         if (!empty($conditional_fields[$i]) && !empty($conditional_values[$i])) {
                             $conditions[] = [
@@ -638,8 +634,6 @@ function render_eventzone_field_config_page() {
                             ];
                         }
                     }
-                    
-                    error_log('Final conditions array: ' . print_r($conditions, true));
                 }
                 
                 $existing_config = get_option('jotunheim_eventzone_field_config', []);
@@ -657,7 +651,13 @@ function render_eventzone_field_config_page() {
                 ];
                 
                 update_option('jotunheim_eventzone_field_config', $existing_config);
-                echo '<div class="updated notice"><p>Field configuration added successfully!</p></div>';
+                
+                $is_modification = isset($_POST['is_modification']) && $_POST['is_modification'] === '1';
+                if ($is_modification) {
+                    echo '<div class="updated notice"><p>Field configuration updated successfully!</p></div>';
+                } else {
+                    echo '<div class="updated notice"><p>Field configuration added successfully!</p></div>';
+                }
             }
             
             // Handle deleting database variable (column)
@@ -813,6 +813,7 @@ function render_eventzone_field_config_page() {
                         <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
                         <input type="hidden" name="action" value="add_field">
                         <input type="hidden" name="field_source" value="existing">
+                        <input type="hidden" name="is_modification" value="1">
                         
                         <table class="form-table">
                             <tr>
@@ -887,7 +888,7 @@ function render_eventzone_field_config_page() {
                         </table>
                         
                         <p class="submit">
-                            <input type="submit" class="button-primary" value="Configure Existing Field">
+                            <input type="submit" class="button-primary" value="Save Changes" onclick="return confirm('Are you sure you want to update this field configuration? This will affect how the field appears in all EventZone forms.');">
                         </p>
                     </form>
                 </div>
@@ -1209,8 +1210,6 @@ function render_eventzone_field_config_page() {
                 const fieldPlaceholder = form.querySelector('input[name="field_placeholder"]');
                 const dropdownOptions = form.querySelector('textarea[name="dropdown_options"]');
                 const isConditional = form.querySelector('input[name="is_conditional"]');
-                const conditionalField = form.querySelector('select[name="conditional_field"]');
-                const conditionalValue = form.querySelector('input[name="conditional_value"]');
                 
                 if (fieldType) {
                     fieldType.value = config.type || 'text';
@@ -1228,8 +1227,51 @@ function render_eventzone_field_config_page() {
                         conditionalSettings.style.display = isConditional.checked ? 'table-row' : 'none';
                     }
                 }
-                if (conditionalField) conditionalField.value = config.conditional_field || '';
-                if (conditionalValue) conditionalValue.value = config.conditional_value || '';
+                
+                // Handle multiple conditions (new format) or fallback to legacy single condition
+                const conditionsContainer = form.querySelector('#conditions-container-modify');
+                if (conditionsContainer && config.is_conditional) {
+                    // Clear existing conditions
+                    conditionsContainer.innerHTML = '';
+                    
+                    if (config.conditions && config.conditions.length > 0) {
+                        // New format: multiple conditions
+                        config.conditions.forEach((condition, index) => {
+                            const conditionRow = createConditionRow(condition.field, condition.value, index === 0);
+                            conditionsContainer.appendChild(conditionRow);
+                        });
+                    } else if (config.conditional_field && config.conditional_value) {
+                        // Legacy format: single condition
+                        const conditionRow = createConditionRow(config.conditional_field, config.conditional_value, true);
+                        conditionsContainer.appendChild(conditionRow);
+                    } else {
+                        // No conditions, create empty row
+                        const conditionRow = createConditionRow('', '', true);
+                        conditionsContainer.appendChild(conditionRow);
+                    }
+                }
+            }
+            
+            function createConditionRow(fieldValue, valueValue, isFirst) {
+                const conditionRow = document.createElement('div');
+                conditionRow.className = 'condition-row';
+                conditionRow.style.marginBottom = '10px';
+                
+                // Get field options from the database columns
+                const fieldOptions = Array.from(document.querySelectorAll('#conditions-container-modify select option, #conditions-container-add select option'))
+                    .map(option => `<option value="${option.value}" ${option.value === fieldValue ? 'selected' : ''}>${option.textContent}</option>`)
+                    .join('');
+                
+                conditionRow.innerHTML = `
+                    <select name="conditional_field[]">
+                        ${fieldOptions}
+                    </select>
+                    <span> equals </span>
+                    <input type="text" name="conditional_value[]" placeholder="value" value="${valueValue}" style="width: 100px;">
+                    ${!isFirst ? '<button type="button" class="button remove-condition" style="margin-left: 10px;">Remove</button>' : ''}
+                `;
+                
+                return conditionRow;
             }
             
             function clearExistingFieldForm() {
@@ -1255,15 +1297,10 @@ function render_eventzone_field_config_page() {
             
             // Handle multiple conditions functionality
             function setupMultipleConditions() {
-                console.log('Setting up multiple conditions functionality...');
-                
                 // Add condition functionality
                 document.addEventListener('click', function(e) {
                     if (e.target.classList.contains('add-condition')) {
-                        console.log('Add condition button clicked');
                         const container = e.target.previousElementSibling;
-                        console.log('Container found:', container);
-                        
                         const newCondition = document.createElement('div');
                         newCondition.className = 'condition-row';
                         newCondition.style.marginBottom = '10px';
@@ -1271,7 +1308,6 @@ function render_eventzone_field_config_page() {
                         // Get the field options from the first condition row
                         const firstSelect = container.querySelector('select');
                         const fieldOptions = firstSelect ? firstSelect.innerHTML : '';
-                        console.log('Field options:', fieldOptions);
                         
                         newCondition.innerHTML = `
                             <select name="conditional_field[]">
@@ -1283,16 +1319,13 @@ function render_eventzone_field_config_page() {
                         `;
                         
                         container.appendChild(newCondition);
-                        console.log('New condition added');
                     }
                     
                     // Remove condition functionality
                     if (e.target.classList.contains('remove-condition')) {
-                        console.log('Remove condition button clicked');
                         const container = e.target.closest('.condition-row').parentNode;
                         if (container.children.length > 1) {
                             e.target.closest('.condition-row').remove();
-                            console.log('Condition removed');
                         } else {
                             alert('You must have at least one condition');
                         }

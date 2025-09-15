@@ -283,12 +283,10 @@ class EventZoneFieldGenerator {
      */
     public static function generateConditionalFieldsJS() {
         $field_configs = get_option('jotunheim_eventzone_field_config', []);
-        $js = "console.log('Generating conditional fields JS...');\n";
+        $js = "";
         
         foreach ($field_configs as $field_name => $config) {
             if ($config['is_conditional']) {
-                $js .= "console.log('Processing conditional field: $field_name');\n";
-                
                 // Handle multiple conditions (new format)
                 if (isset($config['conditions']) && !empty($config['conditions'])) {
                     $conditions = $config['conditions'];
@@ -297,42 +295,59 @@ class EventZoneFieldGenerator {
                     
                     foreach ($conditions as $condition) {
                         $watchFields[] = '#' . $condition['field'];
-                        $conditionChecks[] = "($('#{$condition['field']}').val() === '{$condition['value']}' || ($('#{$condition['field']}').is(':checkbox') && $('#{$condition['field']}').is(':checked') && '{$condition['value']}' === '1'))";
+                        // Handle both checkboxes and other field types
+                        $conditionChecks[] = "(function() { 
+                            var field = $('#{$condition['field']}'); 
+                            if (field.is(':checkbox')) {
+                                return field.is(':checked') && '{$condition['value']}' === '1';
+                            } else {
+                                return field.val() === '{$condition['value']}';
+                            }
+                        })()";
                     }
                     
                     $watchFieldsStr = implode(', ', array_unique($watchFields));
                     $conditionLogic = implode(' || ', $conditionChecks);
                     
                     $js .= "
-                    console.log('Setting up multiple conditions for {$field_name}');
                     // Handle conditional display for {$field_name} (multiple conditions)
-                    $('{$watchFieldsStr}').change(function() {
-                        const isMatched = {$conditionLogic};
-                        console.log('Condition check for {$field_name}:', isMatched);
+                    $('{$watchFieldsStr}').on('change input', function() {
+                        var isMatched = {$conditionLogic};
                         $('[data-field=\"{$field_name}\"]').toggle(isMatched);
                     });
                     
                     // Initialize conditional field visibility for {$field_name}
-                    const {$field_name}_isMatched = {$conditionLogic};
-                    console.log('Initial visibility for {$field_name}:', {$field_name}_isMatched);
-                    $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                    $(document).ready(function() {
+                        var {$field_name}_isMatched = {$conditionLogic};
+                        $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                    });
                     ";
                 }
                 // Fallback to old format for backward compatibility
                 elseif (isset($config['conditional_field']) && isset($config['conditional_value'])) {
                     $js .= "
-                    console.log('Setting up legacy single condition for {$field_name}');
                     // Handle conditional display for {$field_name} (legacy single condition)
-                    $('#{$config['conditional_field']}').change(function() {
-                        const isMatched = $(this).val() === '{$config['conditional_value']}' || ($(this).is(':checkbox') && $(this).is(':checked') && '{$config['conditional_value']}' === '1');
-                        console.log('Legacy condition check for {$field_name}:', isMatched);
+                    $('#{$config['conditional_field']}').on('change input', function() {
+                        var isMatched;
+                        if ($(this).is(':checkbox')) {
+                            isMatched = $(this).is(':checked') && '{$config['conditional_value']}' === '1';
+                        } else {
+                            isMatched = $(this).val() === '{$config['conditional_value']}';
+                        }
                         $('[data-field=\"{$field_name}\"]').toggle(isMatched);
                     });
                     
                     // Initialize conditional field visibility for {$field_name}
-                    const {$field_name}_isMatched = $('#{$config['conditional_field']}').val() === '{$config['conditional_value']}' || ($('#{$config['conditional_field']}').is(':checkbox') && $('#{$config['conditional_field']}').is(':checked') && '{$config['conditional_value']}' === '1');
-                    console.log('Initial legacy visibility for {$field_name}:', {$field_name}_isMatched);
-                    $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                    $(document).ready(function() {
+                        var field = $('#{$config['conditional_field']}');
+                        var {$field_name}_isMatched;
+                        if (field.is(':checkbox')) {
+                            {$field_name}_isMatched = field.is(':checked') && '{$config['conditional_value']}' === '1';
+                        } else {
+                            {$field_name}_isMatched = field.val() === '{$config['conditional_value']}';
+                        }
+                        $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                    });
                     ";
                 }
             }
