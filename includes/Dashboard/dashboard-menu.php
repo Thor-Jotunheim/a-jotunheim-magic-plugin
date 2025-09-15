@@ -514,7 +514,7 @@ function render_eventzone_field_config_page() {
                     'is_conditional' => $is_conditional,
                     'conditional_field' => $conditional_field,
                     'conditional_value' => $conditional_value,
-                    'is_custom' => $is_custom_field
+                    'is_custom' => false  // All fields are database columns now
                 ];
                 
                 update_option('jotunheim_eventzone_field_config', $existing_config);
@@ -532,6 +532,50 @@ function render_eventzone_field_config_page() {
                     echo '<div class="updated notice"><p>Field configuration deleted successfully!</p></div>';
                 } else {
                     echo '<div class="error notice"><p>Field not found!</p></div>';
+                }
+            }
+            
+            // Handle deleting database variable (column)
+            if (isset($_POST['action']) && $_POST['action'] === 'delete_variable') {
+                $variable_to_delete = sanitize_text_field($_POST['variable_to_delete']);
+                $table_name = 'jotun_eventzones';
+                
+                // Security check - don't allow deleting core columns
+                $protected_columns = ['id', 'string_name', 'name', 'zone_type', 'shape', 'eventzone_status'];
+                
+                if (in_array($variable_to_delete, $protected_columns)) {
+                    echo '<div class="error notice"><p>Cannot delete protected system column: ' . $variable_to_delete . '</p></div>';
+                } else {
+                    // Check if column exists
+                    $column_exists = $wpdb->get_var($wpdb->prepare(
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                         WHERE TABLE_SCHEMA = DATABASE() 
+                         AND TABLE_NAME = %s 
+                         AND COLUMN_NAME = %s",
+                        $table_name,
+                        $variable_to_delete
+                    ));
+                    
+                    if ($column_exists) {
+                        // Drop the column
+                        $drop_sql = "ALTER TABLE $table_name DROP COLUMN `$variable_to_delete`";
+                        $result = $wpdb->query($drop_sql);
+                        
+                        if ($result === false) {
+                            echo '<div class="error notice"><p>Failed to delete database column: ' . $wpdb->last_error . '</p></div>';
+                        } else {
+                            // Also remove any field configuration
+                            $existing_config = get_option('jotunheim_eventzone_field_config', []);
+                            if (isset($existing_config[$variable_to_delete])) {
+                                unset($existing_config[$variable_to_delete]);
+                                update_option('jotunheim_eventzone_field_config', $existing_config);
+                            }
+                            
+                            echo '<div class="updated notice"><p>Successfully deleted database column and configuration: ' . $variable_to_delete . '</p></div>';
+                        }
+                    } else {
+                        echo '<div class="error notice"><p>Database column does not exist: ' . $variable_to_delete . '</p></div>';
+                    }
                 }
             }
         }
@@ -739,10 +783,76 @@ function render_eventzone_field_config_page() {
             </div>
         </div>
         
-        <!-- Current Field Configurations -->
+        <!-- Variable Deletion Section -->
+        <div class="postbox" style="border-left: 4px solid #dc3545;">
+            <div class="postbox-header">
+                <h2 style="color: #dc3545;">🗑️ Delete Variable</h2>
+            </div>
+            <div class="inside">
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #856404;"><strong>⚠️ Warning:</strong> This will permanently delete the database column and all its data. This action cannot be undone!</p>
+                </div>
+                
+                <form method="POST" action="" onsubmit="return confirmVariableDeletion();">
+                    <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
+                    <input type="hidden" name="action" value="delete_variable">
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">Select Variable to Delete</th>
+                            <td>
+                                <select name="variable_to_delete" required style="width: 300px;">
+                                    <option value="">Select Variable to Delete</option>
+                                    <?php 
+                                    $protected_columns = ['id', 'string_name', 'name', 'zone_type', 'shape', 'eventzone_status'];
+                                    foreach ($db_columns as $column): 
+                                        if (!in_array($column, $protected_columns)):
+                                    ?>
+                                        <option value="<?php echo esc_attr($column); ?>">
+                                            <?php echo esc_html($column); ?>
+                                            <?php if (isset($field_configs[$column])): ?>
+                                                (configured)
+                                            <?php else: ?>
+                                                (not configured)
+                                            <?php endif; ?>
+                                        </option>
+                                    <?php 
+                                        endif;
+                                    endforeach; 
+                                    ?>
+                                </select>
+                                <p class="description">
+                                    Protected columns (id, string_name, name, zone_type, shape, eventzone_status) cannot be deleted.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <p class="submit">
+                        <input type="submit" class="button" value="Delete Variable" style="background: #dc3545; color: white; border-color: #dc3545;">
+                    </p>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Current Field Configurations - Only shown when editing -->
+        <div class="postbox" id="current-configurations" style="display: none;">
+            <div class="postbox-header">
+                <h2>📋 Current Configuration</h2>
+            </div>
+            <div class="inside">
+                <div id="current-config-display">
+                    <p><em>Select a field from the "Modify Existing Variables" section to see its current configuration.</em></p>
+                </div>
+            </div>
+        </div>
+            
+            <!-- Current Field Configurations -->
+        </div>
+        
         <div class="postbox">
             <div class="postbox-header">
-                <h2>📋 Current Field Configurations</h2>
+                <h2>📋 All Field Configurations</h2>
             </div>
             <div class="inside">
                 <?php if (empty($field_configs)): ?>
@@ -760,17 +870,14 @@ function render_eventzone_field_config_page() {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($field_configs as $field_name => $config): ?>
+                            <?php 
+                            $protected_columns = ['id', 'string_name', 'name', 'zone_type', 'shape', 'eventzone_status'];
+                            foreach ($field_configs as $field_name => $config): 
+                            ?>
                                 <tr>
                                     <td><code><?php echo esc_html($field_name); ?></code></td>
                                     <td>
-                                        <?php if (isset($config['is_custom']) && $config['is_custom']): ?>
-                                            <span style="color: #0073aa; font-weight: bold;">Custom</span>
-                                        <?php elseif (in_array($field_name, $db_columns)): ?>
-                                            <span style="color: green;">Database</span>
-                                        <?php else: ?>
-                                            <span style="color: orange;">Unknown</span>
-                                        <?php endif; ?>
+                                        <span style="color: green; font-weight: bold;">Database</span>
                                     </td>
                                     <td><?php echo esc_html(ucfirst($config['type'])); ?></td>
                                     <td><?php echo esc_html($config['label'] ?: ucfirst(str_replace('_', ' ', $field_name))); ?></td>
@@ -787,8 +894,19 @@ function render_eventzone_field_config_page() {
                                             <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
                                             <input type="hidden" name="action" value="delete_field">
                                             <input type="hidden" name="field_to_delete" value="<?php echo esc_attr($field_name); ?>">
-                                            <input type="submit" class="button button-small" value="Delete" style="color: red;">
+                                            <input type="submit" class="button button-small" value="Delete Config" style="color: red;">
                                         </form>
+                                        
+                                        <?php if (!in_array($field_name, $protected_columns)): ?>
+                                            <form method="POST" style="display: inline; margin-left: 5px;" onsubmit="return confirmVariableDeletion('<?php echo esc_js($field_name); ?>');">
+                                                <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
+                                                <input type="hidden" name="action" value="delete_variable">
+                                                <input type="hidden" name="variable_to_delete" value="<?php echo esc_attr($field_name); ?>">
+                                                <input type="submit" class="button button-small" value="Delete Variable" style="background: #dc3545; color: white; border-color: #dc3545;">
+                                            </form>
+                                        <?php else: ?>
+                                            <span style="color: #999; font-size: 11px; margin-left: 5px;">(protected)</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -796,9 +914,6 @@ function render_eventzone_field_config_page() {
                     </table>
                 <?php endif; ?>
             </div>
-        </div>
-            
-            <!-- Current Field Configurations -->
         </div>
         
         <div class="postbox">
@@ -818,40 +933,143 @@ function render_eventzone_field_config_page() {
                     <?php endforeach; ?>
                 </div>
                 
-                <?php 
-                $custom_fields = array_filter($field_configs, function($config) {
-                    return isset($config['is_custom']) && $config['is_custom'];
-                });
-                ?>
-                
-                <?php if (!empty($custom_fields)): ?>
-                    <p><strong>Custom fields:</strong></p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
-                        <?php foreach ($custom_fields as $field_name => $config): ?>
-                            <code style="background: #e8f4f8; padding: 5px; border-radius: 3px; display: block; border-left: 3px solid #0073aa;">
-                                <?php echo esc_html($field_name); ?>
-                                <span style="color: #0073aa; font-weight: bold;"> Custom</span>
-                            </code>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-                
-                <p><em>Database fields with ✓ have configurations. Custom fields are shown in blue.</em></p>
+                <p><em>Database fields with ✓ have configurations.</em></p>
             </div>
         </div>
         
         <script>
+        // Store field configurations for JavaScript access
+        const fieldConfigs = <?php echo json_encode($field_configs); ?>;
+        
+        function confirmVariableDeletion(variableName = null) {
+            // If no variable name provided, get it from the select dropdown
+            if (!variableName) {
+                const select = document.querySelector('select[name="variable_to_delete"]');
+                variableName = select ? select.value : null;
+            }
+            
+            if (!variableName) {
+                alert('Please select a variable to delete.');
+                return false;
+            }
+            
+            const confirmMessage = `⚠️ PERMANENT DELETION WARNING ⚠️\n\n` +
+                `You are about to permanently delete the database column "${variableName}" and ALL its data.\n\n` +
+                `This will:\n` +
+                `• Remove the column from the database\n` +
+                `• Delete all stored data in this column\n` +
+                `• Remove any field configuration\n` +
+                `• Cannot be undone\n\n` +
+                `Type "${variableName}" below to confirm deletion:`;
+                
+            const userInput = prompt(confirmMessage);
+            
+            if (userInput === variableName) {
+                return confirm(`Final confirmation: Delete "${variableName}" permanently?`);
+            } else {
+                alert('Deletion cancelled. Variable name did not match.');
+                return false;
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             const conditionalCheckboxes = document.querySelectorAll('input[name="is_conditional"]');
+            const existingFieldSelect = document.querySelector('select[name="field_name"]');
+            const currentConfigDiv = document.getElementById('current-configurations');
+            const currentConfigDisplay = document.getElementById('current-config-display');
             
+            // Handle conditional display checkboxes
             conditionalCheckboxes.forEach(checkbox => {
                 const conditionalSettings = checkbox.closest('table').querySelector('.conditional-settings');
                 
-                // Handle conditional display checkbox
                 checkbox.addEventListener('change', function() {
                     conditionalSettings.style.display = this.checked ? 'table-row' : 'none';
                 });
             });
+            
+            // Handle existing field selection
+            if (existingFieldSelect) {
+                existingFieldSelect.addEventListener('change', function() {
+                    const selectedField = this.value;
+                    
+                    if (selectedField && fieldConfigs[selectedField]) {
+                        // Show current configuration
+                        showCurrentConfig(selectedField, fieldConfigs[selectedField]);
+                        
+                        // Populate the form with current values
+                        populateExistingFieldForm(fieldConfigs[selectedField]);
+                    } else {
+                        // Hide current configuration
+                        currentConfigDiv.style.display = 'none';
+                        clearExistingFieldForm();
+                    }
+                });
+            }
+            
+            function showCurrentConfig(fieldName, config) {
+                const html = `
+                    <h4>Current Configuration for: <code>${fieldName}</code></h4>
+                    <table class="form-table">
+                        <tr><th>Field Type:</th><td>${config.type}</td></tr>
+                        <tr><th>Display Label:</th><td>${config.label || 'Auto-generated'}</td></tr>
+                        <tr><th>Placeholder:</th><td>${config.placeholder || 'None'}</td></tr>
+                        <tr><th>Dropdown Options:</th><td>${config.dropdown_options || 'N/A'}</td></tr>
+                        <tr><th>Conditional:</th><td>${config.is_conditional ? 'Yes (' + config.conditional_field + ' = ' + config.conditional_value + ')' : 'No'}</td></tr>
+                    </table>
+                `;
+                currentConfigDisplay.innerHTML = html;
+                currentConfigDiv.style.display = 'block';
+            }
+            
+            function populateExistingFieldForm(config) {
+                const form = existingFieldSelect.closest('form');
+                if (!form) return;
+                
+                // Populate form fields
+                const fieldType = form.querySelector('select[name="field_type"]');
+                const fieldLabel = form.querySelector('input[name="field_label"]');
+                const fieldPlaceholder = form.querySelector('input[name="field_placeholder"]');
+                const dropdownOptions = form.querySelector('textarea[name="dropdown_options"]');
+                const isConditional = form.querySelector('input[name="is_conditional"]');
+                const conditionalField = form.querySelector('select[name="conditional_field"]');
+                const conditionalValue = form.querySelector('input[name="conditional_value"]');
+                
+                if (fieldType) fieldType.value = config.type || 'text';
+                if (fieldLabel) fieldLabel.value = config.label || '';
+                if (fieldPlaceholder) fieldPlaceholder.value = config.placeholder || '';
+                if (dropdownOptions) dropdownOptions.value = config.dropdown_options || '';
+                if (isConditional) {
+                    isConditional.checked = config.is_conditional || false;
+                    // Trigger the conditional display
+                    const conditionalSettings = form.querySelector('.conditional-settings');
+                    if (conditionalSettings) {
+                        conditionalSettings.style.display = isConditional.checked ? 'table-row' : 'none';
+                    }
+                }
+                if (conditionalField) conditionalField.value = config.conditional_field || '';
+                if (conditionalValue) conditionalValue.value = config.conditional_value || '';
+            }
+            
+            function clearExistingFieldForm() {
+                const form = existingFieldSelect.closest('form');
+                if (!form) return;
+                
+                // Clear form fields
+                const inputs = form.querySelectorAll('input[type="text"], textarea, select:not([name="field_name"])');
+                inputs.forEach(input => {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                });
+                
+                // Hide conditional settings
+                const conditionalSettings = form.querySelector('.conditional-settings');
+                if (conditionalSettings) {
+                    conditionalSettings.style.display = 'none';
+                }
+            }
         });
         </script>
     </div>
