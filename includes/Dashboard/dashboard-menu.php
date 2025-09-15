@@ -755,8 +755,8 @@ function render_eventzone_field_config_page() {
                             <tr>
                                 <th scope="row">Variable Name</th>
                                 <td>
-                                    <input type="text" name="custom_field_name" class="regular-text" placeholder="new_variable_name" required>
-                                    <p class="description">Enter new variable name (lowercase, underscores only). This will create a new database column.</p>
+                                    <input type="text" name="custom_field_name" class="regular-text" placeholder="noSnapCopy" required>
+                                    <p class="description">Enter new variable name (camelCase format). This will create a new database column.</p>
                                 </td>
                             </tr>
                             <tr>
@@ -768,13 +768,6 @@ function render_eventzone_field_config_page() {
                                         <option value="dropdown">Dropdown</option>
                                         <option value="number">Number Input</option>
                                     </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Display Label</th>
-                                <td>
-                                    <input type="text" name="field_label" class="regular-text" placeholder="Human-readable label">
-                                    <p class="description">Leave empty to auto-generate from variable name</p>
                                 </td>
                             </tr>
                             <tr class="placeholder-row-add">
@@ -858,13 +851,6 @@ function render_eventzone_field_config_page() {
                                         <option value="dropdown">Dropdown</option>
                                         <option value="number">Number Input</option>
                                     </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Display Label</th>
-                                <td>
-                                    <input type="text" name="field_label" class="regular-text" placeholder="Human-readable label">
-                                    <p class="description">Leave empty to auto-generate from field name</p>
                                 </td>
                             </tr>
                             <tr class="placeholder-row-modify">
@@ -1210,7 +1196,6 @@ function render_eventzone_field_config_page() {
                     <h4>Current Configuration for: <code>${fieldName}</code></h4>
                     <table class="form-table">
                         <tr><th>Field Type:</th><td>${config.type}</td></tr>
-                        <tr><th>Display Label:</th><td>${config.label || 'Auto-generated'}</td></tr>
                         <tr><th>Placeholder:</th><td>${config.placeholder || 'None'}</td></tr>
                         <tr><th>Dropdown Options:</th><td>${config.dropdown_options || 'N/A'}</td></tr>
                         <tr><th>Conditional:</th><td>${config.is_conditional ? 'Yes (' + config.conditional_field + ' = ' + config.conditional_value + ')' : 'No'}</td></tr>
