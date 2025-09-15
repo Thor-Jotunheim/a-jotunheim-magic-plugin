@@ -436,13 +436,9 @@ function render_eventzone_field_config_page() {
                 $field_name = '';
                 $is_custom_field = false;
                 
-                // DEBUG: Show what we received
-                echo '<div class="notice notice-info"><p><strong>DEBUG:</strong> field_source = ' . $field_source . '</p></div>';
-                
                 if ($field_source === 'custom') {
                     $field_name = sanitize_text_field($_POST['custom_field_name']);
                     $is_custom_field = true;
-                    echo '<div class="notice notice-info"><p><strong>DEBUG:</strong> Custom field detected - field_name = ' . $field_name . ', is_custom = true</p></div>';
                     
                     // Add new column to database table
                     $table_name = 'jotun_eventzones';
@@ -493,7 +489,6 @@ function render_eventzone_field_config_page() {
                 } else {
                     $field_name = sanitize_text_field($_POST['field_name']);
                     $is_custom_field = false;
-                    echo '<div class="notice notice-info"><p><strong>DEBUG:</strong> Existing field detected - field_name = ' . $field_name . ', is_custom = false</p></div>';
                 }
                 
                 // Validate that we have a field name
@@ -564,48 +559,118 @@ function render_eventzone_field_config_page() {
     ?>
     <div class="wrap">
         <h1>⚙️ EventZone Field Configuration</h1>
-        <p>Configure how fields appear in the EventZone add/edit interfaces. This allows you to customize field types, labels, and conditional visibility.</p>
+        <p>Configure how fields appear in the EventZone add/edit interfaces. All fields correspond to database columns.</p>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             
-            <!-- Add New Field Configuration -->
+            <!-- LEFT: Add New Variable -->
             <div class="postbox">
                 <div class="postbox-header">
-                    <h2>➕ Add Field Configuration</h2>
+                    <h2>➕ Add New Variable</h2>
                 </div>
                 <div class="inside">
                     <form method="POST" action="">
                         <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
                         <input type="hidden" name="action" value="add_field">
+                        <input type="hidden" name="field_source" value="custom">
                         
                         <table class="form-table">
                             <tr>
-                                <th scope="row">Field Type</th>
+                                <th scope="row">Variable Name</th>
                                 <td>
-                                    <label style="display: block; margin-bottom: 10px;">
-                                        <input type="radio" name="field_source" value="existing" checked style="margin-right: 5px;">
-                                        Configure Existing Database Field
+                                    <input type="text" name="custom_field_name" class="regular-text" placeholder="new_variable_name" required>
+                                    <p class="description">Enter new variable name (lowercase, underscores only). This will create a new database column.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Field Input Type</th>
+                                <td>
+                                    <select name="field_type" required>
+                                        <option value="text">Text Input</option>
+                                        <option value="checkbox">Checkbox</option>
+                                        <option value="dropdown">Dropdown</option>
+                                        <option value="textarea">Textarea</option>
+                                        <option value="number">Number Input</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Display Label</th>
+                                <td>
+                                    <input type="text" name="field_label" class="regular-text" placeholder="Human-readable label">
+                                    <p class="description">Leave empty to auto-generate from variable name</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Placeholder Text</th>
+                                <td>
+                                    <input type="text" name="field_placeholder" class="regular-text" placeholder="Placeholder text">
+                                    <p class="description">Only applies to text/number inputs</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Dropdown Options</th>
+                                <td>
+                                    <textarea name="dropdown_options" rows="4" cols="50" placeholder="Option1&#10;Option2&#10;Option3"></textarea>
+                                    <p class="description">One option per line. Only used for dropdown fields.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Conditional Display</th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="is_conditional" value="1"> This field should only show conditionally
                                     </label>
-                                    <div id="existing-field-section" style="margin-left: 20px; margin-bottom: 15px;">
-                                        <select name="field_name" id="existing-field-select">
-                                            <option value="">Select Database Field</option>
-                                            <?php foreach ($db_columns as $column): ?>
-                                                <?php if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])): ?>
-                                                    <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <p class="description">Select a database field that doesn't have configuration yet</p>
-                                    </div>
-                                    
-                                    <label style="display: block;">
-                                        <input type="radio" name="field_source" value="custom" style="margin-right: 5px;">
-                                        Add New Custom Field
-                                    </label>
-                                    <div id="custom-field-section" style="margin-left: 20px; margin-top: 10px; display: none;">
-                                        <input type="text" name="custom_field_name" id="custom-field-name" class="regular-text" placeholder="new_field_name" style="margin-bottom: 5px;">
-                                        <p class="description">Enter a new field name (use lowercase, underscores only)</p>
-                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="conditional-settings" style="display: none;">
+                                <th scope="row">Show When</th>
+                                <td>
+                                    <select name="conditional_field">
+                                        <option value="">Select Field</option>
+                                        <?php foreach ($db_columns as $column): ?>
+                                            <?php if (!in_array($column, ['id', 'string_name'])): ?>
+                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <span> equals </span>
+                                    <input type="text" name="conditional_value" placeholder="value">
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <p class="submit">
+                            <input type="submit" class="button-primary" value="Add New Variable">
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT: Modify Existing Variables -->
+            <div class="postbox">
+                <div class="postbox-header">
+                    <h2>⚙️ Modify Existing Variables</h2>
+                </div>
+                <div class="inside">
+                    <form method="POST" action="">
+                        <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
+                        <input type="hidden" name="action" value="add_field">
+                        <input type="hidden" name="field_source" value="existing">
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Select Variable</th>
+                                <td>
+                                    <select name="field_name" required>
+                                        <option value="">Select Database Field</option>
+                                        <?php foreach ($db_columns as $column): ?>
+                                            <?php if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])): ?>
+                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <p class="description">Select a database field that doesn't have configuration yet</p>
                                 </td>
                             </tr>
                             <tr>
@@ -654,94 +719,86 @@ function render_eventzone_field_config_page() {
                                 <td>
                                     <select name="conditional_field">
                                         <option value="">Select Field</option>
-                                        <optgroup label="Database Fields">
-                                            <?php foreach ($db_columns as $column): ?>
-                                                <?php if (!in_array($column, ['id', 'string_name'])): ?>
-                                                    <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
-                                        </optgroup>
-                                        <?php if (!empty($field_configs)): ?>
-                                            <optgroup label="Custom Fields">
-                                                <?php foreach ($field_configs as $field_name => $config): ?>
-                                                    <?php if (isset($config['is_custom']) && $config['is_custom']): ?>
-                                                        <option value="<?php echo esc_attr($field_name); ?>"><?php echo esc_html($field_name); ?></option>
-                                                    <?php endif; ?>
-                                                <?php endforeach; ?>
-                                            </optgroup>
-                                        <?php endif; ?>
+                                        <?php foreach ($db_columns as $column): ?>
+                                            <?php if (!in_array($column, ['id', 'string_name'])): ?>
+                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
                                     </select>
-                                    equals
+                                    <span> equals </span>
                                     <input type="text" name="conditional_value" placeholder="value">
                                 </td>
                             </tr>
                         </table>
                         
                         <p class="submit">
-                            <input type="submit" class="button-primary" value="Add Field Configuration">
+                            <input type="submit" class="button-primary" value="Configure Existing Field">
                         </p>
                     </form>
                 </div>
             </div>
+        </div>
+        
+        <!-- Current Field Configurations -->
+        <div class="postbox">
+            <div class="postbox-header">
+                <h2>📋 Current Field Configurations</h2>
+            </div>
+            <div class="inside">
+                <?php if (empty($field_configs)): ?>
+                    <p><em>No field configurations yet. Add some using the forms above!</em></p>
+                <?php else: ?>
+                    <table class="widefat fixed">
+                        <thead>
+                            <tr>
+                                <th>Field Name</th>
+                                <th>Source</th>
+                                <th>Type</th>
+                                <th>Label</th>
+                                <th>Conditional</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($field_configs as $field_name => $config): ?>
+                                <tr>
+                                    <td><code><?php echo esc_html($field_name); ?></code></td>
+                                    <td>
+                                        <?php if (isset($config['is_custom']) && $config['is_custom']): ?>
+                                            <span style="color: #0073aa; font-weight: bold;">Custom</span>
+                                        <?php elseif (in_array($field_name, $db_columns)): ?>
+                                            <span style="color: green;">Database</span>
+                                        <?php else: ?>
+                                            <span style="color: orange;">Unknown</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo esc_html(ucfirst($config['type'])); ?></td>
+                                    <td><?php echo esc_html($config['label'] ?: ucfirst(str_replace('_', ' ', $field_name))); ?></td>
+                                    <td>
+                                        <?php if ($config['is_conditional']): ?>
+                                            <span style="color: green;">✓</span> 
+                                            <?php echo esc_html($config['conditional_field'] . ' = ' . $config['conditional_value']); ?>
+                                        <?php else: ?>
+                                            <span style="color: #999;">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this field configuration?');">
+                                            <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
+                                            <input type="hidden" name="action" value="delete_field">
+                                            <input type="hidden" name="field_to_delete" value="<?php echo esc_attr($field_name); ?>">
+                                            <input type="submit" class="button button-small" value="Delete" style="color: red;">
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
             
             <!-- Current Field Configurations -->
-            <div class="postbox">
-                <div class="postbox-header">
-                    <h2>📋 Current Field Configurations</h2>
-                </div>
-                <div class="inside">
-                    <?php if (empty($field_configs)): ?>
-                        <p><em>No custom field configurations yet. Add some using the form on the left!</em></p>
-                    <?php else: ?>
-                        <table class="widefat fixed">
-                            <thead>
-                                <tr>
-                                    <th>Field Name</th>
-                                    <th>Source</th>
-                                    <th>Type</th>
-                                    <th>Label</th>
-                                    <th>Conditional</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($field_configs as $field_name => $config): ?>
-                                    <tr>
-                                        <td><code><?php echo esc_html($field_name); ?></code></td>
-                                        <td>
-                                            <?php if (isset($config['is_custom']) && $config['is_custom']): ?>
-                                                <span style="color: #0073aa; font-weight: bold;">Custom</span>
-                                            <?php elseif (in_array($field_name, $db_columns)): ?>
-                                                <span style="color: green;">Database</span>
-                                            <?php else: ?>
-                                                <span style="color: orange;">Unknown</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td><?php echo esc_html(ucfirst($config['type'])); ?></td>
-                                        <td><?php echo esc_html($config['label'] ?: ucfirst(str_replace('_', ' ', $field_name))); ?></td>
-                                        <td>
-                                            <?php if ($config['is_conditional']): ?>
-                                                <span style="color: green;">✓</span> 
-                                                <?php echo esc_html($config['conditional_field'] . ' = ' . $config['conditional_value']); ?>
-                                            <?php else: ?>
-                                                <span style="color: #999;">—</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this field configuration?');">
-                                                <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
-                                                <input type="hidden" name="action" value="delete_field">
-                                                <input type="hidden" name="field_to_delete" value="<?php echo esc_attr($field_name); ?>">
-                                                <input type="submit" class="button button-small" value="Delete" style="color: red;">
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
-                </div>
-            </div>
         </div>
         
         <div class="postbox">
@@ -785,62 +842,15 @@ function render_eventzone_field_config_page() {
         
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const conditionalCheckbox = document.querySelector('input[name="is_conditional"]');
-            const conditionalSettings = document.querySelector('.conditional-settings');
-            const fieldSourceRadios = document.querySelectorAll('input[name="field_source"]');
-            const existingFieldSection = document.getElementById('existing-field-section');
-            const customFieldSection = document.getElementById('custom-field-section');
-            const existingFieldSelect = document.getElementById('existing-field-select');
-            const customFieldNameInput = document.getElementById('custom-field-name');
+            const conditionalCheckboxes = document.querySelectorAll('input[name="is_conditional"]');
             
-            // Handle conditional display checkbox
-            conditionalCheckbox.addEventListener('change', function() {
-                conditionalSettings.style.display = this.checked ? 'table-row' : 'none';
-            });
-            
-            // Handle field source radio buttons
-            fieldSourceRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'existing') {
-                        existingFieldSection.style.display = 'block';
-                        customFieldSection.style.display = 'none';
-                        existingFieldSelect.required = true;
-                        customFieldNameInput.required = false;
-                    } else if (this.value === 'custom') {
-                        existingFieldSection.style.display = 'none';
-                        customFieldSection.style.display = 'block';
-                        existingFieldSelect.required = false;
-                        customFieldNameInput.required = true;
-                    }
-                });
-            });
-            
-            // Form validation
-            document.querySelector('form').addEventListener('submit', function(e) {
-                const fieldSource = document.querySelector('input[name="field_source"]:checked').value;
+            conditionalCheckboxes.forEach(checkbox => {
+                const conditionalSettings = checkbox.closest('table').querySelector('.conditional-settings');
                 
-                if (fieldSource === 'existing') {
-                    if (!existingFieldSelect.value) {
-                        e.preventDefault();
-                        alert('Please select a database field.');
-                        return false;
-                    }
-                } else if (fieldSource === 'custom') {
-                    if (!customFieldNameInput.value.trim()) {
-                        e.preventDefault();
-                        alert('Please enter a custom field name.');
-                        return false;
-                    }
-                    
-                    // Validate field name format
-                    const fieldName = customFieldNameInput.value.trim();
-                    if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
-                        e.preventDefault();
-                        alert('Field name must start with a letter and contain only lowercase letters, numbers, and underscores.');
-                        return false;
-                    }
-                }
-            });
+                // Handle conditional display checkbox
+                checkbox.addEventListener('change', function() {
+                    conditionalSettings.style.display = this.checked ? 'table-row' : 'none';
+                });
             });
         });
         </script>
