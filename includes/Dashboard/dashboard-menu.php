@@ -426,6 +426,46 @@ function render_weather_calendar_config_page() {
 function render_eventzone_field_config_page() {
     global $wpdb;
     
+    // Get current field configurations and auto-generate defaults first
+    $field_configs = get_option('jotunheim_eventzone_field_config', []);
+    
+    // Auto-generate configurations for database fields that don't have them
+    foreach ($db_columns as $column) {
+        if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])) {
+            // Generate default configuration based on field name
+            $default_config = [
+                'type' => 'text',
+                'label' => ucfirst(str_replace('_', ' ', $column)),
+                'placeholder' => '',
+                'dropdown_options' => '',
+                'is_conditional' => false,
+                'conditional_field' => '',
+                'conditional_value' => '',
+                'is_custom' => false
+            ];
+            
+            // Set specific defaults for known field types
+            if (in_array($column, ['shape', 'eventzone_status', 'zone_type'])) {
+                $default_config['type'] = 'dropdown';
+                if ($column === 'shape') {
+                    $default_config['dropdown_options'] = "Circle\nSquare";
+                } elseif ($column === 'eventzone_status') {
+                    $default_config['dropdown_options'] = "enabled\ndisabled";
+                } elseif ($column === 'zone_type') {
+                    $default_config['dropdown_options'] = "Server Infrastructure\nQuest\nEvent\nBoss Power\nBoss Fight\nNPC";
+                }
+            } elseif ($column === 'priority') {
+                $default_config['type'] = 'number';
+                $default_config['placeholder'] = '10';
+            }
+            
+            $field_configs[$column] = $default_config;
+        }
+    }
+    
+    // Save the initial auto-configurations
+    update_option('jotunheim_eventzone_field_config', $field_configs);
+    
     // Handle form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eventzone_field_config_nonce'])) {
         if (wp_verify_nonce($_POST['eventzone_field_config_nonce'], 'save_eventzone_field_config')) {
@@ -589,46 +629,6 @@ function render_eventzone_field_config_page() {
             }
         }
     }
-    
-    // Get current field configurations
-    $field_configs = get_option('jotunheim_eventzone_field_config', []);
-    
-    // Auto-generate configurations for database fields that don't have them
-    foreach ($db_columns as $column) {
-        if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])) {
-            // Generate default configuration based on field name
-            $default_config = [
-                'type' => 'text',
-                'label' => ucfirst(str_replace('_', ' ', $column)),
-                'placeholder' => '',
-                'dropdown_options' => '',
-                'is_conditional' => false,
-                'conditional_field' => '',
-                'conditional_value' => '',
-                'is_custom' => false
-            ];
-            
-            // Set specific defaults for known field types
-            if (in_array($column, ['shape', 'eventzone_status', 'zone_type'])) {
-                $default_config['type'] = 'dropdown';
-                if ($column === 'shape') {
-                    $default_config['dropdown_options'] = "Circle\nSquare";
-                } elseif ($column === 'eventzone_status') {
-                    $default_config['dropdown_options'] = "enabled\ndisabled";
-                } elseif ($column === 'zone_type') {
-                    $default_config['dropdown_options'] = "Server Infrastructure\nQuest\nEvent\nBoss Power\nBoss Fight\nNPC";
-                }
-            } elseif ($column === 'priority') {
-                $default_config['type'] = 'number';
-                $default_config['placeholder'] = '10';
-            }
-            
-            $field_configs[$column] = $default_config;
-        }
-    }
-    
-    // Save the updated configurations
-    update_option('jotunheim_eventzone_field_config', $field_configs);
     
     // Debug: Add some debugging info
     if (isset($_GET['debug']) && $_GET['debug'] === '1') {
