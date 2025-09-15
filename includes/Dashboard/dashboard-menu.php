@@ -673,20 +673,6 @@ function render_eventzone_field_config_page() {
                 echo '<div class="updated notice"><p>Field configuration added successfully!</p></div>';
             }
             
-            // Handle deleting field configuration
-            if (isset($_POST['action']) && $_POST['action'] === 'delete_field') {
-                $field_to_delete = sanitize_text_field($_POST['field_to_delete']);
-                $existing_config = get_option('jotunheim_eventzone_field_config', []);
-                
-                if (isset($existing_config[$field_to_delete])) {
-                    unset($existing_config[$field_to_delete]);
-                    update_option('jotunheim_eventzone_field_config', $existing_config);
-                    echo '<div class="updated notice"><p>Field configuration deleted successfully!</p></div>';
-                } else {
-                    echo '<div class="error notice"><p>Field not found!</p></div>';
-                }
-            }
-            
             // Handle deleting database variable (column)
             if (isset($_POST['action']) && $_POST['action'] === 'delete_variable') {
                 $variable_to_delete = sanitize_text_field($_POST['variable_to_delete']);
@@ -955,11 +941,6 @@ function render_eventzone_field_config_page() {
                                     ?>
                                         <option value="<?php echo esc_attr($column); ?>">
                                             <?php echo esc_html($column); ?>
-                                            <?php if (isset($field_configs[$column])): ?>
-                                                (configured)
-                                            <?php else: ?>
-                                                (not configured)
-                                            <?php endif; ?>
                                         </option>
                                     <?php 
                                         endif;
@@ -1045,13 +1026,6 @@ function render_eventzone_field_config_page() {
                                     </td>
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 10px;">
-                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this field configuration?');">
-                                                <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
-                                                <input type="hidden" name="action" value="delete_field">
-                                                <input type="hidden" name="field_to_delete" value="<?php echo esc_attr($field_name); ?>">
-                                                <input type="submit" class="button button-small" value="Delete Config" style="color: red;">
-                                            </form>
-                                            
                                             <?php if (!in_array($field_name, $protected_columns)): ?>
                                                 <div style="display: flex; align-items: center; gap: 5px;">
                                                     <input type="checkbox" id="safety-<?php echo esc_attr($field_name); ?>" onchange="toggleDeleteButton('<?php echo esc_js($field_name); ?>')">
