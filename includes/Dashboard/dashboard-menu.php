@@ -481,6 +481,15 @@ function render_eventzone_field_config_page() {
                             return;
                         } else {
                             echo '<div class="updated notice"><p>Successfully added new database column: ' . $field_name . '</p></div>';
+                            
+                            // Refresh database columns list after adding new column
+                            $db_columns = [];
+                            if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+                                $columns = $wpdb->get_results("DESCRIBE $table_name");
+                                foreach ($columns as $column) {
+                                    $db_columns[] = $column->Field;
+                                }
+                            }
                         }
                     } else {
                         echo '<div class="notice notice-warning"><p>Database column already exists: ' . $field_name . '</p></div>';
@@ -583,6 +592,43 @@ function render_eventzone_field_config_page() {
     
     // Get current field configurations
     $field_configs = get_option('jotunheim_eventzone_field_config', []);
+    
+    // Auto-generate configurations for database fields that don't have them
+    foreach ($db_columns as $column) {
+        if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])) {
+            // Generate default configuration based on field name
+            $default_config = [
+                'type' => 'text',
+                'label' => ucfirst(str_replace('_', ' ', $column)),
+                'placeholder' => '',
+                'dropdown_options' => '',
+                'is_conditional' => false,
+                'conditional_field' => '',
+                'conditional_value' => '',
+                'is_custom' => false
+            ];
+            
+            // Set specific defaults for known field types
+            if (in_array($column, ['shape', 'eventzone_status', 'zone_type'])) {
+                $default_config['type'] = 'dropdown';
+                if ($column === 'shape') {
+                    $default_config['dropdown_options'] = "Circle\nSquare";
+                } elseif ($column === 'eventzone_status') {
+                    $default_config['dropdown_options'] = "enabled\ndisabled";
+                } elseif ($column === 'zone_type') {
+                    $default_config['dropdown_options'] = "Server Infrastructure\nQuest\nEvent\nBoss Power\nBoss Fight\nNPC";
+                }
+            } elseif ($column === 'priority') {
+                $default_config['type'] = 'number';
+                $default_config['placeholder'] = '10';
+            }
+            
+            $field_configs[$column] = $default_config;
+        }
+    }
+    
+    // Save the updated configurations
+    update_option('jotunheim_eventzone_field_config', $field_configs);
     
     // Debug: Add some debugging info
     if (isset($_GET['debug']) && $_GET['debug'] === '1') {
@@ -709,12 +755,12 @@ function render_eventzone_field_config_page() {
                                     <select name="field_name" required>
                                         <option value="">Select Database Field</option>
                                         <?php foreach ($db_columns as $column): ?>
-                                            <?php if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])): ?>
+                                            <?php if (!in_array($column, ['id', 'string_name'])): ?>
                                                 <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
                                     </select>
-                                    <p class="description">Select a database field that doesn't have configuration yet</p>
+                                    <p class="description">Select any database field to modify its configuration</p>
                                 </td>
                             </tr>
                             <tr>
@@ -826,10 +872,19 @@ function render_eventzone_field_config_page() {
                                 </p>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">Safety Confirmation</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" id="delete-safety-check" required>
+                                    <strong style="color: #dc3545;">I understand this will permanently delete the database column and all its data</strong>
+                                </label>
+                            </td>
+                        </tr>
                     </table>
                     
                     <p class="submit">
-                        <input type="submit" class="button" value="Delete Variable" style="background: #dc3545; color: white; border-color: #dc3545;">
+                        <input type="submit" class="button" value="Delete Variable" style="background: #dc3545; color: white; border-color: #dc3545;" disabled id="delete-variable-btn">
                     </p>
                 </form>
             </div>
@@ -890,23 +945,28 @@ function render_eventzone_field_config_page() {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this field configuration?');">
-                                            <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
-                                            <input type="hidden" name="action" value="delete_field">
-                                            <input type="hidden" name="field_to_delete" value="<?php echo esc_attr($field_name); ?>">
-                                            <input type="submit" class="button button-small" value="Delete Config" style="color: red;">
-                                        </form>
-                                        
-                                        <?php if (!in_array($field_name, $protected_columns)): ?>
-                                            <form method="POST" style="display: inline; margin-left: 5px;" onsubmit="return confirmVariableDeletion('<?php echo esc_js($field_name); ?>');">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this field configuration?');">
                                                 <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
-                                                <input type="hidden" name="action" value="delete_variable">
-                                                <input type="hidden" name="variable_to_delete" value="<?php echo esc_attr($field_name); ?>">
-                                                <input type="submit" class="button button-small" value="Delete Variable" style="background: #dc3545; color: white; border-color: #dc3545;">
+                                                <input type="hidden" name="action" value="delete_field">
+                                                <input type="hidden" name="field_to_delete" value="<?php echo esc_attr($field_name); ?>">
+                                                <input type="submit" class="button button-small" value="Delete Config" style="color: red;">
                                             </form>
-                                        <?php else: ?>
-                                            <span style="color: #999; font-size: 11px; margin-left: 5px;">(protected)</span>
-                                        <?php endif; ?>
+                                            
+                                            <?php if (!in_array($field_name, $protected_columns)): ?>
+                                                <div style="display: flex; align-items: center; gap: 5px;">
+                                                    <input type="checkbox" id="safety-<?php echo esc_attr($field_name); ?>" onchange="toggleDeleteButton('<?php echo esc_js($field_name); ?>')">
+                                                    <form method="POST" style="display: inline;" onsubmit="return confirmVariableDeletion('<?php echo esc_js($field_name); ?>');">
+                                                        <?php wp_nonce_field('save_eventzone_field_config', 'eventzone_field_config_nonce'); ?>
+                                                        <input type="hidden" name="action" value="delete_variable">
+                                                        <input type="hidden" name="variable_to_delete" value="<?php echo esc_attr($field_name); ?>">
+                                                        <input type="submit" class="button button-small" value="Delete Variable" style="background: #dc3545; color: white; border-color: #dc3545;" disabled id="delete-btn-<?php echo esc_attr($field_name); ?>">
+                                                    </form>
+                                                </div>
+                                            <?php else: ?>
+                                                <span style="color: #999; font-size: 11px;">(protected)</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -972,11 +1032,28 @@ function render_eventzone_field_config_page() {
             }
         }
         
+        function toggleDeleteButton(fieldName) {
+            const checkbox = document.getElementById('safety-' + fieldName);
+            const button = document.getElementById('delete-btn-' + fieldName);
+            if (checkbox && button) {
+                button.disabled = !checkbox.checked;
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             const conditionalCheckboxes = document.querySelectorAll('input[name="is_conditional"]');
             const existingFieldSelect = document.querySelector('select[name="field_name"]');
             const currentConfigDiv = document.getElementById('current-configurations');
             const currentConfigDisplay = document.getElementById('current-config-display');
+            const deleteSafetyCheck = document.getElementById('delete-safety-check');
+            const deleteVariableBtn = document.getElementById('delete-variable-btn');
+            
+            // Handle delete safety checkbox
+            if (deleteSafetyCheck && deleteVariableBtn) {
+                deleteSafetyCheck.addEventListener('change', function() {
+                    deleteVariableBtn.disabled = !this.checked;
+                });
+            }
             
             // Handle conditional display checkboxes
             conditionalCheckboxes.forEach(checkbox => {
