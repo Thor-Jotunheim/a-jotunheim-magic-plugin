@@ -619,8 +619,22 @@ function render_eventzone_field_config_page() {
                 $field_placeholder = sanitize_text_field($_POST['field_placeholder']);
                 $dropdown_options = sanitize_textarea_field($_POST['dropdown_options']);
                 $is_conditional = isset($_POST['is_conditional']) ? 1 : 0;
-                $conditional_field = sanitize_text_field($_POST['conditional_field']);
-                $conditional_value = sanitize_text_field($_POST['conditional_value']);
+                
+                // Handle multiple conditions
+                $conditions = [];
+                if ($is_conditional && isset($_POST['conditional_field']) && isset($_POST['conditional_value'])) {
+                    $conditional_fields = $_POST['conditional_field'];
+                    $conditional_values = $_POST['conditional_value'];
+                    
+                    for ($i = 0; $i < count($conditional_fields); $i++) {
+                        if (!empty($conditional_fields[$i]) && !empty($conditional_values[$i])) {
+                            $conditions[] = [
+                                'field' => sanitize_text_field($conditional_fields[$i]),
+                                'value' => sanitize_text_field($conditional_values[$i])
+                            ];
+                        }
+                    }
+                }
                 
                 $existing_config = get_option('jotunheim_eventzone_field_config', []);
                 $existing_config[$field_name] = [
@@ -629,8 +643,10 @@ function render_eventzone_field_config_page() {
                     'placeholder' => $field_placeholder,
                     'dropdown_options' => $dropdown_options,
                     'is_conditional' => $is_conditional,
-                    'conditional_field' => $conditional_field,
-                    'conditional_value' => $conditional_value,
+                    'conditions' => $conditions, // New: array of conditions
+                    // Keep old format for backward compatibility
+                    'conditional_field' => !empty($conditions) ? $conditions[0]['field'] : '',
+                    'conditional_value' => !empty($conditions) ? $conditions[0]['value'] : '',
                     'is_custom' => false  // All fields are database columns now
                 ];
                 
@@ -753,16 +769,23 @@ function render_eventzone_field_config_page() {
                             <tr class="conditional-settings" style="display: none;">
                                 <th scope="row">Show When</th>
                                 <td>
-                                    <select name="conditional_field">
-                                        <option value="">Select Field</option>
-                                        <?php foreach ($db_columns as $column): ?>
-                                            <?php if (!in_array($column, ['id', 'string_name'])): ?>
-                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <span> equals </span>
-                                    <input type="text" name="conditional_value" placeholder="value">
+                                    <div id="conditions-container-add">
+                                        <div class="condition-row" style="margin-bottom: 10px;">
+                                            <select name="conditional_field[]">
+                                                <option value="">Select Field</option>
+                                                <?php foreach ($db_columns as $column): ?>
+                                                    <?php if (!in_array($column, ['id', 'string_name'])): ?>
+                                                        <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <span> equals </span>
+                                            <input type="text" name="conditional_value[]" placeholder="value" style="width: 100px;">
+                                            <button type="button" class="button remove-condition" style="margin-left: 10px;">Remove</button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="button add-condition" style="margin-top: 10px;">Add Another Condition (OR)</button>
+                                    <p class="description">Field will show when ANY of these conditions are met</p>
                                 </td>
                             </tr>
                         </table>
@@ -836,16 +859,23 @@ function render_eventzone_field_config_page() {
                             <tr class="conditional-settings" style="display: none;">
                                 <th scope="row">Show When</th>
                                 <td>
-                                    <select name="conditional_field">
-                                        <option value="">Select Field</option>
-                                        <?php foreach ($db_columns as $column): ?>
-                                            <?php if (!in_array($column, ['id', 'string_name'])): ?>
-                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <span> equals </span>
-                                    <input type="text" name="conditional_value" placeholder="value">
+                                    <div id="conditions-container-modify">
+                                        <div class="condition-row" style="margin-bottom: 10px;">
+                                            <select name="conditional_field[]">
+                                                <option value="">Select Field</option>
+                                                <?php foreach ($db_columns as $column): ?>
+                                                    <?php if (!in_array($column, ['id', 'string_name'])): ?>
+                                                        <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <span> equals </span>
+                                            <input type="text" name="conditional_value[]" placeholder="value" style="width: 100px;">
+                                            <button type="button" class="button remove-condition" style="margin-left: 10px;">Remove</button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="button add-condition" style="margin-top: 10px;">Add Another Condition (OR)</button>
+                                    <p class="description">Field will show when ANY of these conditions are met</p>
                                 </td>
                             </tr>
                         </table>
@@ -1216,6 +1246,46 @@ function render_eventzone_field_config_page() {
                     conditionalSettings.style.display = 'none';
                 }
             }
+            
+            // Handle multiple conditions functionality
+            function setupMultipleConditions() {
+                // Add condition functionality
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('add-condition')) {
+                        const container = e.target.previousElementSibling;
+                        const newCondition = document.createElement('div');
+                        newCondition.className = 'condition-row';
+                        newCondition.style.marginBottom = '10px';
+                        
+                        // Get the field options from the first condition row
+                        const firstSelect = container.querySelector('select');
+                        const fieldOptions = firstSelect ? firstSelect.innerHTML : '';
+                        
+                        newCondition.innerHTML = `
+                            <select name="conditional_field[]">
+                                ${fieldOptions}
+                            </select>
+                            <span> equals </span>
+                            <input type="text" name="conditional_value[]" placeholder="value" style="width: 100px;">
+                            <button type="button" class="button remove-condition" style="margin-left: 10px;">Remove</button>
+                        `;
+                        
+                        container.appendChild(newCondition);
+                    }
+                    
+                    // Remove condition functionality
+                    if (e.target.classList.contains('remove-condition')) {
+                        const container = e.target.closest('.condition-row').parentNode;
+                        if (container.children.length > 1) {
+                            e.target.closest('.condition-row').remove();
+                        } else {
+                            alert('You must have at least one condition');
+                        }
+                    }
+                });
+            }
+            
+            setupMultipleConditions();
         });
         </script>
     </div>

@@ -78,7 +78,16 @@ class EventZoneFieldGenerator {
         $conditional_data = '';
         if ($config['is_conditional']) {
             $conditional_class = 'conditional-field';
-            $conditional_data = 'data-conditional-field="' . esc_attr($config['conditional_field']) . '" data-conditional-value="' . esc_attr($config['conditional_value']) . '"';
+            
+            // Handle multiple conditions (new format)
+            if (isset($config['conditions']) && !empty($config['conditions'])) {
+                $conditions_json = json_encode($config['conditions']);
+                $conditional_data = 'data-conditions="' . esc_attr($conditions_json) . '"';
+            }
+            // Fallback to old format for backward compatibility
+            elseif (isset($config['conditional_field']) && isset($config['conditional_value'])) {
+                $conditional_data = 'data-conditional-field="' . esc_attr($config['conditional_field']) . '" data-conditional-value="' . esc_attr($config['conditional_value']) . '"';
+            }
         }
         
         $html = "<div class='field-row $conditional_class' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='$field_name' $conditional_data>";
@@ -278,16 +287,46 @@ class EventZoneFieldGenerator {
         
         foreach ($field_configs as $field_name => $config) {
             if ($config['is_conditional']) {
-                $js .= "
-                // Handle conditional display for {$field_name}
-                $('#{$config['conditional_field']}').change(function() {
-                    const isMatched = $(this).val() === '{$config['conditional_value']}' || ($(this).is(':checkbox') && $(this).is(':checked') && '{$config['conditional_value']}' === '1');
-                    $('[data-field=\"{$field_name}\"]').toggle(isMatched);
-                });
-                
-                // Initialize conditional field visibility for {$field_name}
-                const {$field_name}_isMatched = $('#{$config['conditional_field']}').val() === '{$config['conditional_value']}' || ($('#{$config['conditional_field']}').is(':checkbox') && $('#{$config['conditional_field']}').is(':checked') && '{$config['conditional_value']}' === '1');
-                $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                // Handle multiple conditions (new format)
+                if (isset($config['conditions']) && !empty($config['conditions'])) {
+                    $conditions = $config['conditions'];
+                    $watchFields = [];
+                    $conditionChecks = [];
+                    
+                    foreach ($conditions as $condition) {
+                        $watchFields[] = $condition['field'];
+                        $conditionChecks[] = "($('#{$condition['field']}').val() === '{$condition['value']}' || ($('#{$condition['field']}').is(':checkbox') && $('#{$condition['field']}').is(':checked') && '{$condition['value']}' === '1'))";
+                    }
+                    
+                    $watchFieldsStr = implode(', #', array_unique($watchFields));
+                    $conditionLogic = implode(' || ', $conditionChecks);
+                    
+                    $js .= "
+                    // Handle conditional display for {$field_name} (multiple conditions)
+                    $('#{$watchFieldsStr}').change(function() {
+                        const isMatched = {$conditionLogic};
+                        $('[data-field=\"{$field_name}\"]').toggle(isMatched);
+                    });
+                    
+                    // Initialize conditional field visibility for {$field_name}
+                    const {$field_name}_isMatched = {$conditionLogic};
+                    $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                    ";
+                }
+                // Fallback to old format for backward compatibility
+                elseif (isset($config['conditional_field']) && isset($config['conditional_value'])) {
+                    $js .= "
+                    // Handle conditional display for {$field_name} (legacy single condition)
+                    $('#{$config['conditional_field']}').change(function() {
+                        const isMatched = $(this).val() === '{$config['conditional_value']}' || ($(this).is(':checkbox') && $(this).is(':checked') && '{$config['conditional_value']}' === '1');
+                        $('[data-field=\"{$field_name}\"]').toggle(isMatched);
+                    });
+                    
+                    // Initialize conditional field visibility for {$field_name}
+                    const {$field_name}_isMatched = $('#{$config['conditional_field']}').val() === '{$config['conditional_value']}' || ($('#{$config['conditional_field']}').is(':checkbox') && $('#{$config['conditional_field']}').is(':checked') && '{$config['conditional_value']}' === '1');
+                    $('[data-field=\"{$field_name}\"]').toggle({$field_name}_isMatched);
+                    ";
+                }
                 ";
             }
         }
