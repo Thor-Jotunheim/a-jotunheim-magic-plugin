@@ -426,12 +426,24 @@ function render_weather_calendar_config_page() {
 function render_eventzone_field_config_page() {
     global $wpdb;
     
-    // Get current field configurations and auto-generate defaults first
+    // Get existing database columns for reference first
+    $table_name = 'jotun_eventzones';
+    $db_columns = [];
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        $columns = $wpdb->get_results("DESCRIBE $table_name");
+        foreach ($columns as $column) {
+            $db_columns[] = $column->Field;
+        }
+    }
+    
+    // Get current field configurations and auto-generate defaults
     $field_configs = get_option('jotunheim_eventzone_field_config', []);
     
     // Auto-generate configurations for database fields that don't have them
+    // OR update existing text fields that should be checkboxes
+    $needs_save = false;
     foreach ($db_columns as $column) {
-        if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])) {
+        if (!in_array($column, ['id', 'string_name'])) {
             // Generate default configuration based on field name
             $default_config = [
                 'type' => 'text',
@@ -444,8 +456,35 @@ function render_eventzone_field_config_page() {
                 'is_custom' => false
             ];
             
+            // Detect checkbox fields based on naming patterns
+            $checkbox_patterns = [
+                '/^no[A-Z]/', // noSnapCopy, noStatLoss, etc.
+                '/^allow[A-Z]/', // allowSignUse, allowItemStandUse, etc.
+                '/^disable[A-Z]/', // disableDrops, etc.
+                '/^enable[A-Z]/', // enableSomething, etc.
+                '/^is[A-Z]/', // isActive, isEnabled, etc.
+                '/^has[A-Z]/', // hasAccess, etc.
+                '/Loss$/', // noStatLoss, noItemLoss, etc.
+                '/Gain$/', // noStatGain, etc.
+                '/Drop/', // disableDrops, noBuild, etc.
+                '/Invisible/', // invisiblePlayers, etc.
+                '/Damage$/', // noBuildDamage, etc.
+                '/Placement$/', // allowSignPlacement, allowCarPlacement, etc.
+            ];
+            
+            $is_checkbox = false;
+            foreach ($checkbox_patterns as $pattern) {
+                if (preg_match($pattern, $column)) {
+                    $is_checkbox = true;
+                    break;
+                }
+            }
+            
+            if ($is_checkbox) {
+                $default_config['type'] = 'checkbox';
+            }
             // Set specific defaults for known field types
-            if (in_array($column, ['shape', 'eventzone_status', 'zone_type'])) {
+            elseif (in_array($column, ['shape', 'eventzone_status', 'zone_type'])) {
                 $default_config['type'] = 'dropdown';
                 if ($column === 'shape') {
                     $default_config['dropdown_options'] = "Circle\nSquare";
@@ -459,16 +498,71 @@ function render_eventzone_field_config_page() {
                 $default_config['placeholder'] = '10';
             }
             
-            $field_configs[$column] = $default_config;
+            // If field doesn't exist, create it
+            if (!isset($field_configs[$column])) {
+                $field_configs[$column] = $default_config;
+                $needs_save = true;
+            }
+            // If field exists but is 'text' and should be checkbox, update it
+            elseif ($field_configs[$column]['type'] === 'text' && $is_checkbox) {
+                // Preserve existing label and other settings, just update type
+                $field_configs[$column]['type'] = 'checkbox';
+                $needs_save = true;
+                echo '<div class="updated notice"><p>Auto-updated ' . $column . ' from text to checkbox based on field name pattern.</p></div>';
+            }
         }
+    }
+    
+    // Save updated configurations
+    if ($needs_save) {
+        update_option('jotunheim_eventzone_field_config', $field_configs);
     }
     
     // Save the initial auto-configurations
     update_option('jotunheim_eventzone_field_config', $field_configs);
     
     // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eventzone_field_config_nonce'])) {
-        if (wp_verify_nonce($_POST['eventzone_field_config_nonce'], 'save_eventzone_field_config')) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Handle force rescan button (no nonce needed for this simple action)
+        if (isset($_POST['force_rescan'])) {
+            $field_configs = get_option('jotunheim_eventzone_field_config', []);
+            $updated_count = 0;
+            
+            foreach ($db_columns as $column) {
+                if (!in_array($column, ['id', 'string_name']) && isset($field_configs[$column])) {
+                    // Detect checkbox fields based on naming patterns
+                    $checkbox_patterns = [
+                        '/^no[A-Z]/', '/^allow[A-Z]/', '/^disable[A-Z]/', '/^enable[A-Z]/',
+                        '/^is[A-Z]/', '/^has[A-Z]/', '/Loss$/', '/Gain$/', '/Drop/', 
+                        '/Invisible/', '/Damage$/', '/Placement$/'
+                    ];
+                    
+                    $is_checkbox = false;
+                    foreach ($checkbox_patterns as $pattern) {
+                        if (preg_match($pattern, $column)) {
+                            $is_checkbox = true;
+                            break;
+                        }
+                    }
+                    
+                    // If field exists but is 'text' and should be checkbox, update it
+                    if ($field_configs[$column]['type'] === 'text' && $is_checkbox) {
+                        $field_configs[$column]['type'] = 'checkbox';
+                        $updated_count++;
+                    }
+                }
+            }
+            
+            if ($updated_count > 0) {
+                update_option('jotunheim_eventzone_field_config', $field_configs);
+                echo '<div class="updated notice"><p>✅ Re-scan complete! Updated ' . $updated_count . ' fields from text to checkbox.</p></div>';
+            } else {
+                echo '<div class="notice notice-info"><p>ℹ️ Re-scan complete! No fields needed updating.</p></div>';
+            }
+        }
+        
+        if (isset($_POST['eventzone_field_config_nonce'])) {
+            if (wp_verify_nonce($_POST['eventzone_field_config_nonce'], 'save_eventzone_field_config')) {
             
             // Handle adding new field configuration
             if (isset($_POST['action']) && $_POST['action'] === 'add_field') {
@@ -628,6 +722,7 @@ function render_eventzone_field_config_page() {
                 }
             }
         }
+        } // Close nonce check
     }
     
     // Debug: Add some debugging info
@@ -636,20 +731,17 @@ function render_eventzone_field_config_page() {
         echo '<pre>' . print_r($field_configs, true) . '</pre></div>';
     }
     
-    // Get existing database columns for reference
-    $table_name = 'jotun_eventzones';
-    $db_columns = [];
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
-        $columns = $wpdb->get_results("DESCRIBE $table_name");
-        foreach ($columns as $column) {
-            $db_columns[] = $column->Field;
-        }
-    }
-    
     ?>
     <div class="wrap">
         <h1>⚙️ EventZone Field Configuration</h1>
         <p>Configure how fields appear in the EventZone add/edit interfaces. All fields correspond to database columns.</p>
+        
+        <!-- Re-scan button to force field type detection -->
+        <form method="post" style="margin-bottom: 20px;">
+            <input type="hidden" name="force_rescan" value="1">
+            <button type="submit" class="button button-secondary">🔄 Re-scan Field Types</button>
+            <small style="margin-left: 10px;">Force re-detection of field types (text vs checkbox) for all existing configurations</small>
+        </form>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             
