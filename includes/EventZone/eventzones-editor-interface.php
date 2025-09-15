@@ -93,30 +93,26 @@ function loadZoneDetails(zoneId) {
     const editContainer = document.getElementById('edit-sections-container');
     editContainer.innerHTML = '';
 
-    fetch(`${apiUrl}/${zoneId}`, {
-        headers: { 'X-API-KEY': apiKey }
+    // Use AJAX to generate form HTML with field generator
+    jQuery.post('<?php echo admin_url('admin-ajax.php'); ?>', {
+        action: 'jotunheim_generate_edit_zone_form',
+        zone_id: zoneId
     })
-    .then(response => response.json())
-    .then(zone => {
-        if (zone) {
-            const columns = Object.keys(zone).map(field => ({
-                Field: field,
-                Type: typeof zone[field]
-            }));
-            // Ensure numeric values retain their precision
-            for (let key in zone) {
-                if (typeof zone[key] === 'number') {
-                    zone[key] = parseFloat(zone[key].toFixed(2)); // Preserve 2 decimal places (adjust as needed)
-                }
+    .done(function(response) {
+        if (response.success) {
+            editContainer.insertAdjacentHTML('beforeend', response.data.html);
+            
+            // Execute the conditional fields JavaScript
+            if (response.data.js) {
+                eval(response.data.js);
             }
-            const formHtml = generateEditZoneForm(zone, columns);
-            editContainer.insertAdjacentHTML('beforeend', formHtml);
-            initializeConditionalFieldBehavior();
         } else {
-            console.error("No data returned for zone ID:", zoneId);
+            console.error('Error generating form:', response);
         }
     })
-    .catch(error => console.error('Error fetching zone details:', error));
+    .fail(function(error) {
+        console.error('AJAX error:', error);
+    });
 }
 
 
@@ -398,4 +394,50 @@ $('#clear-zone-btn').click(function () {
     </script>
     <?php
 }
+
+// AJAX handler to generate edit zone form using field generator
+function jotunheim_generate_edit_zone_form() {
+    global $wpdb;
+    
+    if (!isset($_POST['zone_id'])) {
+        wp_die('Zone ID required');
+    }
+    
+    $zone_id = intval($_POST['zone_id']);
+    $table_name = 'jotun_eventzones';
+    
+    // Get zone data
+    $zone = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $zone_id), ARRAY_A);
+    
+    if (!$zone) {
+        wp_die('Zone not found');
+    }
+    
+    // Get table columns
+    $columns = $wpdb->get_results("DESCRIBE $table_name");
+    
+    // Generate form HTML using field generator
+    $form_html = '<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">';
+    $form_html .= '<h4>Editing: ' . esc_html($zone['name'] ?? '') . '</h4>';
+    $form_html .= '<form class="zone-details-form" data-zone-id="' . $zone_id . '">';
+    
+    $form_html .= EventZoneFieldGenerator::generateFormFields($columns, $zone, 'edit-zone-form-' . $zone_id);
+    
+    // Add Save and Delete buttons
+    $form_html .= '<button type="button" class="save-zone-btn" style="padding: 10px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-bottom: 10px;">Save Changes</button>';
+    $form_html .= '<button type="button" class="delete-zone-btn" style="padding: 10px; background-color: #d9534f; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px;">Delete Record</button>';
+    $form_html .= '<label style="display: block; margin-top: 10px; font-weight: bold;">';
+    $form_html .= '<input type="checkbox" class="confirm-delete-checkbox" style="margin-right: 10px; transform: scale(1.2);">Confirm Delete';
+    $form_html .= '</label>';
+    $form_html .= '</form></div>';
+    
+    // Also return the conditional fields JavaScript
+    $js_code = EventZoneFieldGenerator::generateConditionalFieldsJS();
+    
+    wp_send_json_success([
+        'html' => $form_html,
+        'js' => $js_code
+    ]);
+}
+add_action('wp_ajax_jotunheim_generate_edit_zone_form', 'jotunheim_generate_edit_zone_form');
 ?>

@@ -21,57 +21,10 @@ function jotunheim_magic_add_new_zone_interface() {
             <h4 style="font-family: 'Roboto', sans-serif; font-weight: 700; color: #444;">Adding New Event Zone</h4>
             <form id="add-new-zone-form" method="post" action="javascript:void(0);" style="display: block;">
 
-                <?php foreach ($columns as $column) :
-                    $field_name = $column->Field;
-                    $field_type = $column->Type;
-
-                    // Skip 'id' and 'string_name' fields
-                    if (in_array($field_name, ['id', 'string_name'])) continue;
-
-                    echo "<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='$field_name'>";
-                    echo "<label for='$field_name' style='flex: 1; font-weight: bold;'>".ucfirst(str_replace('_', ' ', $field_name)).":</label>";
-                    echo "<div style='flex: 2;'>";
-
-                    if ($field_name == 'shape') {
-                        echo "<select id='$field_name' name='$field_name' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                                <option value='Circle'>Circle</option>
-                                <option value='Square'>Square</option>
-                              </select>";
-                    } elseif (strpos($field_type, 'tinyint(1)') !== false) {
-                        echo "<input type='checkbox' id='$field_name' name='$field_name' style='transform: scale(1.2); margin-top: 5px;' value='1'>";
-                    } elseif ($field_name == 'eventzone_status') {
-                        echo "<select id='$field_name' name='$field_name' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                                <option value='enabled'>Enabled</option>
-                                <option value='disabled'>Disabled</option>
-                              </select>";
-                    } elseif ($field_name == 'zone_type') {
-                        echo "<select id='$field_name' name='$field_name' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                                <option value='Server Infrastructure'>Server Infrastructure</option>
-                                <option value='Quest'>Quest</option>
-                                <option value='Event'>Event</option>
-                                <option value='Boss Power'>Boss Power</option>
-                                <option value='Boss Fight'>Boss Fight</option>
-                                <option value='NPC'>NPC</option>
-                              </select>";
-                    } else {
-                        // Add placeholders for specific fields
-                        if ($field_name == 'name') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='eventZoneName' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'priority') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='10' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'position') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='0,0,0' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'respawnLocation') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='0,0,0' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } elseif ($field_name == 'radius') {
-                            echo "<input type='text' id='$field_name' name='$field_name' placeholder='20' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        } else {
-                            echo "<input type='text' id='$field_name' name='$field_name' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>";
-                        }
-
-                    }
-                    echo "</div></div>";
-                endforeach; ?>
+                <?php 
+                // Use the field generator to create form fields
+                echo EventZoneFieldGenerator::generateFormFields($columns);
+                ?>
 
                 <!-- Submit Button -->
                 <button type="button" id="add-zone-btn" style="padding: 10px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%;">
@@ -83,28 +36,7 @@ function jotunheim_magic_add_new_zone_interface() {
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // Initially hide square-related fields container
-            $('[data-field="squareXRadius"], [data-field="squareZRadius"]').hide();
-            // Initially hide respawn location fields container
-            $('[data-field="respawnLocation"]').hide();
-
-            // Show/hide square radius fields based on shape selection
-            $('#shape').change(function() {
-                const isSquare = $(this).val() === 'Square';
-                $('[data-field="squareXRadius"], [data-field="squareZRadius"]').toggle(isSquare);
-            });
-
-            // Only "RespawnAtLocation" checkbox controls visibility of respawn location fields
-            $('#respawnAtLocation').change(function() {
-                const isChecked = $(this).is(':checked');
-                $('[data-field="respawnLocation"]').toggle(isChecked);
-            });
-
-            // Keep respawn location fields visible when "onlyLeaveViaTeleport" is checked
-            $('#onlyLeaveViaTeleport').change(function() {
-            const isChecked = $(this).is(':checked');
-            $('[data-field="respawnLocation"]').toggle(isChecked);
-            });
+            <?php echo EventZoneFieldGenerator::generateConditionalFieldsJS(); ?>
 
             // AJAX call to add new event zone with proper checkbox values
             $('#add-zone-btn').click(function() {

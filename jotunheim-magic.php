@@ -123,6 +123,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-role-access.p
 
 // Include event zones editor files
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-permission.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-field-generator.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-rest-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-post-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-put-api.php');
