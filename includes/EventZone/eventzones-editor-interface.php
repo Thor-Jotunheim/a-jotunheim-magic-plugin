@@ -268,6 +268,10 @@ function eventzones_editor_interface() {
             });
 
             function initializeConditionalFieldBehavior() {
+                // Execute dynamic conditional field JavaScript
+                <?php echo EventZoneFieldGenerator::generateConditionalFieldsJS(); ?>
+                
+                // Legacy hardcoded conditional fields (these should be migrated to the configuration system)
                 $('[data-field="squareXRadius"], [data-field="squareZRadius"]').hide();
                 $('[data-field="respawnLocation"]').hide();
 

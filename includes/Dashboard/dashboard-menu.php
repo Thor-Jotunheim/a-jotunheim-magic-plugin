@@ -626,6 +626,10 @@ function render_eventzone_field_config_page() {
                     $conditional_fields = $_POST['conditional_field'];
                     $conditional_values = $_POST['conditional_value'];
                     
+                    // Debug logging
+                    error_log('Conditional fields submitted: ' . print_r($conditional_fields, true));
+                    error_log('Conditional values submitted: ' . print_r($conditional_values, true));
+                    
                     for ($i = 0; $i < count($conditional_fields); $i++) {
                         if (!empty($conditional_fields[$i]) && !empty($conditional_values[$i])) {
                             $conditions[] = [
@@ -634,6 +638,8 @@ function render_eventzone_field_config_page() {
                             ];
                         }
                     }
+                    
+                    error_log('Final conditions array: ' . print_r($conditions, true));
                 }
                 
                 $existing_config = get_option('jotunheim_eventzone_field_config', []);
@@ -1249,10 +1255,15 @@ function render_eventzone_field_config_page() {
             
             // Handle multiple conditions functionality
             function setupMultipleConditions() {
+                console.log('Setting up multiple conditions functionality...');
+                
                 // Add condition functionality
                 document.addEventListener('click', function(e) {
                     if (e.target.classList.contains('add-condition')) {
+                        console.log('Add condition button clicked');
                         const container = e.target.previousElementSibling;
+                        console.log('Container found:', container);
+                        
                         const newCondition = document.createElement('div');
                         newCondition.className = 'condition-row';
                         newCondition.style.marginBottom = '10px';
@@ -1260,6 +1271,7 @@ function render_eventzone_field_config_page() {
                         // Get the field options from the first condition row
                         const firstSelect = container.querySelector('select');
                         const fieldOptions = firstSelect ? firstSelect.innerHTML : '';
+                        console.log('Field options:', fieldOptions);
                         
                         newCondition.innerHTML = `
                             <select name="conditional_field[]">
@@ -1271,13 +1283,16 @@ function render_eventzone_field_config_page() {
                         `;
                         
                         container.appendChild(newCondition);
+                        console.log('New condition added');
                     }
                     
                     // Remove condition functionality
                     if (e.target.classList.contains('remove-condition')) {
+                        console.log('Remove condition button clicked');
                         const container = e.target.closest('.condition-row').parentNode;
                         if (container.children.length > 1) {
                             e.target.closest('.condition-row').remove();
+                            console.log('Condition removed');
                         } else {
                             alert('You must have at least one condition');
                         }
