@@ -20,6 +20,7 @@ function eventzones_editor_interface() {
         <div style="flex: 2; overflow-y: auto; height: auto; min-height: calc(110vh - 50px);">
             <div id="edit-sections-container" class="edit-section" style="background: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
                 <h3 style="font-family: 'Roboto', sans-serif; font-weight: 700; color: #222; text-align: center;">Edit Zone Details</h3>
+                <button id="save-all-btn" style="width: 100%; background: #28a745; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px; display: none;">Save All Changes</button>
                 <!-- Edit sections will be dynamically added here -->
             </div>
         </div>
@@ -157,6 +158,13 @@ function eventzones_editor_interface() {
                                 }
                                 
                                 initializeConditionalFieldBehavior();
+                                
+                                // Show Save All button if multiple zones are loaded
+                                if (selectedZones.length > 1) {
+                                    $('#save-all-btn').show();
+                                } else {
+                                    $('#save-all-btn').hide();
+                                }
                             } else {
                                 console.error('Error generating form:', response);
                             }
@@ -176,7 +184,81 @@ function eventzones_editor_interface() {
                 checkedZones.clear();
                 $('#eventzones-search').val('');
                 $('#edit-sections-container').empty();
+                $('#save-all-btn').hide();
                 refreshZoneList();
+            });
+
+            // Save All button functionality
+            $('#save-all-btn').click(function() {
+                const forms = $('.zone-details-form');
+                let savePromises = [];
+                let successCount = 0;
+                let errorCount = 0;
+
+                if (forms.length === 0) {
+                    alert('No forms to save');
+                    return;
+                }
+
+                $(this).prop('disabled', true).text('Saving...');
+
+                forms.each(function() {
+                    const form = $(this);
+                    const zoneId = form.data('zone-id');
+                    
+                    // Use jQuery serialize for consistency with individual save
+                    const formArray = form.serializeArray();
+                    const jsonData = {};
+                    
+                    // Convert form array to object
+                    $.each(formArray, function(i, field) {
+                        jsonData[field.name] = field.value;
+                    });
+                    
+                    // Handle unchecked checkboxes
+                    form.find('input[type="checkbox"]').each(function() {
+                        if (!$(this).is(':checked') && !jsonData.hasOwnProperty($(this).attr('name'))) {
+                            jsonData[$(this).attr('name')] = '0';
+                        }
+                    });
+
+                    const savePromise = fetch(`${apiUrl}/${zoneId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'X-API-KEY': apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jsonData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'updated') {
+                            successCount++;
+                            console.log(`Zone ${zoneId} saved successfully`);
+                        } else {
+                            errorCount++;
+                            console.error(`Error saving zone ${zoneId}:`, data);
+                        }
+                    })
+                    .catch(error => {
+                        errorCount++;
+                        console.error(`Error saving zone ${zoneId}:`, error);
+                    });
+
+                    savePromises.push(savePromise);
+                });
+
+                Promise.all(savePromises).then(() => {
+                    $('#save-all-btn').prop('disabled', false).text('Save All Changes');
+                    
+                    if (errorCount === 0) {
+                        alert(`All ${successCount} zones saved successfully!`);
+                        $('#edit-sections-container').empty();
+                        $('#save-all-btn').hide();
+                    } else {
+                        alert(`${successCount} zones saved successfully, ${errorCount} failed. Check console for details.`);
+                    }
+                });
             });
 
             function initializeConditionalFieldBehavior() {
@@ -221,13 +303,27 @@ function eventzones_editor_interface() {
 
         // Event delegation for save/delete buttons (since forms are dynamically added)
         $(document).on('click', '.save-zone-btn', function(event) {
+            event.preventDefault();
             const form = $(this).closest('.zone-details-form');
             const zoneId = form.data('zone-id');
-            const formData = new FormData(form[0]);
+            
+            console.log('Save button clicked for zone:', zoneId);
+            console.log('Form found:', form.length > 0);
+            
+            // Use jQuery serialize instead of FormData for better compatibility
+            const formArray = form.serializeArray();
             const jsonData = {};
-
-            formData.forEach((value, key) => {
-                jsonData[key] = value;
+            
+            // Convert form array to object
+            $.each(formArray, function(i, field) {
+                jsonData[field.name] = field.value;
+            });
+            
+            // Handle unchecked checkboxes (they won't appear in serializeArray)
+            form.find('input[type="checkbox"]').each(function() {
+                if (!$(this).is(':checked') && !jsonData.hasOwnProperty($(this).attr('name'))) {
+                    jsonData[$(this).attr('name')] = '0';
+                }
             });
 
             console.log('Saving zone:', zoneId, jsonData);
@@ -240,47 +336,75 @@ function eventzones_editor_interface() {
                 },
                 body: JSON.stringify(jsonData)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('API Response:', data);
                 if (data.status === 'updated') {
                     alert('Event zone updated successfully');
-                    form.parent().remove();
+                    // Remove the form section after successful save
+                    form.closest('.single-edit-section').remove();
+                    
+                    // Hide Save All button if no more forms
+                    if ($('.zone-details-form').length === 0) {
+                        $('#save-all-btn').hide();
+                    }
                 } else {
                     console.error('Error:', data);
-                    alert('Failed to update event zone');
+                    alert('Failed to update event zone: ' + (data.message || 'Unknown error'));
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Save Error:', error);
+                alert('Failed to save event zone. Check console for details.');
+            });
         });
 
         $(document).on('click', '.delete-zone-btn', function(event) {
+            event.preventDefault();
             const form = $(this).closest('.zone-details-form');
             const zoneId = form.data('zone-id');
             const confirmDelete = form.find('.confirm-delete-checkbox').is(':checked');
 
+            console.log('Delete button clicked for zone:', zoneId);
+            console.log('Confirm checked:', confirmDelete);
+
             if (confirmDelete) {
-                fetch(`${apiUrl}/${zoneId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-API-KEY': apiKey,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'deleted') {
-                        alert(`Event zone ${zoneId} deleted successfully`);
-                        form.parent().remove();
-                        refreshZoneList(); // Refresh the list since a zone was deleted
-                    } else {
-                        console.error('Error:', data);
-                        alert(`Failed to delete event zone ${zoneId}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Delete Request Error:', error);
-                    alert('Failed to delete event zone. Please check the console for more details.');
-                });
+                if (confirm(`Are you sure you want to delete zone ${zoneId}? This action cannot be undone.`)) {
+                    fetch(`${apiUrl}/${zoneId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-API-KEY': apiKey,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        console.log('Delete response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Delete API Response:', data);
+                        if (data.status === 'deleted') {
+                            alert(`Event zone ${zoneId} deleted successfully`);
+                            form.closest('.single-edit-section').remove();
+                            refreshZoneList(); // Refresh the list since a zone was deleted
+                            
+                            // Hide Save All button if no more forms
+                            if ($('.zone-details-form').length === 0) {
+                                $('#save-all-btn').hide();
+                            }
+                        } else {
+                            console.error('Error:', data);
+                            alert(`Failed to delete event zone ${zoneId}: ` + (data.message || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Delete Request Error:', error);
+                        alert('Failed to delete event zone. Please check the console for more details.');
+                    });
+                }
             } else {
                 alert('Please confirm delete by checking the checkbox.');
             }

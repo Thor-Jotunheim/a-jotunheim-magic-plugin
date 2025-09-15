@@ -762,7 +762,7 @@ function render_eventzone_field_config_page() {
                             <tr>
                                 <th scope="row">Field Input Type</th>
                                 <td>
-                                    <select name="field_type" required>
+                                    <select name="field_type" id="add-field-type" required>
                                         <option value="text">Text Input</option>
                                         <option value="checkbox">Checkbox</option>
                                         <option value="dropdown">Dropdown</option>
@@ -777,14 +777,14 @@ function render_eventzone_field_config_page() {
                                     <p class="description">Leave empty to auto-generate from variable name</p>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr class="placeholder-row-add">
                                 <th scope="row">Placeholder Text</th>
                                 <td>
                                     <input type="text" name="field_placeholder" class="regular-text" placeholder="Placeholder text">
                                     <p class="description">Only applies to text/number inputs</p>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr class="dropdown-options-row-add" style="display: none;">
                                 <th scope="row">Dropdown Options</th>
                                 <td>
                                     <textarea name="dropdown_options" rows="4" cols="50" placeholder="Option1&#10;Option2&#10;Option3"></textarea>
@@ -852,7 +852,7 @@ function render_eventzone_field_config_page() {
                             <tr>
                                 <th scope="row">Field Input Type</th>
                                 <td>
-                                    <select name="field_type" required>
+                                    <select name="field_type" id="modify-field-type" required>
                                         <option value="text">Text Input</option>
                                         <option value="checkbox">Checkbox</option>
                                         <option value="dropdown">Dropdown</option>
@@ -867,14 +867,14 @@ function render_eventzone_field_config_page() {
                                     <p class="description">Leave empty to auto-generate from field name</p>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr class="placeholder-row-modify">
                                 <th scope="row">Placeholder Text</th>
                                 <td>
                                     <input type="text" name="field_placeholder" class="regular-text" placeholder="Placeholder text">
                                     <p class="description">Only applies to text/number inputs</p>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr class="dropdown-options-row-modify" style="display: none;">
                                 <th scope="row">Dropdown Options</th>
                                 <td>
                                     <textarea name="dropdown_options" rows="4" cols="50" placeholder="Option1&#10;Option2&#10;Option3"></textarea>
@@ -1137,6 +1137,55 @@ function render_eventzone_field_config_page() {
                 });
             });
             
+            // Handle field type dependent rows visibility
+            function updateFieldTypeVisibility(fieldTypeSelect, prefix) {
+                const placeholderRow = document.querySelector('.placeholder-row-' + prefix);
+                const dropdownOptionsRow = document.querySelector('.dropdown-options-row-' + prefix);
+                
+                if (!placeholderRow || !dropdownOptionsRow) return;
+                
+                const selectedType = fieldTypeSelect.value;
+                
+                // Show/hide rows based on field type
+                if (selectedType === 'dropdown') {
+                    // Dropdown: show dropdown options, hide placeholder
+                    dropdownOptionsRow.style.display = 'table-row';
+                    placeholderRow.style.display = 'none';
+                } else if (selectedType === 'checkbox') {
+                    // Checkbox: hide both
+                    dropdownOptionsRow.style.display = 'none';
+                    placeholderRow.style.display = 'none';
+                } else {
+                    // Text/Number: show placeholder, hide dropdown options
+                    dropdownOptionsRow.style.display = 'none';
+                    placeholderRow.style.display = 'table-row';
+                }
+            }
+            
+            // Add New Variable field type handling
+            const addFieldType = document.getElementById('add-field-type');
+            if (addFieldType) {
+                // Initial state
+                updateFieldTypeVisibility(addFieldType, 'add');
+                
+                // On change
+                addFieldType.addEventListener('change', function() {
+                    updateFieldTypeVisibility(this, 'add');
+                });
+            }
+            
+            // Modify Existing Variable field type handling
+            const modifyFieldType = document.getElementById('modify-field-type');
+            if (modifyFieldType) {
+                // Initial state
+                updateFieldTypeVisibility(modifyFieldType, 'modify');
+                
+                // On change
+                modifyFieldType.addEventListener('change', function() {
+                    updateFieldTypeVisibility(this, 'modify');
+                });
+            }
+            
             // Handle existing field selection
             if (existingFieldSelect) {
                 existingFieldSelect.addEventListener('change', function() {
@@ -1184,7 +1233,11 @@ function render_eventzone_field_config_page() {
                 const conditionalField = form.querySelector('select[name="conditional_field"]');
                 const conditionalValue = form.querySelector('input[name="conditional_value"]');
                 
-                if (fieldType) fieldType.value = config.type || 'text';
+                if (fieldType) {
+                    fieldType.value = config.type || 'text';
+                    // Update field type dependent rows visibility
+                    updateFieldTypeVisibility(fieldType, 'modify');
+                }
                 if (fieldLabel) fieldLabel.value = config.label || '';
                 if (fieldPlaceholder) fieldPlaceholder.value = config.placeholder || '';
                 if (dropdownOptions) dropdownOptions.value = config.dropdown_options || '';
