@@ -21,7 +21,10 @@ function eventzones_editor_interface() {
             <div id="edit-sections-container" class="edit-section" style="background: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 10px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
                 <h3 style="font-family: 'Roboto', sans-serif; font-weight: 700; color: #222; text-align: center;">Edit Zone Details</h3>
                 <button id="save-all-btn" style="width: 100%; background: #28a745; color: #fff; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px; display: none;">Save All Changes</button>
-                <!-- Edit sections will be dynamically added here -->
+                <button id="test-btn" style="width: 100%; background: #ffc107; color: #000; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px;">Test Button (Click to Show Save All)</button>
+                <div id="forms-container">
+                    <!-- Edit sections will be dynamically added here -->
+                </div>
             </div>
         </div>
     </div>
@@ -139,7 +142,7 @@ function eventzones_editor_interface() {
                 console.log('Loading zones:', selectedZones);
 
                 if (selectedZones.length > 0) {
-                    $('#edit-sections-container').empty();
+                    $('#forms-container').empty();
 
                     selectedZones.forEach(zone_id => {
                         // Use AJAX to generate form HTML with proper field configuration
@@ -150,7 +153,7 @@ function eventzones_editor_interface() {
                         .done(function(response) {
                             console.log('Form response:', response);
                             if (response.success) {
-                                $('#edit-sections-container').append(response.data.html);
+                                $('#forms-container').append(response.data.html);
                                 
                                 // Execute the conditional fields JavaScript
                                 if (response.data.js) {
@@ -159,12 +162,9 @@ function eventzones_editor_interface() {
                                 
                                 initializeConditionalFieldBehavior();
                                 
-                                // Show Save All button if multiple zones are loaded
-                                if (selectedZones.length > 1) {
-                                    $('#save-all-btn').show();
-                                } else {
-                                    $('#save-all-btn').hide();
-                                }
+                                // Show Save All button if zones are loaded (changed to show even for single zone for testing)
+                                console.log('Showing Save All button, zones loaded:', selectedZones.length);
+                                $('#save-all-btn').show();
                             } else {
                                 console.error('Error generating form:', response);
                             }
@@ -183,9 +183,16 @@ function eventzones_editor_interface() {
                 $('.zone-selection-checkbox').prop('checked', false);
                 checkedZones.clear();
                 $('#eventzones-search').val('');
-                $('#edit-sections-container').empty();
+                $('#forms-container').empty();
                 $('#save-all-btn').hide();
                 refreshZoneList();
+            });
+
+            // Test button to show Save All
+            $('#test-btn').click(function() {
+                console.log('Test button clicked, showing Save All button');
+                $('#save-all-btn').show();
+                $(this).text('Save All button should now be visible');
             });
 
             // Save All button functionality
@@ -253,7 +260,7 @@ function eventzones_editor_interface() {
                     
                     if (errorCount === 0) {
                         alert(`All ${successCount} zones saved successfully!`);
-                        $('#edit-sections-container').empty();
+                        $('#forms-container').empty();
                         $('#save-all-btn').hide();
                     } else {
                         alert(`${successCount} zones saved successfully, ${errorCount} failed. Check console for details.`);
@@ -309,10 +316,23 @@ function eventzones_editor_interface() {
             
             console.log('Save button clicked for zone:', zoneId);
             console.log('Form found:', form.length > 0);
+            console.log('Form HTML:', form.length > 0 ? form[0].outerHTML.substring(0, 200) + '...' : 'No form found');
+            
+            if (form.length === 0) {
+                alert('Error: Could not find form element');
+                return;
+            }
+            
+            if (!zoneId) {
+                alert('Error: No zone ID found');
+                return;
+            }
             
             // Use jQuery serialize instead of FormData for better compatibility
             const formArray = form.serializeArray();
             const jsonData = {};
+            
+            console.log('Form array before processing:', formArray);
             
             // Convert form array to object
             $.each(formArray, function(i, field) {
@@ -326,7 +346,9 @@ function eventzones_editor_interface() {
                 }
             });
 
-            console.log('Saving zone:', zoneId, jsonData);
+            console.log('Final JSON data to send:', jsonData);
+            console.log('API URL:', `${apiUrl}/${zoneId}`);
+            console.log('API Key:', apiKey);
 
             fetch(`${apiUrl}/${zoneId}`, {
                 method: 'PUT',
@@ -417,18 +439,29 @@ function eventzones_editor_interface() {
 function jotunheim_generate_edit_zone_form() {
     global $wpdb;
     
+    error_log('AJAX handler called for zone form generation');
+    
     if (!isset($_POST['zone_id'])) {
+        error_log('Zone ID not provided');
         wp_die('Zone ID required');
     }
     
     $zone_id = intval($_POST['zone_id']);
+    error_log('Generating form for zone ID: ' . $zone_id);
     $table_name = 'jotun_eventzones';
     
     // Get zone data
     $zone = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $zone_id), ARRAY_A);
     
     if (!$zone) {
+        error_log('Zone not found for ID: ' . $zone_id);
         wp_die('Zone not found');
+    }
+    
+    // Check if EventZoneFieldGenerator class exists
+    if (!class_exists('EventZoneFieldGenerator')) {
+        error_log('EventZoneFieldGenerator class not found, including file...');
+        require_once plugin_dir_path(__FILE__) . 'eventzones-field-generator.php';
     }
     
     // Get table columns
@@ -451,6 +484,8 @@ function jotunheim_generate_edit_zone_form() {
     
     // Also return the conditional fields JavaScript
     $js_code = EventZoneFieldGenerator::generateConditionalFieldsJS();
+    
+    error_log('Form HTML generated successfully, length: ' . strlen($form_html));
     
     wp_send_json_success([
         'html' => $form_html,
