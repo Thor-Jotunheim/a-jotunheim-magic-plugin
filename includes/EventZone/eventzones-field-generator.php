@@ -9,7 +9,9 @@ class EventZoneFieldGenerator {
     public static function generateFormFields($columns, $zone_data = null, $form_id = 'add-new-zone-form') {
         $field_configs = get_option('jotunheim_eventzone_field_config', []);
         $html = '';
+        $processed_fields = [];
         
+        // First, process database columns
         foreach ($columns as $column) {
             $field_name = $column->Field;
             $field_type = $column->Type;
@@ -22,6 +24,18 @@ class EventZoneFieldGenerator {
             
             // Generate field HTML
             $html .= self::generateSingleField($field_name, $config, $zone_data, $form_id);
+            $processed_fields[] = $field_name;
+        }
+        
+        // Then, process custom fields that aren't in the database
+        foreach ($field_configs as $field_name => $config) {
+            // Skip if we already processed this field or if it's not marked as custom
+            if (in_array($field_name, $processed_fields)) continue;
+            
+            // Only include if it's explicitly marked as custom or if it's not in database columns
+            if (isset($config['is_custom']) && $config['is_custom']) {
+                $html .= self::generateSingleField($field_name, $config, $zone_data, $form_id);
+            }
         }
         
         return $html;

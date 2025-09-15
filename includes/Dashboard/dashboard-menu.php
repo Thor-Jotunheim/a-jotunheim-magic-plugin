@@ -433,6 +433,14 @@ function render_eventzone_field_config_page() {
             // Handle adding new field configuration
             if (isset($_POST['action']) && $_POST['action'] === 'add_field') {
                 $field_name = sanitize_text_field($_POST['field_name']);
+                $is_custom_field = isset($_POST['is_custom_field']) && $_POST['is_custom_field'] === '1';
+                $custom_field_name = sanitize_text_field($_POST['custom_field_name']);
+                
+                // Use custom field name if it's a new custom field
+                if ($is_custom_field && !empty($custom_field_name)) {
+                    $field_name = $custom_field_name;
+                }
+                
                 $field_type = sanitize_text_field($_POST['field_type']);
                 $field_label = sanitize_text_field($_POST['field_label']);
                 $field_placeholder = sanitize_text_field($_POST['field_placeholder']);
@@ -449,7 +457,8 @@ function render_eventzone_field_config_page() {
                     'dropdown_options' => $dropdown_options,
                     'is_conditional' => $is_conditional,
                     'conditional_field' => $conditional_field,
-                    'conditional_value' => $conditional_value
+                    'conditional_value' => $conditional_value,
+                    'is_custom' => $is_custom_field
                 ];
                 
                 update_option('jotunheim_eventzone_field_config', $existing_config);
@@ -504,21 +513,37 @@ function render_eventzone_field_config_page() {
                         
                         <table class="form-table">
                             <tr>
-                                <th scope="row">Field Name</th>
+                                <th scope="row">Field Type</th>
                                 <td>
-                                    <select name="field_name" required>
-                                        <option value="">Select Database Field</option>
-                                        <?php foreach ($db_columns as $column): ?>
-                                            <?php if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])): ?>
-                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <p class="description">Select a database field that doesn't have configuration yet</p>
+                                    <label style="display: block; margin-bottom: 10px;">
+                                        <input type="radio" name="field_source" value="existing" checked style="margin-right: 5px;">
+                                        Configure Existing Database Field
+                                    </label>
+                                    <div id="existing-field-section" style="margin-left: 20px; margin-bottom: 15px;">
+                                        <select name="field_name" id="existing-field-select">
+                                            <option value="">Select Database Field</option>
+                                            <?php foreach ($db_columns as $column): ?>
+                                                <?php if (!in_array($column, ['id', 'string_name']) && !isset($field_configs[$column])): ?>
+                                                    <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <p class="description">Select a database field that doesn't have configuration yet</p>
+                                    </div>
+                                    
+                                    <label style="display: block;">
+                                        <input type="radio" name="field_source" value="custom" style="margin-right: 5px;">
+                                        Add New Custom Field
+                                    </label>
+                                    <div id="custom-field-section" style="margin-left: 20px; margin-top: 10px; display: none;">
+                                        <input type="hidden" name="is_custom_field" value="0" id="is-custom-field-hidden">
+                                        <input type="text" name="custom_field_name" id="custom-field-name" class="regular-text" placeholder="new_field_name" style="margin-bottom: 5px;">
+                                        <p class="description">Enter a new field name (use lowercase, underscores only)</p>
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">Field Type</th>
+                                <th scope="row">Field Input Type</th>
                                 <td>
                                     <select name="field_type" required>
                                         <option value="text">Text Input</option>
@@ -563,11 +588,22 @@ function render_eventzone_field_config_page() {
                                 <td>
                                     <select name="conditional_field">
                                         <option value="">Select Field</option>
-                                        <?php foreach ($db_columns as $column): ?>
-                                            <?php if (!in_array($column, ['id', 'string_name'])): ?>
-                                                <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
+                                        <optgroup label="Database Fields">
+                                            <?php foreach ($db_columns as $column): ?>
+                                                <?php if (!in_array($column, ['id', 'string_name'])): ?>
+                                                    <option value="<?php echo esc_attr($column); ?>"><?php echo esc_html($column); ?></option>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </optgroup>
+                                        <?php if (!empty($field_configs)): ?>
+                                            <optgroup label="Custom Fields">
+                                                <?php foreach ($field_configs as $field_name => $config): ?>
+                                                    <?php if (isset($config['is_custom']) && $config['is_custom']): ?>
+                                                        <option value="<?php echo esc_attr($field_name); ?>"><?php echo esc_html($field_name); ?></option>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </optgroup>
+                                        <?php endif; ?>
                                     </select>
                                     equals
                                     <input type="text" name="conditional_value" placeholder="value">
@@ -595,6 +631,7 @@ function render_eventzone_field_config_page() {
                             <thead>
                                 <tr>
                                     <th>Field Name</th>
+                                    <th>Source</th>
                                     <th>Type</th>
                                     <th>Label</th>
                                     <th>Conditional</th>
@@ -605,6 +642,15 @@ function render_eventzone_field_config_page() {
                                 <?php foreach ($field_configs as $field_name => $config): ?>
                                     <tr>
                                         <td><code><?php echo esc_html($field_name); ?></code></td>
+                                        <td>
+                                            <?php if (isset($config['is_custom']) && $config['is_custom']): ?>
+                                                <span style="color: #0073aa; font-weight: bold;">Custom</span>
+                                            <?php elseif (in_array($field_name, $db_columns)): ?>
+                                                <span style="color: green;">Database</span>
+                                            <?php else: ?>
+                                                <span style="color: orange;">Unknown</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?php echo esc_html(ucfirst($config['type'])); ?></td>
                                         <td><?php echo esc_html($config['label'] ?: ucfirst(str_replace('_', ' ', $field_name))); ?></td>
                                         <td>
@@ -634,11 +680,11 @@ function render_eventzone_field_config_page() {
         
         <div class="postbox">
             <div class="postbox-header">
-                <h2>ℹ️ Database Fields Reference</h2>
+                <h2>ℹ️ Fields Reference</h2>
             </div>
             <div class="inside">
-                <p><strong>Available database fields in <?php echo esc_html($table_name); ?>:</strong></p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                <p><strong>Database fields in <?php echo esc_html($table_name); ?>:</strong></p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
                     <?php foreach ($db_columns as $column): ?>
                         <code style="background: #f0f0f0; padding: 5px; border-radius: 3px; display: block;">
                             <?php echo esc_html($column); ?>
@@ -648,7 +694,26 @@ function render_eventzone_field_config_page() {
                         </code>
                     <?php endforeach; ?>
                 </div>
-                <p><em>Fields with ✓ already have custom configurations.</em></p>
+                
+                <?php 
+                $custom_fields = array_filter($field_configs, function($config) {
+                    return isset($config['is_custom']) && $config['is_custom'];
+                });
+                ?>
+                
+                <?php if (!empty($custom_fields)): ?>
+                    <p><strong>Custom fields:</strong></p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                        <?php foreach ($custom_fields as $field_name => $config): ?>
+                            <code style="background: #e8f4f8; padding: 5px; border-radius: 3px; display: block; border-left: 3px solid #0073aa;">
+                                <?php echo esc_html($field_name); ?>
+                                <span style="color: #0073aa; font-weight: bold;"> Custom</span>
+                            </code>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <p><em>Database fields with ✓ have configurations. Custom fields are shown in blue.</em></p>
             </div>
         </div>
         
@@ -656,9 +721,63 @@ function render_eventzone_field_config_page() {
         document.addEventListener('DOMContentLoaded', function() {
             const conditionalCheckbox = document.querySelector('input[name="is_conditional"]');
             const conditionalSettings = document.querySelector('.conditional-settings');
+            const fieldSourceRadios = document.querySelectorAll('input[name="field_source"]');
+            const existingFieldSection = document.getElementById('existing-field-section');
+            const customFieldSection = document.getElementById('custom-field-section');
+            const existingFieldSelect = document.getElementById('existing-field-select');
+            const customFieldNameInput = document.getElementById('custom-field-name');
+            const isCustomFieldHidden = document.getElementById('is-custom-field-hidden');
             
+            // Handle conditional display checkbox
             conditionalCheckbox.addEventListener('change', function() {
                 conditionalSettings.style.display = this.checked ? 'table-row' : 'none';
+            });
+            
+            // Handle field source radio buttons
+            fieldSourceRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'existing') {
+                        existingFieldSection.style.display = 'block';
+                        customFieldSection.style.display = 'none';
+                        existingFieldSelect.required = true;
+                        customFieldNameInput.required = false;
+                        isCustomFieldHidden.value = '0';
+                    } else if (this.value === 'custom') {
+                        existingFieldSection.style.display = 'none';
+                        customFieldSection.style.display = 'block';
+                        existingFieldSelect.required = false;
+                        customFieldNameInput.required = true;
+                        isCustomFieldHidden.value = '1';
+                    }
+                });
+            });
+            
+            // Form validation
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const fieldSource = document.querySelector('input[name="field_source"]:checked').value;
+                
+                if (fieldSource === 'existing') {
+                    if (!existingFieldSelect.value) {
+                        e.preventDefault();
+                        alert('Please select a database field.');
+                        return false;
+                    }
+                } else if (fieldSource === 'custom') {
+                    if (!customFieldNameInput.value.trim()) {
+                        e.preventDefault();
+                        alert('Please enter a custom field name.');
+                        return false;
+                    }
+                    
+                    // Validate field name format
+                    const fieldName = customFieldNameInput.value.trim();
+                    if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
+                        e.preventDefault();
+                        alert('Field name must start with a letter and contain only lowercase letters, numbers, and underscores.');
+                        return false;
+                    }
+                }
+            });
             });
         });
         </script>
