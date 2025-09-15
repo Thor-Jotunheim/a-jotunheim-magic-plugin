@@ -42,212 +42,100 @@ function eventzones_editor_interface() {
             });
         }
 
-    function restoreCheckedState() {
-    document.querySelectorAll('.zone-selection-checkbox').forEach(checkbox => {
-        checkbox.checked = checkedZones.has(checkbox.dataset.id);
-    });
-}
-    
+        function restoreCheckedState() {
+            document.querySelectorAll('.zone-selection-checkbox').forEach(checkbox => {
+                checkbox.checked = checkedZones.has(checkbox.dataset.id);
+            });
+        }
+        
         function capitalizeEditorFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
-function refreshZoneList() {
-    fetch(apiUrl, {
-        headers: { 'X-API-KEY': apiKey }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const container = document.getElementById('eventzones-container');
-        container.innerHTML = '';
-        data.forEach(zone => {
-            const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
-            container.insertAdjacentHTML('beforeend', checkbox);
-        });
-        restoreCheckedState(); // Restore checked state
-        trackCheckedState(); // Track changes
-    })
-    .catch(error => console.error('Error fetching zones:', error));
-}
-
-function searchEventZones(searchValue) {
-    fetch(`${apiUrl}?search=${encodeURIComponent(searchValue)}`, {
-        headers: { 'X-API-KEY': apiKey }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const container = document.getElementById('eventzones-container');
-        container.innerHTML = '';
-        data.forEach(zone => {
-            const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
-            container.insertAdjacentHTML('beforeend', checkbox);
-        });
-        restoreCheckedState(); // Restore checked state
-        trackCheckedState(); // Track changes
-    })
-    .catch(error => console.error('Error searching zones:', error));
-}
-
-function loadZoneDetails(zoneId) {
-    // Clear out existing form before loading new details
-    const editContainer = document.getElementById('edit-sections-container');
-    editContainer.innerHTML = '';
-
-    // Use AJAX to generate form HTML with field generator
-    jQuery.post('<?php echo admin_url('admin-ajax.php'); ?>', {
-        action: 'jotunheim_generate_edit_zone_form',
-        zone_id: zoneId
-    })
-    .done(function(response) {
-        if (response.success) {
-            editContainer.insertAdjacentHTML('beforeend', response.data.html);
-            
-            // Execute the conditional fields JavaScript
-            if (response.data.js) {
-                eval(response.data.js);
-            }
-        } else {
-            console.error('Error generating form:', response);
-        }
-    })
-    .fail(function(error) {
-        console.error('AJAX error:', error);
-    });
-}
-
-
-        document.addEventListener('DOMContentLoaded', function () {
-            refreshZoneList();
-
-            // Search functionality
-            document.getElementById('eventzones-search').addEventListener('input', function () {
-                const searchValue = this.value;
-                if (searchValue.length >= 2) {
-                    searchEventZones(searchValue);
+        function refreshZoneList() {
+            console.log('Refreshing zone list...');
+            fetch(apiUrl, {
+                headers: { 'X-API-KEY': apiKey }
+            })
+            .then(response => {
+                console.log('API Response:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Zone data:', data);
+                const container = document.getElementById('eventzones-container');
+                container.innerHTML = '';
+                
+                if (data && data.length > 0) {
+                    data.forEach(zone => {
+                        const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
+                        container.insertAdjacentHTML('beforeend', checkbox);
+                    });
+                    restoreCheckedState();
+                    trackCheckedState();
                 } else {
-                    refreshZoneList();
+                    container.innerHTML = '<p>No zones found.</p>';
                 }
+            })
+            .catch(error => {
+                console.error('Error fetching zones:', error);
+                document.getElementById('eventzones-container').innerHTML = '<p>Error loading zones. Check console.</p>';
             });
-        });
+        }
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Event listener for saving updated zone details
-    document.getElementById('edit-sections-container').addEventListener('click', function (event) {
-        if (event.target.classList.contains('save-zone-btn')) {
-            const form = event.target.closest('.zone-details-form');
-            const zoneId = form.dataset.zoneId;
-            const formData = new FormData(form);
-            const jsonData = {};
-
-            formData.forEach((value, key) => {
-                jsonData[key] = value;
-            });
-
-            // Make PUT request to update event zone
-            fetch(`${apiUrl}/${zoneId}`, {
-                method: 'PUT',
-                headers: {
-                    'X-API-KEY': apiKey,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(jsonData)
+        function searchEventZones(searchValue) {
+            console.log('Searching zones for:', searchValue);
+            fetch(`${apiUrl}?search=${encodeURIComponent(searchValue)}`, {
+                headers: { 'X-API-KEY': apiKey }
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'updated') {
-                    alert('Event zone updated successfully');
-                    form.parentElement.remove(); // Remove the form container from the DOM
+                console.log('Search results:', data);
+                const container = document.getElementById('eventzones-container');
+                container.innerHTML = '';
+                
+                if (data && data.length > 0) {
+                    data.forEach(zone => {
+                        const checkbox = `<div><label><input type="checkbox" class="zone-selection-checkbox" data-id="${zone.id}" value="${zone.name}">${zone.name}</label></div>`;
+                        container.insertAdjacentHTML('beforeend', checkbox);
+                    });
+                    restoreCheckedState();
+                    trackCheckedState();
                 } else {
-                    console.error('Error:', data);
-                    alert('Failed to update event zone');
+                    container.innerHTML = '<p>No zones found for search.</p>';
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error searching zones:', error);
+                document.getElementById('eventzones-container').innerHTML = '<p>Error searching zones. Check console.</p>';
+            });
         }
 
-        // Event listener for deleting zone details
-        if (event.target.classList.contains('delete-zone-btn')) {
-            const form = event.target.closest('.zone-details-form');
-            const zoneId = form.dataset.zoneId;
-            const confirmDelete = form.querySelector('.confirm-delete-checkbox').checked;
-
-            if (confirmDelete) {
-                // Make DELETE request to delete event zone
-                fetch(`${apiUrl}/${zoneId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-API-KEY': apiKey,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'deleted') {
-                        alert(`Event zone ${zoneId} deleted successfully`);
-                        form.parentElement.remove(); // Remove the form container from the DOM
-                    } else {
-                        console.error('Error:', data);
-                        alert(`Failed to delete event zone ${zoneId}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Delete Request Error:', error);
-                    alert('Failed to delete event zone. Please check the console for more details.');
-                });
-            } else {
-                alert('Please confirm delete by checking the checkbox.');
-            }
-        }
-    });
-});
-
-        document.addEventListener('DOMContentLoaded', function () {
+        // Initialize everything when DOM is ready
+        jQuery(document).ready(function($) {
+            console.log('DOM ready, initializing...');
+            
+            // Load zones initially
             refreshZoneList();
 
             // Search functionality
-            document.getElementById('eventzones-search').addEventListener('input', function () {
-                const searchValue = this.value;
+            $('#eventzones-search').on('input', function() {
+                const searchValue = $(this).val();
                 if (searchValue.length >= 2) {
                     searchEventZones(searchValue);
                 } else {
                     refreshZoneList();
                 }
             });
-        });
 
-document.addEventListener('DOMContentLoaded', function () {
-
-        jQuery(document).ready(function ($) {
-            refreshZoneList();
-
-            // Search functionality
-            $('#eventzones-search').on('input', function () {
-                const searchValue = $(this).val();
-                if (searchValue.length >= 2) {
-                    $.post(ajaxurl, {
-                        action: 'search_eventzones',
-                        search_value: searchValue
-                    }, function (response) {
-                        if (response.success) {
-                            $('#eventzones-container').empty();
-                            response.data.forEach(function (zone) {
-                                const checkbox = `<div><label style="display: flex; align-items: center;"><input type="checkbox" class="zone-checkbox" data-id="${zone.id}" value="${zone.name}" style="margin-right: 10px; transform: scale(1.8); cursor: pointer;">${zone.name}</label></div>`;
-                                $('#eventzones-container').append(checkbox);
-                            });
-                        } else {
-                            $('#eventzones-container').empty();
-                        }
-                    });
-                } else {
-                    refreshZoneList();
-                }
-            });
-
-            $('#load-zone-btn').click(function () {
+            // Load selected zones button
+            $('#load-zone-btn').click(function() {
                 const selectedZones = [];
-                $('.zone-selection-checkbox:checked').each(function () {
+                $('.zone-selection-checkbox:checked').each(function() {
                     selectedZones.push($(this).data('id'));
                 });
+
+                console.log('Loading zones:', selectedZones);
 
                 if (selectedZones.length > 0) {
                     $('#edit-sections-container').empty();
@@ -259,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             zone_id: zone_id
                         })
                         .done(function(response) {
+                            console.log('Form response:', response);
                             if (response.success) {
                                 $('#edit-sections-container').append(response.data.html);
                                 
@@ -276,21 +165,30 @@ document.addEventListener('DOMContentLoaded', function () {
                             console.error('AJAX error:', error);
                         });
                     });
+                } else {
+                    alert('Please select at least one zone to load.');
                 }
+            });
+
+            // Clear selected zones
+            $('#clear-zone-btn').click(function() {
+                $('.zone-selection-checkbox').prop('checked', false);
+                checkedZones.clear();
+                $('#eventzones-search').val('');
+                $('#edit-sections-container').empty();
+                refreshZoneList();
             });
 
             function initializeConditionalFieldBehavior() {
                 $('[data-field="squareXRadius"], [data-field="squareZRadius"]').hide();
                 $('[data-field="respawnLocation"]').hide();
 
-                // Handling the shape selection change to show/hide square radius fields
                 $('.zone-details-form').each(function() {
                     const form = $(this);
                     const shapeField = form.find('#shape');
                     const isSquare = shapeField.val() === 'Square';
                     form.find('[data-field="squareXRadius"], [data-field="squareZRadius"]').toggle(isSquare);
 
-                    // Show respawnLocation if respawnAtLocation is checked when form loads
                     const respawnAtLocationChecked = form.find('.respawn-at-location').is(':checked');
                     const onlyLeaveViaTeleportChecked = form.find('.only-leave-via-teleport').is(':checked');
                     if (respawnAtLocationChecked || onlyLeaveViaTeleportChecked) {
@@ -304,43 +202,88 @@ document.addEventListener('DOMContentLoaded', function () {
                     form.find('[data-field="squareXRadius"], [data-field="squareZRadius"]').toggle(isSquare);
                 });
 
-                // Event listener for changing "respawn-at-location" and "only-leave-via-teleport"
                 $('.zone-details-form').on('change', '.respawn-at-location, .only-leave-via-teleport', function() {
                     const form = $(this).closest('.zone-details-form');
                     const respawnAtLocationChecked = form.find('.respawn-at-location').is(':checked');
                     const onlyLeaveViaTeleportChecked = form.find('.only-leave-via-teleport').is(':checked');
 
-                    // Show the respawnLocation field if either checkbox is checked
                     if (onlyLeaveViaTeleportChecked || respawnAtLocationChecked) {
                         form.find('[data-field="respawnLocation"]').show();
                     } else {
                         form.find('[data-field="respawnLocation"]').hide();
-                        // Only clear the value of respawnLocation field if both checkboxes are unchecked
                         if (!respawnAtLocationChecked && !onlyLeaveViaTeleportChecked) {
                             form.find('[data-field="respawnLocation"] input').val('');
                         }
                     }
                 });
             }
+        });
 
-            // Clear selected zones
-$('#clear-zone-btn').click(function () {
-    // Uncheck all checkboxes
-    $('.zone-selection-checkbox').prop('checked', false);
+        // Event delegation for save/delete buttons (since forms are dynamically added)
+        $(document).on('click', '.save-zone-btn', function(event) {
+            const form = $(this).closest('.zone-details-form');
+            const zoneId = form.data('zone-id');
+            const formData = new FormData(form[0]);
+            const jsonData = {};
 
-    // Clear the Set that tracks checked checkboxes
-    checkedZones.clear();
+            formData.forEach((value, key) => {
+                jsonData[key] = value;
+            });
 
-    // Clear search input
-    $('#eventzones-search').val('');
+            console.log('Saving zone:', zoneId, jsonData);
 
-    // Clear edit sections container
-    $('#edit-sections-container').empty();
+            fetch(`${apiUrl}/${zoneId}`, {
+                method: 'PUT',
+                headers: {
+                    'X-API-KEY': apiKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'updated') {
+                    alert('Event zone updated successfully');
+                    form.parent().remove();
+                } else {
+                    console.error('Error:', data);
+                    alert('Failed to update event zone');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
 
-    // Refresh the zone list if necessary
-    refreshZoneList();
-});
+        $(document).on('click', '.delete-zone-btn', function(event) {
+            const form = $(this).closest('.zone-details-form');
+            const zoneId = form.data('zone-id');
+            const confirmDelete = form.find('.confirm-delete-checkbox').is(':checked');
 
+            if (confirmDelete) {
+                fetch(`${apiUrl}/${zoneId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-API-KEY': apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'deleted') {
+                        alert(`Event zone ${zoneId} deleted successfully`);
+                        form.parent().remove();
+                        refreshZoneList(); // Refresh the list since a zone was deleted
+                    } else {
+                        console.error('Error:', data);
+                        alert(`Failed to delete event zone ${zoneId}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete Request Error:', error);
+                    alert('Failed to delete event zone. Please check the console for more details.');
+                });
+            } else {
+                alert('Please confirm delete by checking the checkbox.');
+            }
         });
     </script>
     <?php

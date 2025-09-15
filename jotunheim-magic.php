@@ -11,6 +11,11 @@ Author: Thor
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
 
+// Define API key for EventZones REST API
+if (!defined('EVENTZONES_API_KEY')) {
+    define('EVENTZONES_API_KEY', 'jotunheim-magic-api-key-2024');
+}
+
 // File: jotunheim-magic.php
 require_once(plugin_dir_path(__FILE__) . 'includes/Utility/helpers.php');
 
