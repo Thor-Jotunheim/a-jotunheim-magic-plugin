@@ -528,28 +528,37 @@ function render_eventzone_field_config_page() {
             $field_configs = get_option('jotunheim_eventzone_field_config', []);
             $updated_count = 0;
             
-            foreach ($db_columns as $column) {
-                if (!in_array($column, ['id', 'string_name']) && isset($field_configs[$column])) {
-                    // Detect checkbox fields based on naming patterns
-                    $checkbox_patterns = [
-                        '/^no[A-Z]/', '/^allow[A-Z]/', '/^disable[A-Z]/', '/^enable[A-Z]/',
-                        '/^is[A-Z]/', '/^has[A-Z]/', '/Loss$/', '/Gain$/', '/Drop/', 
-                        '/Invisible/', '/Damage$/', '/Placement$/'
-                    ];
-                    
-                    $is_checkbox = false;
-                    foreach ($checkbox_patterns as $pattern) {
-                        if (preg_match($pattern, $column)) {
-                            $is_checkbox = true;
-                            break;
-                        }
+            // Only work with fields that actually exist in the database AND have configurations
+            foreach ($field_configs as $field_name => $config) {
+                // Skip if this field doesn't exist in the database anymore
+                if (!in_array($field_name, $db_columns)) {
+                    continue;
+                }
+                
+                // Skip protected columns
+                if (in_array($field_name, ['id', 'string_name'])) {
+                    continue;
+                }
+                
+                // Detect checkbox fields based on naming patterns
+                $checkbox_patterns = [
+                    '/^no[A-Z]/', '/^allow[A-Z]/', '/^disable[A-Z]/', '/^enable[A-Z]/',
+                    '/^is[A-Z]/', '/^has[A-Z]/', '/Loss$/', '/Gain$/', '/Drop/', 
+                    '/Invisible/', '/Damage$/', '/Placement$/'
+                ];
+                
+                $is_checkbox = false;
+                foreach ($checkbox_patterns as $pattern) {
+                    if (preg_match($pattern, $field_name)) {
+                        $is_checkbox = true;
+                        break;
                     }
-                    
-                    // If field exists but is 'text' and should be checkbox, update it
-                    if ($field_configs[$column]['type'] === 'text' && $is_checkbox) {
-                        $field_configs[$column]['type'] = 'checkbox';
-                        $updated_count++;
-                    }
+                }
+                
+                // If field exists but is 'text' and should be checkbox, update it
+                if ($config['type'] === 'text' && $is_checkbox) {
+                    $field_configs[$field_name]['type'] = 'checkbox';
+                    $updated_count++;
                 }
             }
             
@@ -771,7 +780,6 @@ function render_eventzone_field_config_page() {
                                         <option value="text">Text Input</option>
                                         <option value="checkbox">Checkbox</option>
                                         <option value="dropdown">Dropdown</option>
-                                        <option value="textarea">Textarea</option>
                                         <option value="number">Number Input</option>
                                     </select>
                                 </td>
@@ -862,7 +870,6 @@ function render_eventzone_field_config_page() {
                                         <option value="text">Text Input</option>
                                         <option value="checkbox">Checkbox</option>
                                         <option value="dropdown">Dropdown</option>
-                                        <option value="textarea">Textarea</option>
                                         <option value="number">Number Input</option>
                                     </select>
                                 </td>

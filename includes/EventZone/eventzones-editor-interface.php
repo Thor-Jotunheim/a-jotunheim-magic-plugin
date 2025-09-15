@@ -201,72 +201,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function generateEditZoneForm(zone, columns) {
-    const booleanFields = ['forcePvp', 'godMode', 'ghostMode', 'iceZone', 'noItemLoss', 'noStatLoss', 'noStatGain', 'disableDrops', 'noBuild', 'noShipDamage', 'onlyLeaveViaTeleport', 'respawnOnCorpse', 'respawnAtLocation', 'allowSignUse', 'allowItemStandUse', 'allowShipPlacement', 'allowCartPlacement', 'invisiblePlayers'];
-    let formHtml = `<div class="single-edit-section" style="margin-bottom: 40px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
-                    <h4>Editing: ${zone.name || ''}</h4>
-                    <form class="zone-details-form" data-zone-id="${zone.id}">`;
+        document.addEventListener('DOMContentLoaded', function () {
+            refreshZoneList();
 
-    columns.forEach(column => {
-        const field_name = column.Field;
+            // Search functionality
+            document.getElementById('eventzones-search').addEventListener('input', function () {
+                const searchValue = this.value;
+                if (searchValue.length >= 2) {
+                    searchEventZones(searchValue);
+                } else {
+                    refreshZoneList();
+                }
+            });
+        });
 
-        if (['id', 'string_name'].includes(field_name)) return;  // Skip ID and string_name fields
-
-        formHtml += `<div class='field-row' style='display: flex; align-items: center; margin-bottom: 10px;' data-field='${field_name}'>
-                        <label for='${field_name}' style='flex: 1; font-weight: bold;'>${capitalizeEditorFirstLetter(field_name.replace('_', ' '))}:</label>
-                        <div style='flex: 2;'>`;
-
-        // Handle dropdowns for specific fields
-        if (field_name === 'shape') {
-            formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                            <option value='Circle' ${zone[field_name] === 'Circle' ? 'selected' : ''}>Circle</option>
-                            <option value='Square' ${zone[field_name] === 'Square' ? 'selected' : ''}>Square</option>
-                         </select>`;
-        } else if (field_name === 'eventzone_status') {
-            formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                            <option value='enabled' ${zone[field_name] === 'enabled' ? 'selected' : ''}>Enabled</option>
-                            <option value='disabled' ${zone[field_name] === 'disabled' ? 'selected' : ''}>Disabled</option>
-                         </select>`;
-        } else if (field_name === 'zone_type') {
-            formHtml += `<select id='${field_name}' name='${field_name}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>
-                            <option value='Server Infrastructure' ${zone[field_name] === 'Server Infrastructure' ? 'selected' : ''}>Server Infrastructure</option>
-                            <option value='Quest' ${zone[field_name] === 'Quest' ? 'selected' : ''}>Quest</option>
-                            <option value='Event' ${zone[field_name] === 'Event' ? 'selected' : ''}>Event</option>
-                            <option value='Boss Power' ${zone[field_name] === 'Boss Power' ? 'selected' : ''}>Boss Power</option>
-                            <option value='Boss Fight' ${zone[field_name] === 'Boss Fight' ? 'selected' : ''}>Boss Fight</option>
-                            <option value='NPC' ${zone[field_name] === 'NPC' ? 'selected' : ''}>NPC</option>
-                         </select>`;
-        } 
-        // Handle boolean fields as checkboxes
-        else if (booleanFields.includes(field_name)) {
-            const isChecked = zone[field_name] == 1;
-            const checkboxClass = field_name === 'respawnAtLocation' ? 'respawn-at-location' : 
-                                  field_name === 'onlyLeaveViaTeleport' ? 'only-leave-via-teleport' : '';
-
-            formHtml += `<input type="hidden" name="${field_name}" value="0">
-                         <input type="checkbox" class="${checkboxClass}" name="${field_name}" ${isChecked ? 'checked' : ''} value="1" style="transform: scale(1.8); margin-top: 5px;">`;
-        } 
-        // Default to text input for other fields
-        else {
-            formHtml += `<input type='text' id='${field_name}' name='${field_name}' value='${zone[field_name] || ''}' style='padding: 10px; border-radius: 5px; border: 2px solid #666; width: 100%;'>`;
-        }
-
-        formHtml += `</div></div>`;
-    });
-
-    // Add the Save button
-    formHtml += `<button type="button" class="save-zone-btn" style="padding: 10px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-bottom: 10px;">Save Changes</button>`;
-
-    // Add the Delete button and Confirm Delete checkbox
-    formHtml += `<button type="button" class="delete-zone-btn" style="padding: 10px; background-color: #d9534f; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px;">Delete Record</button>
-                 <label style="display: block; margin-top: 10px; font-weight: bold;">
-                    <input type="checkbox" class="confirm-delete-checkbox" style="margin-right: 10px; transform: scale(1.2);">
-                    Confirm Delete
-                 </label>`;
-    
-    formHtml += `</form></div>`;
-    return formHtml;
-}
+document.addEventListener('DOMContentLoaded', function () {
 
         jQuery(document).ready(function ($) {
             refreshZoneList();
@@ -304,26 +253,28 @@ function generateEditZoneForm(zone, columns) {
                     $('#edit-sections-container').empty();
 
                     selectedZones.forEach(zone_id => {
-                        fetch(`${apiUrl}/${zone_id}`, {
-                            headers: { 'X-API-KEY': apiKey }
+                        // Use AJAX to generate form HTML with proper field configuration
+                        $.post('<?php echo admin_url('admin-ajax.php'); ?>', {
+                            action: 'jotunheim_generate_edit_zone_form',
+                            zone_id: zone_id
                         })
-                        .then(response => response.json())
-                        .then(zone => {
-                            if (zone) {
-                                const columns = Object.keys(zone).map(field => ({
-                                    Field: field,
-                                    Type: typeof zone[field]
-                                }));
-
-                                const formHtml = generateEditZoneForm(zone, columns);
-                                $('#edit-sections-container').append(formHtml);
-
+                        .done(function(response) {
+                            if (response.success) {
+                                $('#edit-sections-container').append(response.data.html);
+                                
+                                // Execute the conditional fields JavaScript
+                                if (response.data.js) {
+                                    eval(response.data.js);
+                                }
+                                
                                 initializeConditionalFieldBehavior();
                             } else {
-                                console.error("No data returned for zone ID:", zone_id);
+                                console.error('Error generating form:', response);
                             }
                         })
-                        .catch(error => console.error('Error fetching zone details:', error));
+                        .fail(function(error) {
+                            console.error('AJAX error:', error);
+                        });
                     });
                 }
             });
