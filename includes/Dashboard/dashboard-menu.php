@@ -432,13 +432,74 @@ function render_eventzone_field_config_page() {
             
             // Handle adding new field configuration
             if (isset($_POST['action']) && $_POST['action'] === 'add_field') {
-                $field_name = sanitize_text_field($_POST['field_name']);
-                $is_custom_field = isset($_POST['is_custom_field']) && $_POST['is_custom_field'] === '1';
-                $custom_field_name = sanitize_text_field($_POST['custom_field_name']);
+                $field_source = sanitize_text_field($_POST['field_source'] ?? 'existing');
+                $field_name = '';
+                $is_custom_field = false;
                 
-                // Use custom field name if it's a new custom field
-                if ($is_custom_field && !empty($custom_field_name)) {
-                    $field_name = $custom_field_name;
+                // DEBUG: Show what we received
+                echo '<div class="notice notice-info"><p><strong>DEBUG:</strong> field_source = ' . $field_source . '</p></div>';
+                
+                if ($field_source === 'custom') {
+                    $field_name = sanitize_text_field($_POST['custom_field_name']);
+                    $is_custom_field = true;
+                    echo '<div class="notice notice-info"><p><strong>DEBUG:</strong> Custom field detected - field_name = ' . $field_name . ', is_custom = true</p></div>';
+                    
+                    // Add new column to database table
+                    $table_name = 'jotun_eventzones';
+                    $field_type = sanitize_text_field($_POST['field_type']);
+                    
+                    // Map field types to SQL column types
+                    $sql_type = 'TEXT';
+                    switch ($field_type) {
+                        case 'checkbox':
+                            $sql_type = 'TINYINT(1) DEFAULT 0';
+                            break;
+                        case 'number':
+                            $sql_type = 'INT DEFAULT 0';
+                            break;
+                        case 'text':
+                        case 'dropdown':
+                            $sql_type = 'VARCHAR(255) DEFAULT ""';
+                            break;
+                        case 'textarea':
+                            $sql_type = 'TEXT';
+                            break;
+                    }
+                    
+                    // Check if column already exists
+                    $column_exists = $wpdb->get_var($wpdb->prepare(
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                         WHERE TABLE_SCHEMA = DATABASE() 
+                         AND TABLE_NAME = %s 
+                         AND COLUMN_NAME = %s",
+                        $table_name,
+                        $field_name
+                    ));
+                    
+                    if (!$column_exists) {
+                        $alter_sql = "ALTER TABLE $table_name ADD COLUMN `$field_name` $sql_type";
+                        $result = $wpdb->query($alter_sql);
+                        
+                        if ($result === false) {
+                            echo '<div class="error notice"><p>Failed to add database column: ' . $wpdb->last_error . '</p></div>';
+                            return;
+                        } else {
+                            echo '<div class="updated notice"><p>Successfully added new database column: ' . $field_name . '</p></div>';
+                        }
+                    } else {
+                        echo '<div class="notice notice-warning"><p>Database column already exists: ' . $field_name . '</p></div>';
+                    }
+                    
+                } else {
+                    $field_name = sanitize_text_field($_POST['field_name']);
+                    $is_custom_field = false;
+                    echo '<div class="notice notice-info"><p><strong>DEBUG:</strong> Existing field detected - field_name = ' . $field_name . ', is_custom = false</p></div>';
+                }
+                
+                // Validate that we have a field name
+                if (empty($field_name)) {
+                    echo '<div class="error notice"><p>Please provide a field name.</p></div>';
+                    return;
                 }
                 
                 $field_type = sanitize_text_field($_POST['field_type']);
@@ -483,6 +544,12 @@ function render_eventzone_field_config_page() {
     
     // Get current field configurations
     $field_configs = get_option('jotunheim_eventzone_field_config', []);
+    
+    // Debug: Add some debugging info
+    if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+        echo '<div class="notice notice-info"><p><strong>Debug Info:</strong></p>';
+        echo '<pre>' . print_r($field_configs, true) . '</pre></div>';
+    }
     
     // Get existing database columns for reference
     $table_name = 'jotun_eventzones';
@@ -536,7 +603,6 @@ function render_eventzone_field_config_page() {
                                         Add New Custom Field
                                     </label>
                                     <div id="custom-field-section" style="margin-left: 20px; margin-top: 10px; display: none;">
-                                        <input type="hidden" name="is_custom_field" value="0" id="is-custom-field-hidden">
                                         <input type="text" name="custom_field_name" id="custom-field-name" class="regular-text" placeholder="new_field_name" style="margin-bottom: 5px;">
                                         <p class="description">Enter a new field name (use lowercase, underscores only)</p>
                                     </div>
@@ -726,7 +792,6 @@ function render_eventzone_field_config_page() {
             const customFieldSection = document.getElementById('custom-field-section');
             const existingFieldSelect = document.getElementById('existing-field-select');
             const customFieldNameInput = document.getElementById('custom-field-name');
-            const isCustomFieldHidden = document.getElementById('is-custom-field-hidden');
             
             // Handle conditional display checkbox
             conditionalCheckbox.addEventListener('change', function() {
@@ -741,13 +806,11 @@ function render_eventzone_field_config_page() {
                         customFieldSection.style.display = 'none';
                         existingFieldSelect.required = true;
                         customFieldNameInput.required = false;
-                        isCustomFieldHidden.value = '0';
                     } else if (this.value === 'custom') {
                         existingFieldSection.style.display = 'none';
                         customFieldSection.style.display = 'block';
                         existingFieldSelect.required = false;
                         customFieldNameInput.required = true;
-                        isCustomFieldHidden.value = '1';
                     }
                 });
             });

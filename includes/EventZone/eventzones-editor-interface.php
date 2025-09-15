@@ -421,7 +421,7 @@ function jotunheim_generate_edit_zone_form() {
     $form_html .= '<h4>Editing: ' . esc_html($zone['name'] ?? '') . '</h4>';
     $form_html .= '<form class="zone-details-form" data-zone-id="' . $zone_id . '">';
     
-    $form_html .= EventZoneFieldGenerator::generateFormFields($columns, $zone, 'edit-zone-form-' . $zone_id);
+    $form_html .= EventZoneFieldGenerator::generateFormFields(null, $zone, 'edit-zone-form-' . $zone_id);
     
     // Add Save and Delete buttons
     $form_html .= '<button type="button" class="save-zone-btn" style="padding: 10px; background-color: #0073aa; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-bottom: 10px;">Save Changes</button>';

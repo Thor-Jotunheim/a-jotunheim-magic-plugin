@@ -6,15 +6,23 @@ class EventZoneFieldGenerator {
     /**
      * Generate form fields based on database columns and custom configurations
      */
-    public static function generateFormFields($columns, $zone_data = null, $form_id = 'add-new-zone-form') {
+    public static function generateFormFields($columns = null, $zone_data = null, $form_id = 'add-new-zone-form') {
+        global $wpdb;
+        
+        // If no columns provided, fetch fresh from database
+        if ($columns === null) {
+            $table_name = 'jotun_eventzones';
+            $columns = $wpdb->get_results("DESCRIBE $table_name");
+        }
+        
         $field_configs = get_option('jotunheim_eventzone_field_config', []);
         $html = '';
         $processed_fields = [];
         
         // First, process database columns
         foreach ($columns as $column) {
-            $field_name = $column->Field;
-            $field_type = $column->Type;
+            $field_name = is_object($column) ? $column->Field : $column;
+            $field_type = is_object($column) ? $column->Type : '';
             
             // Skip 'id' and 'string_name' fields
             if (in_array($field_name, ['id', 'string_name'])) continue;

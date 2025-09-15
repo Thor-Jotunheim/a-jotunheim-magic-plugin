@@ -22,8 +22,8 @@ function jotunheim_magic_add_new_zone_interface() {
             <form id="add-new-zone-form" method="post" action="javascript:void(0);" style="display: block;">
 
                 <?php 
-                // Use the field generator to create form fields
-                echo EventZoneFieldGenerator::generateFormFields($columns);
+                // Use the field generator to create form fields with fresh database columns
+                echo EventZoneFieldGenerator::generateFormFields();
                 ?>
 
                 <!-- Submit Button -->
