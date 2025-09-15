@@ -19,6 +19,27 @@ class EventZoneFieldGenerator {
         $html = '';
         $processed_fields = [];
         
+        // Create array of actual database column names for validation
+        $db_columns = [];
+        foreach ($columns as $column) {
+            $field_name = is_object($column) ? $column->Field : $column;
+            $db_columns[] = $field_name;
+        }
+        
+        // Clean up orphaned field configurations (configs for deleted columns)
+        $cleaned_configs = [];
+        foreach ($field_configs as $config_field => $config) {
+            if (in_array($config_field, $db_columns)) {
+                $cleaned_configs[$config_field] = $config;
+            }
+        }
+        
+        // Update the saved configurations if we cleaned any orphaned ones
+        if (count($cleaned_configs) !== count($field_configs)) {
+            update_option('jotunheim_eventzone_field_config', $cleaned_configs);
+            $field_configs = $cleaned_configs;
+        }
+        
         // Process all database columns - no more separate custom field handling
         foreach ($columns as $column) {
             $field_name = is_object($column) ? $column->Field : $column;
@@ -26,6 +47,12 @@ class EventZoneFieldGenerator {
             
             // Skip 'id' and 'string_name' fields
             if (in_array($field_name, ['id', 'string_name'])) continue;
+            
+            // Double-check that this field exists in zone_data if provided
+            if ($zone_data && !array_key_exists($field_name, $zone_data)) {
+                error_log("EventZone field generator: Field '$field_name' not found in zone data, skipping");
+                continue;
+            }
             
             // Get custom configuration or use defaults
             $config = isset($field_configs[$field_name]) ? $field_configs[$field_name] : self::getDefaultFieldConfig($field_name, $field_type);

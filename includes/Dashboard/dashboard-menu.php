@@ -436,8 +436,26 @@ function render_eventzone_field_config_page() {
         }
     }
     
-    // Get current field configurations and auto-generate defaults
+    // Get current field configurations and clean up orphaned ones
     $field_configs = get_option('jotunheim_eventzone_field_config', []);
+    
+    // Clean up orphaned field configurations (configs for deleted columns)
+    $cleaned_configs = [];
+    $orphaned_count = 0;
+    foreach ($field_configs as $config_field => $config) {
+        if (in_array($config_field, $db_columns)) {
+            $cleaned_configs[$config_field] = $config;
+        } else {
+            $orphaned_count++;
+        }
+    }
+    
+    // Update the saved configurations if we cleaned any orphaned ones
+    if ($orphaned_count > 0) {
+        update_option('jotunheim_eventzone_field_config', $cleaned_configs);
+        $field_configs = $cleaned_configs;
+        echo '<div class="updated notice"><p>Cleaned up ' . $orphaned_count . ' orphaned field configuration(s) for deleted database columns.</p></div>';
+    }
     
     // Auto-generate configurations for database fields that don't have them
     // OR update existing text fields that should be checkboxes
@@ -498,18 +516,12 @@ function render_eventzone_field_config_page() {
                 $default_config['placeholder'] = '10';
             }
             
-            // If field doesn't exist, create it
+            // If field doesn't exist, create it with default configuration
             if (!isset($field_configs[$column])) {
                 $field_configs[$column] = $default_config;
                 $needs_save = true;
             }
-            // If field exists but is 'text' and should be checkbox, update it
-            elseif ($field_configs[$column]['type'] === 'text' && $is_checkbox) {
-                // Preserve existing label and other settings, just update type
-                $field_configs[$column]['type'] = 'checkbox';
-                $needs_save = true;
-                echo '<div class="updated notice"><p>Auto-updated ' . $column . ' from text to checkbox based on field name pattern.</p></div>';
-            }
+            // DO NOT modify existing field configurations - let users manage them manually
         }
     }
     
@@ -522,54 +534,7 @@ function render_eventzone_field_config_page() {
     update_option('jotunheim_eventzone_field_config', $field_configs);
     
     // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Handle force rescan button (no nonce needed for this simple action)
-        if (isset($_POST['force_rescan'])) {
-            $field_configs = get_option('jotunheim_eventzone_field_config', []);
-            $updated_count = 0;
-            
-            // Only work with fields that actually exist in the database AND have configurations
-            foreach ($field_configs as $field_name => $config) {
-                // Skip if this field doesn't exist in the database anymore
-                if (!in_array($field_name, $db_columns)) {
-                    continue;
-                }
-                
-                // Skip protected columns
-                if (in_array($field_name, ['id', 'string_name'])) {
-                    continue;
-                }
-                
-                // Detect checkbox fields based on naming patterns
-                $checkbox_patterns = [
-                    '/^no[A-Z]/', '/^allow[A-Z]/', '/^disable[A-Z]/', '/^enable[A-Z]/',
-                    '/^is[A-Z]/', '/^has[A-Z]/', '/Loss$/', '/Gain$/', '/Drop/', 
-                    '/Invisible/', '/Damage$/', '/Placement$/'
-                ];
-                
-                $is_checkbox = false;
-                foreach ($checkbox_patterns as $pattern) {
-                    if (preg_match($pattern, $field_name)) {
-                        $is_checkbox = true;
-                        break;
-                    }
-                }
-                
-                // If field exists but is 'text' and should be checkbox, update it
-                if ($config['type'] === 'text' && $is_checkbox) {
-                    $field_configs[$field_name]['type'] = 'checkbox';
-                    $updated_count++;
-                }
-            }
-            
-            if ($updated_count > 0) {
-                update_option('jotunheim_eventzone_field_config', $field_configs);
-                echo '<div class="updated notice"><p>✅ Re-scan complete! Updated ' . $updated_count . ' fields from text to checkbox.</p></div>';
-            } else {
-                echo '<div class="notice notice-info"><p>ℹ️ Re-scan complete! No fields needed updating.</p></div>';
-            }
-        }
-        
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {        
         if (isset($_POST['eventzone_field_config_nonce'])) {
             if (wp_verify_nonce($_POST['eventzone_field_config_nonce'], 'save_eventzone_field_config')) {
             
@@ -730,13 +695,6 @@ function render_eventzone_field_config_page() {
     <div class="wrap">
         <h1>⚙️ EventZone Field Configuration</h1>
         <p>Configure how fields appear in the EventZone add/edit interfaces. All fields correspond to database columns.</p>
-        
-        <!-- Re-scan button to force field type detection -->
-        <form method="post" style="margin-bottom: 20px;">
-            <input type="hidden" name="force_rescan" value="1">
-            <button type="submit" class="button button-secondary">🔄 Re-scan Field Types</button>
-            <small style="margin-left: 10px;">Force re-detection of field types (text vs checkbox) for all existing configurations</small>
-        </form>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             
