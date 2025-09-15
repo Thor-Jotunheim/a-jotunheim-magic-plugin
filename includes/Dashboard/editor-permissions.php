@@ -27,7 +27,8 @@ function jotunheim_allow_editor_specific_page_access() {
         'event_zone_editor',
         'item_list_editor', 
         'item_list_add_new_item',
-        'add_event_zone'
+        'add_event_zone',
+        'eventzone_field_config'
     ];
 
     // Grant manage_options capability for editors, but ONLY for specific pages
