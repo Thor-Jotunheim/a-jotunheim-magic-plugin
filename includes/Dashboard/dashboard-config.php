@@ -311,15 +311,16 @@ function render_dashboard_config_page() {
     ]);
     ?>
     
-    <div class="wrap dashboard-config-wrap">
-        <h1 class="dashboard-config-title">
-            <span class="dashicons dashicons-admin-appearance"></span>
-            Dashboard Configuration
-        </h1>
-        
-        <div class="dashboard-config-description">
-            <p>Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
-        </div>
+    <div class="wrap">
+        <div class="dashboard-config-wrap">
+            <h1 class="dashboard-config-title">
+                <span class="dashicons dashicons-admin-appearance"></span>
+                Dashboard Configuration
+            </h1>
+            
+            <div class="dashboard-config-description">
+                <p>Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
+            </div>
         
         <div class="dashboard-config-actions">
             <button type="button" class="button button-primary" id="save-config">
@@ -456,9 +457,28 @@ function render_dashboard_config_page() {
     </div>
     
     <style>
+        /* Fix positioning to prevent admin bar interference */
+        #wpadminbar {
+            position: relative !important;
+        }
+        
         .dashboard-config-wrap {
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            clear: both;
+        }
+        
+        /* Ensure all floating elements stay within content area */
+        .dashboard-config-wrap * {
+            position: relative;
+        }
+        
+        /* Prevent any absolute positioning from escaping */
+        .wrap {
+            position: relative;
+            overflow: hidden;
         }
         
         .dashboard-config-title {
@@ -858,5 +878,6 @@ function render_dashboard_config_page() {
         }
     </style>
 
+    </div> <!-- Close .wrap -->
     <?php
 }
