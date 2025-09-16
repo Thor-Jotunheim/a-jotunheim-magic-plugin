@@ -354,14 +354,71 @@ function render_dashboard_config_page() {
     wp_enqueue_script('jquery-ui-sortable');
     wp_enqueue_script('dashboard-config-js', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-config.js', ['jquery', 'jquery-ui-sortable'], '1.0.0', true);
     wp_enqueue_style('dashboard-config-css', plugin_dir_url(__FILE__) . '../../assets/css/dashboard-config.css', [], '1.0.0');
-    
+
     wp_localize_script('dashboard-config-js', 'dashboardConfig', [
         'ajaxurl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('dashboard_config_nonce'),
         'config' => $config,
         'menuItems' => $menu_items
     ]);
+    
+    // Force remove top spacing with aggressive CSS and JavaScript
     ?>
+    <style>
+    .dashboard-config-wrap {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    body.wp-admin .wrap.dashboard-config-wrap,
+    body.wp-admin .dashboard-config-wrap,
+    #wpbody-content .dashboard-config-wrap,
+    .wp-admin #wpbody-content .wrap {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .wp-admin #wpbody-content {
+        padding-top: 0 !important;
+    }
+    
+    .wp-admin #wpcontent {
+        padding-left: 0;
+        margin-top: 0 !important;
+    }
+    
+    .wp-admin #wpbody {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    #screen-meta,
+    #screen-meta-links {
+        margin-top: 0 !important;
+    }
+    </style>
+    
+    <script>
+    jQuery(document).ready(function($) {
+        // Force remove any top spacing via JavaScript
+        $('.wrap').css({
+            'margin-top': '0',
+            'padding-top': '0'
+        });
+        
+        $('#wpbody-content').css({
+            'padding-top': '0'
+        });
+        
+        $('#wpbody').css({
+            'margin-top': '0',
+            'padding-top': '0'
+        });
+        
+        // Remove any admin notices that might be causing spacing
+        $('.notice, .updated, .error').remove();
+    });
+    </script>
     
     <div class="wrap">
         <div class="dashboard-config-wrap">

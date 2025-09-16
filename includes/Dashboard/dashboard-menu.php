@@ -136,8 +136,16 @@ function jotunheim_magic_plugin_menu() {
         }
     }
 
-    // Remove the default submenu created by WordPress
+    // Replace the default submenu page with our dashboard
     remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
+    add_submenu_page(
+        'jotunheim_magic',
+        'Dashboard Overview',
+        'Dashboard Overview', 
+        'manage_options',
+        'jotunheim_magic',
+        'jotunheim_magic_dashboard'
+    );
 }
 
 /**
@@ -215,7 +223,11 @@ function register_organized_menu($config) {
             '<strong>' . $section['title'] . '</strong>',
             'manage_options',
             'section_' . $section_id,
-            function() { wp_die('This is a section separator.'); }
+            function() use ($section) { 
+                echo '<div class="wrap"><h1>' . esc_html($section['title']) . '</h1>';
+                echo '<p>' . esc_html($section['description']) . '</p>';
+                echo '<p><em>This is a section header. Please select a specific tool from the menu.</em></p></div>';
+            }
         );
         
         // Add items in this section
