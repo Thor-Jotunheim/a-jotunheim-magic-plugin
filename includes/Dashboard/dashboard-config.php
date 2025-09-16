@@ -529,6 +529,8 @@ function render_dashboard_config_page() {
             position: relative;
             z-index: 1;
             clear: both;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
         
         /* Ensure all floating elements stay within content area */
@@ -539,7 +541,9 @@ function render_dashboard_config_page() {
         /* Prevent any absolute positioning from escaping */
         .wrap {
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
         
         .dashboard-config-title {
@@ -548,6 +552,7 @@ function render_dashboard_config_page() {
             gap: 10px;
             color: #1d2327;
             margin-bottom: 10px;
+            margin-top: 0;
         }
         
         .dashboard-config-description {
