@@ -36,9 +36,6 @@ class JotunheimDashboardConfig {
             error_log('Jotunheim Dashboard: Config reset via URL parameter');
         }
         
-        // TEMPORARY: Force config regeneration to include new Dashboard Config item
-        delete_option('jotunheim_dashboard_config');
-        
         // Get existing config or create default
         $stored_config = get_option('jotunheim_dashboard_config', false);
         

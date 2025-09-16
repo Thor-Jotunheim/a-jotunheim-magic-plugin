@@ -8,25 +8,19 @@
     background: linear-gradient(135deg, #2c3338 0%, #1e1e1e 100%) !important;
     cursor: default !important;
     pointer-events: none !important;
-    padding: 8px 12px !important;
-    margin: 8px 0 4px 0 !important;
-    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    margin: 4px 0 2px 0 !important;
+    border-radius: 3px !important;
     position: relative !important;
-    border-left: 3px solid #72aee6 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    border-left: 2px solid #72aee6 !important;
+    box-shadow: none !important;
+    line-height: normal !important;
+    height: auto !important;
 }
 
-/* Add separator line under section headers */
+/* Remove the problematic separator line */
 #adminmenu .wp-submenu li a[href*="section_"]:after {
-    content: '';
-    display: block;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, #3c434a 20%, #3c434a 80%, transparent 100%);
-    margin: 8px -12px 0 -12px;
-    position: absolute;
-    bottom: -6px;
-    left: 0;
-    right: 0;
+    display: none !important;
 }
 
 /* Remove hover effects from section headers */
@@ -35,50 +29,56 @@
     color: #f0f0f1 !important;
 }
 
-/* Add some spacing after section headers */
+/* Fix spacing - reduce excessive margins */
 #adminmenu .wp-submenu li a[href*="section_"] + li {
-    margin-top: 8px !important;
+    margin-top: 0px !important;
 }
 
 /* Style regular menu items under sections */
 #adminmenu .wp-submenu li:not([class*="section"]) a {
-    padding-left: 24px !important;
+    padding-left: 20px !important;
     color: #c3c4c7 !important;
     position: relative !important;
+    line-height: normal !important;
+    height: auto !important;
+    margin: 0 !important;
 }
 
-/* Add subtle indent indicator for menu items */
+/* Remove the arrow indicator that might be causing overlap */
 #adminmenu .wp-submenu li:not([class*="section"]) a:before {
-    content: '▸';
-    position: absolute;
-    left: 12px;
-    color: #72aee6;
-    opacity: 0.5;
-    font-size: 10px;
+    display: none !important;
 }
 
 /* Regular menu item hover state */
 #adminmenu .wp-submenu li:not([class*="section"]) a:hover {
     color: #72aee6 !important;
     background: rgba(114, 174, 230, 0.1) !important;
-    padding-left: 26px !important;
-    transition: all 0.2s ease !important;
-}
-
-#adminmenu .wp-submenu li:not([class*="section"]) a:hover:before {
-    opacity: 1;
-    left: 14px;
+    padding-left: 20px !important;
 }
 
 /* Make sure section headers stand out from regular items */
 #adminmenu .wp-submenu li a[href*="section_"] strong {
-    font-size: 11px !important;
-    letter-spacing: 0.5px !important;
+    font-size: 10px !important;
+    letter-spacing: 0.3px !important;
     text-transform: uppercase !important;
     opacity: 0.95 !important;
+    display: block !important;
+    line-height: normal !important;
 }
 
-/* Add spacing between different sections */
+/* Reduce spacing between sections to fix whitespace issues */
 #adminmenu .wp-submenu li a[href*="section_"]:not(:first-child) {
-    margin-top: 16px !important;
+    margin-top: 8px !important;
+}
+
+/* Fix any list item specific issues */
+#adminmenu .wp-submenu li {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: normal !important;
+}
+
+/* Ensure submenu container doesn't have excessive padding */
+#adminmenu .wp-submenu {
+    padding-top: 5px !important;
 }
