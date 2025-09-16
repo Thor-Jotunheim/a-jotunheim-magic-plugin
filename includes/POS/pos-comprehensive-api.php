@@ -380,7 +380,7 @@ add_action('rest_api_init', function() {
 function jotun_api_get_playerlist($request) {
     global $wpdb;
     
-    $table_name = 'jotun_playerlist';
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
     $search = $request->get_param('search');
@@ -410,10 +410,15 @@ function jotun_api_add_player($request) {
     global $wpdb;
     
     $data = $request->get_json_params();
-    $table_name = 'jotun_playerlist';
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    
+    // Debug logging
+    error_log('Player Import: Attempting to add player - ' . print_r($data, true));
+    error_log('Player Import: Using table name - ' . $table_name);
     
     // Basic validation
     if (empty($data['player_name'])) {
+        error_log('Player Import: Missing player_name');
         return new WP_REST_Response(['error' => 'Player name is required'], 400);
     }
     
@@ -429,9 +434,11 @@ function jotun_api_add_player($request) {
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {
+        error_log('Player Import: Database insert failed - ' . $wpdb->last_error);
         return new WP_REST_Response(['error' => 'Failed to add player: ' . $wpdb->last_error], 500);
     }
     
+    error_log('Player Import: Successfully added player with ID - ' . $wpdb->insert_id);
     return new WP_REST_Response(['message' => 'Player added successfully', 'id' => $wpdb->insert_id], 201);
 }
 
@@ -440,7 +447,7 @@ function jotun_api_update_player($request) {
     
     $id = (int) $request['id'];
     $data = $request->get_json_params();
-    $table_name = 'jotun_playerlist';
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
     
     if (empty($data['player_name'])) {
         return new WP_REST_Response(['error' => 'Player name is required'], 400);
@@ -466,7 +473,7 @@ function jotun_api_delete_player($request) {
     global $wpdb;
     
     $id = (int) $request['id'];
-    $table_name = 'jotun_playerlist';
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
     
     $result = $wpdb->delete($table_name, ['id' => $id]);
     

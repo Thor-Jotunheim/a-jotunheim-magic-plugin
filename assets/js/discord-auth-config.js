@@ -15,7 +15,7 @@ jQuery(document).ready(function($) {
 
         bindEvents: function() {
             // Save OAuth settings
-            $('#save-oauth-settings').on('click', this.saveOAuthSettings.bind(this));
+            $('#save-discord-oauth').on('click', this.saveOAuthSettings.bind(this));
             
             // Save Discord roles
             $('#save-discord-roles').on('click', this.saveDiscordRoles.bind(this));
@@ -266,12 +266,14 @@ jQuery(document).ready(function($) {
                     const $result = $('#test-result');
                     const $resultText = $result.find('p');
                     
-                    if (response.success) {
+                    console.log('Test connection response:', response);
+                    
+                    if (response && response.success) {
                         $result.removeClass('notice-error').addClass('notice-success');
-                        $resultText.html('<strong>Success:</strong> ' + response.data);
+                        $resultText.html('<strong>Success:</strong> ' + (response.data || 'Connection successful'));
                     } else {
                         $result.removeClass('notice-success').addClass('notice-error');
-                        $resultText.html('<strong>Error:</strong> ' + response.data);
+                        $resultText.html('<strong>Error:</strong> ' + (response.data || 'Unknown error occurred'));
                     }
                     
                     $result.show();
@@ -281,12 +283,14 @@ jQuery(document).ready(function($) {
                         $result.fadeOut();
                     }, 8000);
                 },
-                error: function() {
+                error: function(xhr, status, error) {
                     const $result = $('#test-result');
                     const $resultText = $result.find('p');
                     
+                    console.error('Test connection error:', xhr, status, error);
+                    
                     $result.removeClass('notice-success').addClass('notice-error');
-                    $resultText.html('<strong>Error:</strong> Network error occurred during connection test.');
+                    $resultText.html('<strong>Error:</strong> Network error occurred during connection test: ' + error);
                     $result.show();
                     
                     setTimeout(function() {

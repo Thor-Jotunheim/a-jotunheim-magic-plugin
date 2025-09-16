@@ -51,7 +51,7 @@ class JotunheimDiscordAuthConfig {
         // Localize script with AJAX data
         wp_localize_script('discord-auth-config-js', 'discord_auth_config', [
             'nonce' => wp_create_nonce('discord_auth_config_nonce'),
-            'ajaxurl' => admin_url('admin-ajax.php')
+            'ajax_url' => admin_url('admin-ajax.php')
         ]);
     }
     
@@ -217,48 +217,55 @@ class JotunheimDiscordAuthConfig {
      * AJAX handler for testing Discord connection
      */
     public function ajax_test_discord_connection() {
-        if (!current_user_can('manage_options')) {
-            wp_die('Unauthorized');
-        }
-        
-        if (!wp_verify_nonce($_POST['nonce'], 'discord_auth_config_nonce')) {
-            wp_die('Invalid nonce');
-        }
-        
-        $oauth_settings = $this->get_discord_oauth_settings();
-        
-        // Check if required settings are configured
-        if (empty($oauth_settings['bot_token']) || empty($oauth_settings['guild_id'])) {
-            wp_send_json_error('Bot token and Guild ID are required for connection testing');
-            return;
-        }
-        
-        // Test Discord API connection
-        $api_url = 'https://discord.com/api/guilds/' . $oauth_settings['guild_id'];
-        $response = wp_remote_get($api_url, [
-            'headers' => [
-                'Authorization' => 'Bot ' . $oauth_settings['bot_token'],
-                'Content-Type' => 'application/json'
-            ],
-            'timeout' => 10
-        ]);
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error('Connection failed: ' . $response->get_error_message());
-            return;
-        }
-        
-        $response_code = wp_remote_retrieve_response_code($response);
-        if ($response_code === 200) {
-            $body = json_decode(wp_remote_retrieve_body($response), true);
-            $guild_name = isset($body['name']) ? $body['name'] : 'Unknown Guild';
-            wp_send_json_success('Successfully connected to Discord guild: ' . $guild_name);
-        } elseif ($response_code === 401) {
-            wp_send_json_error('Invalid bot token - check your bot token configuration');
-        } elseif ($response_code === 403) {
-            wp_send_json_error('Bot does not have access to the specified guild');
-        } else {
-            wp_send_json_error('Connection failed with status code: ' . $response_code);
+        try {
+            if (!current_user_can('manage_options')) {
+                wp_send_json_error('Unauthorized access');
+                return;
+            }
+            
+            if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'discord_auth_config_nonce')) {
+                wp_send_json_error('Invalid security token');
+                return;
+            }
+            
+            $oauth_settings = $this->get_discord_oauth_settings();
+            
+            // Check if required settings are configured
+            if (empty($oauth_settings['bot_token']) || empty($oauth_settings['guild_id'])) {
+                wp_send_json_error('Bot token and Guild ID are required for connection testing');
+                return;
+            }
+            
+            // Test Discord API connection
+            $api_url = 'https://discord.com/api/guilds/' . $oauth_settings['guild_id'];
+            $response = wp_remote_get($api_url, [
+                'headers' => [
+                    'Authorization' => 'Bot ' . $oauth_settings['bot_token'],
+                    'Content-Type' => 'application/json'
+                ],
+                'timeout' => 10
+            ]);
+            
+            if (is_wp_error($response)) {
+                wp_send_json_error('Connection failed: ' . $response->get_error_message());
+                return;
+            }
+            
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $body = json_decode(wp_remote_retrieve_body($response), true);
+                $guild_name = isset($body['name']) ? $body['name'] : 'Unknown Guild';
+                wp_send_json_success('Successfully connected to Discord guild: ' . $guild_name);
+            } elseif ($response_code === 401) {
+                wp_send_json_error('Invalid bot token - check your bot token configuration');
+            } elseif ($response_code === 403) {
+                wp_send_json_error('Bot does not have access to the specified guild');
+            } else {
+                wp_send_json_error('Connection failed with status code: ' . $response_code);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error('Unexpected error: ' . $e->getMessage());
         }
     }
     
@@ -539,7 +546,48 @@ function render_discord_auth_config_page() {
                     <?php endforeach; ?>
                 </div>
                 
+                <!-- Add New Role Form -->
+                <div class="add-role-form" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 5px;">
+                    <h3>Add New Role</h3>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">
+                                <label for="new_role_name">Role Name</label>
+                            </th>
+                            <td>
+                                <input type="text" id="new_role_name" placeholder="e.g., Moderator" class="regular-text" />
+                                <p class="description">Display name for this role</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="new_role_id">Discord Role ID</label>
+                            </th>
+                            <td>
+                                <input type="text" id="new_role_id" placeholder="e.g., 123456789012345678" class="regular-text" />
+                                <p class="description">The numeric ID of the Discord role</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="new_role_level">Permission Level</label>
+                            </th>
+                            <td>
+                                <select id="new_role_level">
+                                    <option value="user">User</option>
+                                    <option value="moderator">Moderator</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <p class="description">Permission level for this role</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
                 <div class="discord-permissions-actions">
+                    <button type="button" class="button" id="add-discord-role">
+                        Add New Role
+                    </button>
                     <button type="button" class="button button-primary" id="save-discord-roles">
                         Save Discord Roles
                     </button>

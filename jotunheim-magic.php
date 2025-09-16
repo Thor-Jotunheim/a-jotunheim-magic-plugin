@@ -282,7 +282,32 @@ add_action('wp_ajax_is_user_logged_in', 'is_user_logged_in_ajax');
 // Plugin activation
 function jotunheim_magic_activate() {
     jotunheim_magic_assign_capabilities();
-    error_log('Plugin activated and capabilities assigned.');
+    jotunheim_magic_create_tables();
+    error_log('Plugin activated, capabilities assigned, and tables created.');
+}
+
+function jotunheim_magic_create_tables() {
+    global $wpdb;
+    
+    $charset_collate = $wpdb->get_charset_collate();
+    
+    // Create jotun_playerlist table
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $sql = "CREATE TABLE $table_name (
+        id int(11) NOT NULL AUTO_INCREMENT,
+        player_name varchar(255) NOT NULL,
+        steam_id varchar(255) DEFAULT '',
+        discord_id varchar(255) DEFAULT '',
+        registration_date datetime DEFAULT CURRENT_TIMESTAMP,
+        is_active tinyint(1) DEFAULT 1,
+        PRIMARY KEY (id),
+        UNIQUE KEY player_name (player_name)
+    ) $charset_collate;";
+    
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+    
+    error_log('Created/updated table: ' . $table_name);
 }
 register_activation_hook(__FILE__, 'jotunheim_magic_activate');
 

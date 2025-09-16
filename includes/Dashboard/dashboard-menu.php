@@ -131,6 +131,17 @@ function jotunheim_magic_plugin_menu() {
     // Use legacy mode if organized mode is disabled or failed
     if (!$use_organized_menu) {
         error_log('Jotunheim Dashboard: Using legacy menu mode');
+        
+        // Add Overview submenu first (this will replace the auto-generated first submenu)
+        add_submenu_page(
+            'jotunheim_magic',          // Parent slug
+            'Overview',                 // Page title
+            'Overview',                 // Menu title
+            'manage_options',           // Capability required
+            'jotunheim_magic',          // Same slug as parent to make it the default
+            'jotunheim_magic_dashboard' // Callback function
+        );
+        
         // Register each submenu (legacy mode)
         foreach ($submenus as $submenu) {
             add_submenu_page(
@@ -216,6 +227,16 @@ function register_organized_menu($config) {
     usort($sections, function($a, $b) {
         return $a['order'] <=> $b['order'];
     });
+
+    // Add Overview submenu first (this will replace the auto-generated first submenu)
+    add_submenu_page(
+        'jotunheim_magic',          // Parent slug
+        'Overview',                 // Page title
+        'Overview',                 // Menu title
+        'manage_options',           // Capability required
+        'jotunheim_magic',          // Same slug as parent to make it the default
+        'jotunheim_magic_dashboard' // Callback function
+    );
 
     // Register menu items by section
     foreach ($sections as $section) {
