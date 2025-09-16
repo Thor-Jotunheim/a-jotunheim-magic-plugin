@@ -167,15 +167,18 @@ class DashboardConfigManager {
                 if (section.items) {
                     section.items.forEach(item => {
                         // Check if there's a quick action checkbox for this item
-                        const checkbox = document.querySelector(`[data-item-id="${item.item_id}"]`);
-                        const quickAction = checkbox ? checkbox.checked : (item.quick_action || false);
+                        const quickActionCheckbox = document.querySelector(`input.quick-action-checkbox[data-item-id="${item.item_id}"]`);
+                        const enabledCheckbox = document.querySelector(`input.item-enabled-checkbox[data-item-id="${item.item_id}"]`);
+                        
+                        const quickAction = quickActionCheckbox ? quickActionCheckbox.checked : (item.quick_action || false);
+                        const enabled = enabledCheckbox ? enabledCheckbox.checked : (item.enabled || true);
                         
                         sections[sectionKey].items.push({
                             id: item.item_id,
                             item_id: item.item_id,
                             title: item.title,
                             callback: item.callback,
-                            enabled: item.enabled || true,
+                            enabled: enabled,
                             quick_action: quickAction, // This is the key - get it from checkbox
                             order: item.order || 0,
                             icon: item.icon || null,
@@ -194,10 +197,17 @@ class DashboardConfigManager {
         // Set quick action checkboxes based on loaded data
         if (this.menuItems) {
             this.menuItems.forEach(item => {
-                const checkbox = document.querySelector(`[data-item-id="${item.id}"]`);
-                if (checkbox) {
-                    checkbox.checked = item.quick_action || false;
-                    console.log(`Set checkbox for ${item.id} to:`, item.quick_action);
+                const quickActionCheckbox = document.querySelector(`input.quick-action-checkbox[data-item-id="${item.id}"]`);
+                const enabledCheckbox = document.querySelector(`input.item-enabled-checkbox[data-item-id="${item.id}"]`);
+                
+                if (quickActionCheckbox) {
+                    quickActionCheckbox.checked = item.quick_action || false;
+                    console.log(`Set quick action checkbox for ${item.id} to:`, item.quick_action);
+                }
+                
+                if (enabledCheckbox) {
+                    enabledCheckbox.checked = item.enabled || true;
+                    console.log(`Set enabled checkbox for ${item.id} to:`, item.enabled);
                 }
             });
         }

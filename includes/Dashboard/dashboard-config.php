@@ -1427,11 +1427,11 @@ function render_dashboard_config_page() {
                                                     <span class="item-title"><?php echo esc_html($item['title']); ?></span>
                                                     <div class="item-controls">
                                                         <label class="quick-action-toggle">
-                                                            <input type="checkbox" <?php checked($item['quick_action']); ?> data-item-id="<?php echo esc_attr($item['id']); ?>">
+                                                            <input type="checkbox" <?php checked($item['quick_action']); ?> data-item-id="<?php echo esc_attr($item['id']); ?>" class="quick-action-checkbox">
                                                             <span>Quick Action</span>
                                                         </label>
                                                         <label class="item-toggle">
-                                                            <input type="checkbox" <?php checked($item['enabled']); ?> data-item-id="<?php echo esc_attr($item['id']); ?>">
+                                                            <input type="checkbox" <?php checked($item['enabled']); ?> data-item-id="<?php echo esc_attr($item['id']); ?>" class="item-enabled-checkbox">
                                                             <span>Enabled</span>
                                                         </label>
                                                     </div>

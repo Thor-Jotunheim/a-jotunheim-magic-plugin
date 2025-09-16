@@ -439,7 +439,7 @@ function jotunheim_magic_dashboard() {
                             }
                             echo '<a href="' . esc_url(admin_url('admin.php?page=' . $item['id'])) . '" class="quick-action">';
                             echo '<span class="dashicons ' . $icon . '"></span>';
-                            echo '<span>' . esc_html($item['menu_title']) . '</span>';
+                            echo '<span>' . esc_html($item['item_name'] ?? $item['menu_title'] ?? $item['title'] ?? 'Unknown') . '</span>';
                             echo '</a>';
                         }
                     }
