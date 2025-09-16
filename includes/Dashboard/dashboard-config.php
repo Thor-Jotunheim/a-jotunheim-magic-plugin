@@ -2221,8 +2221,6 @@ function render_dashboard_config_page() {
                                     }
                                     html += '</select>';
                                     html += '<button type="button" class="button add-detected-page">Add Page</button>';
-                                    html += '<button type="button" class="button edit-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Edit</button>';
-                                    html += '<button type="button" class="button delete-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Delete</button>';
                                     html += '</div>';
                                     html += '</div>';
                                 });
@@ -2256,8 +2254,6 @@ function render_dashboard_config_page() {
                                     }
                                     html += '</select>';
                                     html += '<button type="button" class="button add-detected-page">Add Page</button>';
-                                    html += '<button type="button" class="button edit-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Edit</button>';
-                                    html += '<button type="button" class="button delete-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Delete</button>';
                                     html += '</div>';
                                     html += '</div>';
                                 });

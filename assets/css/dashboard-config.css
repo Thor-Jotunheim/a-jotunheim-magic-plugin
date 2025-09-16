@@ -448,6 +448,34 @@
     transform: translateY(-1px);
 }
 
+.item-action-buttons {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.control-btn.edit {
+    background: #2271b1;
+    color: white;
+    padding: 4px 8px;
+    min-width: auto;
+}
+
+.control-btn.delete {
+    background: #d63638;
+    color: white;
+    padding: 4px 8px;
+    min-width: auto;
+}
+
+.control-btn.edit:hover {
+    background: #135e96;
+}
+
+.control-btn.delete:hover {
+    background: #b32d2e;
+}
+
 .available-items .menu-item {
     background: #e7f3ff;
     border-color: #c3e4ff;

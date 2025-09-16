@@ -49,6 +49,8 @@ jQuery(document).ready(function($) {
         $(document).on('click', '.toggle-item', toggleItem);
         $(document).on('change', '.item-section-select', changeItemSection);
         $(document).on('change', '.quick-action-checkbox', toggleQuickAction);
+        $(document).on('click', '.edit-item', editItem);
+        $(document).on('click', '.delete-item', deleteItem);
         
         // Discord role events
         $('#save-discord-roles').on('click', saveDiscordRoles);
@@ -165,6 +167,14 @@ jQuery(document).ready(function($) {
                                        ${(menuItem.quick_action || false) ? 'checked' : ''}>
                                 Quick Action
                             </label>
+                        </div>
+                        <div class="item-action-buttons">
+                            <button class="control-btn edit edit-item" data-id="${itemConfig.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Edit Item">
+                                <span class="dashicons dashicons-edit"></span>
+                            </button>
+                            <button class="control-btn delete delete-item" data-id="${itemConfig.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Delete Item">
+                                <span class="dashicons dashicons-trash"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -450,6 +460,76 @@ jQuery(document).ready(function($) {
         }
     }
 
+    function editItem(e) {
+        const itemId = $(e.currentTarget).data('id');
+        const itemTitle = $(e.currentTarget).data('title');
+        
+        // Create simple prompt for editing page title
+        const newTitle = prompt('Edit dashboard title for: ' + itemTitle, itemTitle);
+        
+        if (newTitle && newTitle !== itemTitle) {
+            // Send AJAX request to update the page
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ajax_edit_dashboard_page',
+                    page_id: itemId,
+                    new_title: newTitle,
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Find and update the menu item
+                        const menuItem = findMenuItem(itemId);
+                        if (menuItem) {
+                            menuItem.menu_title = newTitle;
+                            markDirty();
+                            renderItems(); // Re-render to show the new title
+                        }
+                        alert('Page title updated successfully!');
+                    } else {
+                        alert('Error updating page: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error updating page');
+                }
+            });
+        }
+    }
+
+    function deleteItem(e) {
+        const itemId = $(e.currentTarget).data('id');
+        const itemTitle = $(e.currentTarget).data('title');
+        
+        if (confirm('Are you sure you want to delete "' + itemTitle + '" from the dashboard?')) {
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ajax_delete_dashboard_page',
+                    page_id: itemId,
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Remove the item from the config
+                        currentConfig.menu_items = currentConfig.menu_items.filter(item => item.id !== itemId);
+                        markDirty();
+                        renderItems(); // Re-render to remove the item
+                        alert('Page deleted successfully!');
+                    } else {
+                        alert('Error deleting page: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error deleting page');
+                }
+            });
+        }
+    }
+
     function updateItemSectionSelects() {
         $('.item-section-select').each(function() {
             const currentSection = $(this).data('id');
@@ -528,6 +608,10 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     showNotification('Configuration saved successfully!', 'success');
                     isDirty = false;
+                    // Reload page to show updated configuration
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
                 } else {
                     showNotification('Failed to save configuration: ' + response.data, 'error');
                 }
