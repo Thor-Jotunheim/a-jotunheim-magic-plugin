@@ -770,6 +770,9 @@ class JotunheimDashboardConfig {
             return;
         }
         
+        // Get current config
+        $config = $this->get_config();
+        
         // Sanitize input
         $new_page = [
             'id' => sanitize_key($page_data['id']),
@@ -781,7 +784,7 @@ class JotunheimDashboardConfig {
             'section' => sanitize_text_field($page_data['section'] ?: 'main'),
             'enabled' => (bool)($page_data['enabled'] ?: true),
             'quick_action' => (bool)($page_data['quick_action'] ?: false),
-            'order' => count($config['items']) + 1
+            'order' => count($config['items'] ?: []) + 1
         ];
         
         // Check if page already exists
@@ -793,7 +796,6 @@ class JotunheimDashboardConfig {
         }
         
         // Add to config
-        $config = $this->get_config();
         $config['items'][] = $new_page;
         
         if (update_option('jotunheim_dashboard_config', $config)) {
