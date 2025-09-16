@@ -823,15 +823,14 @@ class JotunheimDashboardConfig {
         
         // Save sections to normalized database
         foreach ($config['sections'] as $section) {
-            $section_data = [
-                'section_key' => $section['id'],
-                'title' => $section['title'],
-                'description' => $section['description'],
-                'icon' => $section['icon'] ?? null,
-                'display_order' => $section['order'],
-                'enabled' => $section['enabled'] ? 1 : 0
-            ];
-            $this->normalized_db->save_section($section_data);
+            $this->normalized_db->save_section(
+                $section['id'],
+                $section['title'],
+                $section['order'],
+                $section['description'],
+                $section['icon'] ?? '',
+                $section['enabled']
+            );
         }
         
         // Save items to normalized database
@@ -1078,44 +1077,52 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        $config = $this->get_config();
-        $found = false;
+        // Update directly in normalized database instead of trying to work with config structure
+        $update_data = [];
         
-        // Update the item in the config
-        foreach ($config['items'] as $key => $item) {
-            if ($item['id'] === $page_id) {
-                // Update only allowed fields
-                if (isset($page_data['title'])) {
-                    $config['items'][$key]['title'] = sanitize_text_field($page_data['title']);
-                }
-                if (isset($page_data['menu_title'])) {
-                    $config['items'][$key]['menu_title'] = sanitize_text_field($page_data['menu_title']);
-                }
-                if (isset($page_data['description'])) {
-                    $config['items'][$key]['description'] = sanitize_text_field($page_data['description']);
-                }
-                if (isset($page_data['quick_action'])) {
-                    $config['items'][$key]['quick_action'] = (bool)$page_data['quick_action'];
-                }
-                if (isset($page_data['enabled'])) {
-                    $config['items'][$key]['enabled'] = (bool)$page_data['enabled'];
-                }
-                $found = true;
-                break;
-            }
+        if (isset($page_data['title'])) {
+            $update_data['item_name'] = sanitize_text_field($page_data['title']);
+        }
+        if (isset($page_data['description'])) {
+            $update_data['description'] = sanitize_text_field($page_data['description']);
+        }
+        if (isset($page_data['quick_action'])) {
+            $update_data['quick_action'] = (bool)$page_data['quick_action'] ? 1 : 0;
+        }
+        if (isset($page_data['enabled'])) {
+            $update_data['enabled'] = (bool)$page_data['enabled'] ? 1 : 0;
+        }
+        if (isset($page_data['display_order'])) {
+            $update_data['display_order'] = (int)$page_data['display_order'];
+        }
+        if (isset($page_data['section_key'])) {
+            $update_data['section_key'] = sanitize_key($page_data['section_key']);
         }
         
-        if (!$found) {
-            wp_send_json_error('Page not found in configuration');
+        if (empty($update_data)) {
+            wp_send_json_error('No valid data to update');
             return;
         }
         
-        if (update_option('jotunheim_dashboard_config', $config)) {
-            wp_send_json_success('Page updated successfully');
-        } else {
-            wp_send_json_error('Failed to save configuration');
+        // Update in normalized database
+        global $wpdb;
+        $result = $wpdb->update(
+            'jotun_dashboard_items',
+            array_merge($update_data, ['updated_at' => current_time('mysql')]),
+            array('item_key' => $page_id),
+            array_fill(0, count($update_data) + 1, '%s'),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error('Failed to update page data');
+            return;
         }
+        
+        wp_send_json_success('Page updated successfully');
     }
+
+    /**
     
     /**
      * AJAX handler to update quick action status for a page

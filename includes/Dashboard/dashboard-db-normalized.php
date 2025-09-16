@@ -182,7 +182,7 @@ class Jotunheim_Dashboard_DB_Normalized {
     /**
      * Add or update a section
      */
-    public function save_section($section_key, $section_name, $display_order = 0) {
+    public function save_section($section_key, $section_name, $display_order = 0, $description = '', $icon = '', $enabled = 1) {
         global $wpdb;
         
         $result = $wpdb->replace(
@@ -190,10 +190,13 @@ class Jotunheim_Dashboard_DB_Normalized {
             array(
                 'section_key' => $section_key,
                 'section_name' => $section_name,
+                'description' => $description,
+                'icon' => $icon,
                 'display_order' => $display_order,
+                'enabled' => $enabled ? 1 : 0,
                 'updated_at' => current_time('mysql')
             ),
-            array('%s', '%s', '%d', '%s')
+            array('%s', '%s', '%s', '%s', '%d', '%d', '%s')
         );
         
         return $result !== false;
