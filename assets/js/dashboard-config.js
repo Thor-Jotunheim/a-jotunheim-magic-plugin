@@ -483,13 +483,19 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     if (response.success) {
-                        // Find and update the menu item
+                        // Find and update both the menu item and config item
                         const menuItem = findMenuItem(itemId);
+                        const configItem = findItemConfig(itemId);
+                        
                         if (menuItem) {
                             menuItem.menu_title = newTitle;
-                            markDirty();
-                            renderItems(); // Re-render to show the new title
                         }
+                        if (configItem) {
+                            configItem.menu_title = newTitle;
+                        }
+                        
+                        markDirty();
+                        renderItems(); // Re-render to show the new title
                         alert('Page title updated successfully!');
                     } else {
                         alert('Error updating page: ' + (response.data || 'Unknown error'));

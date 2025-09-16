@@ -778,7 +778,10 @@ class JotunheimDashboardConfig {
             'callback' => sanitize_text_field($page_data['callback']),
             'category' => sanitize_text_field($page_data['category'] ?: 'custom'),
             'description' => sanitize_text_field($page_data['description'] ?: 'Custom added page'),
-            'quick_action' => (bool)($page_data['quick_action'] ?: false)
+            'section' => sanitize_text_field($page_data['section'] ?: 'main'),
+            'enabled' => (bool)($page_data['enabled'] ?: true),
+            'quick_action' => (bool)($page_data['quick_action'] ?: false),
+            'order' => count($config['items']) + 1
         ];
         
         // Check if page already exists
@@ -2209,7 +2212,6 @@ function render_dashboard_config_page() {
                                     }
                                     html += '</div>';
                                     html += '<div class="page-actions">';
-                                    html += '<label><input type="checkbox" class="quick-action-checkbox" data-page-id="' + page.id + '" ' + (page.quick_action ? 'checked' : '') + '> Quick Action</label>';
                                     html += '<select class="page-section-select">';
                                     // Populate sections dynamically from config.sections
                                     if (dashboardConfig.config && dashboardConfig.config.sections) {
@@ -2242,7 +2244,6 @@ function render_dashboard_config_page() {
                                     }
                                     html += '</div>';
                                     html += '<div class="page-actions">';
-                                    html += '<label><input type="checkbox" class="quick-action-checkbox" data-page-id="' + page.id + '" ' + (page.quick_action ? 'checked' : '') + '> Quick Action</label>';
                                     html += '<select class="page-section-select">';
                                     // Populate sections dynamically from config.sections
                                     if (dashboardConfig.config && dashboardConfig.config.sections) {
@@ -2287,6 +2288,15 @@ function render_dashboard_config_page() {
             const section = $item.find('.page-section-select').val();
             const $button = $(this);
             
+            // Get page data from the item
+            const pageTitle = $item.find('.page-title').text().trim();
+            const pageMeta = $item.find('.page-meta').text().trim();
+            const pageDescription = $item.find('.page-description').text().trim() || 'Auto-detected plugin page';
+            
+            // Extract callback from meta text (format: "ID: xxx | Function: yyy")
+            const callbackMatch = pageMeta.match(/Function:\s*(.+)/);
+            const callback = callbackMatch ? callbackMatch[1] : 'render_' + pageId + '_page';
+            
             $button.prop('disabled', true).text('Adding...');
             
             $.ajax({
@@ -2295,8 +2305,17 @@ function render_dashboard_config_page() {
                 data: {
                     action: 'add_custom_page',
                     nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
-                    page_id: pageId,
-                    section: section
+                    page_data: {
+                        id: pageId,
+                        title: pageTitle,
+                        menu_title: pageTitle,
+                        callback: callback,
+                        category: 'auto-detected',
+                        description: pageDescription,
+                        section: section,
+                        enabled: true,
+                        quick_action: false
+                    }
                 },
                 success: function(response) {
                     if (response.success) {
