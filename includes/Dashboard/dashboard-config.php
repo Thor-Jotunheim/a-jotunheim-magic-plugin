@@ -4,8 +4,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Include the database management class
+// Include the database management classes
 require_once(plugin_dir_path(__FILE__) . 'dashboard-db.php');
+require_once(plugin_dir_path(__FILE__) . 'dashboard-db-normalized.php');
 
 /**
  * Dashboard Menu Configuration System
@@ -17,15 +18,18 @@ class JotunheimDashboardConfig {
     private $default_menu_items = [];
     private $menu_config = [];
     private $db;
+    private $normalized_db;
     
     public function __construct() {
-        // Initialize database handler
+        // Initialize database handlers
         $this->db = new Jotunheim_Dashboard_DB();
+        $this->normalized_db = new Jotunheim_Dashboard_DB_Normalized();
         
-        // Ensure table exists
-        if (!$this->db->table_exists()) {
-            $this->db->create_table();
-            $this->db->migrate_from_options();
+        // Check if we need to migrate to normalized structure
+        if (!$this->normalized_db->tables_exist()) {
+            error_log('Jotunheim Dashboard: Creating normalized tables and migrating data');
+            $this->normalized_db->create_tables();
+            $this->migrate_to_normalized();
         }
         
         // Initialize immediately instead of waiting for admin_init
@@ -46,13 +50,96 @@ class JotunheimDashboardConfig {
         // error_log('Jotunheim Dashboard: Forced config reset to clear any legacy dashboard overview items');
     }
     
-    public function init() {
-        error_log('Jotunheim Dashboard: Starting init()');
-        $this->load_default_menu_items();
+    /**
+     * Migrate from old serialized format to normalized database structure
+     */
+    private function migrate_to_normalized() {
+        error_log('Jotunheim Dashboard: Starting migration to normalized database');
         
-        error_log('Jotunheim Dashboard: Loaded ' . count($this->default_menu_items) . ' default menu items');
-        foreach ($this->default_menu_items as $item) {
-            error_log('  - ' . $item['id'] . ': ' . $item['title'] . ' (callback: ' . $item['callback'] . ')');
+        // First ensure old table exists and migrate from options if needed
+        if (!$this->db->table_exists()) {
+            $this->db->create_table();
+            $this->db->migrate_from_options();
+        }
+        
+        // Get config from old format
+        $old_config = $this->db->load_config('dashboard_config');
+        
+        if (!$old_config) {
+            error_log('Jotunheim Dashboard: No old config found, creating default normalized structure');
+            $this->load_default_menu_items();
+            $old_config = $this->get_default_config();
+        }
+        
+        if ($old_config && isset($old_config['sections']) && isset($old_config['items'])) {
+            // Migrate sections
+            foreach ($old_config['sections'] as $section_key => $section_data) {
+                $this->normalized_db->save_section(
+                    $section_key, 
+                    $section_data['name'], 
+                    $section_data['order'] ?? 0
+                );
+            }
+            
+            // Migrate items
+            foreach ($old_config['items'] as $item) {
+                if (isset($item['id'])) {
+                    $item_data = array(
+                        'section_key' => $item['section'] ?? 'system_configuration',
+                        'item_key' => $item['id'],
+                        'item_name' => $item['name'] ?? $item['id'],
+                        'callback_function' => $item['callback'] ?? '',
+                        'quick_action' => $item['quick_action'] ?? false,
+                        'display_order' => $item['order'] ?? 0
+                    );
+                    
+                    $this->normalized_db->save_item($item_data);
+                }
+            }
+            
+            error_log('Jotunheim Dashboard: Successfully migrated ' . count($old_config['sections']) . ' sections and ' . count($old_config['items']) . ' items');
+        }
+    }
+    
+    public function init() {
+        error_log('Jotunheim Dashboard: Starting init() with normalized database');
+        
+        // Load configuration from normalized database only
+        $this->menu_config = $this->normalized_db->get_full_configuration();
+        
+        if (empty($this->menu_config)) {
+            error_log('Jotunheim Dashboard: No configuration found in normalized database, loading defaults');
+            $this->load_default_menu_items();
+            $default_config = $this->get_default_config();
+            
+            // Populate normalized database with defaults
+            foreach ($default_config['sections'] as $section_key => $section_data) {
+                $this->normalized_db->save_section($section_key, $section_data['name'], $section_data['order'] ?? 0);
+            }
+            
+            foreach ($default_config['items'] as $item) {
+                if (isset($item['id'])) {
+                    $item_data = array(
+                        'section_key' => $item['section'] ?? 'system_configuration',
+                        'item_key' => $item['id'],
+                        'item_name' => $item['name'] ?? $item['id'],
+                        'callback_function' => $item['callback'] ?? '',
+                        'quick_action' => $item['quick_action'] ?? false,
+                        'display_order' => $item['order'] ?? 0
+                    );
+                    
+                    $this->normalized_db->save_item($item_data);
+                }
+            }
+            
+            // Reload from database
+            $this->menu_config = $this->normalized_db->get_full_configuration();
+        }
+        
+        error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config) . ' sections');
+        foreach ($this->menu_config as $section_key => $section_data) {
+            $item_count = isset($section_data['items']) ? count($section_data['items']) : 0;
+            error_log('  - Section: ' . $section_key . ' (' . $item_count . ' items)');
         }
         
         // Check for reset parameter (for easy config regeneration)
@@ -677,37 +764,34 @@ class JotunheimDashboardConfig {
     
     public function get_organized_menu() {
         $organized = [];
-        $config = $this->get_config();
         
-        // Get enabled sections sorted by order
-        $sections = $config['sections'];
-        usort($sections, function($a, $b) {
-            return $a['order'] <=> $b['order'];
-        });
+        // Get configuration from normalized database
+        $config = $this->normalized_db->get_full_configuration();
         
-        foreach ($sections as $section) {
-            if (!$section['enabled']) continue;
-            
-            $organized[$section['id']] = [
-                'title' => $section['title'],
-                'description' => $section['description'],
-                'icon' => $section['icon'],
-                'items' => []
-            ];
+        if (empty($config)) {
+            error_log('Jotunheim Dashboard: No configuration found in normalized database for organized menu');
+            return [];
         }
         
-        // Get items sorted by order within each section
-        $items = $config['items'];
-        usort($items, function($a, $b) {
-            return $a['order'] <=> $b['order'];
-        });
-        
-        foreach ($items as $item_config) {
-            if (!$item_config['enabled']) continue;
+        // Build organized menu structure from normalized config
+        foreach ($config as $section_key => $section_data) {
+            $organized[$section_key] = [
+                'title' => $section_data['name'],
+                'description' => '',
+                'icon' => '',
+                'items' => []
+            ];
             
-            $item = $this->find_menu_item($item_config['id']);
-            if ($item && isset($organized[$item_config['section']])) {
-                $organized[$item_config['section']]['items'][] = $item;
+            // Add items to this section
+            if (isset($section_data['items']) && is_array($section_data['items'])) {
+                foreach ($section_data['items'] as $item) {
+                    $organized[$section_key]['items'][] = [
+                        'id' => $item['id'],
+                        'title' => $item['name'],
+                        'callback' => $item['callback'],
+                        'quick_action' => $item['quick_action']
+                    ];
+                }
             }
         }
         
@@ -1030,46 +1114,14 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        $config = $this->get_config();
-        $found = false;
-        
-        // Validate and clean config data before processing
-        $config = $this->validate_and_clean_config($config);
-        
-        error_log('DEBUG: Current config items: ' . print_r($config['items'], true));
-        
-        // Update the quick_action setting
-        foreach ($config['items'] as $key => $item) {
-            if ($item['id'] === $page_id) {
-                $config['items'][$key]['quick_action'] = $quick_action;
-                $found = true;
-                error_log('DEBUG: Found and updated item with id: ' . $page_id);
-                break;
-            }
-        }
-        
-        if (!$found) {
-            error_log('DEBUG: Page not found in configuration. Looking for: ' . $page_id);
-            wp_send_json_error('Page not found in configuration');
-            return;
-        }
-        
-        error_log('DEBUG: About to save config to database for page: ' . $page_id);
-        error_log('DEBUG: Config has ' . count($config['items']) . ' items and ' . count($config['sections']) . ' sections');
-        
-        // Save to database instead of WordPress options
-        $update_result = $this->db->save_config('dashboard_config', $config);
-        error_log('DEBUG: Database save result: ' . ($update_result ? 'true' : 'false'));
-        
-        if (!$update_result) {
-            error_log('DEBUG: Database save failed for page: ' . $page_id);
-        }
+        // Use normalized database for direct update
+        $update_result = $this->normalized_db->update_item_quick_action($page_id, $quick_action);
         
         if ($update_result) {
-            error_log('DEBUG: Successfully saved configuration, sending success response');
+            error_log('DEBUG: Successfully updated quick action in normalized database');
             wp_send_json_success('Quick action setting updated');
         } else {
-            error_log('DEBUG: Failed to save configuration, sending error response');
+            error_log('DEBUG: Failed to update quick action in normalized database');
             wp_send_json_error('Failed to save configuration');
         }
     }
