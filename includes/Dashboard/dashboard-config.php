@@ -580,6 +580,57 @@ class JotunheimDashboardConfig {
         return $this->menu_config;
     }
     
+    /**
+     * Validate and clean configuration data to prevent corruption
+     */
+    private function validate_and_clean_config($config) {
+        error_log('DEBUG: Validating and cleaning config data');
+        
+        // Ensure config has required structure
+        if (!is_array($config)) {
+            error_log('DEBUG: Config is not an array, creating default structure');
+            $config = $this->get_default_config();
+        }
+        
+        // Ensure sections exist and are valid
+        if (!isset($config['sections']) || !is_array($config['sections'])) {
+            error_log('DEBUG: Sections missing or invalid, using defaults');
+            $config['sections'] = $this->get_default_sections();
+        }
+        
+        // Ensure items exist and are valid
+        if (!isset($config['items']) || !is_array($config['items'])) {
+            error_log('DEBUG: Items missing or invalid, using defaults');
+            $config['items'] = [];
+        }
+        
+        // Clean and validate items
+        $cleaned_items = [];
+        foreach ($config['items'] as $index => $item) {
+            if (!is_array($item)) {
+                error_log('DEBUG: Skipping non-array item at index ' . $index);
+                continue;
+            }
+            
+            if (!isset($item['id']) || empty($item['id'])) {
+                error_log('DEBUG: Skipping item with missing ID at index ' . $index . ': ' . print_r($item, true));
+                continue;
+            }
+            
+            // Ensure required fields exist
+            $item['section'] = $item['section'] ?? 'system';
+            $item['order'] = $item['order'] ?? 999;
+            $item['enabled'] = $item['enabled'] ?? true;
+            
+            $cleaned_items[] = $item;
+        }
+        
+        $config['items'] = $cleaned_items;
+        error_log('DEBUG: Cleaned config: kept ' . count($cleaned_items) . ' valid items');
+        
+        return $config;
+    }
+    
     public function get_organized_menu() {
         $organized = [];
         $config = $this->get_config();
@@ -937,6 +988,9 @@ class JotunheimDashboardConfig {
         
         $config = $this->get_config();
         $found = false;
+        
+        // Validate and clean config data before processing
+        $config = $this->validate_and_clean_config($config);
         
         error_log('DEBUG: Current config items: ' . print_r($config['items'], true));
         

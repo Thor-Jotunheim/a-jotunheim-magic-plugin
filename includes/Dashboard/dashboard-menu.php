@@ -271,15 +271,21 @@ function register_organized_menu($config) {
                 // Debug: Log all item details for analysis
                 error_log('Jotunheim Dashboard: Processing item details - ' . print_r($item, true));
                 
+                // Validate item has required keys
+                if (!isset($item['id']) || empty($item['id'])) {
+                    error_log('Jotunheim Dashboard: SKIPPING item with missing or empty ID - ' . print_r($item, true));
+                    continue;
+                }
+                
                 // Skip any item that might conflict with the main dashboard overview
                 if ($item['id'] === 'dashboard_overview' || 
-                    $item['callback'] === 'jotunheim_magic_dashboard' ||
-                    ($item['title'] === 'Dashboard Overview') ||
-                    ($item['menu_title'] === 'Dashboard Overview') ||
+                    (isset($item['callback']) && $item['callback'] === 'jotunheim_magic_dashboard') ||
+                    (isset($item['title']) && $item['title'] === 'Dashboard Overview') ||
+                    (isset($item['menu_title']) && $item['menu_title'] === 'Dashboard Overview') ||
                     (isset($item['slug']) && $item['slug'] === 'jotunheim_magic') ||
-                    (strpos($item['title'], 'Dashboard Overview') !== false) ||
-                    (strpos($item['menu_title'], 'Dashboard Overview') !== false)) {
-                    error_log('Jotunheim Dashboard: SKIPPING conflicting dashboard item - ' . $item['title'] . ' (ID: ' . $item['id'] . ', Callback: ' . $item['callback'] . ')');
+                    (isset($item['title']) && strpos($item['title'], 'Dashboard Overview') !== false) ||
+                    (isset($item['menu_title']) && strpos($item['menu_title'], 'Dashboard Overview') !== false)) {
+                    error_log('Jotunheim Dashboard: SKIPPING conflicting dashboard item - ' . (isset($item['title']) ? $item['title'] : 'Unknown') . ' (ID: ' . $item['id'] . ', Callback: ' . (isset($item['callback']) ? $item['callback'] : 'Unknown') . ')');
                     continue;
                 }
                 
