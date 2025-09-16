@@ -115,6 +115,11 @@ class Jotunheim_Dashboard_DB_Normalized {
     public function get_full_configuration() {
         global $wpdb;
         
+        // Debug: Check if tables exist and have data
+        $sections_count = $wpdb->get_var("SELECT COUNT(*) FROM {$this->sections_table}");
+        $items_count = $wpdb->get_var("SELECT COUNT(*) FROM {$this->items_table}");
+        error_log("Jotunheim Dashboard DB: Found {$sections_count} sections and {$items_count} items in normalized tables");
+        
         $sql = "
             SELECT 
                 s.section_key,
@@ -135,6 +140,11 @@ class Jotunheim_Dashboard_DB_Normalized {
         ";
         
         $results = $wpdb->get_results($sql);
+        error_log("Jotunheim Dashboard DB: SQL query returned " . count($results) . " rows");
+        
+        if ($wpdb->last_error) {
+            error_log("Jotunheim Dashboard DB: SQL Error: " . $wpdb->last_error);
+        }
         
         // Group by sections
         $config = array();
@@ -161,6 +171,7 @@ class Jotunheim_Dashboard_DB_Normalized {
             }
         }
         
+        error_log("Jotunheim Dashboard DB: Returning config with " . count($config) . " sections");
         return $config;
     }
     
@@ -201,6 +212,8 @@ class Jotunheim_Dashboard_DB_Normalized {
             return false;
         }
         
+        error_log('Jotunheim Dashboard DB: Saving item ' . $item_data['item_key'] . ' to section_id ' . $section_id);
+        
         $result = $wpdb->replace(
             $this->items_table,
             array(
@@ -217,6 +230,12 @@ class Jotunheim_Dashboard_DB_Normalized {
             ),
             array('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s')
         );
+        
+        if ($result === false) {
+            error_log('Jotunheim Dashboard DB: Failed to save item ' . $item_data['item_key'] . ': ' . $wpdb->last_error);
+        } else {
+            error_log('Jotunheim Dashboard DB: Successfully saved item ' . $item_data['item_key']);
+        }
         
         return $result !== false;
     }
