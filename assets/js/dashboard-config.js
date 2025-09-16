@@ -415,8 +415,12 @@ jQuery(document).ready(function($) {
         const isChecked = $(e.currentTarget).is(':checked');
         
         console.log('toggleQuickAction called with itemId:', itemId, 'isChecked:', isChecked);
+        console.log('Event target:', e.currentTarget);
+        console.log('Data attributes:', $(e.currentTarget)[0].dataset);
+        console.log('All menu items:', menuItems);
         
         if (!itemId) {
+            console.error('Error: Page ID is missing. Element:', e.currentTarget);
             alert('Error: Page ID is missing. Please refresh the page and try again.');
             $(e.currentTarget).prop('checked', !isChecked); // Revert checkbox
             return;
@@ -432,16 +436,22 @@ jQuery(document).ready(function($) {
             const $checkbox = $(e.currentTarget);
             $checkbox.prop('disabled', true);
             
+            const ajaxData = {
+                action: 'update_page_quick_action',
+                page_id: itemId,
+                quick_action: isChecked,
+                nonce: dashboardConfig.nonce
+            };
+            
+            console.log('Sending AJAX request with data:', ajaxData);
+            console.log('ajaxurl:', ajaxurl);
+            
             $.ajax({
                 url: ajaxurl,
                 type: 'POST',
-                data: {
-                    action: 'update_page_quick_action',
-                    page_id: itemId,
-                    quick_action: isChecked,
-                    nonce: dashboardConfig.nonce
-                },
+                data: ajaxData,
                 success: function(response) {
+                    console.log('AJAX success response:', response);
                     if (response.success) {
                         // Update the UI to show the change was saved
                         const $label = $checkbox.closest('.item-quick-action-control').find('label');
@@ -451,17 +461,20 @@ jQuery(document).ready(function($) {
                             $label.text(originalText);
                         }, 2000);
                     } else {
+                        console.error('AJAX request failed:', response);
                         // Revert checkbox if save failed
                         $checkbox.prop('checked', !isChecked);
                         menuItem.quick_action = !isChecked;
-                        alert('Error saving quick action setting: ' + (response.data || 'Unknown error'));
+                        alert('Error updating quick action setting: ' + (response.data || 'Unknown error'));
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', xhr, status, error);
+                    console.error('Response text:', xhr.responseText);
                     // Revert checkbox if save failed
                     $checkbox.prop('checked', !isChecked);
                     menuItem.quick_action = !isChecked;
-                    alert('Error saving quick action setting');
+                    alert('Error updating quick action setting: Failed to communicate with server');
                 },
                 complete: function() {
                     $checkbox.prop('disabled', false);

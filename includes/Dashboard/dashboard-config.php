@@ -921,10 +921,16 @@ class JotunheimDashboardConfig {
             wp_die('Invalid nonce');
         }
         
+        error_log('DEBUG: ajax_update_page_quick_action called with POST data: ' . print_r($_POST, true));
+        
         $page_id = sanitize_key($_POST['page_id']);
         $quick_action = (bool)$_POST['quick_action'];
         
+        error_log('DEBUG: Sanitized page_id: ' . $page_id);
+        error_log('DEBUG: Quick action value: ' . ($quick_action ? 'true' : 'false'));
+        
         if (empty($page_id)) {
+            error_log('DEBUG: Page ID is empty, sending error response');
             wp_send_json_error('Page ID is required');
             return;
         }
@@ -932,16 +938,20 @@ class JotunheimDashboardConfig {
         $config = $this->get_config();
         $found = false;
         
+        error_log('DEBUG: Current config items: ' . print_r($config['items'], true));
+        
         // Update the quick_action setting
         foreach ($config['items'] as $key => $item) {
             if ($item['id'] === $page_id) {
                 $config['items'][$key]['quick_action'] = $quick_action;
                 $found = true;
+                error_log('DEBUG: Found and updated item with id: ' . $page_id);
                 break;
             }
         }
         
         if (!$found) {
+            error_log('DEBUG: Page not found in configuration. Looking for: ' . $page_id);
             wp_send_json_error('Page not found in configuration');
             return;
         }
