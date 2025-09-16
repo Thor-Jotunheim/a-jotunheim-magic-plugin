@@ -252,8 +252,317 @@ function register_organized_menu($config) {
 
 // Main dashboard page for Jotunheim Magic Plugin
 function jotunheim_magic_dashboard() {
-    echo '<h1>Welcome to Jotunheim Magic Plugin</h1>';
-    echo '<p>Use the available tools to manage the plugin functionalities.</p>';
+    global $jotunheim_dashboard_config;
+    
+    // Get organized menu structure if available
+    $organized_menu = [];
+    if ($jotunheim_dashboard_config) {
+        $organized_menu = $jotunheim_dashboard_config->get_organized_menu();
+    }
+    
+    // Fallback sections if no organized menu
+    if (empty($organized_menu)) {
+        $organized_menu = [
+            'core' => [
+                'title' => 'Core Management',
+                'description' => 'Essential game management tools',
+                'icon' => 'dashicons-admin-settings',
+                'items' => [
+                    ['id' => 'prefab_image_import', 'title' => 'Prefab Image Import', 'description' => 'Import and manage prefab images']
+                ]
+            ],
+            'items' => [
+                'title' => 'Item Management', 
+                'description' => 'Manage game items and inventory',
+                'icon' => 'dashicons-products',
+                'items' => [
+                    ['id' => 'item_list_editor', 'title' => 'Item List Editor', 'description' => 'Edit and manage game items'],
+                    ['id' => 'item_list_add_new_item', 'title' => 'Add New Item', 'description' => 'Add new items to the game']
+                ]
+            ],
+            'events' => [
+                'title' => 'Event Management',
+                'description' => 'Create and manage game events', 
+                'icon' => 'dashicons-calendar-alt',
+                'items' => [
+                    ['id' => 'event_zone_editor', 'title' => 'Event Zone Editor', 'description' => 'Edit and manage event zones'],
+                    ['id' => 'add_event_zone', 'title' => 'Add Event Zone', 'description' => 'Create new event zones']
+                ]
+            ],
+            'commerce' => [
+                'title' => 'Commerce & Trading',
+                'description' => 'Player shops, trading, and transactions',
+                'icon' => 'dashicons-money-alt', 
+                'items' => [
+                    ['id' => 'pos_interface', 'title' => 'Point of Sale', 'description' => 'Point of sale transaction system'],
+                    ['id' => 'jotun-playerlist', 'title' => 'Player List', 'description' => 'Manage registered players']
+                ]
+            ],
+            'system' => [
+                'title' => 'System Configuration',
+                'description' => 'Advanced system settings and configuration',
+                'icon' => 'dashicons-admin-tools',
+                'items' => [
+                    ['id' => 'weather_calendar_config', 'title' => 'Weather Calendar', 'description' => 'Configure weather calendar settings'],
+                    ['id' => 'dashboard_config', 'title' => 'Dashboard Config', 'description' => 'Configure dashboard menu organization']
+                ]
+            ]
+        ];
+    }
+    ?>
+    
+    <div class="wrap jotunheim-dashboard-main">
+        <h1 class="jotunheim-main-title">
+            <span class="dashicons dashicons-hammer"></span>
+            Jotunheim Magic Dashboard
+        </h1>
+        
+        <div class="jotunheim-welcome">
+            <p class="jotunheim-intro">Welcome to Jotunheim Magic! This comprehensive plugin provides tools for managing your Valheim server including items, events, trading systems, and much more.</p>
+        </div>
+        
+        <div class="jotunheim-sections-grid">
+            <?php foreach ($organized_menu as $section_id => $section): ?>
+                <div class="jotunheim-section-card">
+                    <div class="section-header">
+                        <h2>
+                            <span class="dashicons <?php echo esc_attr($section['icon'] ?? 'dashicons-admin-generic'); ?>"></span>
+                            <?php echo esc_html($section['title']); ?>
+                        </h2>
+                        <p class="section-description"><?php echo esc_html($section['description']); ?></p>
+                    </div>
+                    
+                    <div class="section-items">
+                        <?php if (!empty($section['items'])): ?>
+                            <?php foreach ($section['items'] as $item): ?>
+                                <div class="dashboard-item">
+                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . $item['id'])); ?>" class="item-link">
+                                        <h4><?php echo esc_html($item['title'] ?? $item['menu_title']); ?></h4>
+                                        <p><?php echo esc_html($item['description'] ?? ''); ?></p>
+                                        <span class="item-arrow">&rarr;</span>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="no-items">No items configured for this section.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        
+        <div class="jotunheim-quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <a href="<?php echo esc_url(admin_url('admin.php?page=dashboard_config')); ?>" class="quick-action">
+                    <span class="dashicons dashicons-admin-appearance"></span>
+                    <span>Configure Dashboard</span>
+                </a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=item_list_editor')); ?>" class="quick-action">
+                    <span class="dashicons dashicons-products"></span>
+                    <span>Manage Items</span>
+                </a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=pos_interface')); ?>" class="quick-action">
+                    <span class="dashicons dashicons-money-alt"></span>
+                    <span>Point of Sale</span>
+                </a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=event_zone_editor')); ?>" class="quick-action">
+                    <span class="dashicons dashicons-calendar-alt"></span>
+                    <span>Manage Events</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+    .jotunheim-dashboard-main {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .jotunheim-main-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #1d2327;
+        margin-bottom: 20px;
+        font-size: 24px;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .jotunheim-welcome {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .jotunheim-intro {
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 0;
+        opacity: 0.95;
+    }
+    
+    .jotunheim-sections-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+    
+    .jotunheim-section-card {
+        background: white;
+        border: 1px solid #c3c4c7;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .jotunheim-section-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .section-header h2 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #1d2327;
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: 18px;
+    }
+    
+    .section-description {
+        color: #646970;
+        margin-bottom: 20px;
+        font-style: italic;
+    }
+    
+    .section-items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .dashboard-item {
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .dashboard-item:hover {
+        border-color: #0073aa;
+        box-shadow: 0 2px 8px rgba(0,115,170,0.1);
+    }
+    
+    .item-link {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+    }
+    
+    .item-link:hover {
+        color: inherit;
+    }
+    
+    .item-link h4 {
+        margin: 0 0 5px 0;
+        color: #0073aa;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .item-link p {
+        margin: 0;
+        color: #646970;
+        font-size: 13px;
+        line-height: 1.4;
+        flex: 1;
+    }
+    
+    .item-arrow {
+        color: #0073aa;
+        font-weight: bold;
+        margin-left: 15px;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+    }
+    
+    .dashboard-item:hover .item-arrow {
+        opacity: 1;
+        transform: translateX(3px);
+    }
+    
+    .no-items {
+        color: #646970;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .jotunheim-quick-actions {
+        background: #f6f7f7;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #dcdcde;
+    }
+    
+    .jotunheim-quick-actions h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #1d2327;
+    }
+    
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        background: white;
+        border: 1px solid #c3c4c7;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #1d2327;
+        transition: all 0.2s ease;
+    }
+    
+    .quick-action:hover {
+        background: #0073aa;
+        color: white;
+        border-color: #0073aa;
+        text-decoration: none;
+    }
+    
+    .quick-action .dashicons {
+        font-size: 18px;
+    }
+    
+    @media (max-width: 768px) {
+        .jotunheim-sections-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
+    <?php
 }
 
 // Universal UI Table Config Page

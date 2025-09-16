@@ -3,7 +3,20 @@
  * Styles for the dashboard menu organization interface
  */
 
-/* Fix WordPress admin layout issues */
+/* Fix WordPress admin layout issues - STRONGER FIXES */
+body.wp-admin {
+    padding-top: 0 !important;
+}
+
+#wpwrap {
+    padding-top: 0 !important;
+}
+
+#wpcontent {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
 .dashboard-config-wrap {
     margin-top: 0 !important;
     padding-top: 0 !important;
@@ -25,6 +38,14 @@
 .wrap h1:first-child {
     margin-top: 0 !important;
     padding-top: 0 !important;
+}
+
+/* Force override any admin notices pushing content down */
+.wrap .notice,
+.wrap .error,
+.wrap .updated {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
 }
 
 /* Remove organized menu toggle spacing from top since it's moved to bottom */
