@@ -20,6 +20,8 @@ class JotunheimDashboardConfig {
         
         add_action('wp_ajax_save_dashboard_config', [$this, 'save_dashboard_config']);
         add_action('wp_ajax_reset_dashboard_config', [$this, 'reset_dashboard_config']);
+        add_action('wp_ajax_save_discord_roles', [$this, 'ajax_save_discord_roles']);
+        add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
         
         // TEMPORARY: Force config reset for debugging
         // delete_option('jotunheim_dashboard_config');
@@ -68,7 +70,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Prefab Image Import',
                 'callback' => 'render_prefab_image_import_page',
                 'category' => 'core',
-                'description' => 'Import and manage prefab images'
+                'description' => 'Import and manage prefab images',
+                'quick_action' => false
             ],
             [
                 'id' => 'item_list_editor',
@@ -76,7 +79,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Item List Editor',
                 'callback' => 'render_item_list_editor_page',
                 'category' => 'items',
-                'description' => 'Edit and manage game items'
+                'description' => 'Edit and manage game items',
+                'quick_action' => true
             ],
             [
                 'id' => 'item_list_add_new_item',
@@ -84,7 +88,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Add New Item',
                 'callback' => 'render_item_list_add_new_item_page',
                 'category' => 'items',
-                'description' => 'Add new items to the game'
+                'description' => 'Add new items to the game',
+                'quick_action' => false
             ],
             
             // Event Management
@@ -94,7 +99,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Event Zone Editor',
                 'callback' => 'render_event_zone_editor_page',
                 'category' => 'events',
-                'description' => 'Edit and manage event zones'
+                'description' => 'Edit and manage event zones',
+                'quick_action' => true
             ],
             [
                 'id' => 'add_event_zone',
@@ -102,7 +108,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Add Event Zone',
                 'callback' => 'render_add_event_zone_page',
                 'category' => 'events',
-                'description' => 'Create new event zones'
+                'description' => 'Create new event zones',
+                'quick_action' => false
             ],
             [
                 'id' => 'eventzone_field_config',
@@ -110,7 +117,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'EventZone Field Config',
                 'callback' => 'render_eventzone_field_config_page',
                 'category' => 'events',
-                'description' => 'Configure event zone fields'
+                'description' => 'Configure event zone fields',
+                'quick_action' => false
             ],
             
             // Commerce & Trading
@@ -120,7 +128,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Trade',
                 'callback' => 'render_trade_page',
                 'category' => 'commerce',
-                'description' => 'Manage trading systems'
+                'description' => 'Manage trading systems',
+                'quick_action' => false
             ],
             [
                 'id' => 'barter',
@@ -128,7 +137,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Barter',
                 'callback' => 'render_barter_page',
                 'category' => 'commerce',
-                'description' => 'Manage bartering systems'
+                'description' => 'Manage bartering systems',
+                'quick_action' => false
             ],
             [
                 'id' => 'pos_interface',
@@ -136,7 +146,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Point of Sale',
                 'callback' => 'render_pos_interface_page',
                 'category' => 'commerce',
-                'description' => 'Point of sale transaction system'
+                'description' => 'Point of sale transaction system',
+                'quick_action' => true
             ],
             [
                 'id' => 'jotun-playerlist',
@@ -144,7 +155,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Player List',
                 'callback' => 'jotun_playerlist_interface',
                 'category' => 'commerce',
-                'description' => 'Manage registered players and customer database'
+                'description' => 'Manage registered players and customer database',
+                'quick_action' => false
             ],
             
             // System Configuration
@@ -154,7 +166,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Universal UI Config',
                 'callback' => 'render_universal_ui_table_config_page',
                 'category' => 'system',
-                'description' => 'Configure universal UI table settings'
+                'description' => 'Configure universal UI table settings',
+                'quick_action' => false
             ],
             [
                 'id' => 'weather_calendar_config',
@@ -162,15 +175,8 @@ class JotunheimDashboardConfig {
                 'menu_title' => 'Weather Calendar',
                 'callback' => 'render_weather_calendar_config_page',
                 'category' => 'system',
-                'description' => 'Configure weather calendar settings'
-            ],
-            [
-                'id' => 'dashboard_config',
-                'title' => 'Dashboard Configuration',
-                'menu_title' => 'Dashboard Config',
-                'callback' => 'render_dashboard_config_page',
-                'category' => 'system',
-                'description' => 'Configure dashboard menu organization and layout'
+                'description' => 'Configure weather calendar settings',
+                'quick_action' => false
             ]
         ];
     }
@@ -334,6 +340,178 @@ class JotunheimDashboardConfig {
         $this->menu_config = $this->get_default_config();
         
         wp_send_json_success('Configuration reset to defaults');
+    }
+    
+    /**
+     * AJAX handler for saving Discord roles
+     */
+    public function ajax_save_discord_roles() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        if (!isset($_POST['roles']) || !is_array($_POST['roles'])) {
+            wp_send_json_error('Invalid roles data');
+            return;
+        }
+        
+        $roles = [];
+        foreach ($_POST['roles'] as $role_key => $role_data) {
+            $roles[sanitize_key($role_key)] = [
+                'name' => sanitize_text_field($role_data['name']),
+                'id' => sanitize_text_field($role_data['id']),
+                'description' => sanitize_text_field($role_data['description'])
+            ];
+        }
+        
+        if ($this->save_discord_roles($roles)) {
+            wp_send_json_success('Discord roles saved successfully');
+        } else {
+            wp_send_json_error('Failed to save Discord roles');
+        }
+    }
+    
+    /**
+     * AJAX handler for testing Discord connection
+     */
+    public function ajax_test_discord_connection() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        // Test Discord connection by checking if Discord OAuth is available
+        if (function_exists('jotunheim_magic_discord_oauth_handler')) {
+            wp_send_json_success('Discord OAuth integration is available');
+        } else {
+            wp_send_json_error('Discord OAuth integration not found');
+        }
+    }
+    
+    /**
+     * Get Discord role configurations
+     */
+    public function get_discord_roles() {
+        return get_option('jotunheim_discord_roles', $this->get_default_discord_roles());
+    }
+    
+    /**
+     * Get default Discord role configurations
+     */
+    private function get_default_discord_roles() {
+        return [
+            'norn' => [
+                'name' => 'Norn',
+                'id' => '',
+                'description' => 'Highest administrative role'
+            ],
+            'aesir' => [
+                'name' => 'Aesir',
+                'id' => '',
+                'description' => 'Senior administrative role'
+            ],
+            'all_staff' => [
+                'name' => 'All Staff',
+                'id' => '',
+                'description' => 'General staff access role'
+            ],
+            'admin' => [
+                'name' => 'Admin',
+                'id' => '816462309274419250',
+                'description' => 'Administrator role'
+            ],
+            'staff' => [
+                'name' => 'Staff',
+                'id' => '1390490815054221414',
+                'description' => 'Staff member role'
+            ],
+            'valkyrie' => [
+                'name' => 'Valkyrie',
+                'id' => '963502767173931039',
+                'description' => 'Valkyrie team member'
+            ],
+            'vithar' => [
+                'name' => 'Vithar',
+                'id' => '1104073178495602751',
+                'description' => 'Vithar team member'
+            ],
+            'chosen' => [
+                'name' => 'Chosen',
+                'id' => '',
+                'description' => 'Special community member role'
+            ]
+        ];
+    }
+    
+    /**
+     * Save Discord role configurations
+     */
+    public function save_discord_roles($roles) {
+        return update_option('jotunheim_discord_roles', $roles);
+    }
+    
+    /**
+     * Add Discord role permissions section to config page
+     */
+    public function render_discord_permissions_section() {
+        $discord_roles = $this->get_discord_roles();
+        ?>
+        
+        <div class="discord-permissions-section">
+            <h3>Discord Role Permissions</h3>
+            <p class="description">Configure Discord role IDs for access control. Leave ID empty to disable a role.</p>
+            
+            <div class="discord-roles-container">
+                <?php foreach ($discord_roles as $role_key => $role_data): ?>
+                    <div class="discord-role-item">
+                        <div class="role-info">
+                            <label for="discord_role_<?php echo esc_attr($role_key); ?>">
+                                <strong><?php echo esc_html($role_data['name']); ?></strong>
+                            </label>
+                            <p class="role-description"><?php echo esc_html($role_data['description']); ?></p>
+                        </div>
+                        <div class="role-input">
+                            <input 
+                                type="text" 
+                                id="discord_role_<?php echo esc_attr($role_key); ?>"
+                                name="discord_roles[<?php echo esc_attr($role_key); ?>][id]"
+                                value="<?php echo esc_attr($role_data['id']); ?>"
+                                placeholder="Discord Role ID"
+                                class="discord-role-id-input"
+                            />
+                            <input 
+                                type="hidden" 
+                                name="discord_roles[<?php echo esc_attr($role_key); ?>][name]"
+                                value="<?php echo esc_attr($role_data['name']); ?>"
+                            />
+                            <input 
+                                type="hidden" 
+                                name="discord_roles[<?php echo esc_attr($role_key); ?>][description]"
+                                value="<?php echo esc_attr($role_data['description']); ?>"
+                            />
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <div class="discord-permissions-actions">
+                <button type="button" class="button button-primary" id="save-discord-roles">
+                    Save Discord Roles
+                </button>
+                <button type="button" class="button" id="test-discord-connection">
+                    Test Discord Connection
+                </button>
+            </div>
+        </div>
+        
+        <?php
     }
 }
 
@@ -523,6 +701,9 @@ function render_dashboard_config_page() {
                 </div>
             </div>
         </div>
+        
+        <!-- Discord Role Permissions Section -->
+        <?php $jotunheim_dashboard_config->render_discord_permissions_section(); ?>
         
         <!-- Preview Panel -->
         <div id="preview-panel" class="preview-panel" style="display: none;">

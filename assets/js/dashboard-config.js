@@ -48,6 +48,11 @@ jQuery(document).ready(function($) {
         // Item control events (delegated)
         $(document).on('click', '.toggle-item', toggleItem);
         $(document).on('change', '.item-section-select', changeItemSection);
+        $(document).on('change', '.quick-action-checkbox', toggleQuickAction);
+        
+        // Discord role events
+        $('#save-discord-roles').on('click', saveDiscordRoles);
+        $('#test-discord-connection').on('click', testDiscordConnection);
         
         // Modal close on background click
         $('.dashboard-modal').on('click', function(e) {
@@ -153,6 +158,13 @@ jQuery(document).ready(function($) {
                                 <span class="dashicons dashicons-${itemConfig.enabled ? 'visibility' : 'hidden'}"></span>
                                 ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
                             </button>
+                        </div>
+                        <div class="item-quick-action-control">
+                            <label>
+                                <input type="checkbox" class="quick-action-checkbox" data-id="${itemConfig.id}" 
+                                       ${(menuItem.quick_action || false) ? 'checked' : ''}>
+                                Quick Action
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -388,6 +400,17 @@ jQuery(document).ready(function($) {
         }
     }
 
+    function toggleQuickAction(e) {
+        const itemId = $(e.currentTarget).data('id');
+        const isChecked = $(e.currentTarget).is(':checked');
+        const menuItem = findMenuItem(itemId);
+        
+        if (menuItem) {
+            menuItem.quick_action = isChecked;
+            markDirty();
+        }
+    }
+
     function updateItemSectionSelects() {
         $('.item-section-select').each(function() {
             const currentSection = $(this).data('id');
@@ -557,6 +580,79 @@ jQuery(document).ready(function($) {
             }, 300);
         }, 3000);
     }
+
+    // Discord Role Management Functions
+    function saveDiscordRoles() {
+        const roleData = {};
+        
+        $('.discord-role-item').each(function() {
+            const $item = $(this);
+            const roleKey = $item.find('.discord-role-id-input').attr('id').replace('discord_role_', '');
+            const roleId = $item.find('.discord-role-id-input').val().trim();
+            const roleName = $item.find('input[name$="[name]"]').val();
+            const roleDescription = $item.find('input[name$="[description]"]').val();
+            
+            roleData[roleKey] = {
+                id: roleId,
+                name: roleName,
+                description: roleDescription
+            };
+        });
+        
+        $.ajax({
+            url: dashboardConfig.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'save_discord_roles',
+                nonce: dashboardConfig.nonce,
+                roles: roleData
+            },
+            beforeSend: function() {
+                $('#save-discord-roles').prop('disabled', true).text('Saving...');
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotification('Discord roles saved successfully!', 'success');
+                } else {
+                    showNotification('Error saving Discord roles: ' + (response.data || 'Unknown error'), 'error');
+                }
+            },
+            error: function() {
+                showNotification('Failed to save Discord roles. Please try again.', 'error');
+            },
+            complete: function() {
+                $('#save-discord-roles').prop('disabled', false).text('Save Discord Roles');
+            }
+        });
+    }
+    
+    function testDiscordConnection() {
+        $.ajax({
+            url: dashboardConfig.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'test_discord_connection',
+                nonce: dashboardConfig.nonce
+            },
+            beforeSend: function() {
+                $('#test-discord-connection').prop('disabled', true).text('Testing...');
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotification('Discord connection test successful!', 'success');
+                } else {
+                    showNotification('Discord connection test failed: ' + (response.data || 'Unknown error'), 'error');
+                }
+            },
+            error: function() {
+                showNotification('Failed to test Discord connection. Please try again.', 'error');
+            },
+            complete: function() {
+                $('#test-discord-connection').prop('disabled', false).text('Test Discord Connection');
+            }
+        });
+    }
+
 });
 
 // Add notification styles

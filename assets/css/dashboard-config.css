@@ -309,6 +309,123 @@ body.wp-admin {
     background: white;
 }
 
+/* Quick Action Checkbox Control */
+.item-quick-action-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.item-quick-action-control label {
+    font-weight: 500;
+    color: #646970;
+    min-width: 80px;
+    text-align: right;
+}
+
+.item-quick-action-control input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2271b1;
+    cursor: pointer;
+}
+
+/* Discord Permissions Section */
+.discord-permissions-section {
+    background: white;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 25px;
+    margin: 25px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.discord-permissions-section h3 {
+    margin: 0 0 15px 0;
+    color: #1d2327;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.discord-permissions-section .description {
+    margin: 0 0 20px 0;
+    color: #646970;
+    font-style: italic;
+}
+
+.discord-roles-container {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.discord-role-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.discord-role-item:hover {
+    background: #f0f0f1;
+    border-color: #c3c4c7;
+}
+
+.discord-role-item .role-info {
+    flex: 1;
+}
+
+.discord-role-item .role-info label {
+    display: block;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.discord-role-item .role-description {
+    margin: 0;
+    color: #646970;
+    font-size: 13px;
+}
+
+.discord-role-item .role-input {
+    flex: 0 0 250px;
+}
+
+.discord-role-id-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.discord-role-id-input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.discord-permissions-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.discord-permissions-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .control-btn {
     padding: 6px 12px;
     border: none;

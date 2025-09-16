@@ -354,6 +354,44 @@ function jotunheim_magic_dashboard() {
             <p class="jotunheim-intro">Welcome to Jotunheim Magic! This comprehensive plugin provides tools for managing your Valheim server including items, events, trading systems, and much more.</p>
         </div>
         
+        <div class="jotunheim-quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <?php
+                // Get quick action items dynamically
+                if ($jotunheim_dashboard_config) {
+                    $menu_items = $jotunheim_dashboard_config->get_menu_items();
+                    foreach ($menu_items as $item) {
+                        if (isset($item['quick_action']) && $item['quick_action']) {
+                            $icon = 'dashicons-admin-generic'; // Default icon
+                            switch($item['id']) {
+                                case 'item_list_editor':
+                                    $icon = 'dashicons-products';
+                                    break;
+                                case 'pos_interface':
+                                    $icon = 'dashicons-money-alt';
+                                    break;
+                                case 'event_zone_editor':
+                                    $icon = 'dashicons-calendar-alt';
+                                    break;
+                            }
+                            echo '<a href="' . esc_url(admin_url('admin.php?page=' . $item['id'])) . '" class="quick-action">';
+                            echo '<span class="dashicons ' . $icon . '"></span>';
+                            echo '<span>' . esc_html($item['menu_title']) . '</span>';
+                            echo '</a>';
+                        }
+                    }
+                }
+                
+                // Always include Dashboard Config as a quick action
+                ?>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=dashboard_config')); ?>" class="quick-action">
+                    <span class="dashicons dashicons-admin-appearance"></span>
+                    <span>Configure Dashboard</span>
+                </a>
+            </div>
+        </div>
+        
         <div class="jotunheim-sections-grid">
             <?php foreach ($organized_menu as $section_id => $section): ?>
                 <div class="jotunheim-section-card">
@@ -384,28 +422,6 @@ function jotunheim_magic_dashboard() {
                     </div>
                 </div>
             <?php endforeach; ?>
-        </div>
-        
-        <div class="jotunheim-quick-actions">
-            <h3>Quick Actions</h3>
-            <div class="quick-actions-grid">
-                <a href="<?php echo esc_url(admin_url('admin.php?page=dashboard_config')); ?>" class="quick-action">
-                    <span class="dashicons dashicons-admin-appearance"></span>
-                    <span>Configure Dashboard</span>
-                </a>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=item_list_editor')); ?>" class="quick-action">
-                    <span class="dashicons dashicons-products"></span>
-                    <span>Manage Items</span>
-                </a>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=pos_interface')); ?>" class="quick-action">
-                    <span class="dashicons dashicons-money-alt"></span>
-                    <span>Point of Sale</span>
-                </a>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=event_zone_editor')); ?>" class="quick-action">
-                    <span class="dashicons dashicons-calendar-alt"></span>
-                    <span>Manage Events</span>
-                </a>
-            </div>
         </div>
     </div>
     

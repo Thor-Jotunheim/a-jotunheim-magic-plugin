@@ -3,9 +3,71 @@
 if (!defined('ABSPATH')) exit;
 
 /**
+ * Get configured Discord role IDs
+ */
+function get_configured_discord_roles() {
+    $roles = get_option('jotunheim_discord_roles', []);
+    $role_ids = [];
+    
+    foreach ($roles as $role_key => $role_data) {
+        if (!empty($role_data['id'])) {
+            $role_ids[$role_key] = $role_data['id'];
+        }
+    }
+    
+    // Fallback to hardcoded values if no configuration exists
+    if (empty($role_ids)) {
+        $role_ids = [
+            'admin'     => '816462309274419250',
+            'staff'     => '1390490815054221414',
+            'valkyrie'  => '963502767173931039',
+            'vithar'    => '1104073178495602751'
+        ];
+    }
+    
+    return $role_ids;
+}
+
+/**
  * Defines a role hierarchy where higher roles can access permissions of lower roles.
  */
 function get_role_hierarchy() {
+    $configured_roles = get_configured_discord_roles();
+    $hierarchy = [];
+    
+    // Build hierarchy based on configured roles
+    if (isset($configured_roles['norn'])) {
+        $hierarchy['norn'] = array_keys($configured_roles);
+    }
+    if (isset($configured_roles['aesir'])) {
+        $hierarchy['aesir'] = array_diff(array_keys($configured_roles), ['norn']);
+    }
+    if (isset($configured_roles['all_staff'])) {
+        $hierarchy['all_staff'] = ['admin', 'staff', 'valkyrie', 'vithar', 'chosen'];
+    }
+    if (isset($configured_roles['admin'])) {
+        $hierarchy['admin'] = ['staff', 'valkyrie', 'vithar'];
+    }
+    if (isset($configured_roles['staff'])) {
+        $hierarchy['staff'] = ['valkyrie', 'vithar'];
+    }
+    if (isset($configured_roles['valkyrie'])) {
+        $hierarchy['valkyrie'] = ['vithar'];
+    }
+    if (isset($configured_roles['vithar'])) {
+        $hierarchy['vithar'] = [];
+    }
+    if (isset($configured_roles['chosen'])) {
+        $hierarchy['chosen'] = [];
+    }
+    
+    return $hierarchy;
+}
+
+/**
+ * Defines a role hierarchy where higher roles can access permissions of lower roles.
+ */
+function get_role_hierarchy_legacy() {
     return [
         'admin'     => ['staff', 'valkyrie', 'vithar'], // Admin has all permissions
         'staff'     => ['valkyrie', 'vithar'],              // Staff can access Valkyrie and Vithar pages
@@ -68,13 +130,10 @@ function jotunheim_magic_staff_page_access() {
     // Log the Discord roles retrieved from user meta
     error_log("Discord roles retrieved from user meta: " . print_r($discord_roles, true));
 
-    // Define mappings for pages to required roles
-    $staff_pages_roles = [
-        'admin'     => '816462309274419250', // Admin Discord role ID
-        'staff'     => '1390490815054221414', // Staff Discord role ID
-        'valkyrie'  => '963502767173931039', // Valkyrie Discord role ID
-        'vithar'    => '1104073178495602751' // Vithar Discord role ID
-    ];
+    // Get configured Discord role mappings
+    $staff_pages_roles = get_configured_discord_roles();
+    
+    error_log("Configured Discord roles: " . print_r($staff_pages_roles, true));
 
     // Check if the current page is a staff page and user has the required role
     if (array_key_exists($post->post_name, $staff_pages_roles)) {
