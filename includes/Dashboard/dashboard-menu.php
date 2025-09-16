@@ -214,15 +214,15 @@ function register_organized_menu($config) {
         $items_by_section[$section_id] = [];
         
         foreach ($section_data['items'] as $item_data) {
-            if (!$item_data['enabled']) continue;
+            if (!isset($item_data['enabled']) || !$item_data['enabled']) continue;
             
             // Find the actual menu item by ID
             foreach ($menu_items as $menu_item) {
-                if ($menu_item['id'] === $item_data['item_id']) {
+                if (isset($menu_item['id'], $item_data['item_id']) && $menu_item['id'] === $item_data['item_id']) {
                     $items_by_section[$section_id][] = [
-                        'slug' => $menu_item['id'],
-                        'title' => $menu_item['title'],
-                        'menu_title' => $menu_item['menu_title'],
+                        'slug' => $menu_item['id'] ?? '',
+                        'title' => $menu_item['title'] ?? 'Unknown',
+                        'menu_title' => $menu_item['menu_title'] ?? $menu_item['title'] ?? 'Unknown',
                         'callback' => $menu_item['callback'],
                         'order' => $item_data['order']
                     ];
@@ -246,10 +246,10 @@ function register_organized_menu($config) {
     foreach ($menu_config as $section_id => $section_data) {
         $sections[] = [
             'id' => $section_id,
-            'title' => $section_data['title'],
-            'description' => $section_data['description'],
-            'order' => $section_data['order'],
-            'enabled' => $section_data['enabled']
+            'title' => $section_data['title'] ?? 'Unknown Section',
+            'description' => $section_data['description'] ?? 'No description available',
+            'order' => $section_data['order'] ?? 999,
+            'enabled' => $section_data['enabled'] ?? true
         ];
     }
     
@@ -462,18 +462,18 @@ function jotunheim_magic_dashboard() {
                     <div class="section-header">
                         <h2>
                             <span class="dashicons <?php echo esc_attr($section['icon'] ?? 'dashicons-admin-generic'); ?>"></span>
-                            <?php echo esc_html($section['title']); ?>
+                            <?php echo esc_html($section['title'] ?? 'Unknown Section'); ?>
                         </h2>
-                        <p class="section-description"><?php echo esc_html($section['description']); ?></p>
+                        <p class="section-description"><?php echo esc_html($section['description'] ?? 'No description available'); ?></p>
                     </div>
                     
                     <div class="section-items">
                         <?php if (!empty($section['items'])): ?>
                             <?php foreach ($section['items'] as $item): ?>
                                 <div class="dashboard-item">
-                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . $item['id'])); ?>" class="item-link">
+                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . ($item['id'] ?? ''))); ?>" class="item-link">
                                         <div class="item-content">
-                                            <h4><?php echo esc_html($item['title'] ?? $item['menu_title']); ?></h4>
+                                            <h4><?php echo esc_html($item['title'] ?? $item['menu_title'] ?? 'Unknown Item'); ?></h4>
                                             <p><?php echo esc_html($item['description'] ?? ''); ?></p>
                                         </div>
                                         <span class="item-arrow">&rarr;</span>

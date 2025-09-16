@@ -648,17 +648,8 @@ class JotunheimDashboardConfig {
     }
     
     public function get_config() {
-        // Try to load from database first
-        $db_config = $this->db->load_config('dashboard_config', null);
-        
-        if ($db_config !== null) {
-            error_log('DEBUG: Loaded config from database');
-            return $db_config;
-        }
-        
-        // Fallback to memory config
-        error_log('DEBUG: Using memory config as fallback');
-        return $this->menu_config;
+        // Use ONLY normalized database - no more old database calls
+        return $this->normalized_db->get_full_configuration();
     }
     
     /**
