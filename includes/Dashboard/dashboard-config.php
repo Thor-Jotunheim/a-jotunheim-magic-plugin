@@ -56,6 +56,9 @@ class JotunheimDashboardConfig {
             error_log('Jotunheim Dashboard: Created and saved default config');
         } else {
             $this->menu_config = $stored_config;
+            
+            // Check if new items need to be added to existing config
+            $this->sync_new_items_to_config();
         }
         
         // Ensure config has required structure
@@ -66,6 +69,36 @@ class JotunheimDashboardConfig {
         }
         
         error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config['sections']) . ' sections and ' . count($this->menu_config['items']) . ' items');
+    }
+    
+    /**
+     * Sync new items to existing configuration
+     */
+    private function sync_new_items_to_config() {
+        $existing_item_ids = array_column($this->menu_config['items'], 'id');
+        $new_items_added = false;
+        
+        // Find new items that aren't in the stored config
+        foreach ($this->default_menu_items as $default_item) {
+            if (!in_array($default_item['id'], $existing_item_ids)) {
+                // Add new item to System Configuration section by default
+                $new_item = [
+                    'id' => $default_item['id'],
+                    'section' => 'system',
+                    'order' => count($this->menu_config['items']) + 1,
+                    'enabled' => 1
+                ];
+                
+                $this->menu_config['items'][] = $new_item;
+                $new_items_added = true;
+                error_log('Jotunheim Dashboard: Added new item to config: ' . $default_item['id']);
+            }
+        }
+        
+        if ($new_items_added) {
+            update_option('jotunheim_dashboard_config', $this->menu_config);
+            error_log('Jotunheim Dashboard: Updated stored config with new items');
+        }
     }
     
     private function load_default_menu_items() {
