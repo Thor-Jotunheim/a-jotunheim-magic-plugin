@@ -101,11 +101,21 @@ function jotunheim_magic_plugin_menu() {
 
     // Check if we should use organized menu structure
     global $jotunheim_dashboard_config;
-    $use_organized_menu = get_option('jotunheim_use_organized_menu', false); // Default to false for safety
+    $use_organized_menu = get_option('jotunheim_use_organized_menu', false);
     
+    // Safety check: only use organized menu if we have valid config
     if ($use_organized_menu && isset($jotunheim_dashboard_config)) {
-        register_organized_menu($jotunheim_dashboard_config);
-    } else {
+        $organized_success = register_organized_menu($jotunheim_dashboard_config);
+        
+        // If organized menu failed, fall back to legacy mode
+        if (!$organized_success) {
+            error_log('Jotunheim Dashboard: Organized menu failed, falling back to legacy mode');
+            $use_organized_menu = false;
+        }
+    }
+    
+    // Use legacy mode if organized mode is disabled or failed
+    if (!$use_organized_menu) {
         // Register each submenu (legacy mode)
         foreach ($submenus as $submenu) {
             add_submenu_page(
@@ -127,11 +137,26 @@ function jotunheim_magic_plugin_menu() {
  * Register organized menu structure based on dashboard configuration
  */
 function register_organized_menu($config) {
-    if (!isset($config['sections']) || !is_array($config['sections'])) {
-        return;
+    // Safety checks
+    if (!$config || !is_object($config)) {
+        error_log('Jotunheim Dashboard: Invalid config object for organized menu');
+        return false;
+    }
+    
+    // Try to get sections data
+    $sections = null;
+    if (method_exists($config, 'get_config')) {
+        $menu_config = $config->get_config();
+        $sections = isset($menu_config['sections']) ? $menu_config['sections'] : null;
+    }
+    
+    // Fallback if no sections configured
+    if (!$sections || !is_array($sections) || empty($sections)) {
+        error_log('Jotunheim Dashboard: No valid sections found, falling back to legacy menu');
+        return false;
     }
 
-    foreach ($config['sections'] as $section) {
+    foreach ($sections as $section) {
         if (!isset($section['items']) || !is_array($section['items'])) {
             continue;
         }
@@ -150,7 +175,7 @@ function register_organized_menu($config) {
 
         // Add items in this section
         foreach ($section['items'] as $item) {
-            if (isset($item['slug'], $item['title'], $item['callback'])) {
+            if (isset($item['slug'], $item['title'], $item['callback']) && function_exists($item['callback'])) {
                 add_submenu_page(
                     'jotunheim_magic',
                     $item['title'],
@@ -162,6 +187,8 @@ function register_organized_menu($config) {
             }
         }
     }
+    
+    return true;
 }
 
 // Main dashboard page for Jotunheim Magic Plugin
