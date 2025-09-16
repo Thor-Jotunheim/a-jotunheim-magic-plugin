@@ -128,6 +128,9 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php'
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/editor-permissions.php');;
 
+// Include test files
+include_once(plugin_dir_path(__FILE__) . 'includes/Test/test-dashboard-page.php');
+
 // Include PrefabList file(s)
 include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefabdb-image-import.php');
 

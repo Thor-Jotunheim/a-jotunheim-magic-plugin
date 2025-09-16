@@ -24,6 +24,9 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
         add_action('wp_ajax_get_available_pages', [$this, 'ajax_get_available_pages']);
         add_action('wp_ajax_add_custom_page', [$this, 'ajax_add_custom_page']);
+        add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
+        add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
+        add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
         
         // TEMPORARY: Force config reset for debugging (DISABLED after fixing duplicates)
         // delete_option('jotunheim_dashboard_config');
@@ -292,6 +295,21 @@ class JotunheimDashboardConfig {
         // First, ensure all our plugin files are loaded
         $this->load_all_plugin_files();
         
+        // Include all default menu items in the available pages
+        // This way users can see everything that's available
+        foreach ($this->default_menu_items as $item) {
+            $available_pages[] = [
+                'id' => $item['id'],
+                'title' => $item['title'],
+                'menu_title' => $item['menu_title'],
+                'callback' => $item['callback'],
+                'category' => $item['category'] ?? 'default',
+                'description' => $item['description'] ?? 'Default plugin page',
+                'is_default' => true
+            ];
+            error_log('Jotunheim Dashboard: Added default item: ' . $item['id']);
+        }
+        
         // Scan for functions that match render_*_page pattern
         $functions = get_defined_functions()['user'];
         
@@ -307,7 +325,7 @@ class JotunheimDashboardConfig {
                 // Skip if already in our default menu items
                 $exists = false;
                 foreach ($this->default_menu_items as $item) {
-                    if ($item['id'] === $page_id) {
+                    if ($item['id'] === $page_id || $item['callback'] === $function) {
                         $exists = true;
                         error_log('  - Skipping ' . $page_id . ' (already in default items)');
                         break;
@@ -321,7 +339,8 @@ class JotunheimDashboardConfig {
                         'menu_title' => $page_title,
                         'callback' => $function,
                         'category' => 'discovered',
-                        'description' => 'Auto-detected plugin page'
+                        'description' => 'Auto-detected plugin page',
+                        'is_default' => false
                     ];
                     error_log('  - Added ' . $page_id . ' to available pages');
                 }
@@ -337,22 +356,7 @@ class JotunheimDashboardConfig {
         $hardcoded_pages = [
             // Note: Don't add pages that are already in default_menu_items
             // Only add pages that are truly missing or have different function names
-            [
-                'id' => 'page_permissions_config',
-                'title' => 'Page Permissions',
-                'menu_title' => 'Page Permissions',
-                'callback' => 'render_page_permissions_config_page',
-                'category' => 'system',
-                'description' => 'Configure page access by Discord role'
-            ],
-            [
-                'id' => 'jotun_playerlist_interface',
-                'title' => 'Player List Management',
-                'menu_title' => 'Player List Management',
-                'callback' => 'render_playerlist_interface',
-                'category' => 'core',
-                'description' => 'Manage player database and imports'
-            ]
+            // Temporarily removing hardcoded entries to test page detection
         ];
         
         foreach ($hardcoded_pages as $page) {
@@ -372,6 +376,7 @@ class JotunheimDashboardConfig {
             }
             
             if (!$exists && function_exists($page['callback'])) {
+                $page['is_default'] = false;
                 $available_pages[] = $page;
                 error_log('Jotunheim Dashboard: Added hardcoded page: ' . $page['id']);
             }
@@ -461,7 +466,8 @@ class JotunheimDashboardConfig {
                                 'callback' => $function_name,
                                 'category' => 'discovered',
                                 'description' => 'Auto-detected from ' . basename($file),
-                                'file_path' => $full_path
+                                'file_path' => $full_path,
+                                'is_default' => false
                             ];
                         }
                     }
@@ -534,7 +540,40 @@ class JotunheimDashboardConfig {
     }
     
     public function get_menu_items() {
-        return $this->default_menu_items;
+        $configured_items = [];
+        $config = $this->get_config();
+        
+        // Process configured items with their settings
+        if (isset($config['items']) && is_array($config['items'])) {
+            foreach ($config['items'] as $item_config) {
+                // Find the corresponding default menu item
+                $default_item = null;
+                foreach ($this->default_menu_items as $default) {
+                    if ($default['id'] === $item_config['id']) {
+                        $default_item = $default;
+                        break;
+                    }
+                }
+                
+                if ($default_item) {
+                    // Merge default item with configured settings
+                    $configured_item = array_merge($default_item, [
+                        'enabled' => $item_config['enabled'] ?? true,
+                        'section' => $item_config['section'] ?? 'system',
+                        'order' => $item_config['order'] ?? 1,
+                        'quick_action' => $item_config['quick_action'] ?? $default_item['quick_action'] ?? false
+                    ]);
+                    $configured_items[] = $configured_item;
+                }
+            }
+        }
+        
+        // If no configured items yet, return defaults
+        if (empty($configured_items)) {
+            return $this->default_menu_items;
+        }
+        
+        return $configured_items;
     }
     
     public function get_config() {
@@ -702,8 +741,11 @@ class JotunheimDashboardConfig {
         
         error_log('Jotunheim Dashboard: Found ' . count($available_pages) . ' pages');
         foreach ($available_pages as $page) {
-            error_log('  - ' . $page['id'] . ': ' . $page['title']);
+            error_log('  - ' . $page['id'] . ': ' . $page['title'] . ' (callback: ' . $page['callback'] . ')');
         }
+        
+        // Also log what we're returning to the frontend
+        error_log('Jotunheim Dashboard: Returning ' . count($available_pages) . ' pages to frontend');
         
         wp_send_json_success(['pages' => $available_pages]);
     }
@@ -753,6 +795,154 @@ class JotunheimDashboardConfig {
         
         if (update_option('jotunheim_dashboard_config', $config)) {
             wp_send_json_success($new_page);
+        } else {
+            wp_send_json_error('Failed to save configuration');
+        }
+    }
+    
+    /**
+     * AJAX handler to delete a page from the dashboard
+     */
+    public function ajax_delete_dashboard_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $page_id = sanitize_key($_POST['page_id']);
+        if (empty($page_id)) {
+            wp_send_json_error('Page ID is required');
+            return;
+        }
+        
+        $config = $this->get_config();
+        $found = false;
+        
+        // Remove from items array
+        foreach ($config['items'] as $key => $item) {
+            if ($item['id'] === $page_id) {
+                unset($config['items'][$key]);
+                $found = true;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            wp_send_json_error('Page not found in configuration');
+            return;
+        }
+        
+        // Re-index array
+        $config['items'] = array_values($config['items']);
+        
+        if (update_option('jotunheim_dashboard_config', $config)) {
+            wp_send_json_success('Page deleted successfully');
+        } else {
+            wp_send_json_error('Failed to save configuration');
+        }
+    }
+    
+    /**
+     * AJAX handler to edit a page in the dashboard
+     */
+    public function ajax_edit_dashboard_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $page_id = sanitize_key($_POST['page_id']);
+        $page_data = $_POST['page_data'];
+        
+        if (empty($page_id)) {
+            wp_send_json_error('Page ID is required');
+            return;
+        }
+        
+        $config = $this->get_config();
+        $found = false;
+        
+        // Update the item in the config
+        foreach ($config['items'] as $key => $item) {
+            if ($item['id'] === $page_id) {
+                // Update only allowed fields
+                if (isset($page_data['title'])) {
+                    $config['items'][$key]['title'] = sanitize_text_field($page_data['title']);
+                }
+                if (isset($page_data['menu_title'])) {
+                    $config['items'][$key]['menu_title'] = sanitize_text_field($page_data['menu_title']);
+                }
+                if (isset($page_data['description'])) {
+                    $config['items'][$key]['description'] = sanitize_text_field($page_data['description']);
+                }
+                if (isset($page_data['quick_action'])) {
+                    $config['items'][$key]['quick_action'] = (bool)$page_data['quick_action'];
+                }
+                if (isset($page_data['enabled'])) {
+                    $config['items'][$key]['enabled'] = (bool)$page_data['enabled'];
+                }
+                $found = true;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            wp_send_json_error('Page not found in configuration');
+            return;
+        }
+        
+        if (update_option('jotunheim_dashboard_config', $config)) {
+            wp_send_json_success('Page updated successfully');
+        } else {
+            wp_send_json_error('Failed to save configuration');
+        }
+    }
+    
+    /**
+     * AJAX handler to update quick action status for a page
+     */
+    public function ajax_update_page_quick_action() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $page_id = sanitize_key($_POST['page_id']);
+        $quick_action = (bool)$_POST['quick_action'];
+        
+        if (empty($page_id)) {
+            wp_send_json_error('Page ID is required');
+            return;
+        }
+        
+        $config = $this->get_config();
+        $found = false;
+        
+        // Update the quick_action setting
+        foreach ($config['items'] as $key => $item) {
+            if ($item['id'] === $page_id) {
+                $config['items'][$key]['quick_action'] = $quick_action;
+                $found = true;
+                break;
+            }
+        }
+        
+        if (!$found) {
+            wp_send_json_error('Page not found in configuration');
+            return;
+        }
+        
+        if (update_option('jotunheim_dashboard_config', $config)) {
+            wp_send_json_success('Quick action setting updated');
         } else {
             wp_send_json_error('Failed to save configuration');
         }
@@ -1832,6 +2022,71 @@ function render_dashboard_config_page() {
             color: #666;
             font-style: italic;
         }
+        
+        /* Page Management Buttons */
+        .page-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .edit-page-btn, .delete-page-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 3px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .edit-page-btn {
+            background: #0073aa;
+            color: white;
+            border: 1px solid #005177;
+        }
+        
+        .edit-page-btn:hover {
+            background: #005177;
+            color: white;
+        }
+        
+        .delete-page-btn {
+            background: #d63638;
+            color: white;
+            border: 1px solid #b32d2e;
+        }
+        
+        .delete-page-btn:hover {
+            background: #b32d2e;
+            color: white;
+        }
+        
+        .quick-action-checkbox {
+            margin-right: 5px;
+        }
+        
+        .success-indicator {
+            font-weight: bold;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .page-edit-form {
+            border-radius: 4px;
+        }
+        
+        .page-edit-form .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .page-edit-form label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 3px;
+        }
     </style>
 
     <!-- Toggle for Organized Menu Mode - Moved to bottom -->
@@ -1935,30 +2190,83 @@ function render_dashboard_config_page() {
                         if (pages.length === 0) {
                             html = '<div class="no-pages-found">No additional pages found to add.</div>';
                         } else {
-                            pages.forEach(function(page) {
-                                html += '<div class="available-page-item" data-page-id="' + page.id + '">';
-                                html += '<div class="page-info">';
-                                html += '<h4>' + page.title + '</h4>';
-                                html += '<div class="page-meta">ID: ' + page.id + ' | Function: ' + page.callback + '</div>';
-                                if (page.description) {
-                                    html += '<div class="page-description">' + page.description + '</div>';
-                                }
+                            // Separate default and discovered pages
+                            const defaultPages = pages.filter(page => page.is_default);
+                            const discoveredPages = pages.filter(page => !page.is_default);
+                            
+                            if (defaultPages.length > 0) {
+                                html += '<div class="page-category">';
+                                html += '<h3><span class="dashicons dashicons-admin-tools"></span> Default Plugin Pages</h3>';
+                                html += '<p class="category-description">These are the main plugin pages that are available by default.</p>';
+                                
+                                defaultPages.forEach(function(page) {
+                                    html += '<div class="available-page-item default-page" data-page-id="' + page.id + '">';
+                                    html += '<div class="page-info">';
+                                    html += '<h4 class="page-title">' + page.title + '</h4>';
+                                    html += '<div class="page-meta">ID: ' + page.id + ' | Function: ' + page.callback + '</div>';
+                                    if (page.description) {
+                                        html += '<div class="page-description">' + page.description + '</div>';
+                                    }
+                                    html += '</div>';
+                                    html += '<div class="page-actions">';
+                                    html += '<label><input type="checkbox" class="quick-action-checkbox" data-page-id="' + page.id + '" ' + (page.quick_action ? 'checked' : '') + '> Quick Action</label>';
+                                    html += '<select class="page-section-select">';
+                                    // Populate sections dynamically from config.sections
+                                    if (dashboardConfig.config && dashboardConfig.config.sections) {
+                                        dashboardConfig.config.sections.forEach(function(section) {
+                                            if (section.enabled) {
+                                                html += '<option value="' + section.id + '">' + section.title + '</option>';
+                                            }
+                                        });
+                                    }
+                                    html += '</select>';
+                                    html += '<button type="button" class="button add-detected-page">Add Page</button>';
+                                    html += '<button type="button" class="button edit-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Edit</button>';
+                                    html += '<button type="button" class="button delete-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Delete</button>';
+                                    html += '</div>';
+                                    html += '</div>';
+                                });
                                 html += '</div>';
-                                html += '<div class="page-actions">';
-                                html += '<select class="page-section-select">';
-                                // Populate sections dynamically from config.sections
-                                if (dashboardConfig.config && dashboardConfig.config.sections) {
-                                    dashboardConfig.config.sections.forEach(function(section) {
-                                        if (section.enabled) {
-                                            html += '<option value="' + section.id + '">' + section.title + '</option>';
-                                        }
-                                    });
-                                }
-                                html += '</select>';
-                                html += '<button type="button" class="button button-primary add-detected-page">Add Page</button>';
+                            }
+                            
+                            if (discoveredPages.length > 0) {
+                                html += '<div class="page-category">';
+                                html += '<h3><span class="dashicons dashicons-search"></span> Auto-Detected Pages</h3>';
+                                html += '<p class="category-description">These pages were automatically discovered by scanning your plugin files.</p>';
+                                
+                                discoveredPages.forEach(function(page) {
+                                    html += '<div class="available-page-item discovered-page" data-page-id="' + page.id + '">';
+                                    html += '<div class="page-info">';
+                                    html += '<h4 class="page-title">' + page.title + '</h4>';
+                                    html += '<div class="page-meta">ID: ' + page.id + ' | Function: ' + page.callback + '</div>';
+                                    if (page.description) {
+                                        html += '<div class="page-description">' + page.description + '</div>';
+                                    }
+                                    html += '</div>';
+                                    html += '<div class="page-actions">';
+                                    html += '<label><input type="checkbox" class="quick-action-checkbox" data-page-id="' + page.id + '" ' + (page.quick_action ? 'checked' : '') + '> Quick Action</label>';
+                                    html += '<select class="page-section-select">';
+                                    // Populate sections dynamically from config.sections
+                                    if (dashboardConfig.config && dashboardConfig.config.sections) {
+                                        dashboardConfig.config.sections.forEach(function(section) {
+                                            if (section.enabled) {
+                                                html += '<option value="' + section.id + '">' + section.title + '</option>';
+                                            }
+                                        });
+                                    }
+                                    html += '</select>';
+                                    html += '<button type="button" class="button add-detected-page">Add Page</button>';
+                                    html += '<button type="button" class="button edit-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Edit</button>';
+                                    html += '<button type="button" class="button delete-page-btn" data-page-id="' + page.id + '" data-page-title="' + page.title + '">Delete</button>';
+                                    html += '</div>';
+                                    html += '</div>';
+                                });
                                 html += '</div>';
-                                html += '</div>';
-                            });
+                            }
+                            
+                            if (defaultPages.length === 0 && discoveredPages.length === 0) {
+                                html = '<div class="no-pages-found">No additional pages found to add.</div>';
+                            }
                         }
                         
                         $list.html(html);
@@ -2095,6 +2403,194 @@ function render_dashboard_config_page() {
         
         // Initialize manual form
         populateManualSectionDropdown();
+        
+        // Handle quick action checkbox changes
+        $(document).on('change', '.quick-action-checkbox', function() {
+            const pageId = $(this).data('page-id');
+            const isQuickAction = $(this).is(':checked');
+            const $checkbox = $(this);
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'update_page_quick_action',
+                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                    page_id: pageId,
+                    quick_action: isQuickAction
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show brief success indicator
+                        const $indicator = $('<span class="success-indicator" style="color: #00a32a; margin-left: 5px;">✓</span>');
+                        $checkbox.parent().append($indicator);
+                        setTimeout(function() {
+                            $indicator.fadeOut(300, function() { $(this).remove(); });
+                        }, 1500);
+                    } else {
+                        // Revert checkbox on error
+                        $checkbox.prop('checked', !isQuickAction);
+                        alert('Error updating quick action setting: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    // Revert checkbox on error
+                    $checkbox.prop('checked', !isQuickAction);
+                    alert('Error: Failed to communicate with server');
+                }
+            });
+        });
+        
+        // Handle page deletion
+        $(document).on('click', '.delete-page-btn', function() {
+            const pageId = $(this).data('page-id');
+            const pageTitle = $(this).data('page-title');
+            
+            if (!confirm('Are you sure you want to delete the page "' + pageTitle + '"?')) {
+                return;
+            }
+            
+            const $button = $(this);
+            const originalText = $button.html();
+            $button.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Deleting...');
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_dashboard_page',
+                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                    page_id: pageId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Remove the item from the interface
+                        $button.closest('.item-row, .page-item, .available-page-item').fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        
+                        // Show success message
+                        const $successMsg = $('<div class="notice notice-success"><p>Page "' + pageTitle + '" deleted successfully!</p></div>');
+                        $('.wrap > h1').after($successMsg);
+                        setTimeout(function() {
+                            $successMsg.fadeOut();
+                        }, 3000);
+                    } else {
+                        alert('Error deleting page: ' + (response.data || 'Unknown error'));
+                        $button.prop('disabled', false).html(originalText);
+                    }
+                },
+                error: function() {
+                    alert('Error: Failed to communicate with server');
+                    $button.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+        
+        // Handle page editing
+        $(document).on('click', '.edit-page-btn', function() {
+            const pageId = $(this).data('page-id');
+            const $row = $(this).closest('.item-row, .page-item');
+            
+            // Create edit form
+            const currentTitle = $row.find('.page-title').text();
+            const currentMenuTitle = $row.find('.page-menu-title').text() || currentTitle;
+            const currentDescription = $row.find('.page-description').text();
+            const isQuickAction = $row.find('.quick-action-checkbox').is(':checked');
+            
+            const editHtml = `
+                <div class="page-edit-form" style="padding: 15px; background: #f9f9f9; border: 1px solid #ddd; margin: 10px 0;">
+                    <h4>Edit Page Settings</h4>
+                    <div class="form-group">
+                        <label>Title:</label>
+                        <input type="text" class="edit-title" value="${currentTitle}" style="width: 100%; margin: 5px 0;">
+                    </div>
+                    <div class="form-group">
+                        <label>Menu Title:</label>
+                        <input type="text" class="edit-menu-title" value="${currentMenuTitle}" style="width: 100%; margin: 5px 0;">
+                    </div>
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea class="edit-description" style="width: 100%; margin: 5px 0; height: 60px;">${currentDescription}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" class="edit-quick-action" ${isQuickAction ? 'checked' : ''}>
+                            Show in Quick Actions
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <button type="button" class="button button-primary save-page-edit" data-page-id="${pageId}">Save Changes</button>
+                        <button type="button" class="button cancel-page-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            // Hide the normal row and show edit form
+            $row.hide().after(editHtml);
+        });
+        
+        // Handle save page edit
+        $(document).on('click', '.save-page-edit', function() {
+            const pageId = $(this).data('page-id');
+            const $form = $(this).closest('.page-edit-form');
+            const $button = $(this);
+            
+            const pageData = {
+                title: $form.find('.edit-title').val(),
+                menu_title: $form.find('.edit-menu-title').val(),
+                description: $form.find('.edit-description').val(),
+                quick_action: $form.find('.edit-quick-action').is(':checked')
+            };
+            
+            $button.prop('disabled', true).text('Saving...');
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'edit_dashboard_page',
+                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                    page_id: pageId,
+                    page_data: pageData
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the display and remove edit form
+                        const $row = $form.prev();
+                        $row.find('.page-title').text(pageData.title);
+                        $row.find('.page-menu-title').text(pageData.menu_title);
+                        $row.find('.page-description').text(pageData.description);
+                        $row.find('.quick-action-checkbox').prop('checked', pageData.quick_action);
+                        
+                        $form.remove();
+                        $row.show();
+                        
+                        // Show success message
+                        const $successMsg = $('<div class="notice notice-success"><p>Page settings updated successfully!</p></div>');
+                        $('.wrap > h1').after($successMsg);
+                        setTimeout(function() {
+                            $successMsg.fadeOut();
+                        }, 3000);
+                    } else {
+                        alert('Error saving changes: ' + (response.data || 'Unknown error'));
+                        $button.prop('disabled', false).text('Save Changes');
+                    }
+                },
+                error: function() {
+                    alert('Error: Failed to communicate with server');
+                    $button.prop('disabled', false).text('Save Changes');
+                }
+            });
+        });
+        
+        // Handle cancel page edit
+        $(document).on('click', '.cancel-page-edit', function() {
+            const $form = $(this).closest('.page-edit-form');
+            const $row = $form.prev();
+            $form.remove();
+            $row.show();
+        });
     });
     </script>
     

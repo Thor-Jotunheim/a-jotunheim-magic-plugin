@@ -569,6 +569,40 @@
     }
 }
 
+/* Page Categories */
+.page-category {
+    margin-bottom: 30px;
+}
+
+.page-category h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-category .dashicons {
+    font-size: 18px;
+}
+
+.category-description {
+    color: #646970;
+    font-size: 13px;
+    margin: 0 0 15px 0;
+    font-style: italic;
+}
+
+.available-page-item.default-page {
+    border-left: 4px solid #2271b1;
+}
+
+.available-page-item.discovered-page {
+    border-left: 4px solid #00a32a;
+}
+
 /* Success/Error notices in context */
 .dashboard-config-container .notice {
     margin: 10px 0;
