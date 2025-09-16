@@ -807,37 +807,74 @@ class JotunheimDashboardConfig {
         if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
             wp_die('Invalid nonce');
         }
-        
+
         // Handle organized menu toggle
         if (isset($_POST['use_organized_menu'])) {
             update_option('jotunheim_use_organized_menu', (bool)$_POST['use_organized_menu']);
             wp_send_json_success('Menu mode updated successfully');
             return;
         }
-        
-        // Handle full configuration save
+
+        // Handle full configuration save using normalized database
         $config = [
             'sections' => json_decode(stripslashes($_POST['sections']), true),
             'items' => json_decode(stripslashes($_POST['items']), true)
         ];
         
-        update_option('jotunheim_dashboard_config', $config);
+        // Save sections to normalized database
+        foreach ($config['sections'] as $section) {
+            $section_data = [
+                'section_key' => $section['id'],
+                'title' => $section['title'],
+                'description' => $section['description'],
+                'icon' => $section['icon'] ?? null,
+                'display_order' => $section['order'],
+                'enabled' => $section['enabled'] ? 1 : 0
+            ];
+            $this->normalized_db->save_section($section_data);
+        }
         
+        // Save items to normalized database
+        foreach ($config['items'] as $item) {
+            // Find the menu item to get callback info
+            $menu_item = null;
+            foreach ($this->default_menu_items as $default_item) {
+                if ($default_item['id'] === $item['id']) {
+                    $menu_item = $default_item;
+                    break;
+                }
+            }
+            
+            if ($menu_item) {
+                $item_data = [
+                    'item_key' => $item['id'],
+                    'section_key' => $item['section'],
+                    'item_name' => $item['title'],
+                    'callback_function' => $menu_item['callback'],
+                    'display_order' => $item['order'],
+                    'enabled' => $item['enabled'] ? 1 : 0,
+                    'quick_action' => $item['quick_action'] ? 1 : 0
+                ];
+                $this->normalized_db->save_item($item_data);
+            }
+        }
+
         wp_send_json_success('Configuration saved successfully');
-    }
-    
-    public function reset_dashboard_config() {
+    }    public function reset_dashboard_config() {
         if (!current_user_can('manage_options')) {
             wp_die('Unauthorized');
         }
-        
+
         if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
             wp_die('Invalid nonce');
         }
+
+        // Clear normalized database tables
+        $this->normalized_db->clear_all_data();
         
-        delete_option('jotunheim_dashboard_config');
-        $this->menu_config = $this->get_default_config();
-        
+        // Reload default configuration into normalized database
+        $this->init_config();
+
         wp_send_json_success('Configuration reset to defaults');
     }
     

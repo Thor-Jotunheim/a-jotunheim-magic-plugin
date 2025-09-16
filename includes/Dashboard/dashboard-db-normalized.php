@@ -284,4 +284,19 @@ class Jotunheim_Dashboard_DB_Normalized {
         error_log('Jotunheim Dashboard DB: Migration completed');
         return true;
     }
+    
+    /**
+     * Clear all data from normalized database tables
+     */
+    public function clear_all_data() {
+        global $wpdb;
+        
+        // Clear items first (due to foreign key constraint)
+        $wpdb->query("DELETE FROM {$this->items_table}");
+        
+        // Then clear sections
+        $wpdb->query("DELETE FROM {$this->sections_table}");
+        
+        error_log('Jotunheim Dashboard DB: Cleared all data from normalized tables');
+    }
 }
