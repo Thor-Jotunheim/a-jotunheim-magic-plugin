@@ -10,6 +10,7 @@ class Jotunheim_Dashboard_DB_Normalized {
     private $items_table;
     
     public function __construct() {
+        // Use jotun_ prefix like the existing table
         $this->sections_table = 'jotun_dashboard_sections';
         $this->items_table = 'jotun_dashboard_items';
     }
