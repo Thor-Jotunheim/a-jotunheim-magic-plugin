@@ -2338,8 +2338,10 @@ function render_dashboard_config_page() {
                         $button.prop('disabled', false).text('Add Page');
                     }
                 },
-                error: function() {
-                    alert('Error: Failed to communicate with server');
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    console.error('Response:', xhr.responseText);
+                    alert('Failed to communicate with server: ' + error + '\n\nPlease check the console for more details.');
                     $button.prop('disabled', false).text('Add Page');
                 }
             });

@@ -413,6 +413,15 @@ jQuery(document).ready(function($) {
     function toggleQuickAction(e) {
         const itemId = $(e.currentTarget).data('id');
         const isChecked = $(e.currentTarget).is(':checked');
+        
+        console.log('toggleQuickAction called with itemId:', itemId, 'isChecked:', isChecked);
+        
+        if (!itemId) {
+            alert('Error: Page ID is missing. Please refresh the page and try again.');
+            $(e.currentTarget).prop('checked', !isChecked); // Revert checkbox
+            return;
+        }
+        
         const menuItem = findMenuItem(itemId);
         
         if (menuItem) {
@@ -485,7 +494,7 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         // Find and update both the menu item and config item
                         const menuItem = findMenuItem(itemId);
-                        const configItem = findItemConfig(itemId);
+                        const configItem = currentConfig.items.find(item => item.id === itemId);
                         
                         if (menuItem) {
                             menuItem.menu_title = newTitle;
