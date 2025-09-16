@@ -611,40 +611,9 @@ class JotunheimDashboardConfig {
     }
     
     public function get_menu_items() {
-        $configured_items = [];
-        $config = $this->get_config();
-        
-        // Process configured items with their settings
-        if (isset($config['items']) && is_array($config['items'])) {
-            foreach ($config['items'] as $item_config) {
-                // Find the corresponding default menu item
-                $default_item = null;
-                foreach ($this->default_menu_items as $default) {
-                    if ($default['id'] === $item_config['id']) {
-                        $default_item = $default;
-                        break;
-                    }
-                }
-                
-                if ($default_item) {
-                    // Merge default item with configured settings
-                    $configured_item = array_merge($default_item, [
-                        'enabled' => $item_config['enabled'] ?? true,
-                        'section' => $item_config['section'] ?? 'system',
-                        'order' => $item_config['order'] ?? 1,
-                        'quick_action' => $item_config['quick_action'] ?? $default_item['quick_action'] ?? false
-                    ]);
-                    $configured_items[] = $configured_item;
-                }
-            }
-        }
-        
-        // If no configured items yet, return defaults
-        if (empty($configured_items)) {
-            return $this->default_menu_items;
-        }
-        
-        return $configured_items;
+        // Since we're using normalized database, just return the default menu items
+        // The configuration and assignments are handled by the normalized database
+        return $this->default_menu_items;
     }
     
     public function get_config() {

@@ -216,13 +216,9 @@ function register_organized_menu($config) {
         foreach ($section_data['items'] as $item_data) {
             if (!isset($item_data['enabled']) || !$item_data['enabled']) continue;
             
-            error_log('Jotunheim Dashboard: Looking for item with item_id: ' . ($item_data['item_id'] ?? 'MISSING'));
-            
             // Find the actual menu item by ID
             foreach ($menu_items as $menu_item) {
-                error_log('Jotunheim Dashboard: Checking menu_item id: ' . ($menu_item['id'] ?? 'MISSING') . ' against item_data item_id: ' . ($item_data['item_id'] ?? 'MISSING'));
                 if (isset($menu_item['id'], $item_data['item_id']) && $menu_item['id'] === $item_data['item_id']) {
-                    error_log('Jotunheim Dashboard: MATCH found for item: ' . $item_data['item_id']);
                     $items_by_section[$section_id][] = [
                         'slug' => $menu_item['id'] ?? '',
                         'title' => $menu_item['title'] ?? 'Unknown',
@@ -231,8 +227,6 @@ function register_organized_menu($config) {
                         'order' => $item_data['order']
                     ];
                     break;
-                } else {
-                    error_log('Jotunheim Dashboard: NO MATCH for item_id: ' . ($item_data['item_id'] ?? 'MISSING') . ' vs menu_item id: ' . ($menu_item['id'] ?? 'MISSING'));
                 }
             }
         }
