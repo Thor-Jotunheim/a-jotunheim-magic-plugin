@@ -128,6 +128,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-api.php
 // Include the Discord OAuth handler files
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-handler.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-role-access.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-auth-config.php');
 
 // Include event zones editor files
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-permission.php');

@@ -175,32 +175,9 @@ function register_organized_menu($config) {
     // DO NOT interfere with the main menu page - let it stay as dashboard overview
     // The main menu page callback is already set to 'jotunheim_magic_dashboard'
     
-    // Add Dashboard Overview as the FIRST submenu item to ensure it appears at the top
-    // But ONLY if it's not already added somewhere else
-    global $submenu;
-    $dashboard_overview_exists = false;
-    if (isset($submenu['jotunheim_magic'])) {
-        foreach ($submenu['jotunheim_magic'] as $item) {
-            if ($item[0] === 'Dashboard Overview' || $item[2] === 'jotunheim_magic') {
-                $dashboard_overview_exists = true;
-                break;
-            }
-        }
-    }
-    
-    if (!$dashboard_overview_exists) {
-        add_submenu_page(
-            'jotunheim_magic',
-            'Dashboard Overview',
-            'Dashboard Overview', 
-            'manage_options',
-            'jotunheim_magic',  // Same slug as parent
-            'jotunheim_magic_dashboard'
-        );
-        error_log('Jotunheim Dashboard: Added Dashboard Overview submenu item');
-    } else {
-        error_log('Jotunheim Dashboard: Dashboard Overview already exists, skipping duplicate');
-    }
+    // REMOVED: Dashboard Overview submenu item - it was interfering with main menu routing
+    // WordPress automatically handles the main menu page, no need for duplicate submenu item
+    // The main menu already points to 'jotunheim_magic_dashboard' callback
     
     $menu_config = $config->get_config();
     $menu_items = $config->get_menu_items();

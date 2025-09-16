@@ -170,6 +170,15 @@ class JotunheimDashboardConfig {
                 'quick_action' => false
             ],
             [
+                'id' => 'discord_auth_config',
+                'title' => 'Discord Auth Configuration',
+                'menu_title' => 'Discord Auth Config',
+                'callback' => 'render_discord_auth_config_page',
+                'category' => 'system',
+                'description' => 'Configure Discord OAuth and role permissions',
+                'quick_action' => false
+            ],
+            [
                 'id' => 'universal_ui_table_config',
                 'title' => 'Universal UI Table Config',
                 'menu_title' => 'Universal UI Config',
@@ -710,9 +719,6 @@ function render_dashboard_config_page() {
                 </div>
             </div>
         </div>
-        
-        <!-- Discord Role Permissions Section -->
-        <?php $jotunheim_dashboard_config->render_discord_permissions_section(); ?>
         
         <!-- Preview Panel -->
         <div id="preview-panel" class="preview-panel" style="display: none;">

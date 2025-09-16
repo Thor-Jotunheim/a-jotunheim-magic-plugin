@@ -1,0 +1,305 @@
+/* Discord Auth Config Styles */
+.discord-auth-config-container {
+    max-width: 1200px;
+    margin: 20px 0;
+}
+
+.discord-config-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.discord-config-section h3 {
+    margin: 0;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e1e1;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.discord-config-content {
+    padding: 20px;
+}
+
+.discord-form-group {
+    margin-bottom: 20px;
+}
+
+.discord-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.discord-form-group input[type="text"],
+.discord-form-group input[type="password"],
+.discord-form-group input[type="url"],
+.discord-form-group textarea,
+.discord-form-group select {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.discord-form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.discord-form-group .description {
+    margin-top: 5px;
+    color: #666;
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* Role Management */
+.discord-roles-list {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fafafa;
+}
+
+.discord-role-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    margin-bottom: 1px;
+}
+
+.discord-role-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.discord-role-item:hover {
+    background: #f8f9fa;
+}
+
+.discord-role-info {
+    flex: 1;
+    margin-right: 15px;
+}
+
+.discord-role-name {
+    font-weight: 600;
+    color: #23282d;
+    margin-bottom: 4px;
+}
+
+.discord-role-id {
+    font-size: 12px;
+    color: #666;
+    font-family: monospace;
+}
+
+.discord-role-level {
+    margin-left: auto;
+}
+
+.discord-role-level select {
+    width: 120px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Add Role Form */
+.discord-add-role-form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.discord-add-role-form .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.discord-add-role-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.discord-add-role-form input,
+.discord-add-role-form select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.discord-add-role-form .form-actions {
+    flex: 0 0 auto;
+}
+
+/* Buttons */
+.discord-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.discord-btn-primary {
+    background: #0073aa;
+    color: #fff;
+}
+
+.discord-btn-primary:hover {
+    background: #005a87;
+    color: #fff;
+}
+
+.discord-btn-secondary {
+    background: #f1f1f1;
+    color: #23282d;
+    border: 1px solid #ccc;
+}
+
+.discord-btn-secondary:hover {
+    background: #e8e8e8;
+    color: #23282d;
+}
+
+.discord-btn-danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.discord-btn-danger:hover {
+    background: #c82333;
+    color: #fff;
+}
+
+.discord-btn-small {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+/* Status Messages */
+.discord-status-message {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.discord-status-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.discord-status-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.discord-status-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+/* Test Connection */
+.discord-test-connection {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e1e1e1;
+}
+
+.discord-test-result {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+.discord-test-result.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.discord-test-result.error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* Loading States */
+.discord-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.discord-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: discord-spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes discord-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .discord-add-role-form {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .discord-add-role-form .form-group,
+    .discord-add-role-form .form-actions {
+        flex: none;
+    }
+    
+    .discord-role-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .discord-role-level {
+        margin-left: 0;
+        align-self: stretch;
+    }
+}
