@@ -888,49 +888,6 @@ function render_dashboard_config_page() {
     ]);
     
     ?>
-    <style>
-    body.wp-admin .wrap.dashboard-config-wrap,
-    body.wp-admin .dashboard-config-wrap,
-    #wpbody-content .dashboard-config-wrap,
-    .wp-admin #wpbody-content .wrap {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    /* Remove any admin notices that cause spacing */
-    .notice, .update-nag, .updated, .error, .is-dismissible {
-        display: none !important;
-    }
-    </style>
-    
-    <script>
-    jQuery(document).ready(function($) {
-        // Force remove any top spacing via JavaScript
-        $('body, #wpwrap, #wpcontent, #wpbody, #wpbody-content, .wrap').css({
-            'margin-top': '0',
-            'padding-top': '0'
-        });
-        
-        // Remove screen meta elements completely
-        $('#screen-meta, #screen-meta-links').remove();
-        
-        // Remove any admin notices that might be causing spacing
-        $('.notice, .updated, .error, .update-nag').remove();
-        
-        // Force the wrapper to have no top spacing
-        $('.dashboard-config-wrap').css({
-            'margin-top': '0',
-            'padding-top': '0'
-        });
-        
-        // Additional aggressive removal of WordPress admin spacing
-        setTimeout(function() {
-            $('body').removeClass('wp-toolbar');
-            $('#wpbody-content').css('padding-top', '0');
-        }, 100);
-    });
-    </script>
-    
     <div class="wrap">
         <div class="dashboard-config-wrap">
             <h1 class="dashboard-config-title">
@@ -958,6 +915,10 @@ function render_dashboard_config_page() {
             <button type="button" class="button button-secondary" id="add-section">
                 <span class="dashicons dashicons-plus-alt"></span>
                 Add Section
+            </button>
+            <button type="button" class="button button-secondary" id="add-pages">
+                <span class="dashicons dashicons-admin-page"></span>
+                Add Pages
             </button>
         </div>
         
@@ -1000,15 +961,92 @@ function render_dashboard_config_page() {
                     <!-- Items will be populated by JavaScript -->
                 </div>
             </div>
-            
-            <!-- Page Management -->
-            <div class="config-pages">
-                <h2>
-                    <span class="dashicons dashicons-plus-alt"></span>
-                    Add Pages
-                </h2>
-                <p class="section-description">Add new pages to your dashboard from auto-detected plugin pages or create custom entries.</p>
-                
+        </div>
+        
+        <!-- Preview Panel -->
+        <div id="preview-panel" class="preview-panel" style="display: none;">
+            <div class="preview-header">
+                <h3>
+                    <span class="dashicons dashicons-visibility"></span>
+                    Dashboard Preview
+                </h3>
+                <button type="button" class="button button-small" id="close-preview">
+                    <span class="dashicons dashicons-no-alt"></span>
+                    Close
+                </button>
+            </div>
+            <div class="preview-content">
+                <div id="preview-menu" class="preview-menu">
+                    <!-- Preview will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section Edit Modal -->
+    <div id="section-modal" class="dashboard-modal" style="display: none;">
+        <div class="dashboard-modal-content">
+            <div class="dashboard-modal-header">
+                <h3 id="section-modal-title">Edit Section</h3>
+                <button type="button" class="dashboard-modal-close" id="close-section-modal">
+                    <span class="dashicons dashicons-no-alt"></span>
+                </button>
+            </div>
+            <div class="dashboard-modal-body">
+                <form id="section-form">
+                    <input type="hidden" id="section-id" name="section_id">
+                    
+                    <div class="form-group">
+                        <label for="section-title">Section Title</label>
+                        <input type="text" id="section-title" name="section_title" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="section-description">Description</label>
+                        <textarea id="section-description" name="section_description" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="section-icon">Icon (Dashicon class)</label>
+                        <select id="section-icon" name="section_icon" class="form-control">
+                            <option value="dashicons-admin-settings">Settings</option>
+                            <option value="dashicons-products">Products</option>
+                            <option value="dashicons-calendar-alt">Calendar</option>
+                            <option value="dashicons-money-alt">Money</option>
+                            <option value="dashicons-admin-tools">Tools</option>
+                            <option value="dashicons-category">Category</option>
+                            <option value="dashicons-admin-users">Users</option>
+                            <option value="dashicons-chart-area">Charts</option>
+                            <option value="dashicons-database">Database</option>
+                            <option value="dashicons-hammer">Hammer</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="section-enabled" name="section_enabled">
+                            Enable this section
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="dashboard-modal-footer">
+                <button type="button" class="button button-secondary" id="cancel-section">Cancel</button>
+                <button type="button" class="button button-primary" id="save-section">Save Section</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Pages Modal -->
+    <div id="add-pages-modal" class="dashboard-modal" style="display: none;">
+        <div class="dashboard-modal-content">
+            <div class="dashboard-modal-header">
+                <h3>Add Pages</h3>
+                <button type="button" class="dashboard-modal-close" id="close-add-pages-modal">
+                    <span class="dashicons dashicons-no-alt"></span>
+                </button>
+            </div>
+            <div class="dashboard-modal-body">
                 <div class="page-management-tabs">
                     <button type="button" class="tab-button active" data-tab="auto-detect">Auto-Detect Pages</button>
                     <button type="button" class="tab-button" data-tab="manual">Manual Entry</button>
@@ -1086,79 +1124,6 @@ function render_dashboard_config_page() {
                         </div>
                     </form>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Preview Panel -->
-        <div id="preview-panel" class="preview-panel" style="display: none;">
-            <div class="preview-header">
-                <h3>
-                    <span class="dashicons dashicons-visibility"></span>
-                    Dashboard Preview
-                </h3>
-                <button type="button" class="button button-small" id="close-preview">
-                    <span class="dashicons dashicons-no-alt"></span>
-                    Close
-                </button>
-            </div>
-            <div class="preview-content">
-                <div id="preview-menu" class="preview-menu">
-                    <!-- Preview will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Section Edit Modal -->
-    <div id="section-modal" class="dashboard-modal" style="display: none;">
-        <div class="dashboard-modal-content">
-            <div class="dashboard-modal-header">
-                <h3 id="section-modal-title">Edit Section</h3>
-                <button type="button" class="dashboard-modal-close" id="close-section-modal">
-                    <span class="dashicons dashicons-no-alt"></span>
-                </button>
-            </div>
-            <div class="dashboard-modal-body">
-                <form id="section-form">
-                    <input type="hidden" id="section-id" name="section_id">
-                    
-                    <div class="form-group">
-                        <label for="section-title">Section Title</label>
-                        <input type="text" id="section-title" name="section_title" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="section-description">Description</label>
-                        <textarea id="section-description" name="section_description" class="form-control" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="section-icon">Icon (Dashicon class)</label>
-                        <select id="section-icon" name="section_icon" class="form-control">
-                            <option value="dashicons-admin-settings">Settings</option>
-                            <option value="dashicons-products">Products</option>
-                            <option value="dashicons-calendar-alt">Calendar</option>
-                            <option value="dashicons-money-alt">Money</option>
-                            <option value="dashicons-admin-tools">Tools</option>
-                            <option value="dashicons-category">Category</option>
-                            <option value="dashicons-admin-users">Users</option>
-                            <option value="dashicons-chart-area">Charts</option>
-                            <option value="dashicons-database">Database</option>
-                            <option value="dashicons-hammer">Hammer</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="section-enabled" name="section_enabled">
-                            Enable this section
-                        </label>
-                    </div>
-                </form>
-            </div>
-            <div class="dashboard-modal-footer">
-                <button type="button" class="button button-secondary" id="cancel-section">Cancel</button>
-                <button type="button" class="button button-primary" id="save-section">Save Section</button>
             </div>
         </div>
     </div>
@@ -1857,6 +1822,23 @@ function render_dashboard_config_page() {
                     alert('Error saving setting: ' + (response.data || 'Unknown error'));
                 }
             });
+        });
+        
+        // Add Pages button handler
+        $('#add-pages').on('click', function() {
+            $('#add-pages-modal').show();
+        });
+        
+        // Close Add Pages modal
+        $('#close-add-pages-modal').on('click', function() {
+            $('#add-pages-modal').hide();
+        });
+        
+        // Close modal when clicking outside
+        $(document).on('click', function(e) {
+            if ($(e.target).is('#add-pages-modal')) {
+                $('#add-pages-modal').hide();
+            }
         });
         
         // Page Management Functionality
