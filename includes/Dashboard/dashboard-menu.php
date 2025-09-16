@@ -110,10 +110,10 @@ function jotunheim_magic_plugin_menu() {
     // IMPORTANT: Ensure main menu always goes to dashboard overview
     // We need to ensure this happens BEFORE any other submenu registration
     global $submenu;
-    if (isset($submenu['jotunheim_magic'])) {
-        // Remove the automatic duplicate submenu item that WordPress creates
-        unset($submenu['jotunheim_magic'][0]);
-    }
+    
+    // DO NOT remove the main menu item - WordPress needs it for routing
+    // The first submenu item [0] is what makes the main menu clickable
+    // Removing it breaks the main menu navigation
     
     // Safety check: only use organized menu if we have valid config
     if ($use_organized_menu && isset($jotunheim_dashboard_config)) {

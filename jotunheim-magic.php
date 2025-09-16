@@ -108,17 +108,6 @@ include_once(plugin_dir_path(__FILE__) . 'includes/PriceList/pricelist.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-service.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-admin.php');
 
-// Include the dashboard config file FIRST (creates global config object)
-include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.php');
-
-// Include the dashboard menu file
-include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/editor-permissions.php');;
-
-// Include PrefabList file(s)
-include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefabdb-image-import.php');
-
 // Include the Discord OAuth token generation functions
 //include_once plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-generate-jwt-token.php';
 
@@ -129,6 +118,17 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-api.php
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-handler.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-role-access.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-auth-config.php');
+
+// Include the dashboard config file AFTER Discord functions are loaded
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.php');
+
+// Include the dashboard menu file
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/editor-permissions.php');;
+
+// Include PrefabList file(s)
+include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefabdb-image-import.php');
 
 // Include event zones editor files
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-permission.php');
