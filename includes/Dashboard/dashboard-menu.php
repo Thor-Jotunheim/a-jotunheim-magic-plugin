@@ -176,14 +176,31 @@ function register_organized_menu($config) {
     // The main menu page callback is already set to 'jotunheim_magic_dashboard'
     
     // Add Dashboard Overview as the FIRST submenu item to ensure it appears at the top
-    add_submenu_page(
-        'jotunheim_magic',
-        'Dashboard Overview',
-        'Dashboard Overview', 
-        'manage_options',
-        'jotunheim_magic',  // Same slug as parent
-        'jotunheim_magic_dashboard'
-    );
+    // But ONLY if it's not already added somewhere else
+    global $submenu;
+    $dashboard_overview_exists = false;
+    if (isset($submenu['jotunheim_magic'])) {
+        foreach ($submenu['jotunheim_magic'] as $item) {
+            if ($item[0] === 'Dashboard Overview' || $item[2] === 'jotunheim_magic') {
+                $dashboard_overview_exists = true;
+                break;
+            }
+        }
+    }
+    
+    if (!$dashboard_overview_exists) {
+        add_submenu_page(
+            'jotunheim_magic',
+            'Dashboard Overview',
+            'Dashboard Overview', 
+            'manage_options',
+            'jotunheim_magic',  // Same slug as parent
+            'jotunheim_magic_dashboard'
+        );
+        error_log('Jotunheim Dashboard: Added Dashboard Overview submenu item');
+    } else {
+        error_log('Jotunheim Dashboard: Dashboard Overview already exists, skipping duplicate');
+    }
     
     $menu_config = $config->get_config();
     $menu_items = $config->get_menu_items();
@@ -260,13 +277,18 @@ function register_organized_menu($config) {
             });
             
             foreach ($items as $item) {
+                // Debug: Log all item details for analysis
+                error_log('Jotunheim Dashboard: Processing item details - ' . print_r($item, true));
+                
                 // Skip any item that might conflict with the main dashboard overview
                 if ($item['id'] === 'dashboard_overview' || 
                     $item['callback'] === 'jotunheim_magic_dashboard' ||
                     ($item['title'] === 'Dashboard Overview') ||
                     ($item['menu_title'] === 'Dashboard Overview') ||
-                    (isset($item['slug']) && $item['slug'] === 'jotunheim_magic')) {
-                    error_log('Jotunheim Dashboard: Skipping conflicting dashboard item - ' . $item['title'] . ' (ID: ' . $item['id'] . ')');
+                    (isset($item['slug']) && $item['slug'] === 'jotunheim_magic') ||
+                    (strpos($item['title'], 'Dashboard Overview') !== false) ||
+                    (strpos($item['menu_title'], 'Dashboard Overview') !== false)) {
+                    error_log('Jotunheim Dashboard: SKIPPING conflicting dashboard item - ' . $item['title'] . ' (ID: ' . $item['id'] . ', Callback: ' . $item['callback'] . ')');
                     continue;
                 }
                 
@@ -1903,20 +1925,27 @@ add_action('admin_menu', function() {
         // Remove any duplicate of the main item that WordPress automatically creates
         foreach ($submenu['jotunheim_magic'] as $key => $item) {
             if ($item[2] === 'jotunheim_magic' && $item[0] === 'Jotunheim Magic') {
+                error_log('Jotunheim Dashboard: Removing WordPress auto-generated duplicate - ' . $item[0]);
                 unset($submenu['jotunheim_magic'][$key]);
             }
         }
         
-        // Ensure Dashboard Overview is first
-        array_unshift($submenu['jotunheim_magic'], [
-            'Dashboard Overview',
-            'manage_options',
-            'jotunheim_magic',
-            'Dashboard Overview'
-        ]);
+        // Remove any extra Dashboard Overview duplicates that might have been added
+        $dashboard_count = 0;
+        foreach ($submenu['jotunheim_magic'] as $key => $item) {
+            if ($item[0] === 'Dashboard Overview') {
+                $dashboard_count++;
+                if ($dashboard_count > 1) {
+                    error_log('Jotunheim Dashboard: Removing duplicate Dashboard Overview entry');
+                    unset($submenu['jotunheim_magic'][$key]);
+                }
+            }
+        }
         
         // Re-index the array
         $submenu['jotunheim_magic'] = array_values($submenu['jotunheim_magic']);
+        
+        error_log('Jotunheim Dashboard: Final submenu structure - ' . print_r($submenu['jotunheim_magic'], true));
     }
 }, 999); // Run very late to ensure we override everything
 ?>
