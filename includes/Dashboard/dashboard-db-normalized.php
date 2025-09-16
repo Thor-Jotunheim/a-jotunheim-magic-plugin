@@ -152,18 +152,21 @@ class Jotunheim_Dashboard_DB_Normalized {
         foreach ($results as $row) {
             if (!isset($config[$row->section_key])) {
                 $config[$row->section_key] = array(
-                    'name' => $row->section_name,
+                    'title' => $row->section_name,
+                    'description' => 'No description available', // Default description
                     'order' => $row->section_order,
+                    'enabled' => true, // Sections from DB are enabled
                     'items' => array()
                 );
             }
             
             if ($row->item_key) {
                 $config[$row->section_key]['items'][] = array(
-                    'id' => $row->item_key,
-                    'name' => $row->item_name,
+                    'item_id' => $row->item_key,
+                    'title' => $row->item_name,
                     'callback' => $row->callback_function,
-                    'quick_action' => (bool)$row->quick_action,
+                    'enabled' => true, // Items from DB are enabled
+                    'quick_action' => (bool)$row->quick_action, // Add back the quick_action field
                     'order' => $row->item_order,
                     'icon' => $row->icon,
                     'description' => $row->description,
