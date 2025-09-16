@@ -556,7 +556,7 @@ function render_discord_auth_config_page() {
                             </th>
                             <td>
                                 <input type="text" id="new_role_name" placeholder="e.g., Moderator" class="regular-text" />
-                                <p class="description">Display name for this role</p>
+                                <p class="description">Display name for this role - this will be used as the permission level</p>
                             </td>
                         </tr>
                         <tr>
@@ -566,19 +566,6 @@ function render_discord_auth_config_page() {
                             <td>
                                 <input type="text" id="new_role_id" placeholder="e.g., 123456789012345678" class="regular-text" />
                                 <p class="description">The numeric ID of the Discord role</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="new_role_level">Permission Level</label>
-                            </th>
-                            <td>
-                                <select id="new_role_level">
-                                    <option value="user">User</option>
-                                    <option value="moderator">Moderator</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                                <p class="description">Permission level for this role</p>
                             </td>
                         </tr>
                     </table>

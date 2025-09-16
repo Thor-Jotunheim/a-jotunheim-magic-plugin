@@ -118,6 +118,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-api.php
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-oauth-handler.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-role-access.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Discord/discord-auth-config.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/Discord/page-permissions.php');
 
 // Include the dashboard config file AFTER Discord functions are loaded
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.php');

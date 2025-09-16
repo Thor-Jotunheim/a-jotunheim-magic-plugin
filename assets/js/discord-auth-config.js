@@ -26,14 +26,8 @@ jQuery(document).ready(function($) {
             // Remove role
             $(document).on('click', '.remove-role', this.removeRole.bind(this));
             
-            // Update role level
-            $(document).on('change', '.role-level-select', this.updateRoleLevel.bind(this));
-            
             // Test connection
             $('#test-discord-connection').on('click', this.testConnection.bind(this));
-            
-            // Import roles from Discord
-            $('#import-discord-roles').on('click', this.importRoles.bind(this));
         },
 
         saveOAuthSettings: function(e) {
@@ -45,18 +39,19 @@ jQuery(document).ready(function($) {
             // Show loading state
             $button.html('<span class="discord-spinner"></span>Saving...').prop('disabled', true);
             
+            // Collect form data
             const settings = {
                 client_id: $('#discord_client_id').val(),
                 client_secret: $('#discord_client_secret').val(),
                 redirect_uri: $('#discord_redirect_uri').val(),
                 bot_token: $('#discord_bot_token').val(),
                 guild_id: $('#discord_guild_id').val(),
-                enabled: $('#discord_enabled').is(':checked'),
-                require_discord_auth: $('#discord_require_auth').is(':checked')
+                enabled: $('#enable_discord_oauth').is(':checked'),
+                require_discord_auth: $('#require_discord_auth').is(':checked')
             };
             
             $.ajax({
-                url: ajaxurl,
+                url: discord_auth_config.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'save_discord_oauth_settings',
@@ -90,24 +85,34 @@ jQuery(document).ready(function($) {
             
             // Collect all role data from the form
             const roles = {};
-            $('.discord-role-row').each(function() {
-                const $row = $(this);
-                const roleKey = $row.data('role-key');
-                const roleName = $row.find('.role-name').val();
-                const roleId = $row.find('.role-id').val();
-                const roleDescription = $row.find('.role-description').val();
+            $('.discord-role-item').each(function() {
+                const $item = $(this);
+                const roleInput = $item.find('.discord-role-id-input');
+                const nameInput = $item.find('input[name*="[name]"]');
+                const descInput = $item.find('input[name*="[description]"]');
                 
-                if (roleKey && roleName) {
-                    roles[roleKey] = {
-                        name: roleName,
-                        id: roleId,
-                        description: roleDescription
-                    };
+                if (roleInput.length && nameInput.length) {
+                    const name = nameInput.val();
+                    const roleId = roleInput.val();
+                    const description = descInput.length ? descInput.val() : '';
+                    
+                    // Extract role key from input name
+                    const nameAttr = nameInput.attr('name');
+                    const match = nameAttr.match(/discord_roles\[([^\]]+)\]\[name\]/);
+                    const roleKey = match ? match[1] : null;
+                    
+                    if (roleKey && name) {
+                        roles[roleKey] = {
+                            name: name,
+                            id: roleId,
+                            description: description
+                        };
+                    }
                 }
             });
             
             $.ajax({
-                url: ajaxurl,
+                url: discord_auth_config.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'save_discord_roles',
@@ -135,7 +140,6 @@ jQuery(document).ready(function($) {
             
             const roleName = $('#new_role_name').val().trim();
             const roleId = $('#new_role_id').val().trim();
-            const roleLevel = $('#new_role_level').val();
             
             if (!roleName || !roleId) {
                 this.showMessage('Please enter both role name and role ID.', 'error');
@@ -143,108 +147,24 @@ jQuery(document).ready(function($) {
             }
             
             // Check if role already exists
-            if ($(`[data-role-id="${roleId}"]`).length > 0) {
+            if ($(`input[value="${roleId}"]`).length > 0) {
                 this.showMessage('A role with this ID already exists.', 'error');
                 return;
             }
             
-            const $button = $('#add-discord-role');
-            const originalText = $button.text();
-            
-            $button.html('<span class="discord-spinner"></span>Adding...').prop('disabled', true);
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'add_discord_role',
-                    nonce: discord_auth_config.nonce,
-                    role_name: roleName,
-                    role_id: roleId,
-                    role_level: roleLevel
-                },
-                success: function(response) {
-                    if (response.success) {
-                        DiscordAuthConfig.addRoleToList(roleName, roleId, roleLevel);
-                        DiscordAuthConfig.clearAddRoleForm();
-                        DiscordAuthConfig.showMessage('Role added successfully!', 'success');
-                    } else {
-                        DiscordAuthConfig.showMessage('Error adding role: ' + response.data, 'error');
-                    }
-                },
-                error: function() {
-                    DiscordAuthConfig.showMessage('Network error occurred while adding role.', 'error');
-                },
-                complete: function() {
-                    $button.text(originalText).prop('disabled', false);
-                }
-            });
+            // Add role to the existing roles container
+            this.addRoleToExistingList(roleName, roleId);
+            this.clearAddRoleForm();
+            this.showMessage('Role added! Don\'t forget to save your changes.', 'success');
         },
 
         removeRole: function(e) {
             e.preventDefault();
             
-            const $roleItem = $(e.target).closest('.discord-role-item');
-            const roleId = $roleItem.data('role-id');
-            const roleName = $roleItem.find('.discord-role-name').text();
-            
-            if (!confirm(`Are you sure you want to remove the role "${roleName}"?`)) {
-                return;
+            if (confirm('Are you sure you want to remove this role?')) {
+                $(e.target).closest('.discord-role-item').remove();
+                this.showMessage('Role removed! Don\'t forget to save your changes.', 'success');
             }
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'remove_discord_role',
-                    nonce: discord_auth_config.nonce,
-                    role_id: roleId
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $roleItem.fadeOut(300, function() {
-                            $(this).remove();
-                        });
-                        DiscordAuthConfig.showMessage('Role removed successfully!', 'success');
-                    } else {
-                        DiscordAuthConfig.showMessage('Error removing role: ' + response.data, 'error');
-                    }
-                },
-                error: function() {
-                    DiscordAuthConfig.showMessage('Network error occurred while removing role.', 'error');
-                }
-            });
-        },
-
-        updateRoleLevel: function(e) {
-            const $select = $(e.target);
-            const $roleItem = $select.closest('.discord-role-item');
-            const roleId = $roleItem.data('role-id');
-            const newLevel = $select.val();
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'update_discord_role_level',
-                    nonce: discord_auth_config.nonce,
-                    role_id: roleId,
-                    role_level: newLevel
-                },
-                success: function(response) {
-                    if (response.success) {
-                        DiscordAuthConfig.showMessage('Role level updated successfully!', 'success');
-                    } else {
-                        DiscordAuthConfig.showMessage('Error updating role level: ' + response.data, 'error');
-                        // Revert the select value
-                        $select.val($select.data('original-value'));
-                    }
-                },
-                error: function() {
-                    DiscordAuthConfig.showMessage('Network error occurred while updating role level.', 'error');
-                    $select.val($select.data('original-value'));
-                }
-            });
         },
 
         testConnection: function(e) {
@@ -303,132 +223,80 @@ jQuery(document).ready(function($) {
             });
         },
 
-        importRoles: function(e) {
-            e.preventDefault();
-            
-            const $button = $(e.target);
-            const originalText = $button.text();
-            
-            $button.html('<span class="discord-spinner"></span>Importing...').prop('disabled', true);
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'import_discord_roles',
-                    nonce: discord_auth_config.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        DiscordAuthConfig.loadExistingRoles();
-                        DiscordAuthConfig.showMessage(`Successfully imported ${response.data.count} roles from Discord!`, 'success');
-                    } else {
-                        DiscordAuthConfig.showMessage('Error importing roles: ' + response.data, 'error');
-                    }
-                },
-                error: function() {
-                    DiscordAuthConfig.showMessage('Network error occurred while importing roles.', 'error');
-                },
-                complete: function() {
-                    $button.text(originalText).prop('disabled', false);
-                }
-            });
-        },
-
         loadExistingRoles: function() {
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'get_discord_roles',
-                    nonce: discord_auth_config.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        DiscordAuthConfig.populateRolesList(response.data);
-                    }
-                }
-            });
+            // This function can be expanded to load roles via AJAX if needed
         },
 
-        populateRolesList: function(roles) {
-            const $rolesList = $('#discord-roles-list');
-            $rolesList.empty();
+        addRoleToExistingList: function(roleName, roleId) {
+            const roleKey = roleName.toLowerCase().replace(/[^a-z0-9]/g, '_');
             
-            if (roles.length === 0) {
-                $rolesList.html('<div class="discord-role-item"><div class="discord-role-info"><div class="discord-role-name">No roles configured</div><div class="discord-role-id">Add roles using the form below</div></div></div>');
-                return;
-            }
-            
-            roles.forEach(function(role) {
-                DiscordAuthConfig.addRoleToList(role.name, role.id, role.level, false);
-            });
-        },
-
-        addRoleToList: function(roleName, roleId, roleLevel, animate = true) {
+            // Create new role item HTML
             const roleHtml = `
-                <div class="discord-role-item" data-role-id="${roleId}" ${animate ? 'style="display:none"' : ''}>
-                    <div class="discord-role-info">
-                        <div class="discord-role-name">${this.escapeHtml(roleName)}</div>
-                        <div class="discord-role-id">${this.escapeHtml(roleId)}</div>
+                <div class="discord-role-item" data-role-key="${roleKey}">
+                    <div class="role-info">
+                        <label for="discord_role_${roleKey}">
+                            <strong>${roleName}</strong>
+                        </label>
+                        <p class="role-description">Custom Discord role</p>
                     </div>
-                    <div class="discord-role-level">
-                        <select class="role-level-select" data-original-value="${roleLevel}">
-                            <option value="1" ${roleLevel == '1' ? 'selected' : ''}>Basic</option>
-                            <option value="2" ${roleLevel == '2' ? 'selected' : ''}>Moderator</option>
-                            <option value="3" ${roleLevel == '3' ? 'selected' : ''}>Admin</option>
-                            <option value="4" ${roleLevel == '4' ? 'selected' : ''}>Owner</option>
-                        </select>
-                    </div>
-                    <div class="discord-role-actions">
-                        <button type="button" class="discord-btn discord-btn-danger discord-btn-small remove-role">Remove</button>
+                    <div class="role-input">
+                        <input 
+                            type="text" 
+                            id="discord_role_${roleKey}"
+                            name="discord_roles[${roleKey}][id]"
+                            value="${roleId}"
+                            placeholder="Discord Role ID"
+                            class="discord-role-id-input"
+                        />
+                        <input 
+                            type="hidden" 
+                            name="discord_roles[${roleKey}][name]"
+                            value="${roleName}"
+                        />
+                        <input 
+                            type="hidden" 
+                            name="discord_roles[${roleKey}][description]"
+                            value="Custom Discord role"
+                        />
+                        <button type="button" class="button remove-role" data-role-key="${roleKey}" style="margin-left: 10px;">
+                            Remove
+                        </button>
                     </div>
                 </div>
             `;
             
-            const $roleItem = $(roleHtml);
-            $('#discord-roles-list').append($roleItem);
-            
-            if (animate) {
-                $roleItem.fadeIn(300);
-            }
+            $('.discord-roles-container').append(roleHtml);
         },
 
         clearAddRoleForm: function() {
             $('#new_role_name').val('');
             $('#new_role_id').val('');
-            $('#new_role_level').val('1');
         },
 
         showMessage: function(message, type) {
-            const $container = $('.discord-auth-config-container');
-            const $existing = $container.find('.discord-status-message');
+            // Remove existing messages
+            $('.discord-message').remove();
             
-            $existing.remove();
+            // Create message element
+            const messageClass = type === 'success' ? 'notice-success' : 'notice-error';
+            const messageHtml = `
+                <div class="notice ${messageClass} discord-message" style="margin: 10px 0;">
+                    <p>${message}</p>
+                </div>
+            `;
             
-            const $message = $(`<div class="discord-status-message discord-status-${type}">${this.escapeHtml(message)}</div>`);
-            $container.prepend($message);
+            // Insert message at the top of the form
+            $('.discord-config-form').prepend(messageHtml);
             
-            // Auto-hide success messages after 5 seconds
-            if (type === 'success') {
-                setTimeout(function() {
-                    $message.fadeOut(300, function() {
-                        $(this).remove();
-                    });
-                }, 5000);
-            }
-        },
-
-        escapeHtml: function(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            // Auto-hide after 5 seconds
+            setTimeout(function() {
+                $('.discord-message').fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 5000);
         }
     };
 
-    // Initialize when DOM is ready
+    // Initialize the Discord Auth Config
     DiscordAuthConfig.init();
-    
-    // Make it globally accessible for debugging
-    window.DiscordAuthConfig = DiscordAuthConfig;
 });

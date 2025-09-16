@@ -228,6 +228,15 @@ class JotunheimDashboardConfig {
                 'quick_action' => false
             ],
             [
+                'id' => 'page_permissions_config',
+                'title' => 'Page Permissions',
+                'menu_title' => 'Page Permissions',
+                'callback' => 'render_page_permissions_config_page',
+                'category' => 'system',
+                'description' => 'Configure Discord role-based page access permissions',
+                'quick_action' => false
+            ],
+            [
                 'id' => 'universal_ui_table_config',
                 'title' => 'Universal UI Table Config',
                 'menu_title' => 'Universal UI Config',
