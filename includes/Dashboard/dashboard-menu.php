@@ -260,6 +260,14 @@ function register_organized_menu($config) {
             });
             
             foreach ($items as $item) {
+                // Skip any item that might conflict with the main dashboard overview
+                if ($item['id'] === 'dashboard_overview' || 
+                    $item['callback'] === 'jotunheim_magic_dashboard' ||
+                    ($item['title'] === 'Dashboard Overview' && $item['category'] === 'system')) {
+                    error_log('Jotunheim Dashboard: Skipping conflicting dashboard item - ' . $item['title']);
+                    continue;
+                }
+                
                 error_log('Jotunheim Dashboard: Adding item - ' . $item['title'] . ' with callback ' . $item['callback']);
                 if (function_exists($item['callback'])) {
                     add_submenu_page(

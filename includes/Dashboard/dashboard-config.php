@@ -161,6 +161,15 @@ class JotunheimDashboardConfig {
             
             // System Configuration
             [
+                'id' => 'dashboard_config',
+                'title' => 'Dashboard Configuration',
+                'menu_title' => 'Dashboard Config',
+                'callback' => 'render_dashboard_config_page',
+                'category' => 'system',
+                'description' => 'Configure dashboard layout and organization',
+                'quick_action' => false
+            ],
+            [
                 'id' => 'universal_ui_table_config',
                 'title' => 'Universal UI Table Config',
                 'menu_title' => 'Universal UI Config',
