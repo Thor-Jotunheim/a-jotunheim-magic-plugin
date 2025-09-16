@@ -541,6 +541,9 @@ function render_discord_auth_config_page() {
                                     name="discord_roles[<?php echo esc_attr($role_key); ?>][description]"
                                     value="<?php echo esc_attr($role_data['description']); ?>"
                                 />
+                                <button type="button" class="button remove-role" data-role-key="<?php echo esc_attr($role_key); ?>" style="margin-left: 10px;">
+                                    Remove
+                                </button>
                             </div>
                         </div>
                     <?php endforeach; ?>
