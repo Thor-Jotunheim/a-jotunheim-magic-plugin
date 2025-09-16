@@ -107,6 +107,14 @@ function jotunheim_magic_plugin_menu() {
     error_log('Jotunheim Dashboard: use_organized_menu = ' . ($use_organized_menu ? 'true' : 'false'));
     error_log('Jotunheim Dashboard: jotunheim_dashboard_config exists = ' . (isset($jotunheim_dashboard_config) ? 'true' : 'false'));
     
+    // IMPORTANT: Ensure main menu always goes to dashboard overview
+    // We need to ensure this happens BEFORE any other submenu registration
+    global $submenu;
+    if (isset($submenu['jotunheim_magic'])) {
+        // Remove the automatic duplicate submenu item that WordPress creates
+        unset($submenu['jotunheim_magic'][0]);
+    }
+    
     // Safety check: only use organized menu if we have valid config
     if ($use_organized_menu && isset($jotunheim_dashboard_config)) {
         $organized_success = register_organized_menu($jotunheim_dashboard_config);
@@ -164,14 +172,16 @@ function register_organized_menu($config) {
         return false;
     }
     
-    // FIRST: Replace the default submenu page with our dashboard overview
-    remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
+    // DO NOT interfere with the main menu page - let it stay as dashboard overview
+    // The main menu page callback is already set to 'jotunheim_magic_dashboard'
+    
+    // Add Dashboard Overview as the FIRST submenu item to ensure it appears at the top
     add_submenu_page(
         'jotunheim_magic',
         'Dashboard Overview',
         'Dashboard Overview', 
         'manage_options',
-        'jotunheim_magic',  // Same slug as parent to make it the default
+        'jotunheim_magic',  // Same slug as parent
         'jotunheim_magic_dashboard'
     );
     
@@ -1858,4 +1868,29 @@ function render_eventzone_field_config_page() {
 
 // Hook the menu function to WordPress admin menu
 add_action('admin_menu', 'jotunheim_magic_plugin_menu');
+
+// Ensure proper submenu order after all menus are registered
+add_action('admin_menu', function() {
+    global $submenu;
+    
+    if (isset($submenu['jotunheim_magic'])) {
+        // Remove any duplicate of the main item that WordPress automatically creates
+        foreach ($submenu['jotunheim_magic'] as $key => $item) {
+            if ($item[2] === 'jotunheim_magic' && $item[0] === 'Jotunheim Magic') {
+                unset($submenu['jotunheim_magic'][$key]);
+            }
+        }
+        
+        // Ensure Dashboard Overview is first
+        array_unshift($submenu['jotunheim_magic'], [
+            'Dashboard Overview',
+            'manage_options',
+            'jotunheim_magic',
+            'Dashboard Overview'
+        ]);
+        
+        // Re-index the array
+        $submenu['jotunheim_magic'] = array_values($submenu['jotunheim_magic']);
+    }
+}, 999); // Run very late to ensure we override everything
 ?>
