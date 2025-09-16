@@ -91,21 +91,17 @@ function jotunheim_magic_plugin_menu() {
             'slug'        => 'eventzone_field_config',
             'callback'    => 'render_eventzone_field_config_page',
         ],
-        // Temporarily removed Dashboard Configuration
-        // [
-        //     'title'       => 'Dashboard Configuration',
-        //     'menu_title'  => 'Dashboard Config',
-        //     'slug'        => 'dashboard_config',
-        //     'callback'    => 'render_dashboard_config_page',
-        // ],
+        [
+            'title'       => 'Dashboard Configuration',
+            'menu_title'  => 'Dashboard Config',
+            'slug'        => 'dashboard_config',
+            'callback'    => 'render_dashboard_config_page',
+        ],
     ];
 
     // Check if we should use organized menu structure
-    // global $jotunheim_dashboard_config;
-    // $use_organized_menu = get_option('jotunheim_use_organized_menu', true);
-    
-    // Temporarily disabled organized menu
-    $use_organized_menu = false;
+    global $jotunheim_dashboard_config;
+    $use_organized_menu = get_option('jotunheim_use_organized_menu', false); // Default to false for safety
     
     if ($use_organized_menu && isset($jotunheim_dashboard_config)) {
         register_organized_menu($jotunheim_dashboard_config);
