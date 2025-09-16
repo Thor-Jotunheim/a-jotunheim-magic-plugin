@@ -956,9 +956,15 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        if (update_option('jotunheim_dashboard_config', $config)) {
+        error_log('DEBUG: About to call update_option with config: ' . print_r($config, true));
+        $update_result = update_option('jotunheim_dashboard_config', $config);
+        error_log('DEBUG: update_option result: ' . ($update_result ? 'true' : 'false'));
+        
+        if ($update_result) {
+            error_log('DEBUG: Successfully saved configuration, sending success response');
             wp_send_json_success('Quick action setting updated');
         } else {
+            error_log('DEBUG: Failed to save configuration, sending error response');
             wp_send_json_error('Failed to save configuration');
         }
     }
