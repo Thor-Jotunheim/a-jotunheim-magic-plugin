@@ -4,6 +4,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Include the database management class
+require_once(plugin_dir_path(__FILE__) . 'dashboard-db.php');
+
 /**
  * Dashboard Menu Configuration System
  * Allows users to reorganize menu items, create sections, and customize the admin dashboard
@@ -13,8 +16,18 @@ class JotunheimDashboardConfig {
     
     private $default_menu_items = [];
     private $menu_config = [];
+    private $db;
     
     public function __construct() {
+        // Initialize database handler
+        $this->db = new Jotunheim_Dashboard_DB();
+        
+        // Ensure table exists
+        if (!$this->db->table_exists()) {
+            $this->db->create_table();
+            $this->db->migrate_from_options();
+        }
+        
         // Initialize immediately instead of waiting for admin_init
         $this->init();
         
@@ -49,7 +62,7 @@ class JotunheimDashboardConfig {
         }
         
         // Get existing config or create default
-        $stored_config = get_option('jotunheim_dashboard_config', false);
+        $stored_config = $this->db->load_config('dashboard_config', false);
         
         if (!$stored_config) {
             // No config exists, create and save default
@@ -65,8 +78,8 @@ class JotunheimDashboardConfig {
                 ];
             }
             
-            update_option('jotunheim_dashboard_config', $this->menu_config);
-            error_log('Jotunheim Dashboard: Created and saved default config');
+            $this->db->save_config('dashboard_config', $this->menu_config);
+            error_log('Jotunheim Dashboard: Created and saved default config to database');
         } else {
             $this->menu_config = $stored_config;
             
@@ -577,6 +590,16 @@ class JotunheimDashboardConfig {
     }
     
     public function get_config() {
+        // Try to load from database first
+        $db_config = $this->db->load_config('dashboard_config', null);
+        
+        if ($db_config !== null) {
+            error_log('DEBUG: Loaded config from database');
+            return $db_config;
+        }
+        
+        // Fallback to memory config
+        error_log('DEBUG: Using memory config as fallback');
         return $this->menu_config;
     }
     
@@ -1014,48 +1037,15 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        error_log('DEBUG: About to call update_option for page: ' . $page_id);
+        error_log('DEBUG: About to save config to database for page: ' . $page_id);
         error_log('DEBUG: Config has ' . count($config['items']) . ' items and ' . count($config['sections']) . ' sections');
         
-        // Try to get current option to see if it exists
-        $current_option = get_option('jotunheim_dashboard_config', null);
-        error_log('DEBUG: Current option exists: ' . (is_null($current_option) ? 'false' : 'true'));
-        
-        $update_result = update_option('jotunheim_dashboard_config', $config);
-        error_log('DEBUG: update_option result: ' . ($update_result ? 'true' : 'false'));
+        // Save to database instead of WordPress options
+        $update_result = $this->db->save_config('dashboard_config', $config);
+        error_log('DEBUG: Database save result: ' . ($update_result ? 'true' : 'false'));
         
         if (!$update_result) {
-            // If update failed, try to understand why
-            $serialized_size = strlen(serialize($config));
-            error_log('DEBUG: Serialized config size: ' . $serialized_size . ' bytes');
-            
-            // Try to save with wp_options directly to get more info
-            global $wpdb;
-            $option_name = 'jotunheim_dashboard_config';
-            $option_value = maybe_serialize($config);
-            
-            // Check if option exists
-            $exists = $wpdb->get_var($wpdb->prepare("SELECT option_id FROM {$wpdb->options} WHERE option_name = %s", $option_name));
-            error_log('DEBUG: Option exists in database: ' . ($exists ? 'true' : 'false'));
-            
-            // Try direct database update
-            if ($exists) {
-                $direct_result = $wpdb->update(
-                    $wpdb->options,
-                    array('option_value' => $option_value),
-                    array('option_name' => $option_name),
-                    array('%s'),
-                    array('%s')
-                );
-                error_log('DEBUG: Direct database update result: ' . ($direct_result !== false ? 'success' : 'failed'));
-                
-                if ($direct_result !== false) {
-                    // Clear any option caches
-                    wp_cache_delete($option_name, 'options');
-                    error_log('DEBUG: Cache cleared, treating as successful update');
-                    $update_result = true;
-                }
-            }
+            error_log('DEBUG: Database save failed for page: ' . $page_id);
         }
         
         if ($update_result) {
