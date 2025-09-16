@@ -149,30 +149,30 @@ jQuery(document).ready(function($) {
                     <div class="item-controls">
                         <div class="item-section-control">
                             <label>Section:</label>
-                            <select class="item-section-select" data-id="${itemConfig.id}">
+                            <select class="item-section-select" data-id="${menuItem.id}">
                                 ${renderSectionOptions(itemConfig.section)}
                             </select>
                         </div>
                         <div class="item-status-control">
                             <label>Status:</label>
                             <button class="control-btn toggle toggle-item ${itemConfig.enabled ? '' : 'disabled'}" 
-                                    data-id="${itemConfig.id}" title="${itemConfig.enabled ? 'Disable' : 'Enable'} Item">
+                                    data-id="${menuItem.id}" title="${itemConfig.enabled ? 'Disable' : 'Enable'} Item">
                                 <span class="dashicons dashicons-${itemConfig.enabled ? 'visibility' : 'hidden'}"></span>
                                 ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
                             </button>
                         </div>
                         <div class="item-quick-action-control">
                             <label>
-                                <input type="checkbox" class="quick-action-checkbox" data-id="${itemConfig.id}" 
+                                <input type="checkbox" class="quick-action-checkbox" data-id="${menuItem.id}" 
                                        ${(menuItem.quick_action || false) ? 'checked' : ''}>
                                 Quick Action
                             </label>
                         </div>
                         <div class="item-action-buttons">
-                            <button class="control-btn edit edit-item" data-id="${itemConfig.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Edit Item">
+                            <button class="control-btn edit edit-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Edit Item">
                                 <span class="dashicons dashicons-edit"></span>
                             </button>
-                            <button class="control-btn delete delete-item" data-id="${itemConfig.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Delete Item">
+                            <button class="control-btn delete delete-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Delete Item">
                                 <span class="dashicons dashicons-trash"></span>
                             </button>
                         </div>
@@ -427,8 +427,9 @@ jQuery(document).ready(function($) {
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'save_dashboard_config',
-                    config: JSON.stringify(currentConfig),
+                    action: 'update_page_quick_action',
+                    page_id: itemId,
+                    quick_action: isChecked,
                     nonce: dashboardConfig.nonce
                 },
                 success: function(response) {
@@ -473,9 +474,11 @@ jQuery(document).ready(function($) {
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'ajax_edit_dashboard_page',
+                    action: 'edit_dashboard_page',
                     page_id: itemId,
-                    new_title: newTitle,
+                    page_data: {
+                        menu_title: newTitle
+                    },
                     nonce: dashboardConfig.nonce
                 },
                 success: function(response) {
@@ -508,14 +511,14 @@ jQuery(document).ready(function($) {
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'ajax_delete_dashboard_page',
+                    action: 'delete_dashboard_page',
                     page_id: itemId,
                     nonce: dashboardConfig.nonce
                 },
                 success: function(response) {
                     if (response.success) {
                         // Remove the item from the config
-                        currentConfig.menu_items = currentConfig.menu_items.filter(item => item.id !== itemId);
+                        currentConfig.items = currentConfig.items.filter(item => item.id !== itemId);
                         markDirty();
                         renderItems(); // Re-render to remove the item
                         alert('Page deleted successfully!');
