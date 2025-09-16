@@ -2433,43 +2433,6 @@ function render_dashboard_config_page() {
         // Initialize manual form
         populateManualSectionDropdown();
         
-        // Handle quick action checkbox changes
-        $(document).on('change', '.quick-action-checkbox', function() {
-            const pageId = $(this).data('page-id');
-            const isQuickAction = $(this).is(':checked');
-            const $checkbox = $(this);
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'update_page_quick_action',
-                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
-                    page_id: pageId,
-                    quick_action: isQuickAction
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Show brief success indicator
-                        const $indicator = $('<span class="success-indicator" style="color: #00a32a; margin-left: 5px;">✓</span>');
-                        $checkbox.parent().append($indicator);
-                        setTimeout(function() {
-                            $indicator.fadeOut(300, function() { $(this).remove(); });
-                        }, 1500);
-                    } else {
-                        // Revert checkbox on error
-                        $checkbox.prop('checked', !isQuickAction);
-                        alert('Error updating quick action setting: ' + (response.data || 'Unknown error'));
-                    }
-                },
-                error: function() {
-                    // Revert checkbox on error
-                    $checkbox.prop('checked', !isQuickAction);
-                    alert('Error: Failed to communicate with server');
-                }
-            });
-        });
-        
         // Handle page deletion
         $(document).on('click', '.delete-page-btn', function() {
             const pageId = $(this).data('page-id');
