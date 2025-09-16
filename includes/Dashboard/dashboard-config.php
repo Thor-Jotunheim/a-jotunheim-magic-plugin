@@ -15,19 +15,20 @@ class JotunheimDashboardConfig {
     private $menu_config = [];
     
     public function __construct() {
-        add_action('admin_init', [$this, 'init']);
+        // Initialize immediately instead of waiting for admin_init
+        $this->init();
+        
         add_action('wp_ajax_save_dashboard_config', [$this, 'save_dashboard_config']);
         add_action('wp_ajax_reset_dashboard_config', [$this, 'reset_dashboard_config']);
         
         // TEMPORARY: Force config reset for debugging
-        delete_option('jotunheim_dashboard_config');
-        error_log('Jotunheim Dashboard: Forced config reset for debugging');
+        // delete_option('jotunheim_dashboard_config');
+        // error_log('Jotunheim Dashboard: Forced config reset for debugging');
     }
     
     public function init() {
         error_log('Jotunheim Dashboard: Starting init()');
         $this->load_default_menu_items();
-        error_log('Jotunheim Dashboard: Loaded ' . count($this->default_menu_items) . ' default menu items');
         
         // Get existing config or create default
         $stored_config = get_option('jotunheim_dashboard_config', false);
@@ -36,11 +37,9 @@ class JotunheimDashboardConfig {
             // No config exists, create and save default
             error_log('Jotunheim Dashboard: No stored config, creating default');
             $this->menu_config = $this->get_default_config();
-            error_log('Jotunheim Dashboard: Default config created with ' . count($this->menu_config['sections']) . ' sections and ' . count($this->menu_config['items']) . ' items');
             update_option('jotunheim_dashboard_config', $this->menu_config);
-            error_log('Jotunheim Dashboard: Created default config');
+            error_log('Jotunheim Dashboard: Created and saved default config');
         } else {
-            error_log('Jotunheim Dashboard: Using stored config');
             $this->menu_config = $stored_config;
         }
         
@@ -51,7 +50,7 @@ class JotunheimDashboardConfig {
             update_option('jotunheim_dashboard_config', $this->menu_config);
         }
         
-        error_log('Jotunheim Dashboard: Final config has ' . count($this->menu_config['sections']) . ' sections and ' . count($this->menu_config['items']) . ' items');
+        error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config['sections']) . ' sections and ' . count($this->menu_config['items']) . ' items');
     }
     
     private function load_default_menu_items() {

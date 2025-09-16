@@ -108,10 +108,12 @@ include_once(plugin_dir_path(__FILE__) . 'includes/PriceList/pricelist.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-service.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/GoogleSheets/google-sheets-admin.php');
 
+// Include the dashboard config file FIRST (creates global config object)
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.php');
+
 // Include the dashboard menu file
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/editor-permissions.php');;
 
 // Include PrefabList file(s)
