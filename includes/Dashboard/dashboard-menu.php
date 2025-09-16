@@ -164,6 +164,17 @@ function register_organized_menu($config) {
         return false;
     }
     
+    // FIRST: Replace the default submenu page with our dashboard overview
+    remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
+    add_submenu_page(
+        'jotunheim_magic',
+        'Dashboard Overview',
+        'Dashboard Overview', 
+        'manage_options',
+        'jotunheim_magic',  // Same slug as parent to make it the default
+        'jotunheim_magic_dashboard'
+    );
+    
     $menu_config = $config->get_config();
     $menu_items = $config->get_menu_items();
     
@@ -349,8 +360,10 @@ function jotunheim_magic_dashboard() {
                             <?php foreach ($section['items'] as $item): ?>
                                 <div class="dashboard-item">
                                     <a href="<?php echo esc_url(admin_url('admin.php?page=' . $item['id'])); ?>" class="item-link">
-                                        <h4><?php echo esc_html($item['title'] ?? $item['menu_title']); ?></h4>
-                                        <p><?php echo esc_html($item['description'] ?? ''); ?></p>
+                                        <div class="item-content">
+                                            <h4><?php echo esc_html($item['title'] ?? $item['menu_title']); ?></h4>
+                                            <p><?php echo esc_html($item['description'] ?? ''); ?></p>
+                                        </div>
                                         <span class="item-arrow">&rarr;</span>
                                     </a>
                                 </div>
@@ -390,6 +403,7 @@ function jotunheim_magic_dashboard() {
     .jotunheim-dashboard-main {
         margin-top: 0 !important;
         padding-top: 0 !important;
+        max-width: 1200px;
     }
     
     .jotunheim-main-title {
@@ -397,8 +411,8 @@ function jotunheim_magic_dashboard() {
         align-items: center;
         gap: 12px;
         color: #1d2327;
-        margin-bottom: 20px;
-        font-size: 24px;
+        margin-bottom: 30px;
+        font-size: 28px;
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
@@ -406,14 +420,14 @@ function jotunheim_magic_dashboard() {
     .jotunheim-welcome {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 30px;
+        padding: 40px;
         border-radius: 12px;
-        margin-bottom: 30px;
+        margin-bottom: 40px;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
     
     .jotunheim-intro {
-        font-size: 16px;
+        font-size: 18px;
         line-height: 1.6;
         margin: 0;
         opacity: 0.95;
@@ -421,18 +435,19 @@ function jotunheim_magic_dashboard() {
     
     .jotunheim-sections-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 25px;
-        margin-bottom: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
     }
     
     .jotunheim-section-card {
         background: white;
         border: 1px solid #c3c4c7;
-        border-radius: 8px;
-        padding: 25px;
+        border-radius: 12px;
+        padding: 30px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        min-height: 200px;
     }
     
     .jotunheim-section-card:hover {
@@ -443,54 +458,65 @@ function jotunheim_magic_dashboard() {
     .section-header h2 {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         color: #1d2327;
         margin-top: 0;
-        margin-bottom: 8px;
-        font-size: 18px;
+        margin-bottom: 12px;
+        font-size: 20px;
+        font-weight: 600;
     }
     
     .section-description {
         color: #646970;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         font-style: italic;
+        font-size: 14px;
+        line-height: 1.5;
     }
     
     .section-items {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 15px;
     }
     
     .dashboard-item {
         border: 1px solid #dcdcde;
-        border-radius: 6px;
+        border-radius: 8px;
         transition: all 0.2s ease;
+        background: #f9f9f9;
     }
     
     .dashboard-item:hover {
         border-color: #0073aa;
         box-shadow: 0 2px 8px rgba(0,115,170,0.1);
+        background: white;
     }
     
     .item-link {
         display: flex;
-        align-items: center;
-        padding: 15px;
+        align-items: flex-start;
+        padding: 18px;
         text-decoration: none;
         color: inherit;
         position: relative;
+        gap: 15px;
     }
     
     .item-link:hover {
         color: inherit;
     }
     
+    .item-content {
+        flex: 1;
+    }
+    
     .item-link h4 {
-        margin: 0 0 5px 0;
+        margin: 0 0 8px 0;
         color: #0073aa;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
+        line-height: 1.3;
     }
     
     .item-link p {
@@ -498,15 +524,15 @@ function jotunheim_magic_dashboard() {
         color: #646970;
         font-size: 13px;
         line-height: 1.4;
-        flex: 1;
     }
     
     .item-arrow {
         color: #0073aa;
         font-weight: bold;
-        margin-left: 15px;
+        font-size: 18px;
         opacity: 0.7;
         transition: all 0.2s ease;
+        margin-top: 2px;
     }
     
     .dashboard-item:hover .item-arrow {
@@ -518,39 +544,44 @@ function jotunheim_magic_dashboard() {
         color: #646970;
         font-style: italic;
         text-align: center;
-        padding: 20px;
+        padding: 30px 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
     }
     
     .jotunheim-quick-actions {
         background: #f6f7f7;
-        padding: 25px;
-        border-radius: 8px;
+        padding: 30px;
+        border-radius: 12px;
         border: 1px solid #dcdcde;
+        margin-top: 20px;
     }
     
     .jotunheim-quick-actions h3 {
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         color: #1d2327;
+        font-size: 20px;
     }
     
     .quick-actions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
     }
     
     .quick-action {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 15px;
+        gap: 12px;
+        padding: 18px 20px;
         background: white;
         border: 1px solid #c3c4c7;
-        border-radius: 6px;
+        border-radius: 8px;
         text-decoration: none;
         color: #1d2327;
         transition: all 0.2s ease;
+        font-weight: 500;
     }
     
     .quick-action:hover {
@@ -558,10 +589,19 @@ function jotunheim_magic_dashboard() {
         color: white;
         border-color: #0073aa;
         text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,115,170,0.25);
     }
     
     .quick-action .dashicons {
-        font-size: 18px;
+        font-size: 20px;
+    }
+    
+    @media (max-width: 1024px) {
+        .jotunheim-sections-grid {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
     }
     
     @media (max-width: 768px) {
@@ -571,6 +611,14 @@ function jotunheim_magic_dashboard() {
         
         .quick-actions-grid {
             grid-template-columns: 1fr;
+        }
+        
+        .jotunheim-section-card {
+            padding: 25px;
+        }
+        
+        .jotunheim-welcome {
+            padding: 30px;
         }
     }
     </style>

@@ -365,6 +365,47 @@ function render_dashboard_config_page() {
     // Force remove top spacing with aggressive CSS and JavaScript
     ?>
     <style>
+    /* Aggressive top spacing removal */
+    body.wp-admin #wpwrap {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    body.wp-admin #wpcontent {
+        padding-left: 0;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    body.wp-admin #wpbody {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    body.wp-admin #wpbody-content {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Hide and reset screen meta (options dropdown) that might cause spacing */
+    #screen-meta,
+    #screen-meta-links {
+        display: none !important;
+        margin-top: 0 !important;
+        height: 0 !important;
+    }
+    
+    /* Remove admin bar spacing */
+    html.wp-toolbar {
+        padding-top: 0 !important;
+    }
+    
+    body.wp-admin {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Target the specific dashboard config wrapper */
     .dashboard-config-wrap {
         margin-top: 0 !important;
         padding-top: 0 !important;
@@ -378,45 +419,37 @@ function render_dashboard_config_page() {
         padding-top: 0 !important;
     }
     
-    .wp-admin #wpbody-content {
-        padding-top: 0 !important;
-    }
-    
-    .wp-admin #wpcontent {
-        padding-left: 0;
-        margin-top: 0 !important;
-    }
-    
-    .wp-admin #wpbody {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    #screen-meta,
-    #screen-meta-links {
-        margin-top: 0 !important;
+    /* Remove any admin notices that cause spacing */
+    .notice, .update-nag, .updated, .error, .is-dismissible {
+        display: none !important;
     }
     </style>
     
     <script>
     jQuery(document).ready(function($) {
         // Force remove any top spacing via JavaScript
-        $('.wrap').css({
+        $('body, #wpwrap, #wpcontent, #wpbody, #wpbody-content, .wrap').css({
             'margin-top': '0',
             'padding-top': '0'
         });
         
-        $('#wpbody-content').css({
-            'padding-top': '0'
-        });
-        
-        $('#wpbody').css({
-            'margin-top': '0',
-            'padding-top': '0'
-        });
+        // Remove screen meta elements completely
+        $('#screen-meta, #screen-meta-links').remove();
         
         // Remove any admin notices that might be causing spacing
-        $('.notice, .updated, .error').remove();
+        $('.notice, .updated, .error, .update-nag').remove();
+        
+        // Force the wrapper to have no top spacing
+        $('.dashboard-config-wrap').css({
+            'margin-top': '0',
+            'padding-top': '0'
+        });
+        
+        // Additional aggressive removal of WordPress admin spacing
+        setTimeout(function() {
+            $('body').removeClass('wp-toolbar');
+            $('#wpbody-content').css('padding-top', '0');
+        }, 100);
     });
     </script>
     
