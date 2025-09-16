@@ -9,20 +9,6 @@ if (!defined('ABSPATH')) {
  * Provides a comprehensive interface for managing the jotun_playerlist table
  */
 
-// Add menu item for Player List Management
-add_action('admin_menu', 'jotun_playerlist_admin_menu');
-
-function jotun_playerlist_admin_menu() {
-    add_submenu_page(
-        'jotunheim-magic-plugin',
-        'Player List Management',
-        'Player List',
-        'manage_options',
-        'jotun-playerlist',
-        'jotun_playerlist_interface'
-    );
-}
-
 function jotun_playerlist_interface() {
     // Enqueue scripts and styles
     wp_enqueue_script('jotun-comprehensive-api', plugin_dir_url(__FILE__) . '../../assets/js/jotun-comprehensive-api.js', ['jquery'], '1.0.0', true);

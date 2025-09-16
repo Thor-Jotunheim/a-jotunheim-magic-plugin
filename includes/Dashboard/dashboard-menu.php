@@ -74,6 +74,12 @@ function jotunheim_magic_plugin_menu() {
             'callback'    => 'render_pos_interface_page',
         ],
         [
+            'title'       => 'Player List Management',
+            'menu_title'  => 'Player List',
+            'slug'        => 'jotun-playerlist',
+            'callback'    => 'jotun_playerlist_interface',
+        ],
+        [
             'title'       => 'Weather Calendar Config',
             'menu_title'  => 'Weather Calendar Config',
             'slug'        => 'weather_calendar_config',
@@ -85,22 +91,77 @@ function jotunheim_magic_plugin_menu() {
             'slug'        => 'eventzone_field_config',
             'callback'    => 'render_eventzone_field_config_page',
         ],
+        [
+            'title'       => 'Dashboard Configuration',
+            'menu_title'  => 'Dashboard Config',
+            'slug'        => 'dashboard_config',
+            'callback'    => 'render_dashboard_config_page',
+        ],
     ];
 
-    // Register each submenu
-    foreach ($submenus as $submenu) {
-        add_submenu_page(
-            'jotunheim_magic',   // Parent slug
-            $submenu['title'],          // Page title
-            $submenu['menu_title'],     // Menu title
-            'manage_options',           // Capability required (restricted to admins by default)
-            $submenu['slug'],           // Submenu slug
-            $submenu['callback']        // Callback function
-        );
+    // Check if we should use organized menu structure
+    global $jotunheim_dashboard_config;
+    $use_organized_menu = get_option('jotunheim_use_organized_menu', true);
+    
+    if ($use_organized_menu && isset($jotunheim_dashboard_config)) {
+        register_organized_menu($jotunheim_dashboard_config);
+    } else {
+        // Register each submenu (legacy mode)
+        foreach ($submenus as $submenu) {
+            add_submenu_page(
+                'jotunheim_magic',          // Parent slug
+                $submenu['title'],          // Page title
+                $submenu['menu_title'],     // Menu title
+                'manage_options',           // Capability required (restricted to admins by default)
+                $submenu['slug'],           // Submenu slug
+                $submenu['callback']        // Callback function
+            );
+        }
     }
 
     // Remove the default submenu created by WordPress
     remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
+}
+
+/**
+ * Register organized menu structure based on dashboard configuration
+ */
+function register_organized_menu($config) {
+    if (!isset($config['sections']) || !is_array($config['sections'])) {
+        return;
+    }
+
+    foreach ($config['sections'] as $section) {
+        if (!isset($section['items']) || !is_array($section['items'])) {
+            continue;
+        }
+
+        // Add section separator (using a disabled menu item)
+        if (!empty($section['title'])) {
+            add_submenu_page(
+                'jotunheim_magic',
+                $section['title'],
+                '── ' . $section['title'] . ' ──',
+                'manage_options',
+                'section_' . sanitize_title($section['title']),
+                function() { wp_die('This is a section separator.'); }
+            );
+        }
+
+        // Add items in this section
+        foreach ($section['items'] as $item) {
+            if (isset($item['slug'], $item['title'], $item['callback'])) {
+                add_submenu_page(
+                    'jotunheim_magic',
+                    $item['title'],
+                    $item['menu_title'] ?? $item['title'],
+                    'manage_options',
+                    $item['slug'],
+                    $item['callback']
+                );
+            }
+        }
+    }
 }
 
 // Main dashboard page for Jotunheim Magic Plugin
