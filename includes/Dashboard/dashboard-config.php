@@ -1032,11 +1032,30 @@ class JotunheimDashboardConfig {
             // Try to save with wp_options directly to get more info
             global $wpdb;
             $option_name = 'jotunheim_dashboard_config';
-            $option_value = serialize($config);
+            $option_value = maybe_serialize($config);
             
             // Check if option exists
             $exists = $wpdb->get_var($wpdb->prepare("SELECT option_id FROM {$wpdb->options} WHERE option_name = %s", $option_name));
             error_log('DEBUG: Option exists in database: ' . ($exists ? 'true' : 'false'));
+            
+            // Try direct database update
+            if ($exists) {
+                $direct_result = $wpdb->update(
+                    $wpdb->options,
+                    array('option_value' => $option_value),
+                    array('option_name' => $option_name),
+                    array('%s'),
+                    array('%s')
+                );
+                error_log('DEBUG: Direct database update result: ' . ($direct_result !== false ? 'success' : 'failed'));
+                
+                if ($direct_result !== false) {
+                    // Clear any option caches
+                    wp_cache_delete($option_name, 'options');
+                    error_log('DEBUG: Cache cleared, treating as successful update');
+                    $update_result = true;
+                }
+            }
         }
         
         if ($update_result) {
