@@ -152,16 +152,21 @@ class JotunheimDashboardConfig {
                     $this->normalized_db->save_item($item_data);
                 }
             }
-            
-            // Reload from database
-            $this->menu_config = $this->normalized_db->get_full_configuration();
-        }
         
-        error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config) . ' sections');
-        foreach ($this->menu_config as $section_key => $section_data) {
-            $item_count = isset($section_data['items']) ? count($section_data['items']) : 0;
-            error_log('  - Section: ' . $section_key . ' (' . $item_count . ' items)');
+        // Reload from database
+        $this->menu_config = $this->normalized_db->get_full_configuration();
+        
+        // Reduced logging - only log once per page load, not every init
+        static $logged = false;
+        if (!$logged) {
+            error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config) . ' sections');
+            foreach ($this->menu_config as $section_key => $section_data) {
+                $item_count = isset($section_data['items']) ? count($section_data['items']) : 0;
+                error_log('  - Section: ' . $section_key . ' (' . $item_count . ' items)');
+            }
+            $logged = true;
         }
+    }
     }
     
     /**
@@ -621,6 +626,7 @@ class JotunheimDashboardConfig {
                     $menu_items[] = [
                         'id' => $item['item_id'],
                         'title' => $item['title'],
+                        'menu_title' => $item['title'], // Add menu_title for JavaScript compatibility
                         'callback' => $item['callback'],
                         'enabled' => $item['enabled'],
                         'quick_action' => $item['quick_action'], // Direct from database
