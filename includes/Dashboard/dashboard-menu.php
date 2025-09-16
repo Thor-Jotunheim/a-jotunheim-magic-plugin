@@ -115,16 +115,22 @@ function jotunheim_magic_plugin_menu() {
     // The first submenu item [0] is what makes the main menu clickable
     // Removing it breaks the main menu navigation
     
-    // Safety check: only use organized menu if we have valid config
+    // Safety check: only use organized menu if we have valid config and it has the normalized database
     if ($use_organized_menu && isset($jotunheim_dashboard_config)) {
-        $organized_success = register_organized_menu($jotunheim_dashboard_config);
-        
-        // If organized menu failed, fall back to legacy mode
-        if (!$organized_success) {
-            error_log('Jotunheim Dashboard: Organized menu failed, falling back to legacy mode');
-            $use_organized_menu = false;
+        // Check if the config object has the normalized database
+        if (property_exists($jotunheim_dashboard_config, 'normalized_db') && $jotunheim_dashboard_config->normalized_db) {
+            $organized_success = register_organized_menu($jotunheim_dashboard_config);
+            
+            // If organized menu failed, fall back to legacy mode
+            if (!$organized_success) {
+                error_log('Jotunheim Dashboard: Organized menu failed, falling back to legacy mode');
+                $use_organized_menu = false;
+            } else {
+                error_log('Jotunheim Dashboard: Organized menu registered successfully');
+            }
         } else {
-            error_log('Jotunheim Dashboard: Organized menu registered successfully');
+            error_log('Jotunheim Dashboard: Config object missing normalized database, falling back to legacy mode');
+            $use_organized_menu = false;
         }
     }
     
@@ -170,9 +176,9 @@ function register_organized_menu($config) {
         return false;
     }
     
-    // Get the config data
-    if (!method_exists($config, 'get_config') || !method_exists($config, 'get_menu_items')) {
-        error_log('Jotunheim Dashboard: Config object missing required methods');
+    // Check if we have the normalized database interface
+    if (!property_exists($config, 'normalized_db') || !$config->normalized_db) {
+        error_log('Jotunheim Dashboard: Config object missing normalized database');
         return false;
     }
     
@@ -183,47 +189,71 @@ function register_organized_menu($config) {
     // WordPress automatically handles the main menu page, no need for duplicate submenu item
     // The main menu already points to 'jotunheim_magic_dashboard' callback
     
-    $menu_config = $config->get_config();
+    // Get the config from normalized database
+    $menu_config = $config->normalized_db->get_full_configuration();
     $menu_items = $config->get_menu_items();
     
     error_log('Jotunheim Dashboard: menu_config structure - ' . print_r($menu_config, true));
     
-    if (!isset($menu_config['sections']) || !isset($menu_config['items'])) {
-        error_log('Jotunheim Dashboard: Invalid menu config structure - missing sections or items');
+    if (!$menu_config || !is_array($menu_config)) {
+        error_log('Jotunheim Dashboard: Invalid menu config structure from normalized database');
         return false;
     }
     
-    error_log('Jotunheim Dashboard: Found ' . count($menu_config['sections']) . ' sections and ' . count($menu_config['items']) . ' item assignments');
+    error_log('Jotunheim Dashboard: Found ' . count($menu_config) . ' sections and ' . array_sum(array_map(function($section) { 
+        return isset($section['items']) ? count($section['items']) : 0; 
+    }, $menu_config)) . ' item assignments');
     
-    // Create a map of items by section
+    // Create a map of items by section using normalized database structure
     $items_by_section = [];
-    foreach ($menu_config['items'] as $item_assignment) {
-        if (!$item_assignment['enabled']) continue;
-        
-        $section_id = $item_assignment['section'];
-        if (!isset($items_by_section[$section_id])) {
-            $items_by_section[$section_id] = [];
+    foreach ($menu_config as $section_id => $section_data) {
+        if (!isset($section_data['items']) || !is_array($section_data['items'])) {
+            continue;
         }
         
-        // Find the actual menu item
-        foreach ($menu_items as $menu_item) {
-            if ($menu_item['id'] === $item_assignment['id']) {
-                $items_by_section[$section_id][] = [
-                    'slug' => $menu_item['id'],
-                    'title' => $menu_item['title'],
-                    'menu_title' => $menu_item['menu_title'],
-                    'callback' => $menu_item['callback'],
-                    'order' => $item_assignment['order']
-                ];
-                break;
+        $items_by_section[$section_id] = [];
+        
+        foreach ($section_data['items'] as $item_data) {
+            if (!$item_data['enabled']) continue;
+            
+            // Find the actual menu item by ID
+            foreach ($menu_items as $menu_item) {
+                if ($menu_item['id'] === $item_data['item_id']) {
+                    $items_by_section[$section_id][] = [
+                        'slug' => $menu_item['id'],
+                        'title' => $menu_item['title'],
+                        'menu_title' => $menu_item['menu_title'],
+                        'callback' => $menu_item['callback'],
+                        'order' => $item_data['order']
+                    ];
+                    break;
+                }
             }
+        }
+        
+        // Sort items by order
+        if (!empty($items_by_section[$section_id])) {
+            usort($items_by_section[$section_id], function($a, $b) {
+                return $a['order'] <=> $b['order'];
+            });
         }
     }
     
     error_log('Jotunheim Dashboard: Items by section - ' . print_r($items_by_section, true));
     
+    // Get sections from normalized database (sections are already in the config)
+    $sections = [];
+    foreach ($menu_config as $section_id => $section_data) {
+        $sections[] = [
+            'id' => $section_id,
+            'title' => $section_data['title'],
+            'description' => $section_data['description'],
+            'order' => $section_data['order'],
+            'enabled' => $section_data['enabled']
+        ];
+    }
+    
     // Sort sections by order
-    $sections = $menu_config['sections'];
     usort($sections, function($a, $b) {
         return $a['order'] <=> $b['order'];
     });
@@ -261,13 +291,7 @@ function register_organized_menu($config) {
         
         // Add items in this section
         if (isset($items_by_section[$section_id])) {
-            // Sort items by order
-            $items = $items_by_section[$section_id];
-            usort($items, function($a, $b) {
-                return $a['order'] <=> $b['order'];
-            });
-            
-            foreach ($items as $item) {
+            foreach ($items_by_section[$section_id] as $item) {
                 // Debug: Show a sample item structure (only log first item to avoid spam)
                 static $logged_sample = false;
                 if (!$logged_sample) {
@@ -275,10 +299,9 @@ function register_organized_menu($config) {
                     $logged_sample = true;
                 }
                 
-                // Validate item has required keys - be more flexible about the ID field
-                if ((!isset($item['id']) || empty($item['id'])) && 
-                    (!isset($item['slug']) || empty($item['slug']))) {
-                    error_log('Jotunheim Dashboard: SKIPPING item with missing ID and slug - ' . print_r($item, true));
+                // Validate item has required keys
+                if (!isset($item['slug']) || empty($item['slug'])) {
+                    error_log('Jotunheim Dashboard: SKIPPING item with missing slug - ' . print_r($item, true));
                     continue;
                 }
                 
@@ -325,10 +348,13 @@ function jotunheim_magic_dashboard() {
     error_log('Jotunheim Dashboard: jotunheim_magic_dashboard() function called');
     global $jotunheim_dashboard_config;
     
-    // Get organized menu structure if available
+    // Get organized menu structure from normalized database if available
     $organized_menu = [];
-    if ($jotunheim_dashboard_config) {
-        $organized_menu = $jotunheim_dashboard_config->get_organized_menu();
+    if ($jotunheim_dashboard_config && property_exists($jotunheim_dashboard_config, 'normalized_db') && $jotunheim_dashboard_config->normalized_db) {
+        $config = $jotunheim_dashboard_config->normalized_db->get_full_configuration();
+        if ($config && is_array($config)) {
+            $organized_menu = $config;
+        }
     }
     
     // Fallback sections if no organized menu
