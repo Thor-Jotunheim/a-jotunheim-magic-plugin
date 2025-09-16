@@ -87,6 +87,9 @@ class JotunheimDashboardConfig {
             $this->sync_new_items_to_config();
         }
         
+        // Always update the memory config from database to ensure consistency
+        $this->sync_memory_config_with_database();
+        
         // Ensure config has required structure
         if (!isset($this->menu_config['sections']) || !is_array($this->menu_config['sections']) || 
             !isset($this->menu_config['items']) || !is_array($this->menu_config['items'])) {
@@ -656,6 +659,20 @@ class JotunheimDashboardConfig {
         error_log('DEBUG: Cleaned config: kept ' . count($cleaned_items) . ' valid items out of original ' . count($config['items'] ?? []));
         
         return $config;
+    }
+    
+    /**
+     * Sync memory config with database to ensure consistency
+     */
+    private function sync_memory_config_with_database() {
+        $db_config = $this->db->load_config('dashboard_config', null);
+        
+        if ($db_config !== null) {
+            error_log('DEBUG: Syncing memory config with database');
+            $this->menu_config = $db_config;
+        } else {
+            error_log('DEBUG: No database config found during sync');
+        }
     }
     
     public function get_organized_menu() {
