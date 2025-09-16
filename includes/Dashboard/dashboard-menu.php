@@ -147,9 +147,6 @@ function jotunheim_magic_plugin_menu() {
     // IMPORTANT: Do NOT add a submenu with the same slug as the parent menu
     // WordPress will automatically create the first submenu item that points to the main menu callback
     // Adding a submenu with the same slug will override the main menu behavior
-    
-    // Remove any existing submenu page that might conflict
-    remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
 }
 
 /**

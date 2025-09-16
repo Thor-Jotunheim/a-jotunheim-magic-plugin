@@ -207,19 +207,26 @@ class JotunheimDashboardConfig {
     public function get_available_plugin_pages() {
         $available_pages = [];
         
+        error_log('Jotunheim Dashboard: Scanning for available pages...');
+        
         // Scan for functions that match render_*_page pattern
         $functions = get_defined_functions()['user'];
+        
+        error_log('Jotunheim Dashboard: Found ' . count($functions) . ' user functions');
         
         foreach ($functions as $function) {
             if (preg_match('/^render_(.+)_page$/', $function, $matches)) {
                 $page_id = $matches[1];
                 $page_title = ucwords(str_replace('_', ' ', $page_id));
                 
+                error_log('Jotunheim Dashboard: Found render function: ' . $function . ' -> ' . $page_id);
+                
                 // Skip if already in our default menu items
                 $exists = false;
                 foreach ($this->default_menu_items as $item) {
                     if ($item['id'] === $page_id) {
                         $exists = true;
+                        error_log('  - Skipping ' . $page_id . ' (already in default items)');
                         break;
                     }
                 }
@@ -233,13 +240,17 @@ class JotunheimDashboardConfig {
                         'category' => 'discovered',
                         'description' => 'Auto-detected plugin page'
                     ];
+                    error_log('  - Added ' . $page_id . ' to available pages');
                 }
             }
         }
         
         // Also scan includes directory for PHP files that might contain page renders
         $plugin_dir = plugin_dir_path(__FILE__) . '../';
+        error_log('Jotunheim Dashboard: Scanning directory: ' . $plugin_dir);
         $this->scan_directory_for_pages($plugin_dir, $available_pages);
+        
+        error_log('Jotunheim Dashboard: Final page count: ' . count($available_pages));
         
         return $available_pages;
     }
@@ -526,8 +537,16 @@ class JotunheimDashboardConfig {
             wp_die('Invalid nonce');
         }
         
+        error_log('Jotunheim Dashboard: Starting page scan...');
+        
         $available_pages = $this->get_available_plugin_pages();
-        wp_send_json_success($available_pages);
+        
+        error_log('Jotunheim Dashboard: Found ' . count($available_pages) . ' pages');
+        foreach ($available_pages as $page) {
+            error_log('  - ' . $page['id'] . ': ' . $page['title']);
+        }
+        
+        wp_send_json_success(['pages' => $available_pages]);
     }
     
     /**
@@ -1772,7 +1791,7 @@ function render_dashboard_config_page() {
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'ajax_get_available_pages',
+                    action: 'get_available_pages',
                     nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>'
                 },
                 success: function(response) {
@@ -1834,7 +1853,7 @@ function render_dashboard_config_page() {
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'ajax_add_custom_page',
+                    action: 'add_custom_page',
                     nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
                     page_id: pageId,
                     section: section
@@ -1872,7 +1891,7 @@ function render_dashboard_config_page() {
             e.preventDefault();
             
             const formData = {
-                action: 'ajax_add_custom_page',
+                action: 'add_custom_page',
                 nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
                 page_id: $('#manual-page-id').val(),
                 page_title: $('#manual-page-title').val(),
