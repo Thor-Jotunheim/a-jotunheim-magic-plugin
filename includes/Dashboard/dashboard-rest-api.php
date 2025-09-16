@@ -7,6 +7,11 @@ class Jotunheim_Dashboard_REST_API {
     public function __construct() {
         $this->normalized_db = new Jotunheim_Dashboard_DB_Normalized();
         add_action('rest_api_init', [$this, 'register_routes']);
+        
+        // Ensure the dashboard config class is available
+        if (!class_exists('JotunheimDashboardConfig')) {
+            require_once(plugin_dir_path(__FILE__) . 'dashboard-config.php');
+        }
     }
 
     public function register_routes() {
@@ -137,7 +142,7 @@ class Jotunheim_Dashboard_REST_API {
     public function get_menu_items(WP_REST_Request $request) {
         try {
             // Load the dashboard config to get merged menu items
-            $dashboard_config = new Jotunheim_Dashboard_Config();
+            $dashboard_config = new JotunheimDashboardConfig();
             $menu_items = $dashboard_config->get_menu_items();
             
             return new WP_REST_Response([

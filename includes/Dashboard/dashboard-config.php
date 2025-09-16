@@ -1355,8 +1355,21 @@ function render_dashboard_config_page() {
     // Enqueue necessary scripts and styles
     wp_enqueue_script('jquery-ui-sortable');
     wp_enqueue_script('wp-api'); // WordPress REST API
-    wp_enqueue_script('dashboard-rest-client', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-rest-client.js', ['wp-api', 'jquery', 'jquery-ui-sortable'], '1.0.0', true);
+    
+    // Keep the old script for now to prevent breaking the config page
+    wp_enqueue_script('dashboard-config-js', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-config.js', ['jquery', 'jquery-ui-sortable'], '1.0.0', true);
+    
+    // Also enqueue the new REST client for testing
+    wp_enqueue_script('dashboard-rest-client', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-rest-client.js', ['wp-api', 'jquery'], '1.0.0', true);
+    
     wp_enqueue_style('dashboard-config-css', plugin_dir_url(__FILE__) . '../../assets/css/dashboard-config.css', [], '1.0.0');
+
+    wp_localize_script('dashboard-config-js', 'dashboardConfig', [
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('dashboard_config_nonce'),
+        'config' => $config,
+        'menuItems' => $menu_items
+    ]);
 
     wp_localize_script('dashboard-config-js', 'dashboardConfig', [
         'ajaxurl' => admin_url('admin-ajax.php'),
