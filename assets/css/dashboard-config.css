@@ -3,54 +3,50 @@
  * Styles for the dashboard menu organization interface
  */
 
-/* Fix WordPress admin layout issues - STRONGER FIXES */
-body.wp-admin {
-    padding-top: 0 !important;
-}
-
-#wpwrap {
-    padding-top: 0 !important;
-}
-
-#wpcontent {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-
+/* Main container styling */
 .dashboard-config-wrap {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
 }
 
 .dashboard-config-wrap .wrap {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 30px;
 }
 
-/* Ensure the main title has no top spacing */
-.dashboard-config-title,
-.wrap h1.dashboard-config-title {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+/* Title styling */
+.dashboard-config-title {
+    margin: 0 0 20px 0 !important;
+    padding: 0 !important;
+    color: #1d2327;
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 1.3;
 }
 
-/* Fix any WordPress default heading margins */
+/* Remove any top spacing issues */
 .wrap h1:first-child {
     margin-top: 0 !important;
     padding-top: 0 !important;
 }
 
-/* Force override any admin notices pushing content down */
+/* Fix notice positioning */
 .wrap .notice,
 .wrap .error,
 .wrap .updated {
-    margin-top: 0 !important;
-    margin-bottom: 15px !important;
+    margin: 15px 0 !important;
 }
 
-/* Remove organized menu toggle spacing from top since it's moved to bottom */
+/* Menu toggle styling */
 .organized-menu-toggle {
-    margin-bottom: 0;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f6f7f7;
+    border-radius: 6px;
+    border-left: 4px solid #0073aa;
 }
 
 .organized-menu-toggle label {
@@ -58,6 +54,7 @@ body.wp-admin {
     align-items: center;
     gap: 8px;
     font-weight: 600;
+    margin: 0;
 }
 
 /* Ensure proper container spacing */

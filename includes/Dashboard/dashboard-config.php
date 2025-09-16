@@ -265,6 +265,9 @@ class JotunheimDashboardConfig {
         
         error_log('Jotunheim Dashboard: Scanning for available pages...');
         
+        // First, ensure all our plugin files are loaded
+        $this->load_all_plugin_files();
+        
         // Scan for functions that match render_*_page pattern
         $functions = get_defined_functions()['user'];
         
@@ -306,9 +309,91 @@ class JotunheimDashboardConfig {
         error_log('Jotunheim Dashboard: Scanning directory: ' . $plugin_dir);
         $this->scan_directory_for_pages($plugin_dir, $available_pages);
         
+        // Add some hardcoded pages that might not be auto-detected
+        $hardcoded_pages = [
+            [
+                'id' => 'discord_auth_config',
+                'title' => 'Discord Authentication Config',
+                'menu_title' => 'Discord Config',
+                'callback' => 'render_discord_auth_config_page',
+                'category' => 'discord',
+                'description' => 'Configure Discord OAuth and role permissions'
+            ],
+            [
+                'id' => 'page_permissions',
+                'title' => 'Page Permissions',
+                'menu_title' => 'Page Permissions', 
+                'callback' => 'render_page_permissions_config_page',
+                'category' => 'discord',
+                'description' => 'Configure page access by Discord role'
+            ],
+            [
+                'id' => 'playerlist_interface',
+                'title' => 'Player List Management',
+                'menu_title' => 'Player List',
+                'callback' => 'jotun_playerlist_interface',
+                'category' => 'management',
+                'description' => 'Manage player database and imports'
+            ]
+        ];
+        
+        foreach ($hardcoded_pages as $page) {
+            // Check if already exists
+            $exists = false;
+            foreach ($this->default_menu_items as $item) {
+                if ($item['id'] === $page['id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            foreach ($available_pages as $existing) {
+                if ($existing['id'] === $page['id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            
+            if (!$exists && function_exists($page['callback'])) {
+                $available_pages[] = $page;
+                error_log('Jotunheim Dashboard: Added hardcoded page: ' . $page['id']);
+            }
+        }
+        
         error_log('Jotunheim Dashboard: Final page count: ' . count($available_pages));
         
         return $available_pages;
+    }
+    
+    /**
+     * Load all plugin files to ensure functions are available for scanning
+     */
+    private function load_all_plugin_files() {
+        $plugin_dir = plugin_dir_path(__FILE__) . '../';
+        $this->load_files_from_directory($plugin_dir);
+    }
+    
+    /**
+     * Recursively load PHP files from a directory
+     */
+    private function load_files_from_directory($dir) {
+        if (!is_dir($dir)) return;
+        
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') continue;
+            
+            $full_path = $dir . $file;
+            
+            if (is_dir($full_path)) {
+                // Recursively load subdirectories
+                $this->load_files_from_directory($full_path . '/');
+            } elseif (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                // Include PHP file if not already included
+                if (!in_array($full_path, get_included_files())) {
+                    @include_once($full_path);
+                }
+            }
+        }
     }
     
     /**
@@ -800,54 +885,11 @@ function render_dashboard_config_page() {
         'menuItems' => $menu_items
     ]);
     
-    // Force remove top spacing with aggressive CSS and JavaScript
     ?>
-    <style>
-    /* Aggressive top spacing removal */
-    body.wp-admin #wpwrap {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    body.wp-admin #wpcontent {
-        padding-left: 0;
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    body.wp-admin #wpbody {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    body.wp-admin #wpbody-content {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-    
-    /* Hide and reset screen meta (options dropdown) that might cause spacing */
-    #screen-meta,
-    #screen-meta-links {
-        display: none !important;
-        margin-top: 0 !important;
-        height: 0 !important;
-    }
-    
-    /* Remove admin bar spacing */
-    html.wp-toolbar {
-        padding-top: 0 !important;
-    }
-    
-    body.wp-admin {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    /* Target the specific dashboard config wrapper */
-    .dashboard-config-wrap {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+    <div class="dashboard-config-wrap">
+        <div class="wrap">
+            <h1 class="dashboard-config-title">Dashboard Configuration</h1>
+            <p class="description">Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
     
     body.wp-admin .wrap.dashboard-config-wrap,
     body.wp-admin .dashboard-config-wrap,
