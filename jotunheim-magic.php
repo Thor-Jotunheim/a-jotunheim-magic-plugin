@@ -351,4 +351,17 @@ class JotunheimMagic {
         }
     }
 }
+
+// Enqueue admin styles for organized menu
+function jotunheim_magic_admin_enqueue_styles($hook) {
+    // Load admin menu styles on all admin pages to style the sidebar menu
+    wp_enqueue_style(
+        'jotunheim-admin-menu',
+        plugin_dir_url(__FILE__) . 'assets/css/admin-menu.css',
+        array(),
+        '1.0.0'
+    );
+}
+add_action('admin_enqueue_scripts', 'jotunheim_magic_admin_enqueue_styles');
+
 ?>

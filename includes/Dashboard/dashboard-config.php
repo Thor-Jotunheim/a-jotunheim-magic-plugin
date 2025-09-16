@@ -30,6 +30,15 @@ class JotunheimDashboardConfig {
         error_log('Jotunheim Dashboard: Starting init()');
         $this->load_default_menu_items();
         
+        // Check for reset parameter (for easy config regeneration)
+        if (isset($_GET['reset_dashboard_config']) && $_GET['reset_dashboard_config'] === '1' && current_user_can('manage_options')) {
+            delete_option('jotunheim_dashboard_config');
+            error_log('Jotunheim Dashboard: Config reset via URL parameter');
+        }
+        
+        // TEMPORARY: Force config regeneration to include new Dashboard Config item
+        delete_option('jotunheim_dashboard_config');
+        
         // Get existing config or create default
         $stored_config = get_option('jotunheim_dashboard_config', false);
         
@@ -157,6 +166,14 @@ class JotunheimDashboardConfig {
                 'callback' => 'render_weather_calendar_config_page',
                 'category' => 'system',
                 'description' => 'Configure weather calendar settings'
+            ],
+            [
+                'id' => 'dashboard_config',
+                'title' => 'Dashboard Configuration',
+                'menu_title' => 'Dashboard Config',
+                'callback' => 'render_dashboard_config_page',
+                'category' => 'system',
+                'description' => 'Configure dashboard menu organization and layout'
             ]
         ];
     }

@@ -212,7 +212,7 @@ function register_organized_menu($config) {
         add_submenu_page(
             'jotunheim_magic',
             $section['title'],
-            '── ' . $section['title'] . ' ──',
+            '<strong>' . $section['title'] . '</strong>',
             'manage_options',
             'section_' . $section_id,
             function() { wp_die('This is a section separator.'); }

@@ -1,0 +1,84 @@
+/* Jotunheim Magic Admin Menu Styling */
+
+/* Style section headers in organized menu */
+#adminmenu .wp-submenu li a[href*="section_"] {
+    /* Make section headers bold and distinct */
+    font-weight: bold !important;
+    color: #f0f0f1 !important;
+    background: linear-gradient(135deg, #2c3338 0%, #1e1e1e 100%) !important;
+    cursor: default !important;
+    pointer-events: none !important;
+    padding: 8px 12px !important;
+    margin: 8px 0 4px 0 !important;
+    border-radius: 4px !important;
+    position: relative !important;
+    border-left: 3px solid #72aee6 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Add separator line under section headers */
+#adminmenu .wp-submenu li a[href*="section_"]:after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #3c434a 20%, #3c434a 80%, transparent 100%);
+    margin: 8px -12px 0 -12px;
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    right: 0;
+}
+
+/* Remove hover effects from section headers */
+#adminmenu .wp-submenu li a[href*="section_"]:hover {
+    background: linear-gradient(135deg, #2c3338 0%, #1e1e1e 100%) !important;
+    color: #f0f0f1 !important;
+}
+
+/* Add some spacing after section headers */
+#adminmenu .wp-submenu li a[href*="section_"] + li {
+    margin-top: 8px !important;
+}
+
+/* Style regular menu items under sections */
+#adminmenu .wp-submenu li:not([class*="section"]) a {
+    padding-left: 24px !important;
+    color: #c3c4c7 !important;
+    position: relative !important;
+}
+
+/* Add subtle indent indicator for menu items */
+#adminmenu .wp-submenu li:not([class*="section"]) a:before {
+    content: '▸';
+    position: absolute;
+    left: 12px;
+    color: #72aee6;
+    opacity: 0.5;
+    font-size: 10px;
+}
+
+/* Regular menu item hover state */
+#adminmenu .wp-submenu li:not([class*="section"]) a:hover {
+    color: #72aee6 !important;
+    background: rgba(114, 174, 230, 0.1) !important;
+    padding-left: 26px !important;
+    transition: all 0.2s ease !important;
+}
+
+#adminmenu .wp-submenu li:not([class*="section"]) a:hover:before {
+    opacity: 1;
+    left: 14px;
+}
+
+/* Make sure section headers stand out from regular items */
+#adminmenu .wp-submenu li a[href*="section_"] strong {
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    opacity: 0.95 !important;
+}
+
+/* Add spacing between different sections */
+#adminmenu .wp-submenu li a[href*="section_"]:not(:first-child) {
+    margin-top: 16px !important;
+}
