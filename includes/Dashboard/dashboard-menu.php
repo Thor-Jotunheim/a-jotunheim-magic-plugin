@@ -143,47 +143,86 @@ function register_organized_menu($config) {
         return false;
     }
     
-    // Try to get sections data
-    $sections = null;
-    if (method_exists($config, 'get_config')) {
-        $menu_config = $config->get_config();
-        $sections = isset($menu_config['sections']) ? $menu_config['sections'] : null;
-    }
-    
-    // Fallback if no sections configured
-    if (!$sections || !is_array($sections) || empty($sections)) {
-        error_log('Jotunheim Dashboard: No valid sections found, falling back to legacy menu');
+    // Get the config data
+    if (!method_exists($config, 'get_config') || !method_exists($config, 'get_menu_items')) {
+        error_log('Jotunheim Dashboard: Config object missing required methods');
         return false;
     }
+    
+    $menu_config = $config->get_config();
+    $menu_items = $config->get_menu_items();
+    
+    if (!isset($menu_config['sections']) || !isset($menu_config['items'])) {
+        error_log('Jotunheim Dashboard: Invalid menu config structure');
+        return false;
+    }
+    
+    // Create a map of items by section
+    $items_by_section = [];
+    foreach ($menu_config['items'] as $item_assignment) {
+        if (!$item_assignment['enabled']) continue;
+        
+        $section_id = $item_assignment['section'];
+        if (!isset($items_by_section[$section_id])) {
+            $items_by_section[$section_id] = [];
+        }
+        
+        // Find the actual menu item
+        foreach ($menu_items as $menu_item) {
+            if ($menu_item['id'] === $item_assignment['id']) {
+                $items_by_section[$section_id][] = [
+                    'slug' => $menu_item['id'],
+                    'title' => $menu_item['title'],
+                    'menu_title' => $menu_item['menu_title'],
+                    'callback' => $menu_item['callback'],
+                    'order' => $item_assignment['order']
+                ];
+                break;
+            }
+        }
+    }
+    
+    // Sort sections by order
+    $sections = $menu_config['sections'];
+    usort($sections, function($a, $b) {
+        return $a['order'] <=> $b['order'];
+    });
 
+    // Register menu items by section
     foreach ($sections as $section) {
-        if (!isset($section['items']) || !is_array($section['items'])) {
-            continue;
-        }
-
-        // Add section separator (using a disabled menu item)
-        if (!empty($section['title'])) {
-            add_submenu_page(
-                'jotunheim_magic',
-                $section['title'],
-                '── ' . $section['title'] . ' ──',
-                'manage_options',
-                'section_' . sanitize_title($section['title']),
-                function() { wp_die('This is a section separator.'); }
-            );
-        }
-
+        if (!$section['enabled']) continue;
+        
+        $section_id = $section['id'];
+        
+        // Add section separator
+        add_submenu_page(
+            'jotunheim_magic',
+            $section['title'],
+            '── ' . $section['title'] . ' ──',
+            'manage_options',
+            'section_' . $section_id,
+            function() { wp_die('This is a section separator.'); }
+        );
+        
         // Add items in this section
-        foreach ($section['items'] as $item) {
-            if (isset($item['slug'], $item['title'], $item['callback']) && function_exists($item['callback'])) {
-                add_submenu_page(
-                    'jotunheim_magic',
-                    $item['title'],
-                    $item['menu_title'] ?? $item['title'],
-                    'manage_options',
-                    $item['slug'],
-                    $item['callback']
-                );
+        if (isset($items_by_section[$section_id])) {
+            // Sort items by order
+            $items = $items_by_section[$section_id];
+            usort($items, function($a, $b) {
+                return $a['order'] <=> $b['order'];
+            });
+            
+            foreach ($items as $item) {
+                if (function_exists($item['callback'])) {
+                    add_submenu_page(
+                        'jotunheim_magic',
+                        $item['title'],
+                        $item['menu_title'],
+                        'manage_options',
+                        $item['slug'],
+                        $item['callback']
+                    );
+                }
             }
         }
     }
