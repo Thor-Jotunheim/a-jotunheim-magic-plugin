@@ -29,6 +29,36 @@ function get_configured_discord_roles() {
 }
 
 /**
+ * Get configured Discord roles with their levels
+ */
+function get_configured_discord_roles_with_levels() {
+    $roles = get_option('jotunheim_discord_roles', []);
+    $role_data = [];
+    
+    foreach ($roles as $role_key => $role_info) {
+        if (!empty($role_info['id'])) {
+            $role_data[$role_key] = [
+                'id' => $role_info['id'],
+                'name' => $role_info['name'],
+                'level' => isset($role_info['level']) ? intval($role_info['level']) : 1
+            ];
+        }
+    }
+    
+    // Fallback to hardcoded values if no configuration exists
+    if (empty($role_data)) {
+        $role_data = [
+            'admin' => ['id' => '816462309274419250', 'name' => 'Admin', 'level' => 3],
+            'staff' => ['id' => '1390490815054221414', 'name' => 'Staff', 'level' => 2],
+            'valkyrie' => ['id' => '963502767173931039', 'name' => 'Valkyrie', 'level' => 2],
+            'vithar' => ['id' => '1104073178495602751', 'name' => 'Vithar', 'level' => 1]
+        ];
+    }
+    
+    return $role_data;
+}
+
+/**
  * Defines a role hierarchy where higher roles can access permissions of lower roles.
  */
 function get_role_hierarchy() {
@@ -176,14 +206,14 @@ function user_has_discord_staff_role() {
         return false;
     }
     
-    // Check for staff role ID (1390490815054221414)
-    if (in_array('1390490815054221414', $discord_roles)) {
-        return true;
-    }
+    // Get configured Discord roles with levels
+    $configured_roles = get_configured_discord_roles_with_levels();
     
-    // Check for admin role ID (816462309274419250)
-    if (in_array('816462309274419250', $discord_roles)) {
-        return true;
+    // Check if user has any role with level 2 or higher (staff level)
+    foreach ($configured_roles as $role_key => $role_info) {
+        if (in_array($role_info['id'], $discord_roles) && $role_info['level'] >= 2) {
+            return true;
+        }
     }
     
     return false;

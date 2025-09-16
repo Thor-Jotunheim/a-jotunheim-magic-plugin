@@ -129,9 +129,11 @@ class JotunheimDiscordAuthConfig {
      */
     private function get_default_oauth_settings() {
         return [
-            'client_id' => '',
-            'client_secret' => '',
-            'redirect_uri' => '',
+            'client_id' => '1297908076929613956', // Default from existing config
+            'client_secret' => 'WzapYHJlj3P0XgwsBC9GATzrSs1kwi4z', // Default from existing config
+            'redirect_uri' => 'https://jotun.games/wp-admin/admin-ajax.php?action=oauth2callback', // Default from existing config
+            'bot_token' => '',
+            'guild_id' => '',
             'enabled' => false,
             'require_discord_auth' => false
         ];
@@ -198,6 +200,8 @@ class JotunheimDiscordAuthConfig {
             'client_id' => sanitize_text_field($_POST['settings']['client_id']),
             'client_secret' => sanitize_text_field($_POST['settings']['client_secret']),
             'redirect_uri' => esc_url_raw($_POST['settings']['redirect_uri']),
+            'bot_token' => sanitize_text_field($_POST['settings']['bot_token']),
+            'guild_id' => sanitize_text_field($_POST['settings']['guild_id']),
             'enabled' => isset($_POST['settings']['enabled']) ? (bool)$_POST['settings']['enabled'] : false,
             'require_discord_auth' => isset($_POST['settings']['require_discord_auth']) ? (bool)$_POST['settings']['require_discord_auth'] : false
         ];
@@ -428,6 +432,24 @@ function render_discord_auth_config_page() {
                             <td>
                                 <input type="url" id="discord_redirect_uri" name="redirect_uri" value="<?php echo esc_attr($oauth_settings['redirect_uri']); ?>" class="regular-text" />
                                 <p class="description">The redirect URI configured in your Discord application</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="discord_bot_token">Bot Token</label>
+                            </th>
+                            <td>
+                                <input type="password" id="discord_bot_token" name="bot_token" value="<?php echo esc_attr($oauth_settings['bot_token']); ?>" class="regular-text" />
+                                <p class="description">Your Discord bot's token (required for role fetching)</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="discord_guild_id">Guild ID (Server ID)</label>
+                            </th>
+                            <td>
+                                <input type="text" id="discord_guild_id" name="guild_id" value="<?php echo esc_attr($oauth_settings['guild_id']); ?>" class="regular-text" />
+                                <p class="description">Your Discord server's Guild ID</p>
                             </td>
                         </tr>
                         <tr>

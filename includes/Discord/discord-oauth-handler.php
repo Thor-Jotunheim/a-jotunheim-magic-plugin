@@ -12,10 +12,21 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     }
 
     $code = sanitize_text_field($_GET['code']);
-    $client_id = DISCORD_CLIENT_ID;
-    $client_secret = DISCORD_CLIENT_SECRET;
-    $redirect_uri = DISCORD_REDIRECT_URI;
-    $guild_id = DISCORD_GUILD_ID;
+    
+    // Get Discord OAuth settings from configuration
+    $oauth_settings = get_option('jotunheim_discord_oauth_settings', []);
+    
+    if (empty($oauth_settings['client_id']) || empty($oauth_settings['client_secret']) || 
+        empty($oauth_settings['redirect_uri']) || empty($oauth_settings['bot_token']) || 
+        empty($oauth_settings['guild_id'])) {
+        wp_die('Discord OAuth is not properly configured. Please configure it in the admin panel.');
+    }
+    
+    $client_id = $oauth_settings['client_id'];
+    $client_secret = $oauth_settings['client_secret'];
+    $redirect_uri = $oauth_settings['redirect_uri'];
+    $guild_id = $oauth_settings['guild_id'];
+    $bot_token = $oauth_settings['bot_token'];
 
     // Instead of using the user token to fetch roles, use a bot token and standard guild member endpoint.
     // Make sure you have a BOT token with the necessary privileges defined as DISCORD_BOT_TOKEN.
@@ -65,7 +76,6 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     $discord_email = isset($user_data['email']) ? sanitize_email($user_data['email']) : '';
 
     // Use the bot token to fetch the user's guild roles
-    $bot_token = DISCORD_BOT_TOKEN;
     $guild_member_response = wp_remote_get("https://discord.com/api/guilds/{$guild_id}/members/{$discord_user_id}", array(
         'headers' => array(
             'Authorization' => 'Bot ' . $bot_token,
@@ -116,37 +126,66 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
         'user_login' => $discord_display_name, // Also update the username
     ));
 
-    // Assign roles based on Discord roles
+    // Assign roles based on Discord roles using configurable system
     $roles = $guild_member_data['roles'] ?? [];
     error_log('Discord Roles from Guild Data: ' . print_r($roles, true));
+    
+    // Get configured Discord roles with levels
+    $configured_roles = get_configured_discord_roles_with_levels();
+    error_log('Configured Discord Roles with Levels: ' . print_r($configured_roles, true));
 
     $wp_role = 'view_only';  // Default role
+    $highest_level = 0; // Track the highest level role assigned
 
-    if (in_array('816462309274419250', $roles)) { // Admin role ID
-        $wp_role = 'editor';
-    } elseif (in_array('816452821208793128', $roles)) { // Moderator role ID
-        $wp_role = 'moderator';
-    } elseif (in_array('888273935282626580', $roles)) { // Chosen role ID
-        $wp_role = 'subscriber';
-    } elseif (in_array('895810058439491634', $roles) || in_array('816460882372460566', $roles)) { // Thrall or Banned
-        $wp_role = 'view_only';
+    // Check against configured roles and assign based on level
+    foreach ($configured_roles as $role_key => $role_info) {
+        if (in_array($role_info['id'], $roles)) {
+            $level = $role_info['level'];
+            
+            if ($level > $highest_level) {
+                $highest_level = $level;
+                
+                // Assign WordPress roles based on Discord role level
+                switch ($level) {
+                    case 4: // Owner/Highest Admin
+                        $wp_role = 'administrator';
+                        break;
+                    case 3: // Admin
+                        $wp_role = 'editor';
+                        break;
+                    case 2: // Moderator/Staff
+                        $wp_role = 'editor';
+                        break;
+                    case 1: // Basic/Member
+                    default:
+                        $wp_role = 'subscriber';
+                        break;
+                }
+            }
+        }
     }
 
-    // For Thor and Odin, assign administrator
+    // Special hardcoded users for Thor and Odin (keep these as backup)
     if ($discord_user_id === '859390316410306560' || $discord_user_id === '190645182235017217') {
         $wp_role = 'administrator';
     }
 
+    error_log("Assigned WordPress role: {$wp_role} based on highest Discord level: {$highest_level}");
+
     $user = new WP_User($user_id);
     $user->set_role($wp_role);
 
-    // Additional custom roles
-    if (in_array('895810058439491635', $roles)) { // Valkyrie
-        $user->add_role('valkyrie');
-    }
-
-    if (in_array('816460882372460567', $roles)) { // Vithar
-        $user->add_role('vithar');
+    // Additional custom roles based on configured Discord roles
+    foreach ($configured_roles as $role_key => $role_info) {
+        if (in_array($role_info['id'], $roles)) {
+            // Add custom WordPress roles that correspond to Discord roles
+            if ($role_key === 'valkyrie' && get_role('valkyrie')) {
+                $user->add_role('valkyrie');
+            }
+            if ($role_key === 'vithar' && get_role('vithar')) {
+                $user->add_role('vithar');
+            }
+        }
     }
 
     // Save roles and Discord info
