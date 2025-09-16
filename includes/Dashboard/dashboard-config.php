@@ -604,7 +604,7 @@ class JotunheimDashboardConfig {
             $config['items'] = [];
         }
         
-        // Clean and validate items
+        // Clean and validate items - be more permissive
         $cleaned_items = [];
         foreach ($config['items'] as $index => $item) {
             if (!is_array($item)) {
@@ -612,12 +612,16 @@ class JotunheimDashboardConfig {
                 continue;
             }
             
-            if (!isset($item['id']) || empty($item['id'])) {
-                error_log('DEBUG: Skipping item with missing ID at index ' . $index . ': ' . print_r($item, true));
+            // Only skip items that are completely malformed
+            if (!isset($item['id']) && !isset($item['slug'])) {
+                error_log('DEBUG: Skipping item with missing ID and slug at index ' . $index . ': ' . print_r($item, true));
                 continue;
             }
             
-            // Ensure required fields exist
+            // Ensure required fields exist with reasonable defaults
+            if (!isset($item['id']) && isset($item['slug'])) {
+                $item['id'] = $item['slug'];
+            }
             $item['section'] = $item['section'] ?? 'system';
             $item['order'] = $item['order'] ?? 999;
             $item['enabled'] = $item['enabled'] ?? true;
@@ -626,7 +630,7 @@ class JotunheimDashboardConfig {
         }
         
         $config['items'] = $cleaned_items;
-        error_log('DEBUG: Cleaned config: kept ' . count($cleaned_items) . ' valid items');
+        error_log('DEBUG: Cleaned config: kept ' . count($cleaned_items) . ' valid items out of original ' . count($config['items'] ?? []));
         
         return $config;
     }

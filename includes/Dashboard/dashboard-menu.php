@@ -268,24 +268,32 @@ function register_organized_menu($config) {
             });
             
             foreach ($items as $item) {
-                // Debug: Log all item details for analysis
-                error_log('Jotunheim Dashboard: Processing item details - ' . print_r($item, true));
+                // Debug: Show a sample item structure (only log first item to avoid spam)
+                static $logged_sample = false;
+                if (!$logged_sample) {
+                    error_log('Jotunheim Dashboard: SAMPLE item structure - ' . print_r($item, true));
+                    $logged_sample = true;
+                }
                 
-                // Validate item has required keys
-                if (!isset($item['id']) || empty($item['id'])) {
-                    error_log('Jotunheim Dashboard: SKIPPING item with missing or empty ID - ' . print_r($item, true));
+                // Validate item has required keys - be more flexible about the ID field
+                if ((!isset($item['id']) || empty($item['id'])) && 
+                    (!isset($item['slug']) || empty($item['slug']))) {
+                    error_log('Jotunheim Dashboard: SKIPPING item with missing ID and slug - ' . print_r($item, true));
                     continue;
                 }
                 
+                // Use slug as fallback if id is missing
+                $item_id = isset($item['id']) ? $item['id'] : $item['slug'];
+                
                 // Skip any item that might conflict with the main dashboard overview
-                if ($item['id'] === 'dashboard_overview' || 
+                if ($item_id === 'dashboard_overview' || 
                     (isset($item['callback']) && $item['callback'] === 'jotunheim_magic_dashboard') ||
                     (isset($item['title']) && $item['title'] === 'Dashboard Overview') ||
                     (isset($item['menu_title']) && $item['menu_title'] === 'Dashboard Overview') ||
                     (isset($item['slug']) && $item['slug'] === 'jotunheim_magic') ||
                     (isset($item['title']) && strpos($item['title'], 'Dashboard Overview') !== false) ||
                     (isset($item['menu_title']) && strpos($item['menu_title'], 'Dashboard Overview') !== false)) {
-                    error_log('Jotunheim Dashboard: SKIPPING conflicting dashboard item - ' . (isset($item['title']) ? $item['title'] : 'Unknown') . ' (ID: ' . $item['id'] . ', Callback: ' . (isset($item['callback']) ? $item['callback'] : 'Unknown') . ')');
+                    error_log('Jotunheim Dashboard: SKIPPING conflicting dashboard item - ' . (isset($item['title']) ? $item['title'] : 'Unknown') . ' (ID: ' . $item_id . ', Callback: ' . (isset($item['callback']) ? $item['callback'] : 'Unknown') . ')');
                     continue;
                 }
                 
