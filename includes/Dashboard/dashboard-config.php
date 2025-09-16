@@ -116,7 +116,7 @@ class JotunheimDashboardConfig {
     public function init() {
         error_log('Jotunheim Dashboard: Starting init() with normalized database');
         
-        // Load configuration from normalized database only
+        // Load configuration from normalized database ONLY
         $this->menu_config = $this->normalized_db->get_full_configuration();
         
         if (empty($this->menu_config)) {
@@ -162,59 +162,6 @@ class JotunheimDashboardConfig {
             $item_count = isset($section_data['items']) ? count($section_data['items']) : 0;
             error_log('  - Section: ' . $section_key . ' (' . $item_count . ' items)');
         }
-        
-        // Check for reset parameter (for easy config regeneration)
-        if (isset($_GET['reset_dashboard_config']) && $_GET['reset_dashboard_config'] === '1' && current_user_can('manage_options')) {
-            delete_option('jotunheim_dashboard_config');
-            error_log('Jotunheim Dashboard: Config reset via URL parameter');
-        }
-        
-        // Get existing config or create default
-        $stored_config = $this->db->load_config('dashboard_config', false);
-        
-        if (!$stored_config) {
-            // No config exists, create and save default
-            error_log('Jotunheim Dashboard: No stored config, creating default');
-            $this->menu_config = $this->get_default_config();
-            
-            // Ensure default config is valid
-            if (!is_array($this->menu_config) || !isset($this->menu_config['sections']) || !isset($this->menu_config['items'])) {
-                error_log('Jotunheim Dashboard: Default config creation failed, using emergency fallback');
-                $this->menu_config = [
-                    'sections' => [],
-                    'items' => []
-                ];
-            }
-            
-            $this->db->save_config('dashboard_config', $this->menu_config);
-            error_log('Jotunheim Dashboard: Created and saved default config to database');
-        } else {
-            $this->menu_config = $stored_config;
-            
-            // Check if new items need to be added to existing config
-            $this->sync_new_items_to_config();
-        }
-        
-        // Always update the memory config from database to ensure consistency
-        $this->sync_memory_config_with_database();
-        
-        // Ensure config has required structure
-        if (!isset($this->menu_config['sections']) || !is_array($this->menu_config['sections']) || 
-            !isset($this->menu_config['items']) || !is_array($this->menu_config['items'])) {
-            error_log('Jotunheim Dashboard: Invalid stored config, resetting to default');
-            $this->menu_config = $this->get_default_config();
-            update_option('jotunheim_dashboard_config', $this->menu_config);
-        }
-        
-        // Double-check that we have valid arrays
-        if (!is_array($this->menu_config['sections'])) {
-            $this->menu_config['sections'] = [];
-        }
-        if (!is_array($this->menu_config['items'])) {
-            $this->menu_config['items'] = [];
-        }
-        
-        error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config['sections']) . ' sections and ' . count($this->menu_config['items']) . ' items');
     }
     
     /**
