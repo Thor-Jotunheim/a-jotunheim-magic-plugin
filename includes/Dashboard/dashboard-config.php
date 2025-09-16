@@ -34,6 +34,11 @@ class JotunheimDashboardConfig {
         error_log('Jotunheim Dashboard: Starting init()');
         $this->load_default_menu_items();
         
+        error_log('Jotunheim Dashboard: Loaded ' . count($this->default_menu_items) . ' default menu items');
+        foreach ($this->default_menu_items as $item) {
+            error_log('  - ' . $item['id'] . ': ' . $item['title'] . ' (callback: ' . $item['callback'] . ')');
+        }
+        
         // Check for reset parameter (for easy config regeneration)
         if (isset($_GET['reset_dashboard_config']) && $_GET['reset_dashboard_config'] === '1' && current_user_can('manage_options')) {
             delete_option('jotunheim_dashboard_config');
@@ -64,6 +69,15 @@ class JotunheimDashboardConfig {
     }
     
     private function load_default_menu_items() {
+        error_log('Jotunheim Dashboard: Loading default menu items...');
+        
+        // Check if Discord function exists
+        if (function_exists('render_discord_auth_config_page')) {
+            error_log('Jotunheim Dashboard: Discord function exists');
+        } else {
+            error_log('Jotunheim Dashboard: Discord function NOT found');
+        }
+        
         $this->default_menu_items = [
             // Core Management
             [

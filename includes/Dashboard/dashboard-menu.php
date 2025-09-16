@@ -101,7 +101,8 @@ function jotunheim_magic_plugin_menu() {
 
     // Check if we should use organized menu structure
     global $jotunheim_dashboard_config;
-    $use_organized_menu = get_option('jotunheim_use_organized_menu', false);
+    $use_organized_menu = false; // Temporarily force legacy mode for debugging
+    // $use_organized_menu = get_option('jotunheim_use_organized_menu', false);
     
     // Debug logging
     error_log('Jotunheim Dashboard: use_organized_menu = ' . ($use_organized_menu ? 'true' : 'false'));
@@ -127,6 +128,10 @@ function jotunheim_magic_plugin_menu() {
             error_log('Jotunheim Dashboard: Organized menu registered successfully');
         }
     }
+    
+    // TEMPORARILY DISABLE ALL SUBMENUS FOR DEBUGGING
+    error_log('Jotunheim Dashboard: DEBUGGING - All submenus disabled');
+    return;
     
     // Use legacy mode if organized mode is disabled or failed
     if (!$use_organized_menu) {
