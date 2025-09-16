@@ -259,6 +259,14 @@ class JotunheimDashboardConfig {
             wp_die('Invalid nonce');
         }
         
+        // Handle organized menu toggle
+        if (isset($_POST['use_organized_menu'])) {
+            update_option('jotunheim_use_organized_menu', (bool)$_POST['use_organized_menu']);
+            wp_send_json_success('Menu mode updated successfully');
+            return;
+        }
+        
+        // Handle full configuration save
         $config = [
             'sections' => json_decode(stripslashes($_POST['sections']), true),
             'items' => json_decode(stripslashes($_POST['items']), true)
@@ -320,6 +328,15 @@ function render_dashboard_config_page() {
             
             <div class="dashboard-config-description">
                 <p>Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
+            </div>
+            
+            <!-- Toggle for Organized Menu Mode -->
+            <div class="organized-menu-toggle">
+                <label>
+                    <input type="checkbox" id="use-organized-menu" <?php echo get_option('jotunheim_use_organized_menu', false) ? 'checked' : ''; ?>>
+                    <strong>Enable Organized Menu Mode</strong> - Switch from flat menu to organized sections
+                </label>
+                <p class="description">When enabled, your menu will be organized into sections. When disabled, uses the traditional flat menu structure.</p>
             </div>
         
         <div class="dashboard-config-actions">
@@ -664,6 +681,35 @@ function render_dashboard_config_page() {
             padding: 10px;
             background: #f6f7f7;
             border-radius: 4px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .items-filter select {
+            position: relative;
+            z-index: 15;
+        }
+        
+        .organized-menu-toggle {
+            background: #e7f3ff;
+            border: 1px solid #0073aa;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .organized-menu-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .organized-menu-toggle .description {
+            margin: 0;
+            color: #646970;
+            font-size: 13px;
         }
         
         .items-filter label {
@@ -675,6 +721,19 @@ function render_dashboard_config_page() {
             padding: 5px 8px;
             border: 1px solid #8c8f94;
             border-radius: 3px;
+            position: relative;
+            z-index: 15;
+        }
+        
+        /* Fix dropdown positioning */
+        .config-items {
+            position: relative;
+            z-index: 5;
+        }
+        
+        .items-list {
+            position: relative;
+            z-index: 1;
         }
         
         .preview-panel {
@@ -879,5 +938,38 @@ function render_dashboard_config_page() {
     </style>
 
     </div> <!-- Close .wrap -->
+    
+    <script>
+    jQuery(document).ready(function($) {
+        // Handle organized menu toggle
+        $('#use-organized-menu').on('change', function() {
+            var isEnabled = $(this).is(':checked');
+            
+            // Save the setting via AJAX
+            $.post(ajaxurl, {
+                action: 'save_dashboard_config',
+                nonce: '<?php echo wp_create_nonce('dashboard_config_nonce'); ?>',
+                use_organized_menu: isEnabled ? 1 : 0
+            }, function(response) {
+                if (response.success) {
+                    // Show success message
+                    $('.dashboard-config-description').after(
+                        '<div class="notice notice-success is-dismissible"><p>' +
+                        (isEnabled ? 'Organized menu mode enabled! Your menu will now use sections.' : 'Legacy menu mode enabled! Your menu will use the traditional flat structure.') +
+                        '</p></div>'
+                    );
+                    
+                    // Auto-remove notice after 3 seconds
+                    setTimeout(function() {
+                        $('.notice').fadeOut();
+                    }, 3000);
+                } else {
+                    alert('Error saving setting: ' + (response.data || 'Unknown error'));
+                }
+            });
+        });
+    });
+    </script>
+    
     <?php
 }
