@@ -619,12 +619,16 @@ class JotunheimDashboardConfig {
         // Get current database configuration to merge quick_action status
         $db_config = $this->normalized_db->get_full_configuration();
         
+        // DEBUG: Log the database config structure
+        error_log('DEBUG get_menu_items - DB config keys: ' . implode(', ', array_keys($db_config)));
+        
         // Create a lookup for current database values
         $db_items_lookup = [];
         foreach ($db_config as $section_data) {
             if (isset($section_data['items'])) {
                 foreach ($section_data['items'] as $item) {
                     $db_items_lookup[$item['item_id']] = $item;
+                    error_log('DEBUG get_menu_items - Added to lookup: ' . $item['item_id'] . ' with quick_action: ' . ($item['quick_action'] ? 'true' : 'false'));
                 }
             }
         }
@@ -640,15 +644,18 @@ class JotunheimDashboardConfig {
                 $item['quick_action'] = $db_item['quick_action'];
                 $item['enabled'] = $db_item['enabled'];
                 $item['description'] = $db_item['description'] ?? $default_item['description'];
+                error_log('DEBUG get_menu_items - Merged item ' . $default_item['id'] . ' with quick_action: ' . ($item['quick_action'] ? 'true' : 'false'));
             } else {
                 // Not in database yet, use default values
                 $item['quick_action'] = $default_item['quick_action'] ?? false;
                 $item['enabled'] = true;
+                error_log('DEBUG get_menu_items - Default item ' . $default_item['id'] . ' not in DB, using default quick_action: ' . ($item['quick_action'] ? 'true' : 'false'));
             }
             
             $merged_items[] = $item;
         }
         
+        error_log('DEBUG get_menu_items - Returning ' . count($merged_items) . ' merged items');
         return $merged_items;
     }
     
