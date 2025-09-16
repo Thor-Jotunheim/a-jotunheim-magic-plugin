@@ -123,6 +123,9 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Discord/page-permissions.php'
 // Include the dashboard config file AFTER Discord functions are loaded
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.php');
 
+// Include the dashboard REST API
+include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-rest-api.php');
+
 // Include the dashboard menu file
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');
