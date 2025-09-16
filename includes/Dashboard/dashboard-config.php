@@ -52,6 +52,16 @@ class JotunheimDashboardConfig {
             // No config exists, create and save default
             error_log('Jotunheim Dashboard: No stored config, creating default');
             $this->menu_config = $this->get_default_config();
+            
+            // Ensure default config is valid
+            if (!is_array($this->menu_config) || !isset($this->menu_config['sections']) || !isset($this->menu_config['items'])) {
+                error_log('Jotunheim Dashboard: Default config creation failed, using emergency fallback');
+                $this->menu_config = [
+                    'sections' => [],
+                    'items' => []
+                ];
+            }
+            
             update_option('jotunheim_dashboard_config', $this->menu_config);
             error_log('Jotunheim Dashboard: Created and saved default config');
         } else {
@@ -62,10 +72,19 @@ class JotunheimDashboardConfig {
         }
         
         // Ensure config has required structure
-        if (!isset($this->menu_config['sections']) || !isset($this->menu_config['items'])) {
+        if (!isset($this->menu_config['sections']) || !is_array($this->menu_config['sections']) || 
+            !isset($this->menu_config['items']) || !is_array($this->menu_config['items'])) {
             error_log('Jotunheim Dashboard: Invalid stored config, resetting to default');
             $this->menu_config = $this->get_default_config();
             update_option('jotunheim_dashboard_config', $this->menu_config);
+        }
+        
+        // Double-check that we have valid arrays
+        if (!is_array($this->menu_config['sections'])) {
+            $this->menu_config['sections'] = [];
+        }
+        if (!is_array($this->menu_config['items'])) {
+            $this->menu_config['items'] = [];
         }
         
         error_log('Jotunheim Dashboard: Config ready with ' . count($this->menu_config['sections']) . ' sections and ' . count($this->menu_config['items']) . ' items');
@@ -75,6 +94,11 @@ class JotunheimDashboardConfig {
      * Sync new items to existing configuration
      */
     private function sync_new_items_to_config() {
+        // Ensure menu_config has the required structure
+        if (!isset($this->menu_config['items']) || !is_array($this->menu_config['items'])) {
+            $this->menu_config['items'] = [];
+        }
+        
         $existing_item_ids = array_column($this->menu_config['items'], 'id');
         $new_items_added = false;
         
