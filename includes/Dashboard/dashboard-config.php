@@ -335,43 +335,21 @@ class JotunheimDashboardConfig {
         
         // Add some hardcoded pages that might not be auto-detected
         $hardcoded_pages = [
-            [
-                'id' => 'discord_auth_config',
-                'title' => 'Discord Authentication Config',
-                'menu_title' => 'Discord Config',
-                'callback' => 'render_discord_auth_config_page',
-                'category' => 'discord',
-                'description' => 'Configure Discord OAuth and role permissions'
-            ],
-            [
-                'id' => 'page_permissions',
-                'title' => 'Page Permissions',
-                'menu_title' => 'Page Permissions', 
-                'callback' => 'render_page_permissions_config_page',
-                'category' => 'discord',
-                'description' => 'Configure page access by Discord role'
-            ],
-            [
-                'id' => 'playerlist_interface',
-                'title' => 'Player List Management',
-                'menu_title' => 'Player List',
-                'callback' => 'jotun_playerlist_interface',
-                'category' => 'management',
-                'description' => 'Manage player database and imports'
-            ]
+            // Note: Don't add pages that are already in default_menu_items
+            // Only add pages that are truly missing or have different function names
         ];
         
         foreach ($hardcoded_pages as $page) {
-            // Check if already exists
+            // Check if already exists in default items OR available pages
             $exists = false;
             foreach ($this->default_menu_items as $item) {
-                if ($item['id'] === $page['id']) {
+                if ($item['id'] === $page['id'] || $item['callback'] === $page['callback']) {
                     $exists = true;
                     break;
                 }
             }
             foreach ($available_pages as $existing) {
-                if ($existing['id'] === $page['id']) {
+                if ($existing['id'] === $page['id'] || $existing['callback'] === $page['callback']) {
                     $exists = true;
                     break;
                 }
@@ -1935,11 +1913,14 @@ function render_dashboard_config_page() {
                                 html += '</div>';
                                 html += '<div class="page-actions">';
                                 html += '<select class="page-section-select">';
-                                // Populate sections dynamically
-                                const sections = Object.keys(dashboardConfig);
-                                sections.forEach(function(section) {
-                                    html += '<option value="' + section + '">' + section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
-                                });
+                                // Populate sections dynamically from config.sections
+                                if (dashboardConfig.config && dashboardConfig.config.sections) {
+                                    dashboardConfig.config.sections.forEach(function(section) {
+                                        if (section.enabled) {
+                                            html += '<option value="' + section.id + '">' + section.title + '</option>';
+                                        }
+                                    });
+                                }
                                 html += '</select>';
                                 html += '<button type="button" class="button button-primary add-detected-page">Add Page</button>';
                                 html += '</div>';
@@ -2069,11 +2050,14 @@ function render_dashboard_config_page() {
             const $select = $('#manual-page-section');
             $select.empty();
             
-            const sections = Object.keys(dashboardConfig);
-            sections.forEach(function(section) {
-                const displayName = section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                $select.append('<option value="' + section + '">' + displayName + '</option>');
-            });
+            // Use actual sections from config
+            if (dashboardConfig.config && dashboardConfig.config.sections) {
+                dashboardConfig.config.sections.forEach(function(section) {
+                    if (section.enabled) {
+                        $select.append('<option value="' + section.id + '">' + section.title + '</option>');
+                    }
+                });
+            }
         }
         
         // Initialize manual form
