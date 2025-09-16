@@ -194,6 +194,7 @@ function register_organized_menu($config) {
     $menu_items = $config->get_menu_items();
     
     error_log('Jotunheim Dashboard: menu_config structure - ' . print_r($menu_config, true));
+    error_log('Jotunheim Dashboard: menu_items from get_menu_items() - ' . print_r($menu_items, true));
     
     if (!$menu_config || !is_array($menu_config)) {
         error_log('Jotunheim Dashboard: Invalid menu config structure from normalized database');
