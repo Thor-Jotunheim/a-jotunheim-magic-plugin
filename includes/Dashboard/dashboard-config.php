@@ -639,13 +639,15 @@ class JotunheimDashboardConfig {
             'events' => 'dashicons-calendar-alt',
             'pos' => 'dashicons-cart',
             'trading' => 'dashicons-money-alt',
+            'commerce' => 'dashicons-money-alt',
             'moderation' => 'dashicons-admin-users',
             'kb' => 'dashicons-book-alt',
             'wiki' => 'dashicons-media-document',
             'gallery' => 'dashicons-format-gallery',
             'ledger' => 'dashicons-analytics',
             'google_sheets' => 'dashicons-media-spreadsheet',
-            'discord' => 'dashicons-admin-links'
+            'discord' => 'dashicons-admin-links',
+            'system' => 'dashicons-admin-generic'
         ];
         
         // Convert to format expected by frontend
@@ -662,7 +664,7 @@ class JotunheimDashboardConfig {
                 'description' => $section_data['description'] ?? 'No description available',
                 'order' => $section_data['order'],
                 'enabled' => $section_data['enabled'],
-                'icon' => $section_data['icon'] ?? $default_section_icons[$section_key] ?? 'dashicons-admin-generic'
+                'icon' => $default_section_icons[$section_key] ?? 'dashicons-admin-generic'
             ];
             
             // Convert items in this section
