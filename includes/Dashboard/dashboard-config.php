@@ -18,7 +18,7 @@ class JotunheimDashboardConfig {
     private $default_menu_items = [];
     private $menu_config = [];
     private $db;
-    private $normalized_db;
+    public $normalized_db;
     
     public function __construct() {
         // Initialize database handlers
