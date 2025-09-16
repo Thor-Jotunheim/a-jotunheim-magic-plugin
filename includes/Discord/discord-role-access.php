@@ -7,8 +7,8 @@ if (!defined('ABSPATH')) exit;
  */
 function get_role_hierarchy() {
     return [
-        'admin'     => ['moderator', 'valkyrie', 'vithar'], // Admin has all permissions
-        'moderator' => ['valkyrie', 'vithar'],              // Moderator can access Valkyrie and Vithar pages
+        'admin'     => ['staff', 'valkyrie', 'vithar'], // Admin has all permissions
+        'staff'     => ['valkyrie', 'vithar'],              // Staff can access Valkyrie and Vithar pages
         'valkyrie'  => ['vithar'],                         // Valkyrie can access Vithar pages
         'vithar'    => []                                  // Vithar has no additional permissions
     ];
@@ -71,7 +71,7 @@ function jotunheim_magic_staff_page_access() {
     // Define mappings for pages to required roles
     $staff_pages_roles = [
         'admin'     => '816462309274419250', // Admin Discord role ID
-        'moderator' => '816452821208793128', // Moderator Discord role ID
+        'staff'     => '1390490815054221414', // Staff Discord role ID
         'valkyrie'  => '963502767173931039', // Valkyrie Discord role ID
         'vithar'    => '1104073178495602751' // Vithar Discord role ID
     ];
@@ -95,10 +95,10 @@ function jotunheim_magic_staff_page_access() {
 }
 
 /**
- * Checks if the current user has the Discord Moderator role
- * @return bool True if user has moderator role or higher
+ * Checks if the current user has the Discord staff role
+ * @return bool True if user has staff role or higher
  */
-function user_has_discord_moderator_role() {
+function user_has_discord_staff_role() {
     // If user is admin, always grant access
     if (current_user_can('administrator')) {
         return true;
@@ -117,8 +117,8 @@ function user_has_discord_moderator_role() {
         return false;
     }
     
-    // Check for moderator role ID (816452821208793128)
-    if (in_array('816452821208793128', $discord_roles)) {
+    // Check for staff role ID (1390490815054221414)
+    if (in_array('1390490815054221414', $discord_roles)) {
         return true;
     }
     
@@ -171,8 +171,8 @@ function jotunheim_redirect_to_chosen_kb() {
     
     // Match exactly /knowledge-base/ with trailing slash
     if ($current_url == '/knowledge-base/' || $current_url == '/knowledge-base') {
-        // Don't redirect admins and moderators
-        if (!user_has_discord_moderator_role()) {
+        // Don't redirect admins and staff
+        if (!user_has_discord_staff_role()) {
             wp_redirect(home_url('/knowledge-base/chosen/'));
             exit;
         }
@@ -189,9 +189,9 @@ function jotunheim_block_direct_staff_kb_access() {
     // If URL contains both 'knowledge-base' and 'staff', check access
     if (strpos($current_url, 'knowledge-base/staff') !== false || 
         strpos($current_url, 'knowledge-base/staff/') !== false) {
-        
-        // Block access if not a moderator
-        if (!user_has_discord_moderator_role()) {
+
+        // Block access if not a staff member
+        if (!user_has_discord_staff_role()) {
             wp_redirect(home_url('/knowledge-base/'));
             exit;
         }
@@ -207,8 +207,8 @@ function jotunheim_filter_kb_queries($query) {
         return $query;
     }
     
-    // If user doesn't have Discord Moderator role, exclude Staff KB
-    if (!user_has_discord_moderator_role()) {
+    // If user doesn't have Discord Staff role, exclude Staff KB
+    if (!user_has_discord_staff_role()) {
         // Get the Staff KB ID
         $staff_kb_id = jotunheim_get_staff_kb_id();
         
@@ -245,8 +245,8 @@ function jotunheim_filter_kb_content($content) {
     
     // Check if this is Staff KB
     if (jotunheim_is_staff_kb($post->ID)) {
-        // If user doesn't have Moderator role, hide content
-        if (!user_has_discord_moderator_role()) {
+        // If user doesn't have Staff role, hide content
+        if (!user_has_discord_staff_role()) {
             return '<div class="restricted-content">This content is only available to staff members.</div>';
         }
     }
@@ -258,8 +258,8 @@ function jotunheim_filter_kb_content($content) {
  * Filter KB sections list to remove Staff section
  */
 function jotunheim_filter_section_list($sections) {
-    // If user doesn't have moderator role, remove Staff section
-    if (!user_has_discord_moderator_role()) {
+    // If user doesn't have Staff role, remove Staff section
+    if (!user_has_discord_staff_role()) {
         $staff_kb_id = jotunheim_get_staff_kb_id();
         
         if ($staff_kb_id) {
@@ -280,8 +280,8 @@ function jotunheim_filter_section_list($sections) {
  * Filter breadcrumbs to remove Staff KB elements
  */
 function jotunheim_filter_breadcrumbs($breadcrumbs) {
-    // If user doesn't have moderator role and breadcrumbs contain Staff elements
-    if (!user_has_discord_moderator_role()) {
+    // If user doesn't have Staff role and breadcrumbs contain Staff elements
+    if (!user_has_discord_staff_role()) {
         $staff_kb_id = jotunheim_get_staff_kb_id();
         
         if ($staff_kb_id && is_array($breadcrumbs)) {
@@ -305,8 +305,8 @@ function jotunheim_filter_breadcrumbs($breadcrumbs) {
  * Filter article list to remove Staff KB articles
  */
 function jotunheim_filter_articles_list($articles) {
-    // If user doesn't have moderator role, filter articles
-    if (!user_has_discord_moderator_role()) {
+    // If user doesn't have staff role, filter articles
+    if (!user_has_discord_staff_role()) {
         $staff_kb_id = jotunheim_get_staff_kb_id();
         
         if ($staff_kb_id && is_array($articles)) {
@@ -333,7 +333,7 @@ function jotunheim_check_kb_access() {
     }
     
     // Check if this is Staff KB and user doesn't have access
-    if (jotunheim_is_staff_kb($post->ID) && !user_has_discord_moderator_role()) {
+    if (jotunheim_is_staff_kb($post->ID) && !user_has_discord_staff_role()) {
         // Redirect to KB home or show error
         wp_redirect(home_url('/knowledge-base/'));
         exit;

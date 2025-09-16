@@ -1,0 +1,320 @@
+/* Jotunheim Magic Plugin Admin Styles */
+
+/* Base Admin Styles */
+.jotun-admin-wrap {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.jotun-admin-title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0 0 20px 0;
+    color: #1d2327;
+}
+
+.jotun-admin-description {
+    background: #f0f6fc;
+    border-left: 4px solid #0073aa;
+    padding: 15px;
+    margin-bottom: 30px;
+    border-radius: 4px;
+}
+
+.jotun-admin-description p {
+    margin: 0;
+    color: #1d2327;
+}
+
+/* Button Styles */
+.jotun-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.jotun-btn-primary {
+    background: #0073aa;
+    border-color: #0073aa;
+    color: white;
+}
+
+.jotun-btn-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+    color: white;
+}
+
+.jotun-btn-secondary {
+    background: white;
+    border-color: #8c8f94;
+    color: #1d2327;
+}
+
+.jotun-btn-secondary:hover {
+    background: #f6f7f7;
+    border-color: #8c8f94;
+    color: #1d2327;
+}
+
+.jotun-btn-danger {
+    background: #d63638;
+    border-color: #d63638;
+    color: white;
+}
+
+.jotun-btn-danger:hover {
+    background: #b32d2e;
+    border-color: #b32d2e;
+    color: white;
+}
+
+/* Table Styles */
+.jotun-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.jotun-table th,
+.jotun-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.jotun-table th {
+    background: #f6f7f7;
+    font-weight: 600;
+    color: #1d2327;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.jotun-table tr:last-child td {
+    border-bottom: none;
+}
+
+.jotun-table tr:hover {
+    background: #f6f7f7;
+}
+
+/* Form Styles */
+.jotun-form-group {
+    margin-bottom: 20px;
+}
+
+.jotun-form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.jotun-form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.jotun-form-control:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+.jotun-form-help {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #646970;
+}
+
+/* Card Styles */
+.jotun-card {
+    background: white;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.jotun-card-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.jotun-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #1d2327;
+}
+
+/* Grid System */
+.jotun-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.jotun-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.jotun-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.jotun-grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Status Badges */
+.jotun-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.jotun-badge-success {
+    background: #00a32a;
+    color: white;
+}
+
+.jotun-badge-warning {
+    background: #dba617;
+    color: white;
+}
+
+.jotun-badge-danger {
+    background: #d63638;
+    color: white;
+}
+
+.jotun-badge-info {
+    background: #0073aa;
+    color: white;
+}
+
+.jotun-badge-secondary {
+    background: #646970;
+    color: white;
+}
+
+/* Notification Styles */
+.jotun-notification {
+    position: fixed;
+    top: 32px;
+    right: 20px;
+    max-width: 300px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 100000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.jotun-notification.show {
+    transform: translateX(0);
+}
+
+.jotun-notification-success {
+    background: #00a32a;
+}
+
+.jotun-notification-error {
+    background: #d63638;
+}
+
+.jotun-notification-warning {
+    background: #dba617;
+}
+
+.jotun-notification-info {
+    background: #0073aa;
+}
+
+/* Loading Spinner */
+.jotun-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: jotun-spin 1s linear infinite;
+}
+
+@keyframes jotun-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .jotun-admin-wrap {
+        padding: 10px;
+    }
+    
+    .jotun-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .jotun-table {
+        font-size: 14px;
+    }
+    
+    .jotun-table th,
+    .jotun-table td {
+        padding: 8px 12px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .jotun-admin-wrap {
+        color: #f0f0f1;
+    }
+    
+    .jotun-card {
+        background: #1d2327;
+        border-color: #3c434a;
+    }
+    
+    .jotun-table {
+        background: #1d2327;
+    }
+    
+    .jotun-table th {
+        background: #2c3338;
+        color: #f0f0f1;
+    }
+    
+    .jotun-form-control {
+        background: #1d2327;
+        border-color: #3c434a;
+        color: #f0f0f1;
+    }
+}

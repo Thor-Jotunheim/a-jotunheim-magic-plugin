@@ -172,7 +172,9 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Ledger/ledger-post-insert-pla
 // Include POS files
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-database-utils.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-api.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-comprehensive-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-playerlist-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-scripts.php');
 
 // Include UniversalUI components
