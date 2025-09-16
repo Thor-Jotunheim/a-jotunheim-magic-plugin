@@ -888,11 +888,7 @@ function render_dashboard_config_page() {
     ]);
     
     ?>
-    <div class="dashboard-config-wrap">
-        <div class="wrap">
-            <h1 class="dashboard-config-title">Dashboard Configuration</h1>
-            <p class="description">Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
-    
+    <style>
     body.wp-admin .wrap.dashboard-config-wrap,
     body.wp-admin .dashboard-config-wrap,
     #wpbody-content .dashboard-config-wrap,
