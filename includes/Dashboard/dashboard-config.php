@@ -337,6 +337,22 @@ class JotunheimDashboardConfig {
         $hardcoded_pages = [
             // Note: Don't add pages that are already in default_menu_items
             // Only add pages that are truly missing or have different function names
+            [
+                'id' => 'page_permissions_config',
+                'title' => 'Page Permissions',
+                'menu_title' => 'Page Permissions',
+                'callback' => 'render_page_permissions_config_page',
+                'category' => 'system',
+                'description' => 'Configure page access by Discord role'
+            ],
+            [
+                'id' => 'jotun_playerlist_interface',
+                'title' => 'Player List Management',
+                'menu_title' => 'Player List Management',
+                'callback' => 'render_playerlist_interface',
+                'category' => 'core',
+                'description' => 'Manage player database and imports'
+            ]
         ];
         
         foreach ($hardcoded_pages as $page) {
@@ -1052,7 +1068,7 @@ function render_dashboard_config_page() {
                     <button type="button" class="tab-button" data-tab="manual">Manual Entry</button>
                 </div>
                 
-                <div class="tab-content" id="auto-detect-tab">
+                <div class="tab-content active" id="auto-detect-tab" data-tab="auto-detect">
                     <div class="auto-detect-controls">
                         <button type="button" class="button" id="scan-pages">
                             <span class="dashicons dashicons-search"></span>
@@ -1066,7 +1082,7 @@ function render_dashboard_config_page() {
                     </div>
                 </div>
                 
-                <div class="tab-content" id="manual-tab" style="display: none;">
+                <div class="tab-content" id="manual-tab" data-tab="manual" style="display: none;">
                     <form id="manual-page-form" class="manual-page-form">
                         <div class="form-group">
                             <label for="manual-page-id">Page ID <span class="required">*</span></label>
@@ -1543,6 +1559,45 @@ function render_dashboard_config_page() {
             overflow-y: auto;
         }
         
+        /* Tab CSS for modal */
+        .page-management-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            gap: 0;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #646970;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button:hover {
+            color: #2271b1;
+            background: #f6f7f7;
+        }
+
+        .tab-button.active {
+            color: #2271b1;
+            border-bottom-color: #2271b1;
+            background: #f6f7f7;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
         .dashboard-modal-footer {
             padding: 20px;
             border-top: 1px solid #c3c4c7;
@@ -1851,9 +1906,9 @@ function render_dashboard_config_page() {
             $('.tab-button').removeClass('active');
             $(this).addClass('active');
             
-            // Show/hide tab content
-            $('.tab-content').hide();
-            $('#' + tabId + '-tab').show();
+            // Show/hide tab content based on data-tab attribute
+            $('.tab-content').hide().removeClass('active');
+            $('.tab-content[data-tab="' + tabId + '"]').show().addClass('active');
         });
         
         // Scan for available pages
