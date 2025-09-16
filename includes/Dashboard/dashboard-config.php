@@ -1346,9 +1346,10 @@ function render_dashboard_config_page() {
     
     wp_enqueue_style('dashboard-config-css', plugin_dir_url(__FILE__) . '../../assets/css/dashboard-config.css', [], '1.0.0');
 
-    wp_localize_script('dashboard-config-js', 'dashboardConfig', [
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('dashboard_config_nonce'),
+    // Provide REST API configuration to JavaScript
+    wp_localize_script('dashboard-rest-client', 'dashboardConfig', [
+        'restUrl' => rest_url('jotunheim/v1/dashboard/'),
+        'nonce' => wp_create_nonce('wp_rest'),
         'config' => $config,
         'menuItems' => $menu_items
     ]);
@@ -1398,7 +1399,56 @@ function render_dashboard_config_page() {
                 <p class="section-description">Organize your menu items into logical sections. Drag to reorder.</p>
                 
                 <div id="sections-container" class="sections-list sortable">
-                    <!-- Sections will be populated by JavaScript -->
+                    <?php
+                    // Render sections and items directly from PHP
+                    if (!empty($config['sections'])) {
+                        foreach ($config['sections'] as $section) {
+                            ?>
+                            <div class="section-item" data-section-id="<?php echo esc_attr($section['id']); ?>">
+                                <div class="section-header">
+                                    <span class="section-icon dashicons <?php echo esc_attr($section['icon']); ?>"></span>
+                                    <h3 class="section-title"><?php echo esc_html($section['title']); ?></h3>
+                                    <div class="section-controls">
+                                        <button type="button" class="button button-small edit-section">Edit</button>
+                                        <label class="section-toggle">
+                                            <input type="checkbox" <?php checked($section['enabled']); ?> data-section-id="<?php echo esc_attr($section['id']); ?>">
+                                            <span>Enabled</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="section-items">
+                                    <?php
+                                    // Show items for this section
+                                    if (!empty($config['items'])) {
+                                        foreach ($config['items'] as $item) {
+                                            if ($item['section'] === $section['id']) {
+                                                ?>
+                                                <div class="item-row" data-item-id="<?php echo esc_attr($item['id']); ?>">
+                                                    <span class="item-title"><?php echo esc_html($item['title']); ?></span>
+                                                    <div class="item-controls">
+                                                        <label class="quick-action-toggle">
+                                                            <input type="checkbox" <?php checked($item['quick_action']); ?> data-item-id="<?php echo esc_attr($item['id']); ?>">
+                                                            <span>Quick Action</span>
+                                                        </label>
+                                                        <label class="item-toggle">
+                                                            <input type="checkbox" <?php checked($item['enabled']); ?> data-item-id="<?php echo esc_attr($item['id']); ?>">
+                                                            <span>Enabled</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <?php
+                                            }
+                                        }
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        echo '<p>No sections configured. <button type="button" class="button" id="load-defaults">Load Default Configuration</button></p>';
+                    }
+                    ?>
                 </div>
             </div>
             

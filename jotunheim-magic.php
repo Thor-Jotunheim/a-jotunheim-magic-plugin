@@ -126,6 +126,10 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-config.ph
 // Include the dashboard REST API
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-rest-api.php');
 
+// Initialize the REST API
+global $jotunheim_dashboard_rest_api;
+$jotunheim_dashboard_rest_api = new Jotunheim_Dashboard_REST_API();
+
 // Include the dashboard menu file
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-menu.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Dashboard/dashboard-top.php');

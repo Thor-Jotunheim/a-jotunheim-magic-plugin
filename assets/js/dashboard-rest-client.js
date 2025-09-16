@@ -1,8 +1,9 @@
 // Simple Dashboard REST API Client
 class JotunheimDashboardAPI {
     constructor() {
-        this.baseURL = wpApiSettings.root + 'jotunheim/v1/dashboard';
-        this.nonce = wpApiSettings.nonce;
+        // Use the dashboardConfig from our localization
+        this.baseURL = dashboardConfig.restUrl;
+        this.nonce = dashboardConfig.nonce;
     }
 
     async makeRequest(endpoint, method = 'GET', data = null) {
@@ -249,9 +250,9 @@ class DashboardConfigManager {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof wpApiSettings !== 'undefined') {
+    if (typeof dashboardConfig !== 'undefined') {
         window.dashboardManager = new DashboardConfigManager();
     } else {
-        console.error('WordPress REST API settings not available');
+        console.error('Dashboard configuration not available');
     }
 });
