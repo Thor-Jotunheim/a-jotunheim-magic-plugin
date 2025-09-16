@@ -463,4 +463,85 @@ class Jotunheim_Dashboard_DB_Normalized {
         error_log("Jotunheim Dashboard DB: Emergency restore completed - restored {$restored_count} items");
         return $restored_count;
     }
+    
+    /**
+     * Save full configuration from frontend format
+     */
+    public function save_full_configuration($config_data) {
+        global $wpdb;
+        
+        error_log('Jotunheim Dashboard DB: Starting save_full_configuration');
+        error_log('Jotunheim Dashboard DB: Config data: ' . print_r($config_data, true));
+        
+        // Start transaction
+        $wpdb->query('START TRANSACTION');
+        
+        try {
+            $saved_sections = 0;
+            $saved_items = 0;
+            
+            // Process each section in the config
+            if (isset($config_data['sections']) && is_array($config_data['sections'])) {
+                foreach ($config_data['sections'] as $section_key => $section_data) {
+                    // Save section
+                    $section_result = $this->save_section(
+                        $section_key,
+                        $section_data['title'] ?? $section_key,
+                        $section_data['order'] ?? 0,
+                        $section_data['description'] ?? '',
+                        $section_data['icon'] ?? '',
+                        $section_data['enabled'] ?? true
+                    );
+                    
+                    if ($section_result) {
+                        $saved_sections++;
+                    }
+                    
+                    // Save items in this section
+                    if (isset($section_data['items']) && is_array($section_data['items'])) {
+                        foreach ($section_data['items'] as $item) {
+                            $item_data = [
+                                'section_key' => $section_key,
+                                'item_key' => $item['id'] ?? $item['item_id'] ?? '',
+                                'item_name' => $item['title'] ?? $item['name'] ?? '',
+                                'callback_function' => $item['callback'] ?? '',
+                                'quick_action' => $item['quick_action'] ?? false,
+                                'display_order' => $item['order'] ?? 0,
+                                'enabled' => $item['enabled'] ?? true,
+                                'icon' => $item['icon'] ?? null,
+                                'description' => $item['description'] ?? null,
+                                'permissions' => $item['permissions'] ?? null
+                            ];
+                            
+                            if ($this->save_item($item_data)) {
+                                $saved_items++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Commit transaction
+            $wpdb->query('COMMIT');
+            
+            error_log("Jotunheim Dashboard DB: Saved {$saved_sections} sections and {$saved_items} items");
+            
+            return [
+                'success' => true,
+                'sections_saved' => $saved_sections,
+                'items_saved' => $saved_items
+            ];
+            
+        } catch (Exception $e) {
+            // Rollback on error
+            $wpdb->query('ROLLBACK');
+            
+            error_log('Jotunheim Dashboard DB: Save configuration error: ' . $e->getMessage());
+            
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
 }
