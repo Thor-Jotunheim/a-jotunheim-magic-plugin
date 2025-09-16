@@ -65,22 +65,7 @@
     margin: 20px 0;
     clear: both;
     align-items: flex-start;
-    flex-wrap: wrap;
-}
-
-.dashboard-config-section {
-    flex: 1;
-    min-width: 280px;
-    max-width: calc(33.333% - 14px);
-}
-
-.dashboard-config-section h3 {
-    margin-top: 0;
-    padding: 15px;
-    background: #f1f1f1;
-    border-radius: 6px;
-    font-size: 16px;
-    color: #1d2327;
+    flex-wrap: nowrap;
 }
 
 /* Container for sections, items, and pages */
@@ -92,9 +77,9 @@
     border-radius: 8px;
     padding: 25px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    flex: 1;
-    min-width: 280px;
-    max-width: calc(33.333% - 14px);
+    flex: 1 1 calc(33.333% - 14px);
+    min-width: 0;
+    max-width: none;
 }
 
 .config-sections h2,
@@ -575,8 +560,7 @@
     .config-sections,
     .config-items,
     .config-pages {
-        max-width: calc(33.333% - 10px);
-        min-width: 250px;
+        flex: 1 1 calc(33.333% - 10px);
     }
 }
 
@@ -589,6 +573,7 @@
     .config-sections,
     .config-items,
     .config-pages {
+        flex: 1 1 auto;
         max-width: none;
         min-width: auto;
     }
