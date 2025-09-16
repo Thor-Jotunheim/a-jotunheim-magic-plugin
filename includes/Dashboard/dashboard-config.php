@@ -616,9 +616,40 @@ class JotunheimDashboardConfig {
             $this->load_default_menu_items();
         }
         
-        // Since we're using normalized database, just return the default menu items
-        // The configuration and assignments are handled by the normalized database
-        return $this->default_menu_items;
+        // Get current database configuration to merge quick_action status
+        $db_config = $this->normalized_db->get_full_configuration();
+        
+        // Create a lookup for current database values
+        $db_items_lookup = [];
+        foreach ($db_config as $section_data) {
+            if (isset($section_data['items'])) {
+                foreach ($section_data['items'] as $item) {
+                    $db_items_lookup[$item['item_id']] = $item;
+                }
+            }
+        }
+        
+        // Merge default menu items with current database values
+        $merged_items = [];
+        foreach ($this->default_menu_items as $default_item) {
+            $item = $default_item; // Start with default
+            
+            // If this item exists in database, use database values for quick_action, enabled, etc.
+            if (isset($db_items_lookup[$default_item['id']])) {
+                $db_item = $db_items_lookup[$default_item['id']];
+                $item['quick_action'] = $db_item['quick_action'];
+                $item['enabled'] = $db_item['enabled'];
+                $item['description'] = $db_item['description'] ?? $default_item['description'];
+            } else {
+                // Not in database yet, use default values
+                $item['quick_action'] = $default_item['quick_action'] ?? false;
+                $item['enabled'] = true;
+            }
+            
+            $merged_items[] = $item;
+        }
+        
+        return $merged_items;
     }
     
     public function get_config() {
