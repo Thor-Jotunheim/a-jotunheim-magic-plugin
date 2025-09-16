@@ -144,16 +144,12 @@ function jotunheim_magic_plugin_menu() {
         }
     }
 
-    // Replace the default submenu page with our dashboard
+    // IMPORTANT: Do NOT add a submenu with the same slug as the parent menu
+    // WordPress will automatically create the first submenu item that points to the main menu callback
+    // Adding a submenu with the same slug will override the main menu behavior
+    
+    // Remove any existing submenu page that might conflict
     remove_submenu_page('jotunheim_magic', 'jotunheim_magic');
-    add_submenu_page(
-        'jotunheim_magic',
-        'Dashboard Overview',
-        'Dashboard Overview', 
-        'manage_options',
-        'jotunheim_magic',
-        'jotunheim_magic_dashboard'
-    );
 }
 
 /**
@@ -590,6 +586,7 @@ function jotunheim_magic_dashboard() {
         border-radius: 12px;
         border: 1px solid #dcdcde;
         margin-top: 20px;
+        margin-bottom: 30px; /* Add spacing after quick actions */
     }
     
     .jotunheim-quick-actions h3 {

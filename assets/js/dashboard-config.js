@@ -408,6 +408,45 @@ jQuery(document).ready(function($) {
         if (menuItem) {
             menuItem.quick_action = isChecked;
             markDirty();
+            
+            // Auto-save quick action changes immediately
+            const $checkbox = $(e.currentTarget);
+            $checkbox.prop('disabled', true);
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'save_dashboard_config',
+                    config: JSON.stringify(currentConfig),
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the UI to show the change was saved
+                        const $label = $checkbox.closest('.item-quick-action-control').find('label');
+                        const originalText = $label.text();
+                        $label.text(isChecked ? 'Added to Quick Actions ✓' : 'Removed from Quick Actions ✓');
+                        setTimeout(() => {
+                            $label.text(originalText);
+                        }, 2000);
+                    } else {
+                        // Revert checkbox if save failed
+                        $checkbox.prop('checked', !isChecked);
+                        menuItem.quick_action = !isChecked;
+                        alert('Error saving quick action setting: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    // Revert checkbox if save failed
+                    $checkbox.prop('checked', !isChecked);
+                    menuItem.quick_action = !isChecked;
+                    alert('Error saving quick action setting');
+                },
+                complete: function() {
+                    $checkbox.prop('disabled', false);
+                }
+            });
         }
     }
 

@@ -22,6 +22,8 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_reset_dashboard_config', [$this, 'reset_dashboard_config']);
         add_action('wp_ajax_save_discord_roles', [$this, 'ajax_save_discord_roles']);
         add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
+        add_action('wp_ajax_get_available_pages', [$this, 'ajax_get_available_pages']);
+        add_action('wp_ajax_add_custom_page', [$this, 'ajax_add_custom_page']);
         
         // TEMPORARY: Force config reset for debugging (DISABLED after fixing duplicates)
         // delete_option('jotunheim_dashboard_config');
@@ -197,6 +199,105 @@ class JotunheimDashboardConfig {
                 'quick_action' => false
             ]
         ];
+    }
+    
+    /**
+     * Auto-detect available plugin pages by scanning render functions
+     */
+    public function get_available_plugin_pages() {
+        $available_pages = [];
+        
+        // Scan for functions that match render_*_page pattern
+        $functions = get_defined_functions()['user'];
+        
+        foreach ($functions as $function) {
+            if (preg_match('/^render_(.+)_page$/', $function, $matches)) {
+                $page_id = $matches[1];
+                $page_title = ucwords(str_replace('_', ' ', $page_id));
+                
+                // Skip if already in our default menu items
+                $exists = false;
+                foreach ($this->default_menu_items as $item) {
+                    if ($item['id'] === $page_id) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                
+                if (!$exists) {
+                    $available_pages[] = [
+                        'id' => $page_id,
+                        'title' => $page_title,
+                        'menu_title' => $page_title,
+                        'callback' => $function,
+                        'category' => 'discovered',
+                        'description' => 'Auto-detected plugin page'
+                    ];
+                }
+            }
+        }
+        
+        // Also scan includes directory for PHP files that might contain page renders
+        $plugin_dir = plugin_dir_path(__FILE__) . '../';
+        $this->scan_directory_for_pages($plugin_dir, $available_pages);
+        
+        return $available_pages;
+    }
+    
+    /**
+     * Recursively scan directory for potential page files
+     */
+    private function scan_directory_for_pages($dir, &$available_pages) {
+        if (!is_dir($dir)) return;
+        
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') continue;
+            
+            $full_path = $dir . $file;
+            
+            if (is_dir($full_path)) {
+                // Recursively scan subdirectories
+                $this->scan_directory_for_pages($full_path . '/', $available_pages);
+            } elseif (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                // Check if this file contains a render function
+                $content = file_get_contents($full_path);
+                if (preg_match_all('/function\s+(render_[a-zA-Z_]+_page)\s*\(/', $content, $matches)) {
+                    foreach ($matches[1] as $function_name) {
+                        $page_id = preg_replace('/^render_(.+)_page$/', '$1', $function_name);
+                        $page_title = ucwords(str_replace('_', ' ', $page_id));
+                        
+                        // Check if already exists
+                        $exists = false;
+                        foreach ($this->default_menu_items as $item) {
+                            if ($item['id'] === $page_id) {
+                                $exists = true;
+                                break;
+                            }
+                        }
+                        
+                        foreach ($available_pages as $existing) {
+                            if ($existing['id'] === $page_id) {
+                                $exists = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!$exists) {
+                            $available_pages[] = [
+                                'id' => $page_id,
+                                'title' => $page_title,
+                                'menu_title' => $page_title,
+                                'callback' => $function_name,
+                                'category' => 'discovered',
+                                'description' => 'Auto-detected from ' . basename($file),
+                                'file_path' => $full_path
+                            ];
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private function get_default_config() {
@@ -410,6 +511,72 @@ class JotunheimDashboardConfig {
             wp_send_json_success('Discord OAuth integration is available');
         } else {
             wp_send_json_error('Discord OAuth integration not found');
+        }
+    }
+    
+    /**
+     * AJAX handler to get available plugin pages
+     */
+    public function ajax_get_available_pages() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $available_pages = $this->get_available_plugin_pages();
+        wp_send_json_success($available_pages);
+    }
+    
+    /**
+     * AJAX handler to add a custom page to the dashboard
+     */
+    public function ajax_add_custom_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $page_data = $_POST['page_data'];
+        
+        // Validate required fields
+        if (empty($page_data['id']) || empty($page_data['title']) || empty($page_data['callback'])) {
+            wp_send_json_error('Missing required fields');
+            return;
+        }
+        
+        // Sanitize input
+        $new_page = [
+            'id' => sanitize_key($page_data['id']),
+            'title' => sanitize_text_field($page_data['title']),
+            'menu_title' => sanitize_text_field($page_data['menu_title'] ?: $page_data['title']),
+            'callback' => sanitize_text_field($page_data['callback']),
+            'category' => sanitize_text_field($page_data['category'] ?: 'custom'),
+            'description' => sanitize_text_field($page_data['description'] ?: 'Custom added page'),
+            'quick_action' => (bool)($page_data['quick_action'] ?: false)
+        ];
+        
+        // Check if page already exists
+        foreach ($this->get_menu_items() as $existing) {
+            if ($existing['id'] === $new_page['id']) {
+                wp_send_json_error('Page with this ID already exists');
+                return;
+            }
+        }
+        
+        // Add to config
+        $config = $this->get_config();
+        $config['items'][] = $new_page;
+        
+        if (update_option('jotunheim_dashboard_config', $config)) {
+            wp_send_json_success($new_page);
+        } else {
+            wp_send_json_error('Failed to save configuration');
         }
     }
     
@@ -716,6 +883,93 @@ function render_dashboard_config_page() {
                 
                 <div id="items-container" class="items-list">
                     <!-- Items will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Page Management -->
+            <div class="config-pages">
+                <h2>
+                    <span class="dashicons dashicons-plus-alt"></span>
+                    Add Pages
+                </h2>
+                <p class="section-description">Add new pages to your dashboard from auto-detected plugin pages or create custom entries.</p>
+                
+                <div class="page-management-tabs">
+                    <button type="button" class="tab-button active" data-tab="auto-detect">Auto-Detect Pages</button>
+                    <button type="button" class="tab-button" data-tab="manual">Manual Entry</button>
+                </div>
+                
+                <div class="tab-content" id="auto-detect-tab">
+                    <div class="auto-detect-controls">
+                        <button type="button" class="button" id="scan-pages">
+                            <span class="dashicons dashicons-search"></span>
+                            Scan for Available Pages
+                        </button>
+                        <div id="scan-status" class="scan-status"></div>
+                    </div>
+                    
+                    <div id="available-pages-list" class="available-pages-list">
+                        <!-- Available pages will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="manual-tab" style="display: none;">
+                    <form id="manual-page-form" class="manual-page-form">
+                        <div class="form-group">
+                            <label for="manual-page-id">Page ID <span class="required">*</span></label>
+                            <input type="text" id="manual-page-id" name="page_id" required 
+                                   placeholder="e.g., custom_reports" pattern="[a-z0-9_]+" 
+                                   title="Lowercase letters, numbers, and underscores only">
+                            <p class="description">Unique identifier for the page (lowercase, underscores allowed)</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manual-page-title">Page Title <span class="required">*</span></label>
+                            <input type="text" id="manual-page-title" name="page_title" required 
+                                   placeholder="e.g., Custom Reports">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manual-page-menu-title">Menu Title</label>
+                            <input type="text" id="manual-page-menu-title" name="menu_title" 
+                                   placeholder="Leave empty to use Page Title">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manual-page-callback">Callback Function <span class="required">*</span></label>
+                            <input type="text" id="manual-page-callback" name="callback" required 
+                                   placeholder="e.g., render_custom_reports_page">
+                            <p class="description">PHP function name that renders this page</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manual-page-section">Section</label>
+                            <select id="manual-page-section" name="section">
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manual-page-description">Description</label>
+                            <textarea id="manual-page-description" name="description" 
+                                      placeholder="Brief description of what this page does"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="manual-page-quick-action" name="quick_action">
+                                Show in Quick Actions
+                            </label>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="button button-primary">
+                                <span class="dashicons dashicons-plus-alt"></span>
+                                Add Page
+                            </button>
+                            <button type="button" class="button" id="clear-manual-form">Clear Form</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1270,6 +1524,179 @@ function render_dashboard_config_page() {
                 width: 95vw;
             }
         }
+        
+        /* Page Management Styles */
+        .config-pages {
+            margin: 30px 0;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .config-pages h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .page-management-tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover {
+            color: #3498db;
+        }
+        
+        .tab-button.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            margin: 20px 0;
+        }
+        
+        .auto-detect-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .scan-status {
+            font-style: italic;
+            color: #666;
+        }
+        
+        .scan-status.loading {
+            color: #3498db;
+        }
+        
+        .scan-status.success {
+            color: #27ae60;
+        }
+        
+        .scan-status.error {
+            color: #e74c3c;
+        }
+        
+        .available-pages-list {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .available-page-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+        
+        .available-page-item:last-child {
+            border-bottom: none;
+        }
+        
+        .available-page-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .page-info h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        
+        .page-info .page-meta {
+            font-size: 12px;
+            color: #666;
+            margin: 2px 0;
+        }
+        
+        .page-info .page-description {
+            font-size: 13px;
+            color: #777;
+            margin: 5px 0 0 0;
+            font-style: italic;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .manual-page-form {
+            max-width: 600px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-group .description {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0 0 0;
+            font-style: italic;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .no-pages-found {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 
     <!-- Toggle for Organized Menu Mode - Moved to bottom -->
@@ -1316,6 +1743,200 @@ function render_dashboard_config_page() {
                 }
             });
         });
+        
+        // Page Management Functionality
+        
+        // Tab switching
+        $('.tab-button').on('click', function() {
+            const tabId = $(this).data('tab');
+            
+            // Update tab buttons
+            $('.tab-button').removeClass('active');
+            $(this).addClass('active');
+            
+            // Show/hide tab content
+            $('.tab-content').hide();
+            $('#' + tabId + '-tab').show();
+        });
+        
+        // Scan for available pages
+        $('#scan-pages').on('click', function() {
+            const $button = $(this);
+            const $status = $('#scan-status');
+            const $list = $('#available-pages-list');
+            
+            $button.prop('disabled', true);
+            $status.removeClass('success error').addClass('loading').text('Scanning for available pages...');
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ajax_get_available_pages',
+                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>'
+                },
+                success: function(response) {
+                    if (response.success && response.data.pages) {
+                        const pages = response.data.pages;
+                        let html = '';
+                        
+                        if (pages.length === 0) {
+                            html = '<div class="no-pages-found">No additional pages found to add.</div>';
+                        } else {
+                            pages.forEach(function(page) {
+                                html += '<div class="available-page-item" data-page-id="' + page.id + '">';
+                                html += '<div class="page-info">';
+                                html += '<h4>' + page.title + '</h4>';
+                                html += '<div class="page-meta">ID: ' + page.id + ' | Function: ' + page.callback + '</div>';
+                                if (page.description) {
+                                    html += '<div class="page-description">' + page.description + '</div>';
+                                }
+                                html += '</div>';
+                                html += '<div class="page-actions">';
+                                html += '<select class="page-section-select">';
+                                // Populate sections dynamically
+                                const sections = Object.keys(dashboardConfig);
+                                sections.forEach(function(section) {
+                                    html += '<option value="' + section + '">' + section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
+                                });
+                                html += '</select>';
+                                html += '<button type="button" class="button button-primary add-detected-page">Add Page</button>';
+                                html += '</div>';
+                                html += '</div>';
+                            });
+                        }
+                        
+                        $list.html(html);
+                        $status.removeClass('loading').addClass('success').text('Found ' + pages.length + ' available pages');
+                    } else {
+                        $status.removeClass('loading').addClass('error').text('Error: ' + (response.data || 'Failed to scan pages'));
+                    }
+                },
+                error: function() {
+                    $status.removeClass('loading').addClass('error').text('Error: Failed to communicate with server');
+                },
+                complete: function() {
+                    $button.prop('disabled', false);
+                }
+            });
+        });
+        
+        // Add detected page
+        $(document).on('click', '.add-detected-page', function() {
+            const $item = $(this).closest('.available-page-item');
+            const pageId = $item.data('page-id');
+            const section = $item.find('.page-section-select').val();
+            const $button = $(this);
+            
+            $button.prop('disabled', true).text('Adding...');
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ajax_add_custom_page',
+                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                    page_id: pageId,
+                    section: section
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Remove from available list
+                        $item.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        
+                        // Show success message
+                        const $successMsg = $('<div class="notice notice-success"><p>Page "' + pageId + '" added successfully!</p></div>');
+                        $('.config-pages').before($successMsg);
+                        setTimeout(function() {
+                            $successMsg.fadeOut();
+                        }, 3000);
+                        
+                        // Refresh the dashboard config
+                        location.reload();
+                    } else {
+                        alert('Error adding page: ' + (response.data || 'Unknown error'));
+                        $button.prop('disabled', false).text('Add Page');
+                    }
+                },
+                error: function() {
+                    alert('Error: Failed to communicate with server');
+                    $button.prop('disabled', false).text('Add Page');
+                }
+            });
+        });
+        
+        // Manual page form
+        $('#manual-page-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                action: 'ajax_add_custom_page',
+                nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                page_id: $('#manual-page-id').val(),
+                page_title: $('#manual-page-title').val(),
+                menu_title: $('#manual-page-menu-title').val() || $('#manual-page-title').val(),
+                callback: $('#manual-page-callback').val(),
+                section: $('#manual-page-section').val(),
+                description: $('#manual-page-description').val(),
+                quick_action: $('#manual-page-quick-action').is(':checked'),
+                is_manual: true
+            };
+            
+            const $submitBtn = $(this).find('button[type="submit"]');
+            $submitBtn.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Adding...');
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        // Clear form
+                        $('#manual-page-form')[0].reset();
+                        
+                        // Show success message
+                        const $successMsg = $('<div class="notice notice-success"><p>Page "' + formData.page_title + '" added successfully!</p></div>');
+                        $('.config-pages').before($successMsg);
+                        setTimeout(function() {
+                            $successMsg.fadeOut();
+                        }, 3000);
+                        
+                        // Refresh the dashboard config
+                        location.reload();
+                    } else {
+                        alert('Error adding page: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error: Failed to communicate with server');
+                },
+                complete: function() {
+                    $submitBtn.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt"></span> Add Page');
+                }
+            });
+        });
+        
+        // Clear manual form
+        $('#clear-manual-form').on('click', function() {
+            $('#manual-page-form')[0].reset();
+        });
+        
+        // Populate manual form section dropdown
+        function populateManualSectionDropdown() {
+            const $select = $('#manual-page-section');
+            $select.empty();
+            
+            const sections = Object.keys(dashboardConfig);
+            sections.forEach(function(section) {
+                const displayName = section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                $select.append('<option value="' + section + '">' + displayName + '</option>');
+            });
+        }
+        
+        // Initialize manual form
+        populateManualSectionDropdown();
     });
     </script>
     
