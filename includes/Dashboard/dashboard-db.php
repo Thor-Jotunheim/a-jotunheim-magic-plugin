@@ -10,7 +10,8 @@ class Jotunheim_Dashboard_DB {
     
     public function __construct() {
         global $wpdb;
-        $this->table_name = $wpdb->prefix . 'jotun_dashboard_config';
+        // Use jotun_ prefix instead of WordPress prefix
+        $this->table_name = 'jotun_dashboard_config';
     }
     
     /**
