@@ -627,6 +627,65 @@ class JotunheimDashboardConfig {
     }
     
     /**
+     * Get configuration in format expected by frontend dashboard config page
+     */
+    public function get_config_for_frontend() {
+        $normalized_config = $this->normalized_db->get_full_configuration();
+        
+        // Default icons for sections
+        $default_section_icons = [
+            'core' => 'dashicons-admin-settings',
+            'items' => 'dashicons-products',
+            'events' => 'dashicons-calendar-alt',
+            'pos' => 'dashicons-cart',
+            'trading' => 'dashicons-money-alt',
+            'moderation' => 'dashicons-admin-users',
+            'kb' => 'dashicons-book-alt',
+            'wiki' => 'dashicons-media-document',
+            'gallery' => 'dashicons-format-gallery',
+            'ledger' => 'dashicons-analytics',
+            'google_sheets' => 'dashicons-media-spreadsheet',
+            'discord' => 'dashicons-admin-links'
+        ];
+        
+        // Convert to format expected by frontend
+        $frontend_config = [
+            'sections' => [],
+            'items' => []
+        ];
+        
+        // Convert sections
+        foreach ($normalized_config as $section_key => $section_data) {
+            $frontend_config['sections'][] = [
+                'id' => $section_key,
+                'title' => $section_data['title'],
+                'description' => $section_data['description'] ?? 'No description available',
+                'order' => $section_data['order'],
+                'enabled' => $section_data['enabled'],
+                'icon' => $section_data['icon'] ?? $default_section_icons[$section_key] ?? 'dashicons-admin-generic'
+            ];
+            
+            // Convert items in this section
+            if (isset($section_data['items']) && is_array($section_data['items'])) {
+                foreach ($section_data['items'] as $item_data) {
+                    $frontend_config['items'][] = [
+                        'id' => $item_data['item_id'],
+                        'title' => $item_data['title'],
+                        'section' => $section_key,
+                        'order' => $item_data['order'],
+                        'enabled' => $item_data['enabled'],
+                        'quick_action' => $item_data['quick_action'] ?? false,
+                        'callback' => $item_data['callback'],
+                        'description' => $item_data['description'] ?? ''
+                    ];
+                }
+            }
+        }
+        
+        return $frontend_config;
+    }
+    
+    /**
      * Validate and clean configuration data to prevent corruption
      */
     private function validate_and_clean_config($config) {
@@ -1190,7 +1249,9 @@ function render_dashboard_config_page() {
     global $jotunheim_dashboard_config;
     
     $menu_items = $jotunheim_dashboard_config->get_menu_items();
-    $config = $jotunheim_dashboard_config->get_config();
+    
+    // Convert normalized database structure to format expected by frontend
+    $config = $jotunheim_dashboard_config->get_config_for_frontend();
     
     // Enqueue necessary scripts and styles
     wp_enqueue_script('jquery-ui-sortable');
