@@ -611,6 +611,11 @@ class JotunheimDashboardConfig {
     }
     
     public function get_menu_items() {
+        // Ensure default menu items are loaded
+        if (empty($this->default_menu_items)) {
+            $this->load_default_menu_items();
+        }
+        
         // Since we're using normalized database, just return the default menu items
         // The configuration and assignments are handled by the normalized database
         return $this->default_menu_items;
