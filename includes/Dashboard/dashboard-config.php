@@ -373,15 +373,6 @@ function render_dashboard_config_page() {
             <div class="dashboard-config-description">
                 <p>Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
             </div>
-            
-            <!-- Toggle for Organized Menu Mode -->
-            <div class="organized-menu-toggle">
-                <label>
-                    <input type="checkbox" id="use-organized-menu" <?php echo get_option('jotunheim_use_organized_menu', false) ? 'checked' : ''; ?>>
-                    <strong>Enable Organized Menu Mode</strong> - Switch from flat menu to organized sections
-                </label>
-                <p class="description">When enabled, your menu will be organized into sections. When disabled, uses the traditional flat menu structure.</p>
-            </div>
         
         <div class="dashboard-config-actions">
             <button type="button" class="button button-primary" id="save-config">
@@ -546,13 +537,22 @@ function render_dashboard_config_page() {
             padding-top: 0 !important;
         }
         
+        /* Fix the main heading spacing */
         .dashboard-config-title {
             display: flex;
             align-items: center;
             gap: 10px;
             color: #1d2327;
             margin-bottom: 10px;
-            margin-top: 0;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        
+        /* Ensure the first element has no top margin */
+        .wrap > .dashboard-config-wrap > h1:first-child,
+        .wrap > h1:first-child {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
         
         .dashboard-config-description {
@@ -985,6 +985,19 @@ function render_dashboard_config_page() {
             }
         }
     </style>
+
+    <!-- Toggle for Organized Menu Mode - Moved to bottom -->
+    <div class="organized-menu-toggle" style="margin-top: 40px; padding: 20px; background: #f6f7f7; border-radius: 8px; border: 1px solid #dcdcde;">
+        <h3 style="margin-top: 0; color: #1d2327;">
+            <span class="dashicons dashicons-admin-settings" style="margin-right: 8px;"></span>
+            Menu Display Mode
+        </h3>
+        <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <input type="checkbox" id="use-organized-menu" <?php echo get_option('jotunheim_use_organized_menu', false) ? 'checked' : ''; ?>>
+            <strong>Enable Organized Menu Mode</strong>
+        </label>
+        <p class="description" style="margin: 0; color: #646970;">Switch between organized sections (recommended) and the traditional flat menu structure. Changes take effect after saving.</p>
+    </div>
 
     </div> <!-- Close .wrap -->
     
