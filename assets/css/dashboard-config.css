@@ -17,7 +17,7 @@
 /* Ensure proper container spacing */
 .dashboard-config-container {
     display: flex;
-    gap: 20px;
+    gap: 30px;
     margin: 20px 0;
     clear: both;
 }
@@ -29,9 +29,66 @@
 
 .dashboard-config-section h3 {
     margin-top: 0;
-    padding: 10px;
+    padding: 15px;
     background: #f1f1f1;
+    border-radius: 6px;
+    font-size: 16px;
+    color: #1d2327;
+}
+
+/* Container for sections and items */
+.config-sections,
+.config-items {
+    background: white;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.config-sections h2,
+.config-items h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #1d2327;
+    font-size: 18px;
+}
+
+.section-description {
+    color: #646970;
+    margin-bottom: 25px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Items filter area */
+.items-filter {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f6f7f7;
+    border-radius: 6px;
+    border: 1px solid #dcdcde;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.items-filter label {
+    font-weight: 500;
+    color: #1d2327;
+    margin-right: 8px;
+}
+
+.items-filter select {
+    padding: 6px 10px;
+    border: 1px solid #c3c4c7;
     border-radius: 4px;
+    background: white;
+    font-size: 13px;
 }
 
 .dashboard-sections, .available-items {
@@ -91,20 +148,21 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 12px;
-    margin-bottom: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
     background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 3px;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
     cursor: move;
-    transition: background-color 0.2s;
-    min-height: 60px;
-    flex-wrap: wrap;
-    gap: 10px;
+    transition: all 0.2s ease;
+    min-height: 80px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .menu-item:hover {
-    background: #f0f0f1;
+    background: #f6f7f7;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
 }
 
 .menu-item:last-child {
@@ -118,10 +176,11 @@
     flex: 1;
     min-width: 0;
     gap: 8px;
+    padding-right: 20px;
 }
 
 .item-title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     color: #1d2327;
     margin: 0;
@@ -135,31 +194,101 @@
     line-height: 1.4;
 }
 
+.item-meta {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.item-section {
+    background: #0073aa;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.item-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.item-status.enabled {
+    background: #00a32a;
+    color: white;
+}
+
+.item-status.disabled {
+    background: #dcdcde;
+    color: #646970;
+}
+
 /* Fix controls layout */
 .item-controls {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 8px;
+    gap: 12px;
     flex-shrink: 0;
-    min-width: 200px;
+    min-width: 250px;
 }
 
 .item-section-control,
 .item-status-control {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 10px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: flex-end;
 }
 
-.item-section-control select,
-.item-status-control select {
-    min-width: 120px;
-    font-size: 12px;
-    padding: 4px 6px;
+.item-section-control label,
+.item-status-control label {
+    font-weight: 500;
+    color: #646970;
+    min-width: 50px;
+    text-align: right;
+}
+
+.item-section-control select {
+    min-width: 140px;
+    font-size: 13px;
+    padding: 6px 8px;
     border: 1px solid #c3c4c7;
-    border-radius: 3px;
+    border-radius: 4px;
+    background: white;
+}
+
+.control-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+    min-width: 80px;
+    justify-content: center;
+}
+
+.control-btn.toggle {
+    background: #00a32a;
+    color: white;
+}
+
+.control-btn.toggle.disabled {
+    background: #d63638;
+}
+
+.control-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .available-items .menu-item {

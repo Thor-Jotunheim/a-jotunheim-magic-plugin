@@ -125,28 +125,35 @@ jQuery(document).ready(function($) {
             
             const itemHtml = `
                 <div class="menu-item" data-id="${itemConfig.id}" data-section="${itemConfig.section}">
-                    <div class="item-header">
+                    <div class="item-content">
                         <div class="item-title">
                             ${escapeHtml(menuItem.menu_title)}
                         </div>
-                        <div class="item-controls">
+                        <div class="item-description">
+                            ${escapeHtml(menuItem.description || '')}
+                        </div>
+                        <div class="item-meta">
+                            <span class="item-section">${escapeHtml(sectionName)}</span>
+                            <span class="item-status ${itemConfig.enabled ? 'enabled' : 'disabled'}">
+                                ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="item-controls">
+                        <div class="item-section-control">
+                            <label>Section:</label>
                             <select class="item-section-select" data-id="${itemConfig.id}">
                                 ${renderSectionOptions(itemConfig.section)}
                             </select>
+                        </div>
+                        <div class="item-status-control">
+                            <label>Status:</label>
                             <button class="control-btn toggle toggle-item ${itemConfig.enabled ? '' : 'disabled'}" 
                                     data-id="${itemConfig.id}" title="${itemConfig.enabled ? 'Disable' : 'Enable'} Item">
                                 <span class="dashicons dashicons-${itemConfig.enabled ? 'visibility' : 'hidden'}"></span>
+                                ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
                             </button>
                         </div>
-                    </div>
-                    <div class="item-description">
-                        ${escapeHtml(menuItem.description || '')}
-                    </div>
-                    <div class="item-meta">
-                        <span class="item-section">${escapeHtml(sectionName)}</span>
-                        <span class="item-status ${itemConfig.enabled ? 'enabled' : 'disabled'}">
-                            ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
-                        </span>
                     </div>
                 </div>
             `;
