@@ -956,9 +956,30 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        error_log('DEBUG: About to call update_option with config: ' . print_r($config, true));
+        error_log('DEBUG: About to call update_option for page: ' . $page_id);
+        error_log('DEBUG: Config has ' . count($config['items']) . ' items and ' . count($config['sections']) . ' sections');
+        
+        // Try to get current option to see if it exists
+        $current_option = get_option('jotunheim_dashboard_config', null);
+        error_log('DEBUG: Current option exists: ' . (is_null($current_option) ? 'false' : 'true'));
+        
         $update_result = update_option('jotunheim_dashboard_config', $config);
         error_log('DEBUG: update_option result: ' . ($update_result ? 'true' : 'false'));
+        
+        if (!$update_result) {
+            // If update failed, try to understand why
+            $serialized_size = strlen(serialize($config));
+            error_log('DEBUG: Serialized config size: ' . $serialized_size . ' bytes');
+            
+            // Try to save with wp_options directly to get more info
+            global $wpdb;
+            $option_name = 'jotunheim_dashboard_config';
+            $option_value = serialize($config);
+            
+            // Check if option exists
+            $exists = $wpdb->get_var($wpdb->prepare("SELECT option_id FROM {$wpdb->options} WHERE option_name = %s", $option_name));
+            error_log('DEBUG: Option exists in database: ' . ($exists ? 'true' : 'false'));
+        }
         
         if ($update_result) {
             error_log('DEBUG: Successfully saved configuration, sending success response');
