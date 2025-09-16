@@ -103,6 +103,10 @@ function jotunheim_magic_plugin_menu() {
     global $jotunheim_dashboard_config;
     $use_organized_menu = get_option('jotunheim_use_organized_menu', false);
     
+    // Debug logging
+    error_log('Jotunheim Dashboard: use_organized_menu = ' . ($use_organized_menu ? 'true' : 'false'));
+    error_log('Jotunheim Dashboard: jotunheim_dashboard_config exists = ' . (isset($jotunheim_dashboard_config) ? 'true' : 'false'));
+    
     // Safety check: only use organized menu if we have valid config
     if ($use_organized_menu && isset($jotunheim_dashboard_config)) {
         $organized_success = register_organized_menu($jotunheim_dashboard_config);
@@ -111,11 +115,14 @@ function jotunheim_magic_plugin_menu() {
         if (!$organized_success) {
             error_log('Jotunheim Dashboard: Organized menu failed, falling back to legacy mode');
             $use_organized_menu = false;
+        } else {
+            error_log('Jotunheim Dashboard: Organized menu registered successfully');
         }
     }
     
     // Use legacy mode if organized mode is disabled or failed
     if (!$use_organized_menu) {
+        error_log('Jotunheim Dashboard: Using legacy menu mode');
         // Register each submenu (legacy mode)
         foreach ($submenus as $submenu) {
             add_submenu_page(
@@ -139,7 +146,7 @@ function jotunheim_magic_plugin_menu() {
 function register_organized_menu($config) {
     // Safety checks
     if (!$config || !is_object($config)) {
-        error_log('Jotunheim Dashboard: Invalid config object for organized menu');
+        error_log('Jotunheim Dashboard: Invalid config object for organized menu - ' . gettype($config));
         return false;
     }
     
@@ -152,10 +159,14 @@ function register_organized_menu($config) {
     $menu_config = $config->get_config();
     $menu_items = $config->get_menu_items();
     
+    error_log('Jotunheim Dashboard: menu_config structure - ' . print_r($menu_config, true));
+    
     if (!isset($menu_config['sections']) || !isset($menu_config['items'])) {
-        error_log('Jotunheim Dashboard: Invalid menu config structure');
+        error_log('Jotunheim Dashboard: Invalid menu config structure - missing sections or items');
         return false;
     }
+    
+    error_log('Jotunheim Dashboard: Found ' . count($menu_config['sections']) . ' sections and ' . count($menu_config['items']) . ' item assignments');
     
     // Create a map of items by section
     $items_by_section = [];
@@ -182,6 +193,8 @@ function register_organized_menu($config) {
         }
     }
     
+    error_log('Jotunheim Dashboard: Items by section - ' . print_r($items_by_section, true));
+    
     // Sort sections by order
     $sections = $menu_config['sections'];
     usort($sections, function($a, $b) {
@@ -193,6 +206,7 @@ function register_organized_menu($config) {
         if (!$section['enabled']) continue;
         
         $section_id = $section['id'];
+        error_log('Jotunheim Dashboard: Processing section - ' . $section['title']);
         
         // Add section separator
         add_submenu_page(
@@ -213,6 +227,7 @@ function register_organized_menu($config) {
             });
             
             foreach ($items as $item) {
+                error_log('Jotunheim Dashboard: Adding item - ' . $item['title'] . ' with callback ' . $item['callback']);
                 if (function_exists($item['callback'])) {
                     add_submenu_page(
                         'jotunheim_magic',
@@ -222,11 +237,16 @@ function register_organized_menu($config) {
                         $item['slug'],
                         $item['callback']
                     );
+                } else {
+                    error_log('Jotunheim Dashboard: Function does not exist - ' . $item['callback']);
                 }
             }
+        } else {
+            error_log('Jotunheim Dashboard: No items found for section - ' . $section_id);
         }
     }
     
+    error_log('Jotunheim Dashboard: Organized menu registration completed');
     return true;
 }
 

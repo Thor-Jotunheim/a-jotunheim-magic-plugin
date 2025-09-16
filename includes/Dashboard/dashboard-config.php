@@ -22,7 +22,25 @@ class JotunheimDashboardConfig {
     
     public function init() {
         $this->load_default_menu_items();
-        $this->menu_config = get_option('jotunheim_dashboard_config', $this->get_default_config());
+        
+        // Get existing config or create default
+        $stored_config = get_option('jotunheim_dashboard_config', false);
+        
+        if (!$stored_config) {
+            // No config exists, create and save default
+            $this->menu_config = $this->get_default_config();
+            update_option('jotunheim_dashboard_config', $this->menu_config);
+            error_log('Jotunheim Dashboard: Created default config');
+        } else {
+            $this->menu_config = $stored_config;
+        }
+        
+        // Ensure config has required structure
+        if (!isset($this->menu_config['sections']) || !isset($this->menu_config['items'])) {
+            error_log('Jotunheim Dashboard: Invalid stored config, resetting to default');
+            $this->menu_config = $this->get_default_config();
+            update_option('jotunheim_dashboard_config', $this->menu_config);
+        }
     }
     
     private function load_default_menu_items() {
