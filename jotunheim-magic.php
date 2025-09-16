@@ -292,23 +292,51 @@ function jotunheim_magic_create_tables() {
     
     $charset_collate = $wpdb->get_charset_collate();
     
-    // Create jotun_playerlist table
+    // Create jotun_playerlist table with enhanced rename tracking
     $table_name = $wpdb->prefix . 'jotun_playerlist';
     $sql = "CREATE TABLE $table_name (
         id int(11) NOT NULL AUTO_INCREMENT,
-        player_name varchar(255) NOT NULL,
+        playerName varchar(255) NOT NULL,
+        activePlayerName varchar(255) NOT NULL,
         steam_id varchar(255) DEFAULT '',
         discord_id varchar(255) DEFAULT '',
         registration_date datetime DEFAULT CURRENT_TIMESTAMP,
+        last_rename_date datetime DEFAULT NULL,
+        rename_count int(11) DEFAULT 0,
         is_active tinyint(1) DEFAULT 1,
         PRIMARY KEY (id),
-        UNIQUE KEY player_name (player_name)
+        KEY idx_active_name (activePlayerName),
+        KEY idx_original_name (playerName)
     ) $charset_collate;";
     
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
     
+    // Check if we need to add rename columns dynamically
+    jotunheim_magic_check_rename_columns($table_name);
+    
     error_log('Created/updated table: ' . $table_name);
+}
+
+function jotunheim_magic_check_rename_columns($table_name) {
+    global $wpdb;
+    
+    // Get existing columns
+    $columns = $wpdb->get_results("DESCRIBE $table_name");
+    $existing_columns = array_column($columns, 'Field');
+    
+    // Check for rename columns and add if needed (up to 10 renames should be enough)
+    for ($i = 1; $i <= 10; $i++) {
+        $column_name = "playerRename$i";
+        if (!in_array($column_name, $existing_columns)) {
+            // Only add the first rename column initially, others will be added as needed
+            if ($i === 1) {
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN $column_name varchar(255) DEFAULT NULL");
+                error_log("Added rename column: $column_name");
+            }
+            break;
+        }
+    }
 }
 register_activation_hook(__FILE__, 'jotunheim_magic_activate');
 

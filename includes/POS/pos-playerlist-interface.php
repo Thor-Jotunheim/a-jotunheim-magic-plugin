@@ -102,7 +102,11 @@ function jotun_playerlist_interface() {
                             <input type="checkbox" id="select-all-players">
                         </th>
                         <th scope="col" class="manage-column column-player-name sortable">
-                            Player Name
+                            Current Name
+                            <span class="sorting-indicator"></span>
+                        </th>
+                        <th scope="col" class="manage-column column-original-name sortable">
+                            Original Name
                             <span class="sorting-indicator"></span>
                         </th>
                         <th scope="col" class="manage-column column-steam-id">Steam ID</th>
@@ -111,13 +115,17 @@ function jotun_playerlist_interface() {
                             Registration Date
                             <span class="sorting-indicator"></span>
                         </th>
+                        <th scope="col" class="manage-column column-rename-count sortable">
+                            Renames
+                            <span class="sorting-indicator"></span>
+                        </th>
                         <th scope="col" class="manage-column column-status">Status</th>
                         <th scope="col" class="manage-column column-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="players-table-body">
                     <tr class="loading-row">
-                        <td colspan="7" class="loading-cell">
+                        <td colspan="9" class="loading-cell">
                             <div class="loading-spinner">
                                 <span class="dashicons dashicons-update spin"></span>
                                 Loading players...
@@ -252,6 +260,46 @@ function jotun_playerlist_interface() {
                 <button type="button" class="button button-primary" id="start-import" disabled>
                     <span class="dashicons dashicons-database-import"></span>
                     Import Players
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Player Modal -->
+    <div id="rename-modal" class="jotun-modal" style="display: none;">
+        <div class="jotun-modal-content">
+            <div class="jotun-modal-header">
+                <h2>Rename Player</h2>
+                <button type="button" class="jotun-modal-close" id="close-rename-modal">
+                    <span class="dashicons dashicons-no-alt"></span>
+                </button>
+            </div>
+            <div class="jotun-modal-body">
+                <form id="rename-form">
+                    <input type="hidden" id="rename-player-id">
+                    
+                    <div class="form-group">
+                        <label for="current-name">Current Name</label>
+                        <input type="text" id="current-name" readonly class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-name">New Name <span class="required">*</span></label>
+                        <input type="text" id="new-name" required class="form-control">
+                        <small class="form-text">Enter the new player name</small>
+                    </div>
+                    
+                    <div id="rename-history" class="rename-history" style="display: none;">
+                        <h4>Rename History</h4>
+                        <ul id="rename-list"></ul>
+                    </div>
+                </form>
+            </div>
+            <div class="jotun-modal-footer">
+                <button type="button" class="button button-secondary" id="cancel-rename">Cancel</button>
+                <button type="button" class="button button-primary" id="save-rename">
+                    <span class="dashicons dashicons-edit"></span>
+                    Rename Player
                 </button>
             </div>
         </div>

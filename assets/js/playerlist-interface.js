@@ -126,6 +126,16 @@ jQuery(document).ready(function($) {
             deletePlayer(playerId, playerName);
         });
 
+        $(document).on('click', '.rename-player', function() {
+            const playerId = $(this).data('id');
+            const playerName = $(this).data('name');
+            openRenameModal(playerId, playerName);
+        });
+
+        // Rename modal events
+        $('#save-rename').on('click', saveRename);
+        $('#cancel-rename, #close-rename-modal').on('click', closeRenameModal);
+
         // Modal close on background click
         $('.jotun-modal').on('click', function(e) {
             if (e.target === this) {
@@ -205,7 +215,7 @@ jQuery(document).ready(function($) {
         if (players.length === 0) {
             tbody.append(`
                 <tr class="no-items">
-                    <td colspan="7" style="text-align: center; padding: 40px; color: #646970;">
+                    <td colspan="9" style="text-align: center; padding: 40px; color: #646970;">
                         <span class="dashicons dashicons-admin-users" style="font-size: 48px; margin-bottom: 10px; display: block; opacity: 0.3;"></span>
                         No players found
                     </td>
@@ -215,13 +225,22 @@ jQuery(document).ready(function($) {
         }
 
         players.forEach(player => {
+            // Support both old and new field names for backwards compatibility
+            const currentName = player.activePlayerName || player.player_name;
+            const originalName = player.playerName || player.player_name;
+            const renameCount = player.rename_count || 0;
+            
             const row = $(`
                 <tr data-id="${player.id}">
                     <td class="check-column">
                         <input type="checkbox" class="player-checkbox" value="${player.id}">
                     </td>
                     <td class="column-player-name">
-                        <strong>${escapeHtml(player.player_name)}</strong>
+                        <strong>${escapeHtml(currentName)}</strong>
+                    </td>
+                    <td class="column-original-name">
+                        ${escapeHtml(originalName)}
+                        ${renameCount > 0 ? '<span class="rename-indicator" title="Player has been renamed">*</span>' : ''}
                     </td>
                     <td class="column-steam-id">
                         ${escapeHtml(player.steam_id || '-')}
@@ -231,6 +250,9 @@ jQuery(document).ready(function($) {
                     </td>
                     <td class="column-registration-date">
                         ${formatDate(player.registration_date)}
+                    </td>
+                    <td class="column-rename-count">
+                        ${renameCount}
                     </td>
                     <td class="column-status">
                         <span class="status-badge status-${player.is_active ? 'active' : 'inactive'}">
@@ -242,7 +264,10 @@ jQuery(document).ready(function($) {
                             <button class="action-btn edit edit-player" data-id="${player.id}" title="Edit Player">
                                 <span class="dashicons dashicons-edit-large"></span>
                             </button>
-                            <button class="action-btn delete delete-player" data-id="${player.id}" data-name="${escapeHtml(player.player_name)}" title="Delete Player">
+                            <button class="action-btn rename rename-player" data-id="${player.id}" data-name="${escapeHtml(currentName)}" title="Rename Player">
+                                <span class="dashicons dashicons-admin-users"></span>
+                            </button>
+                            <button class="action-btn delete delete-player" data-id="${player.id}" data-name="${escapeHtml(currentName)}" title="Delete Player">
                                 <span class="dashicons dashicons-trash"></span>
                             </button>
                         </div>
@@ -501,13 +526,13 @@ jQuery(document).ready(function($) {
         for (const row of data) {
             try {
                 const playerData = {
-                    player_name: row.player_name || row.name || row.Player || '',
-                    steam_id: row.steam_id || row.steamid || row.Steam || '',
-                    discord_id: row.discord_id || row.discordid || row.Discord || '',
+                    playerName: row.playerName || row.player_name || row.name || row.Player || '',
+                    steam_id: row.steam_id || row.steamid || row.Steam || '', // Optional
+                    discord_id: row.discord_id || row.discordid || row.Discord || '', // Optional
                     is_active: true
                 };
 
-                if (playerData.player_name) {
+                if (playerData.playerName) {
                     await JotunAPI.addPlayer(playerData);
                     imported++;
                 }
@@ -542,16 +567,24 @@ jQuery(document).ready(function($) {
     }
 
     function playersToCSV(players) {
-        const headers = ['Player Name', 'Steam ID', 'Discord ID', 'Registration Date', 'Status'];
+        const headers = ['Current Name', 'Original Name', 'Steam ID', 'Discord ID', 'Registration Date', 'Rename Count', 'Status'];
         const csvContent = [
             headers.join(','),
-            ...players.map(p => [
-                `"${p.player_name}"`,
-                `"${p.steam_id || ''}"`,
-                `"${p.discord_id || ''}"`,
-                `"${p.registration_date}"`,
-                `"${p.is_active ? 'Active' : 'Inactive'}"`
-            ].join(','))
+            ...players.map(p => {
+                const currentName = p.activePlayerName || p.player_name;
+                const originalName = p.playerName || p.player_name;
+                const renameCount = p.rename_count || 0;
+                
+                return [
+                    `"${currentName}"`,
+                    `"${originalName}"`,
+                    `"${p.steam_id || ''}"`,
+                    `"${p.discord_id || ''}"`,
+                    `"${p.registration_date}"`,
+                    `"${renameCount}"`,
+                    `"${p.is_active ? 'Active' : 'Inactive'}"`
+                ].join(',');
+            })
         ].join('\n');
 
         return csvContent;
@@ -678,5 +711,82 @@ jQuery(document).ready(function($) {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
+    }
+
+    // ============================================================================
+    // RENAME PLAYER FUNCTIONS
+    // ============================================================================
+
+    async function openRenameModal(playerId, currentName) {
+        try {
+            // Get full player data to show rename history
+            const player = await JotunAPI.getPlayer(playerId);
+            
+            $('#rename-player-id').val(playerId);
+            $('#current-name').val(currentName);
+            $('#new-name').val('').focus();
+            
+            // Show rename history if available
+            if (player.rename_count > 0) {
+                const renameHistory = [];
+                for (let i = 1; i <= player.rename_count; i++) {
+                    const renameField = `playerRename${i}`;
+                    if (player[renameField]) {
+                        renameHistory.push(player[renameField]);
+                    }
+                }
+                
+                if (renameHistory.length > 0) {
+                    const historyHtml = renameHistory.map(name => `<li>${escapeHtml(name)}</li>`).join('');
+                    $('#rename-list').html(historyHtml);
+                    $('#rename-history').show();
+                } else {
+                    $('#rename-history').hide();
+                }
+            } else {
+                $('#rename-history').hide();
+            }
+            
+            $('#rename-modal').show();
+        } catch (error) {
+            console.error('Error opening rename modal:', error);
+            JotunAPI.handleError(error, 'Open rename modal');
+        }
+    }
+
+    function closeRenameModal() {
+        $('#rename-modal').hide();
+        $('#rename-form')[0].reset();
+        $('#rename-history').hide();
+    }
+
+    async function saveRename() {
+        const playerId = $('#rename-player-id').val();
+        const newName = $('#new-name').val().trim();
+        
+        if (!newName) {
+            alert('Please enter a new name');
+            return;
+        }
+        
+        if (!playerId) {
+            alert('Invalid player ID');
+            return;
+        }
+        
+        try {
+            $('#save-rename').prop('disabled', true).text('Renaming...');
+            
+            await JotunAPI.renamePlayer(playerId, { new_name: newName });
+            
+            JotunAPI.handleSuccess('Player renamed successfully!');
+            closeRenameModal();
+            loadPlayers();
+            loadPlayerStats();
+        } catch (error) {
+            JotunAPI.handleError(error, 'Rename player');
+        } finally {
+            $('#save-rename').prop('disabled', false).text('Rename Player');
+        }
     }
 });

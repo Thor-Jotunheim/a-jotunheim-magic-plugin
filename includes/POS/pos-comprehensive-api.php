@@ -34,6 +34,15 @@ add_action('rest_api_init', function() {
         }
     ]);
     
+    // Get single player
+    register_rest_route('jotun-api/v1', '/playerlist/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_single_player',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
     // Update player
     register_rest_route('jotun-api/v1', '/playerlist/(?P<id>\d+)', [
         'methods' => 'PUT',
@@ -47,6 +56,15 @@ add_action('rest_api_init', function() {
     register_rest_route('jotun-api/v1', '/playerlist/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'jotun_api_delete_player',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Rename player
+    register_rest_route('jotun-api/v1', '/playerlist/(?P<id>\d+)/rename', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_rename_player',
         'permission_callback' => function() {
             return current_user_can('edit_posts');
         }
@@ -406,6 +424,25 @@ function jotun_api_get_playerlist($request) {
     return new WP_REST_Response(['data' => $results], 200);
 }
 
+function jotun_api_get_single_player($request) {
+    global $wpdb;
+    
+    $id = (int) $request['id'];
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    
+    $player = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id));
+    
+    if (!$player) {
+        return new WP_REST_Response(['error' => 'Player not found'], 404);
+    }
+    
+    if ($wpdb->last_error) {
+        return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response($player, 200);
+}
+
 function jotun_api_add_player($request) {
     global $wpdb;
     
@@ -417,17 +454,22 @@ function jotun_api_add_player($request) {
     error_log('Player Import: Using table name - ' . $table_name);
     
     // Basic validation
-    if (empty($data['player_name'])) {
+    if (empty($data['player_name']) && empty($data['playerName'])) {
         error_log('Player Import: Missing player_name');
         return new WP_REST_Response(['error' => 'Player name is required'], 400);
     }
     
+    // Support both old and new field names for backwards compatibility
+    $player_name = sanitize_text_field($data['playerName'] ?? $data['player_name']);
+    
     // Prepare data for insertion
     $insert_data = [
-        'player_name' => sanitize_text_field($data['player_name']),
+        'playerName' => $player_name,
+        'activePlayerName' => $player_name, // Initially the same as original name
         'steam_id' => sanitize_text_field($data['steam_id'] ?? ''),
         'discord_id' => sanitize_text_field($data['discord_id'] ?? ''),
         'registration_date' => current_time('mysql'),
+        'rename_count' => 0,
         'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true
     ];
     
@@ -449,12 +491,15 @@ function jotun_api_update_player($request) {
     $data = $request->get_json_params();
     $table_name = $wpdb->prefix . 'jotun_playerlist';
     
-    if (empty($data['player_name'])) {
+    // Support both old and new field names
+    $player_name = $data['activePlayerName'] ?? $data['player_name'] ?? '';
+    
+    if (empty($player_name)) {
         return new WP_REST_Response(['error' => 'Player name is required'], 400);
     }
     
     $update_data = [
-        'player_name' => sanitize_text_field($data['player_name']),
+        'activePlayerName' => sanitize_text_field($player_name),
         'steam_id' => sanitize_text_field($data['steam_id'] ?? ''),
         'discord_id' => sanitize_text_field($data['discord_id'] ?? ''),
         'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true
@@ -486,6 +531,66 @@ function jotun_api_delete_player($request) {
     }
     
     return new WP_REST_Response(['message' => 'Player deleted successfully'], 200);
+}
+
+function jotun_api_rename_player($request) {
+    global $wpdb;
+    
+    $id = (int) $request['id'];
+    $data = $request->get_json_params();
+    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    
+    $new_name = $data['new_name'] ?? '';
+    
+    if (empty($new_name)) {
+        return new WP_REST_Response(['error' => 'New player name is required'], 400);
+    }
+    
+    // Get current player data
+    $player = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id));
+    
+    if (!$player) {
+        return new WP_REST_Response(['error' => 'Player not found'], 404);
+    }
+    
+    // Check if new name is different from current active name
+    if ($player->activePlayerName === $new_name) {
+        return new WP_REST_Response(['error' => 'New name is the same as current name'], 400);
+    }
+    
+    // Find the next available rename column
+    $rename_count = (int)$player->rename_count + 1;
+    $rename_column = "playerRename$rename_count";
+    
+    // Check if we need to add the rename column
+    $columns = $wpdb->get_results("DESCRIBE $table_name");
+    $existing_columns = array_column($columns, 'Field');
+    
+    if (!in_array($rename_column, $existing_columns)) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN $rename_column varchar(255) DEFAULT NULL");
+        error_log("Added rename column: $rename_column");
+    }
+    
+    // Store the current active name in the rename history
+    $update_data = [
+        $rename_column => $player->activePlayerName,
+        'activePlayerName' => sanitize_text_field($new_name),
+        'last_rename_date' => current_time('mysql'),
+        'rename_count' => $rename_count
+    ];
+    
+    $result = $wpdb->update($table_name, $update_data, ['id' => $id]);
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to rename player: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response([
+        'message' => 'Player renamed successfully',
+        'old_name' => $player->activePlayerName,
+        'new_name' => $new_name,
+        'rename_count' => $rename_count
+    ], 200);
 }
 
 // ============================================================================

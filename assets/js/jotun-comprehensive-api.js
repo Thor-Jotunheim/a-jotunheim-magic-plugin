@@ -62,6 +62,14 @@ class JotunheimAPI {
         return this.request(`/playerlist/${id}`, 'DELETE');
     }
 
+    async getPlayer(id) {
+        return this.request(`/playerlist/${id}`);
+    }
+
+    async renamePlayer(id, renameData) {
+        return this.request(`/playerlist/${id}/rename`, 'POST', renameData);
+    }
+
     // ============================================================================
     // PREFAB LIST API METHODS (jotun_prefablist)
     // ============================================================================
