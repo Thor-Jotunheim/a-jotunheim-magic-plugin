@@ -294,13 +294,34 @@ class JotunheimPagePermissions {
     }
     
     /**
-     * Get user's Discord roles (placeholder - implement based on your Discord integration)
+     * Get user's Discord roles from stored user meta
      */
     private static function get_user_discord_roles($user_id) {
-        // This would be implemented based on how you store user Discord role associations
-        // For now, return empty array
-        return [];
+        // Get stored Discord roles from user meta
+        $discord_roles = get_user_meta($user_id, 'discord_roles', true);
+        
+        if (empty($discord_roles) || !is_array($discord_roles)) {
+            return [];
+        }
+        
+        // Get configured Discord roles to map IDs to role keys
+        $configured_roles = get_configured_discord_roles();
+        $user_role_keys = [];
+        
+        // Map Discord role IDs to our role keys
+        foreach ($configured_roles as $role_key => $role_data) {
+            if (in_array($role_data['id'], $discord_roles)) {
+                $user_role_keys[] = $role_key;
+            }
+        }
+        
+        return $user_role_keys;
     }
+}
+
+// Helper function for easy permission checking throughout the plugin
+function jotunheim_user_can_access_page($page_slug, $user_id = null) {
+    return JotunheimPagePermissions::user_can_access_page($page_slug, $user_id);
 }
 
 // Function to render the page permissions config page
