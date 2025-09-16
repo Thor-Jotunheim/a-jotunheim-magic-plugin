@@ -611,52 +611,30 @@ class JotunheimDashboardConfig {
     }
     
     public function get_menu_items() {
-        // Ensure default menu items are loaded
-        if (empty($this->default_menu_items)) {
-            $this->load_default_menu_items();
-        }
-        
-        // Get current database configuration to merge quick_action status
+        // Just return the database data directly - no complex merging
         $db_config = $this->normalized_db->get_full_configuration();
+        $menu_items = [];
         
-        // DEBUG: Log the database config structure
-        error_log('DEBUG get_menu_items - DB config keys: ' . implode(', ', array_keys($db_config)));
-        
-        // Create a lookup for current database values
-        $db_items_lookup = [];
-        foreach ($db_config as $section_data) {
+        foreach ($db_config as $section_key => $section_data) {
             if (isset($section_data['items'])) {
                 foreach ($section_data['items'] as $item) {
-                    $db_items_lookup[$item['item_id']] = $item;
-                    error_log('DEBUG get_menu_items - Added to lookup: ' . $item['item_id'] . ' with quick_action: ' . ($item['quick_action'] ? 'true' : 'false'));
+                    $menu_items[] = [
+                        'id' => $item['item_id'],
+                        'title' => $item['title'],
+                        'callback' => $item['callback'],
+                        'enabled' => $item['enabled'],
+                        'quick_action' => $item['quick_action'], // Direct from database
+                        'order' => $item['order'],
+                        'icon' => $item['icon'],
+                        'description' => $item['description'],
+                        'permissions' => $item['permissions'],
+                        'section' => $section_key
+                    ];
                 }
             }
         }
         
-        // Merge default menu items with current database values
-        $merged_items = [];
-        foreach ($this->default_menu_items as $default_item) {
-            $item = $default_item; // Start with default
-            
-            // If this item exists in database, use database values for quick_action, enabled, etc.
-            if (isset($db_items_lookup[$default_item['id']])) {
-                $db_item = $db_items_lookup[$default_item['id']];
-                $item['quick_action'] = $db_item['quick_action'];
-                $item['enabled'] = $db_item['enabled'];
-                $item['description'] = $db_item['description'] ?? $default_item['description'];
-                error_log('DEBUG get_menu_items - Merged item ' . $default_item['id'] . ' with quick_action: ' . ($item['quick_action'] ? 'true' : 'false'));
-            } else {
-                // Not in database yet, use default values
-                $item['quick_action'] = $default_item['quick_action'] ?? false;
-                $item['enabled'] = true;
-                error_log('DEBUG get_menu_items - Default item ' . $default_item['id'] . ' not in DB, using default quick_action: ' . ($item['quick_action'] ? 'true' : 'false'));
-            }
-            
-            $merged_items[] = $item;
-        }
-        
-        error_log('DEBUG get_menu_items - Returning ' . count($merged_items) . ' merged items');
-        return $merged_items;
+        return $menu_items;
     }
     
     public function get_config() {
@@ -1363,20 +1341,10 @@ function render_dashboard_config_page() {
     wp_enqueue_script('jquery-ui-sortable');
     wp_enqueue_script('wp-api'); // WordPress REST API
     
-    // Keep the old script for now to prevent breaking the config page
-    wp_enqueue_script('dashboard-config-js', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-config.js', ['jquery', 'jquery-ui-sortable'], '1.0.0', true);
-    
-    // Also enqueue the new REST client for testing
-    wp_enqueue_script('dashboard-rest-client', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-rest-client.js', ['wp-api', 'jquery'], '1.0.0', true);
+    // ONLY use the new REST client - remove old AJAX system
+    wp_enqueue_script('dashboard-rest-client', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-rest-client.js', ['wp-api', 'jquery', 'jquery-ui-sortable'], '1.0.0', true);
     
     wp_enqueue_style('dashboard-config-css', plugin_dir_url(__FILE__) . '../../assets/css/dashboard-config.css', [], '1.0.0');
-
-    wp_localize_script('dashboard-config-js', 'dashboardConfig', [
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('dashboard_config_nonce'),
-        'config' => $config,
-        'menuItems' => $menu_items
-    ]);
 
     wp_localize_script('dashboard-config-js', 'dashboardConfig', [
         'ajaxurl' => admin_url('admin-ajax.php'),

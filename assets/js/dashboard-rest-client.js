@@ -1,4 +1,4 @@
-// Dashboard REST API Client
+// Simple Dashboard REST API Client
 class JotunheimDashboardAPI {
     constructor() {
         this.baseURL = wpApiSettings.root + 'jotunheim/v1/dashboard';
@@ -40,27 +40,16 @@ class JotunheimDashboardAPI {
         return this.makeRequest('/config');
     }
 
-    async saveConfig(configData) {
-        return this.makeRequest('/config', 'POST', configData);
-    }
-
-    async updateQuickAction(itemId, quickAction) {
-        return this.makeRequest('/quick-action', 'POST', {
-            item_id: itemId,
-            quick_action: quickAction
-        });
-    }
-
     async getMenuItems() {
         return this.makeRequest('/menu-items');
     }
 
-    async getDebugInfo() {
-        return this.makeRequest('/debug');
+    async saveConfig(configData) {
+        return this.makeRequest('/config', 'POST', configData);
     }
 }
 
-// Dashboard Configuration Manager
+// Simple Dashboard Manager
 class DashboardConfigManager {
     constructor() {
         this.api = new JotunheimDashboardAPI();
@@ -71,41 +60,34 @@ class DashboardConfigManager {
 
     async init() {
         try {
-            console.log('Initializing Dashboard Config Manager...');
+            console.log('Loading dashboard data via REST API...');
             
-            // Load menu items first
-            await this.loadMenuItems();
-            
-            // Load current configuration
+            // Load configuration from REST API
             await this.loadConfig();
             
             // Setup event listeners
             this.setupEventListeners();
             
-            console.log('Dashboard Config Manager initialized successfully');
+            // Update the UI with loaded data
+            this.updateUI();
+            
+            console.log('Dashboard loaded successfully');
         } catch (error) {
-            console.error('Failed to initialize Dashboard Config Manager:', error);
+            console.error('Failed to load dashboard:', error);
             this.showNotification('Failed to load dashboard configuration', 'error');
-        }
-    }
-
-    async loadMenuItems() {
-        try {
-            const response = await this.api.getMenuItems();
-            this.menuItems = response.data;
-            console.log('Menu items loaded:', this.menuItems);
-        } catch (error) {
-            console.error('Failed to load menu items:', error);
-            throw error;
         }
     }
 
     async loadConfig() {
         try {
-            const response = await this.api.getConfig();
-            this.currentConfig = response.data;
-            this.updateUI();
-            console.log('Configuration loaded:', this.currentConfig);
+            const configResponse = await this.api.getConfig();
+            this.currentConfig = configResponse.data;
+            console.log('Loaded config:', this.currentConfig);
+            
+            const menuResponse = await this.api.getMenuItems();
+            this.menuItems = menuResponse.data;
+            console.log('Loaded menu items:', this.menuItems);
+            
         } catch (error) {
             console.error('Failed to load configuration:', error);
             throw error;
@@ -113,60 +95,13 @@ class DashboardConfigManager {
     }
 
     setupEventListeners() {
-        // Quick Action toggles
-        document.addEventListener('change', async (e) => {
-            if (e.target.classList.contains('quick-action-toggle')) {
-                await this.handleQuickActionToggle(e);
-            }
-        });
-
-        // Save button
+        // Save button - this will save ALL changes including quick actions
         const saveButton = document.getElementById('save-config');
         if (saveButton) {
             saveButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.saveConfiguration();
             });
-        }
-
-        // Debug button
-        const debugButton = document.getElementById('debug-info');
-        if (debugButton) {
-            debugButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.showDebugInfo();
-            });
-        }
-    }
-
-    async handleQuickActionToggle(event) {
-        const checkbox = event.target;
-        const itemId = checkbox.dataset.itemId;
-        const quickAction = checkbox.checked;
-
-        try {
-            // Show loading state
-            checkbox.disabled = true;
-            this.showNotification(`Updating ${itemId}...`, 'info');
-
-            // Make API call
-            const response = await this.api.updateQuickAction(itemId, quickAction);
-            
-            if (response.success) {
-                this.showNotification(`Successfully updated ${itemId}`, 'success');
-                console.log('Quick action updated:', response.data);
-            } else {
-                throw new Error(response.error || 'Failed to update quick action');
-            }
-        } catch (error) {
-            console.error('Quick action toggle failed:', error);
-            
-            // Revert checkbox state
-            checkbox.checked = !quickAction;
-            
-            this.showNotification(`Failed to update ${itemId}: ${error.message}`, 'error');
-        } finally {
-            checkbox.disabled = false;
         }
     }
 
@@ -180,17 +115,22 @@ class DashboardConfigManager {
 
             this.showNotification('Saving configuration...', 'info');
 
-            // Collect form data
+            // Collect ALL form data including quick action checkboxes
             const configData = this.collectFormData();
             console.log('Saving configuration:', configData);
 
-            // Make API call
+            // Save via REST API
             const response = await this.api.saveConfig(configData);
             
             if (response.success) {
                 this.showNotification('Configuration saved successfully!', 'success');
                 this.currentConfig = response.data;
                 console.log('Configuration saved:', response.data);
+                
+                // Reload the page to show updated state
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             } else {
                 throw new Error(response.error || 'Failed to save configuration');
             }
@@ -207,33 +147,58 @@ class DashboardConfigManager {
     }
 
     collectFormData() {
-        // This will depend on your form structure
-        // For now, return current config as placeholder
-        return this.currentConfig || {};
+        // Collect current configuration including quick action states
+        const sections = {};
+        
+        // Go through each section in the current config
+        if (this.currentConfig) {
+            Object.keys(this.currentConfig).forEach(sectionKey => {
+                const section = this.currentConfig[sectionKey];
+                sections[sectionKey] = {
+                    title: section.title,
+                    description: section.description || 'No description available',
+                    order: section.order || 0,
+                    enabled: section.enabled || true,
+                    items: []
+                };
+                
+                // Process items in this section
+                if (section.items) {
+                    section.items.forEach(item => {
+                        // Check if there's a quick action checkbox for this item
+                        const checkbox = document.querySelector(`[data-item-id="${item.item_id}"]`);
+                        const quickAction = checkbox ? checkbox.checked : (item.quick_action || false);
+                        
+                        sections[sectionKey].items.push({
+                            id: item.item_id,
+                            item_id: item.item_id,
+                            title: item.title,
+                            callback: item.callback,
+                            enabled: item.enabled || true,
+                            quick_action: quickAction, // This is the key - get it from checkbox
+                            order: item.order || 0,
+                            icon: item.icon || null,
+                            description: item.description || null,
+                            permissions: item.permissions || null
+                        });
+                    });
+                }
+            });
+        }
+        
+        return { sections: sections };
     }
 
     updateUI() {
-        // Update quick action checkboxes based on current config
+        // Set quick action checkboxes based on loaded data
         if (this.menuItems) {
             this.menuItems.forEach(item => {
                 const checkbox = document.querySelector(`[data-item-id="${item.id}"]`);
                 if (checkbox) {
                     checkbox.checked = item.quick_action || false;
+                    console.log(`Set checkbox for ${item.id} to:`, item.quick_action);
                 }
             });
-        }
-    }
-
-    async showDebugInfo() {
-        try {
-            const response = await this.api.getDebugInfo();
-            console.log('Debug info:', response.data);
-            
-            const debugInfo = JSON.stringify(response.data, null, 2);
-            alert('Debug info logged to console. Check browser console for details.\n\n' + debugInfo);
-        } catch (error) {
-            console.error('Failed to get debug info:', error);
-            this.showNotification('Failed to get debug info', 'error');
         }
     }
 
