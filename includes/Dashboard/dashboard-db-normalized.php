@@ -121,6 +121,15 @@ class Jotunheim_Dashboard_DB_Normalized {
         $items_count = $wpdb->get_var("SELECT COUNT(*) FROM {$this->items_table}");
         error_log("Jotunheim Dashboard DB: Found {$sections_count} sections and {$items_count} items in normalized tables");
         
+        // EMERGENCY: If we have sections but no items, this is a critical failure - auto-restore
+        if ($sections_count > 0 && $items_count == 0) {
+            error_log("Jotunheim Dashboard DB: CRITICAL - Found sections but no items. Auto-restoring...");
+            $this->emergency_restore_items();
+            // Re-check after restore
+            $items_count = $wpdb->get_var("SELECT COUNT(*) FROM {$this->items_table}");
+            error_log("Jotunheim Dashboard DB: After emergency restore, found {$items_count} items");
+        }
+        
         $sql = "
             SELECT 
                 s.section_key,
@@ -231,12 +240,13 @@ class Jotunheim_Dashboard_DB_Normalized {
                 'callback_function' => $item_data['callback_function'],
                 'quick_action' => isset($item_data['quick_action']) ? ($item_data['quick_action'] ? 1 : 0) : 0,
                 'display_order' => isset($item_data['display_order']) ? $item_data['display_order'] : 0,
+                'is_active' => isset($item_data['enabled']) ? ($item_data['enabled'] ? 1 : 0) : 1,
                 'icon' => isset($item_data['icon']) ? $item_data['icon'] : null,
                 'description' => isset($item_data['description']) ? $item_data['description'] : null,
                 'permissions' => isset($item_data['permissions']) ? $item_data['permissions'] : null,
                 'updated_at' => current_time('mysql')
             ),
-            array('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s')
+            array('%d', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s')
         );
         
         if ($result === false) {
@@ -302,5 +312,155 @@ class Jotunheim_Dashboard_DB_Normalized {
         $wpdb->query("DELETE FROM {$this->sections_table}");
         
         error_log('Jotunheim Dashboard DB: Cleared all data from normalized tables');
+    }
+    
+    /**
+     * Emergency restore of default menu items when items table is empty
+     */
+    public function emergency_restore_items() {
+        error_log('Jotunheim Dashboard DB: EMERGENCY RESTORE - Rebuilding default menu items');
+        
+        // Default menu items structure
+        $default_items = [
+            // Core Management
+            [
+                'section_key' => 'core',
+                'item_key' => 'prefab_image_import',
+                'item_name' => 'Prefab Image Import',
+                'callback_function' => 'render_prefab_image_import_page',
+                'display_order' => 1,
+                'quick_action' => 0
+            ],
+            
+            // Item Management
+            [
+                'section_key' => 'items',
+                'item_key' => 'item_list_editor',
+                'item_name' => 'Item List Editor',
+                'callback_function' => 'render_item_list_editor_page',
+                'display_order' => 2,
+                'quick_action' => 1
+            ],
+            [
+                'section_key' => 'items',
+                'item_key' => 'item_list_add_new_item',
+                'item_name' => 'Add New Item',
+                'callback_function' => 'render_item_list_add_new_item_page',
+                'display_order' => 3,
+                'quick_action' => 0
+            ],
+            
+            // Event Management
+            [
+                'section_key' => 'events',
+                'item_key' => 'event_zone_editor',
+                'item_name' => 'Event Zone Editor',
+                'callback_function' => 'render_event_zone_editor_page',
+                'display_order' => 4,
+                'quick_action' => 1
+            ],
+            [
+                'section_key' => 'events',
+                'item_key' => 'add_event_zone',
+                'item_name' => 'Add Event Zone',
+                'callback_function' => 'render_add_event_zone_page',
+                'display_order' => 5,
+                'quick_action' => 0
+            ],
+            [
+                'section_key' => 'events',
+                'item_key' => 'eventzone_field_config',
+                'item_name' => 'EventZone Field Config',
+                'callback_function' => 'render_eventzone_field_config_page',
+                'display_order' => 6,
+                'quick_action' => 0
+            ],
+            
+            // Commerce & Trading
+            [
+                'section_key' => 'commerce',
+                'item_key' => 'trade',
+                'item_name' => 'Trade',
+                'callback_function' => 'render_trade_page',
+                'display_order' => 7,
+                'quick_action' => 0
+            ],
+            [
+                'section_key' => 'commerce',
+                'item_key' => 'barter',
+                'item_name' => 'Barter',
+                'callback_function' => 'render_barter_page',
+                'display_order' => 8,
+                'quick_action' => 0
+            ],
+            [
+                'section_key' => 'commerce',
+                'item_key' => 'point_of_sale',
+                'item_name' => 'Point of Sale',
+                'callback_function' => 'render_pos_interface_page',
+                'display_order' => 9,
+                'quick_action' => 1
+            ],
+            [
+                'section_key' => 'commerce',
+                'item_key' => 'player_list_management',
+                'item_name' => 'Player List Management',
+                'callback_function' => 'jotun_playerlist_interface',
+                'display_order' => 10,
+                'quick_action' => 0
+            ],
+            
+            // System Configuration
+            [
+                'section_key' => 'system',
+                'item_key' => 'dashboard_config',
+                'item_name' => 'Dashboard Configuration',
+                'callback_function' => 'render_dashboard_config_page',
+                'display_order' => 11,
+                'quick_action' => 1
+            ],
+            [
+                'section_key' => 'system',
+                'item_key' => 'discord_auth_config',
+                'item_name' => 'Discord Auth Configuration',
+                'callback_function' => 'render_discord_auth_config_page',
+                'display_order' => 12,
+                'quick_action' => 0
+            ],
+            [
+                'section_key' => 'system',
+                'item_key' => 'page_permissions',
+                'item_name' => 'Page Permissions',
+                'callback_function' => 'render_page_permissions_config_page',
+                'display_order' => 13,
+                'quick_action' => 0
+            ],
+            [
+                'section_key' => 'system',
+                'item_key' => 'universal_ui_table_config',
+                'item_name' => 'Universal UI Table Config',
+                'callback_function' => 'render_universal_ui_table_config_page',
+                'display_order' => 14,
+                'quick_action' => 0
+            ],
+            [
+                'section_key' => 'system',
+                'item_key' => 'weather_calendar_config',
+                'item_name' => 'Weather Calendar Config',
+                'callback_function' => 'render_weather_calendar_config_page',
+                'display_order' => 15,
+                'quick_action' => 0
+            ]
+        ];
+        
+        $restored_count = 0;
+        foreach ($default_items as $item) {
+            if ($this->save_item($item)) {
+                $restored_count++;
+            }
+        }
+        
+        error_log("Jotunheim Dashboard DB: Emergency restore completed - restored {$restored_count} items");
+        return $restored_count;
     }
 }

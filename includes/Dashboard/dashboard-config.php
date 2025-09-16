@@ -823,6 +823,13 @@ class JotunheimDashboardConfig {
             'items' => json_decode(stripslashes($_POST['items']), true)
         ];
         
+        // SAFETY CHECK: Don't proceed if we have no items (this would break everything)
+        if (empty($config['items'])) {
+            error_log('Dashboard Config: Refusing to save empty items configuration');
+            wp_send_json_error('Configuration appears to be empty. Save cancelled to prevent data loss.');
+            return;
+        }
+        
         // Save sections to normalized database
         foreach ($config['sections'] as $section) {
             $this->normalized_db->save_section(
@@ -861,6 +868,21 @@ class JotunheimDashboardConfig {
         }
 
         wp_send_json_success('Configuration saved successfully');
+    }
+    
+    /**
+     * Emergency method to restore database if items get lost
+     */
+    public function restore_dashboard_items() {
+        error_log('Dashboard Config: EMERGENCY RESTORE - Rebuilding menu items');
+        
+        // Clear and rebuild the normalized database
+        $this->normalized_db->clear_all_data();
+        
+        // Reinitialize with default configuration
+        $this->init_config();
+        
+        error_log('Dashboard Config: Emergency restore completed');
     }    public function reset_dashboard_config() {
         if (!current_user_can('manage_options')) {
             wp_die('Unauthorized');
