@@ -652,7 +652,8 @@ class JotunheimDashboardConfig {
      * Get configuration in format expected by frontend dashboard config page
      */
     public function get_config_for_frontend() {
-        $normalized_config = $this->normalized_db->get_full_configuration();
+        // Use the admin version that includes disabled sections
+        $normalized_config = $this->normalized_db->get_full_configuration_for_admin();
         
         // Default icons for sections
         $default_section_icons = [

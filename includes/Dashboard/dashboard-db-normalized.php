@@ -135,6 +135,7 @@ class Jotunheim_Dashboard_DB_Normalized {
                 s.section_key,
                 s.section_name,
                 s.display_order as section_order,
+                s.is_active as section_enabled,
                 i.item_key,
                 i.item_name,
                 i.callback_function,
@@ -142,7 +143,8 @@ class Jotunheim_Dashboard_DB_Normalized {
                 i.display_order as item_order,
                 i.icon,
                 i.description,
-                i.permissions
+                i.permissions,
+                i.is_active as item_enabled
             FROM {$this->sections_table} s
             LEFT JOIN {$this->items_table} i ON s.id = i.section_id
             WHERE s.is_active = 1 AND (i.is_active = 1 OR i.is_active IS NULL)
@@ -164,7 +166,7 @@ class Jotunheim_Dashboard_DB_Normalized {
                     'title' => $row->section_name,
                     'description' => 'No description available', // Default description
                     'order' => $row->section_order,
-                    'enabled' => true, // Sections from DB are enabled
+                    'enabled' => (bool)$row->section_enabled, // Use actual database value
                     'items' => array()
                 );
             }
@@ -174,7 +176,7 @@ class Jotunheim_Dashboard_DB_Normalized {
                     'item_id' => $row->item_key,
                     'title' => $row->item_name,
                     'callback' => $row->callback_function,
-                    'enabled' => true, // Items from DB are enabled
+                    'enabled' => (bool)$row->item_enabled, // Use actual database value
                     'quick_action' => (bool)$row->quick_action, // Add back the quick_action field
                     'order' => $row->item_order,
                     'icon' => $row->icon,
@@ -185,6 +187,65 @@ class Jotunheim_Dashboard_DB_Normalized {
         }
         
         error_log("Jotunheim Dashboard DB: Returning config with " . count($config) . " sections");
+        return $config;
+    }
+
+    /**
+     * Get FULL configuration including disabled sections (for config interface)
+     */
+    public function get_full_configuration_for_admin() {
+        global $wpdb;
+        
+        $sql = "
+            SELECT 
+                s.section_key,
+                s.section_name,
+                s.display_order as section_order,
+                s.is_active as section_enabled,
+                i.item_key,
+                i.item_name,
+                i.callback_function,
+                i.quick_action,
+                i.display_order as item_order,
+                i.icon,
+                i.description,
+                i.permissions,
+                i.is_active as item_enabled
+            FROM {$this->sections_table} s
+            LEFT JOIN {$this->items_table} i ON s.id = i.section_id
+            ORDER BY s.display_order, i.display_order
+        ";
+        
+        $results = $wpdb->get_results($sql);
+        
+        // Group by sections
+        $config = array();
+        foreach ($results as $row) {
+            if (!isset($config[$row->section_key])) {
+                $config[$row->section_key] = array(
+                    'title' => $row->section_name,
+                    'description' => 'No description available',
+                    'order' => $row->section_order,
+                    'enabled' => (bool)$row->section_enabled, // Use actual database value
+                    'items' => array()
+                );
+            }
+            
+            if ($row->item_key) {
+                $config[$row->section_key]['items'][] = array(
+                    'item_id' => $row->item_key,
+                    'title' => $row->item_name,
+                    'callback' => $row->callback_function,
+                    'enabled' => (bool)$row->item_enabled, // Use actual database value
+                    'quick_action' => (bool)$row->quick_action,
+                    'order' => $row->item_order,
+                    'icon' => $row->icon,
+                    'description' => $row->description,
+                    'permissions' => $row->permissions
+                );
+            }
+        }
+        
         return $config;
     }
     
@@ -210,6 +271,32 @@ class Jotunheim_Dashboard_DB_Normalized {
         );
         
         return $result !== false;
+    }
+
+    /**
+     * Update section enabled status
+     */
+    public function update_section_enabled($section_key, $enabled) {
+        global $wpdb;
+        
+        $result = $wpdb->update(
+            $this->sections_table,
+            array(
+                'is_active' => $enabled ? 1 : 0,
+                'updated_at' => current_time('mysql')
+            ),
+            array('section_key' => $section_key),
+            array('%d', '%s'),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            error_log('Jotunheim Dashboard DB: Failed to update section enabled status for: ' . $section_key);
+            return false;
+        }
+        
+        error_log('Jotunheim Dashboard DB: Updated section ' . $section_key . ' enabled to: ' . ($enabled ? 'true' : 'false'));
+        return true;
     }
     
     /**
