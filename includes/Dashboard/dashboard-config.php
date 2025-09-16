@@ -23,9 +23,9 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_save_discord_roles', [$this, 'ajax_save_discord_roles']);
         add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
         
-        // TEMPORARY: Force config reset for debugging
-        // delete_option('jotunheim_dashboard_config');
-        // error_log('Jotunheim Dashboard: Forced config reset for debugging');
+        // TEMPORARY: Force config reset for debugging (remove this after fixing)
+        delete_option('jotunheim_dashboard_config');
+        error_log('Jotunheim Dashboard: Forced config reset to clear any legacy dashboard overview items');
     }
     
     public function init() {

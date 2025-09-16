@@ -263,8 +263,10 @@ function register_organized_menu($config) {
                 // Skip any item that might conflict with the main dashboard overview
                 if ($item['id'] === 'dashboard_overview' || 
                     $item['callback'] === 'jotunheim_magic_dashboard' ||
-                    ($item['title'] === 'Dashboard Overview' && $item['category'] === 'system')) {
-                    error_log('Jotunheim Dashboard: Skipping conflicting dashboard item - ' . $item['title']);
+                    ($item['title'] === 'Dashboard Overview') ||
+                    ($item['menu_title'] === 'Dashboard Overview') ||
+                    (isset($item['slug']) && $item['slug'] === 'jotunheim_magic')) {
+                    error_log('Jotunheim Dashboard: Skipping conflicting dashboard item - ' . $item['title'] . ' (ID: ' . $item['id'] . ')');
                     continue;
                 }
                 
