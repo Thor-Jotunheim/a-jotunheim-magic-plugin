@@ -56,6 +56,9 @@ class JotunheimDashboardConfig {
     private function migrate_to_normalized() {
         error_log('Jotunheim Dashboard: Starting migration to normalized database');
         
+        // Ensure we have default menu items loaded
+        $this->load_default_menu_items();
+        
         // First ensure old table exists and migrate from options if needed
         if (!$this->db->table_exists()) {
             $this->db->create_table();
@@ -73,10 +76,10 @@ class JotunheimDashboardConfig {
         
         if ($old_config && isset($old_config['sections']) && isset($old_config['items'])) {
             // Migrate sections
-            foreach ($old_config['sections'] as $section_key => $section_data) {
+            foreach ($old_config['sections'] as $section_data) {
                 $this->normalized_db->save_section(
-                    $section_key, 
-                    $section_data['name'], 
+                    $section_data['id'], 
+                    $section_data['title'], 
                     $section_data['order'] ?? 0
                 );
             }
@@ -85,13 +88,22 @@ class JotunheimDashboardConfig {
             foreach ($old_config['items'] as $item) {
                 if (isset($item['id'])) {
                     $item_data = array(
-                        'section_key' => $item['section'] ?? 'system_configuration',
+                        'section_key' => $item['section'] ?? 'system',
                         'item_key' => $item['id'],
-                        'item_name' => $item['name'] ?? $item['id'],
-                        'callback_function' => $item['callback'] ?? '',
+                        'item_name' => $item['id'], // Will be updated below
+                        'callback_function' => '', // Will be updated below
                         'quick_action' => $item['quick_action'] ?? false,
                         'display_order' => $item['order'] ?? 0
                     );
+                    
+                    // Find the actual menu item to get proper name and callback
+                    foreach ($this->default_menu_items as $menu_item) {
+                        if ($menu_item['id'] === $item['id']) {
+                            $item_data['item_name'] = $menu_item['title'];
+                            $item_data['callback_function'] = $menu_item['callback'];
+                            break;
+                        }
+                    }
                     
                     $this->normalized_db->save_item($item_data);
                 }
@@ -113,20 +125,29 @@ class JotunheimDashboardConfig {
             $default_config = $this->get_default_config();
             
             // Populate normalized database with defaults
-            foreach ($default_config['sections'] as $section_key => $section_data) {
-                $this->normalized_db->save_section($section_key, $section_data['name'], $section_data['order'] ?? 0);
+            foreach ($default_config['sections'] as $section_data) {
+                $this->normalized_db->save_section($section_data['id'], $section_data['title'], $section_data['order'] ?? 0);
             }
             
             foreach ($default_config['items'] as $item) {
                 if (isset($item['id'])) {
                     $item_data = array(
-                        'section_key' => $item['section'] ?? 'system_configuration',
+                        'section_key' => $item['section'] ?? 'system',
                         'item_key' => $item['id'],
-                        'item_name' => $item['name'] ?? $item['id'],
-                        'callback_function' => $item['callback'] ?? '',
-                        'quick_action' => $item['quick_action'] ?? false,
+                        'item_name' => $item['id'], // We'll get the proper name from default_menu_items
+                        'callback_function' => '', // We'll get this from default_menu_items
+                        'quick_action' => false,
                         'display_order' => $item['order'] ?? 0
                     );
+                    
+                    // Find the actual menu item to get proper name and callback
+                    foreach ($this->default_menu_items as $menu_item) {
+                        if ($menu_item['id'] === $item['id']) {
+                            $item_data['item_name'] = $menu_item['title'];
+                            $item_data['callback_function'] = $menu_item['callback'];
+                            break;
+                        }
+                    }
                     
                     $this->normalized_db->save_item($item_data);
                 }
