@@ -129,11 +129,11 @@ class JotunheimDiscordAuthConfig {
      */
     private function get_default_oauth_settings() {
         return [
-            'client_id' => '1297908076929613956', // Default from existing config
-            'client_secret' => 'WzapYHJlj3P0XgwsBC9GATzrSs1kwi4z', // Default from existing config
-            'redirect_uri' => 'https://jotun.games/wp-admin/admin-ajax.php?action=oauth2callback', // Default from existing config
-            'bot_token' => '',
-            'guild_id' => '',
+            'client_id' => defined('DISCORD_CLIENT_ID') ? DISCORD_CLIENT_ID : '1297908076929613956', // Fallback to wp-config constant
+            'client_secret' => defined('DISCORD_CLIENT_SECRET') ? DISCORD_CLIENT_SECRET : 'WzapYHJlj3P0XgwsBC9GATzrSs1kwi4z', // Fallback to wp-config constant
+            'redirect_uri' => defined('DISCORD_REDIRECT_URI') ? DISCORD_REDIRECT_URI : 'https://jotun.games/wp-admin/admin-ajax.php?action=oauth2callback', // Fallback to wp-config constant
+            'bot_token' => defined('DISCORD_BOT_TOKEN') ? DISCORD_BOT_TOKEN : '',
+            'guild_id' => defined('DISCORD_GUILD_ID') ? DISCORD_GUILD_ID : '',
             'enabled' => false,
             'require_discord_auth' => false
         ];
@@ -225,11 +225,40 @@ class JotunheimDiscordAuthConfig {
             wp_die('Invalid nonce');
         }
         
-        // Test Discord connection by checking if Discord OAuth is available
-        if (function_exists('jotunheim_magic_discord_oauth_handler')) {
-            wp_send_json_success('Discord OAuth integration is available');
+        $oauth_settings = $this->get_discord_oauth_settings();
+        
+        // Check if required settings are configured
+        if (empty($oauth_settings['bot_token']) || empty($oauth_settings['guild_id'])) {
+            wp_send_json_error('Bot token and Guild ID are required for connection testing');
+            return;
+        }
+        
+        // Test Discord API connection
+        $api_url = 'https://discord.com/api/guilds/' . $oauth_settings['guild_id'];
+        $response = wp_remote_get($api_url, [
+            'headers' => [
+                'Authorization' => 'Bot ' . $oauth_settings['bot_token'],
+                'Content-Type' => 'application/json'
+            ],
+            'timeout' => 10
+        ]);
+        
+        if (is_wp_error($response)) {
+            wp_send_json_error('Connection failed: ' . $response->get_error_message());
+            return;
+        }
+        
+        $response_code = wp_remote_retrieve_response_code($response);
+        if ($response_code === 200) {
+            $body = json_decode(wp_remote_retrieve_body($response), true);
+            $guild_name = isset($body['name']) ? $body['name'] : 'Unknown Guild';
+            wp_send_json_success('Successfully connected to Discord guild: ' . $guild_name);
+        } elseif ($response_code === 401) {
+            wp_send_json_error('Invalid bot token - check your bot token configuration');
+        } elseif ($response_code === 403) {
+            wp_send_json_error('Bot does not have access to the specified guild');
         } else {
-            wp_send_json_error('Discord OAuth integration not found');
+            wp_send_json_error('Connection failed with status code: ' . $response_code);
         }
     }
     
@@ -382,17 +411,6 @@ function render_discord_auth_config_page() {
     
     $discord_roles = $jotunheim_discord_auth_config->get_discord_roles();
     $oauth_settings = $jotunheim_discord_auth_config->get_discord_oauth_settings();
-    
-    // Enqueue necessary scripts and styles
-    wp_enqueue_script('discord-auth-config-js', plugin_dir_url(__FILE__) . '../../assets/js/discord-auth-config.js', ['jquery'], '1.0.0', true);
-    wp_enqueue_style('discord-auth-config-css', plugin_dir_url(__FILE__) . '../../assets/css/discord-auth-config.css', [], '1.0.0');
-
-    wp_localize_script('discord-auth-config-js', 'discordAuthConfig', [
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('discord_auth_config_nonce'),
-        'roles' => $discord_roles,
-        'oauth_settings' => $oauth_settings
-    ]);
     ?>
     
     <div class="wrap">
@@ -476,6 +494,10 @@ function render_discord_auth_config_page() {
                         <button type="button" class="button button-primary" id="save-discord-oauth">Save OAuth Settings</button>
                         <button type="button" class="button" id="test-discord-connection">Test Connection</button>
                     </p>
+                    
+                    <div id="test-result" class="notice" style="display: none; margin-top: 10px; padding: 10px;">
+                        <p></p>
+                    </div>
                 </form>
             </div>
             

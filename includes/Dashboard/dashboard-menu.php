@@ -287,6 +287,7 @@ function register_organized_menu($config) {
 
 // Main dashboard page for Jotunheim Magic Plugin
 function jotunheim_magic_dashboard() {
+    error_log('Jotunheim Dashboard: jotunheim_magic_dashboard() function called');
     global $jotunheim_dashboard_config;
     
     // Get organized menu structure if available

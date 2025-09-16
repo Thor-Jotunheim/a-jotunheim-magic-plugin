@@ -17,6 +17,9 @@ jQuery(document).ready(function($) {
             // Save OAuth settings
             $('#save-oauth-settings').on('click', this.saveOAuthSettings.bind(this));
             
+            // Save Discord roles
+            $('#save-discord-roles').on('click', this.saveDiscordRoles.bind(this));
+            
             // Add new role
             $('#add-discord-role').on('click', this.addRole.bind(this));
             
@@ -47,7 +50,9 @@ jQuery(document).ready(function($) {
                 client_secret: $('#discord_client_secret').val(),
                 redirect_uri: $('#discord_redirect_uri').val(),
                 bot_token: $('#discord_bot_token').val(),
-                guild_id: $('#discord_guild_id').val()
+                guild_id: $('#discord_guild_id').val(),
+                enabled: $('#discord_enabled').is(':checked'),
+                require_discord_auth: $('#discord_require_auth').is(':checked')
             };
             
             $.ajax({
@@ -67,6 +72,57 @@ jQuery(document).ready(function($) {
                 },
                 error: function() {
                     DiscordAuthConfig.showMessage('Network error occurred while saving settings.', 'error');
+                },
+                complete: function() {
+                    $button.text(originalText).prop('disabled', false);
+                }
+            });
+        },
+
+        saveDiscordRoles: function(e) {
+            e.preventDefault();
+            
+            const $button = $(e.target);
+            const originalText = $button.text();
+            
+            // Show loading state
+            $button.html('<span class="discord-spinner"></span>Saving...').prop('disabled', true);
+            
+            // Collect all role data from the form
+            const roles = {};
+            $('.discord-role-row').each(function() {
+                const $row = $(this);
+                const roleKey = $row.data('role-key');
+                const roleName = $row.find('.role-name').val();
+                const roleId = $row.find('.role-id').val();
+                const roleDescription = $row.find('.role-description').val();
+                
+                if (roleKey && roleName) {
+                    roles[roleKey] = {
+                        name: roleName,
+                        id: roleId,
+                        description: roleDescription
+                    };
+                }
+            });
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'save_discord_roles',
+                    nonce: discord_auth_config.nonce,
+                    roles: roles
+                },
+                success: function(response) {
+                    if (response.success) {
+                        DiscordAuthConfig.showMessage('Discord roles saved successfully!', 'success');
+                    } else {
+                        DiscordAuthConfig.showMessage('Error saving roles: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    DiscordAuthConfig.showMessage('Network error occurred while saving roles.', 'error');
                 },
                 complete: function() {
                     $button.text(originalText).prop('disabled', false);
@@ -200,7 +256,7 @@ jQuery(document).ready(function($) {
             $button.html('<span class="discord-spinner"></span>Testing...').prop('disabled', true);
             
             $.ajax({
-                url: ajaxurl,
+                url: discord_auth_config.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'test_discord_connection',
@@ -208,15 +264,34 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     const $result = $('#test-result');
+                    const $resultText = $result.find('p');
+                    
                     if (response.success) {
-                        $result.removeClass('error').addClass('success').text(response.data).show();
+                        $result.removeClass('notice-error').addClass('notice-success');
+                        $resultText.html('<strong>Success:</strong> ' + response.data);
                     } else {
-                        $result.removeClass('success').addClass('error').text('Error: ' + response.data).show();
+                        $result.removeClass('notice-success').addClass('notice-error');
+                        $resultText.html('<strong>Error:</strong> ' + response.data);
                     }
+                    
+                    $result.show();
+                    
+                    // Hide result after 8 seconds
+                    setTimeout(function() {
+                        $result.fadeOut();
+                    }, 8000);
                 },
                 error: function() {
-                    $('#test-result').removeClass('success').addClass('error')
-                        .text('Network error occurred during connection test.').show();
+                    const $result = $('#test-result');
+                    const $resultText = $result.find('p');
+                    
+                    $result.removeClass('notice-success').addClass('notice-error');
+                    $resultText.html('<strong>Error:</strong> Network error occurred during connection test.');
+                    $result.show();
+                    
+                    setTimeout(function() {
+                        $result.fadeOut();
+                    }, 8000);
                 },
                 complete: function() {
                     $button.text(originalText).prop('disabled', false);
