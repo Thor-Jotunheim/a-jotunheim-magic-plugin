@@ -625,11 +625,44 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
+        // Build current configuration from DOM state instead of using static currentConfig
+        const currentSections = [];
+        const currentItems = [];
+        
+        // Build sections from DOM
+        $('.sections-container .section-item').each(function() {
+            const $section = $(this);
+            const sectionId = $section.data('id');
+            const section = {
+                id: sectionId,
+                section_name: $section.find('.section-title').text().trim(),
+                enabled: !$section.hasClass('section-disabled'),
+                display_order: $section.index()
+            };
+            currentSections.push(section);
+        });
+        
+        // Build items from DOM 
+        $('.items-container .item').each(function() {
+            const $item = $(this);
+            const itemId = $item.data('id');
+            const $checkbox = $item.find('.quick-action-checkbox');
+            const item = {
+                id: itemId,
+                menu_title: $item.find('.item-title').text().trim(),
+                quick_action: $checkbox.prop('checked'),
+                enabled: !$item.hasClass('item-disabled'),
+                display_order: $item.index(),
+                section_key: $item.find('.item-section-select').val()
+            };
+            currentItems.push(item);
+        });
+        
         const data = {
             action: 'save_dashboard_config',
             nonce: dashboardConfig.nonce,
-            sections: JSON.stringify(currentConfig.sections),
-            items: JSON.stringify(currentConfig.items)
+            sections: JSON.stringify(currentSections),
+            items: JSON.stringify(currentItems)
         };
         
         $('#save-config').prop('disabled', true).text('Saving...');

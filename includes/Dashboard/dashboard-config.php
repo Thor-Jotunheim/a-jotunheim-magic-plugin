@@ -1130,6 +1130,9 @@ class JotunheimDashboardConfig {
         if (isset($page_data['title'])) {
             $update_data['item_name'] = sanitize_text_field($page_data['title']);
         }
+        if (isset($page_data['menu_title'])) {
+            $update_data['item_name'] = sanitize_text_field($page_data['menu_title']);
+        }
         if (isset($page_data['description'])) {
             $update_data['description'] = sanitize_text_field($page_data['description']);
         }
