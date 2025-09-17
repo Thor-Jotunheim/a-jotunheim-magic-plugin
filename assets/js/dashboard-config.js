@@ -423,20 +423,56 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        // Update the menuItem directly (like the working version did)
-        const menuItem = findMenuItem(itemId);
-        if (menuItem) {
-            menuItem.quick_action = isChecked;
-            console.log('TOGGLE DEBUG: Updated menuItem:', menuItem);
-            markDirty();
-            
-            // Show visual feedback that change needs to be saved
-            const $checkbox = $(e.currentTarget);
-            const $label = $checkbox.closest('.item-quick-action-control').find('label');
-            const originalText = $label.text();
-            $label.text(isChecked ? 'Quick Action (unsaved)' : 'Quick Action (unsaved)');
-            $label.addClass('unsaved-change');
-        }
+        // Save immediately to database like rename function does
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'edit_dashboard_page',
+                page_id: itemId,
+                page_data: {
+                    quick_action: isChecked
+                },
+                nonce: dashboardConfig.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update local data
+                    const menuItem = findMenuItem(itemId);
+                    const configItem = currentConfig.items.find(item => item.id === itemId);
+                    
+                    if (menuItem) {
+                        menuItem.quick_action = isChecked;
+                    }
+                    if (configItem) {
+                        configItem.quick_action = isChecked;
+                    }
+                    
+                    // Don't mark dirty - quick action saves immediately to database
+                    // markDirty(); // Removed - no need to save again
+                    console.log('TOGGLE DEBUG: Quick action saved immediately. New value:', isChecked);
+                    
+                    // Update label to show saved status
+                    const $checkbox = $(e.currentTarget);
+                    const $label = $checkbox.closest('.item-quick-action-control').find('label');
+                    $label.text('Quick Action (saved)').removeClass('unsaved-change');
+                    
+                    // Clear the saved status after 2 seconds
+                    setTimeout(() => {
+                        $label.text('Quick Action');
+                    }, 2000);
+                } else {
+                    // Revert checkbox on error
+                    $(e.currentTarget).prop('checked', !isChecked);
+                    alert('Error updating quick action: ' + (response.data || 'Unknown error'));
+                }
+            },
+            error: function() {
+                // Revert checkbox on error
+                $(e.currentTarget).prop('checked', !isChecked);
+                alert('Error updating quick action. Please try again.');
+            }
+        });
     }
 
     function editItem(e) {
@@ -472,9 +508,10 @@ jQuery(document).ready(function($) {
                             configItem.menu_title = newTitle;
                         }
                         
-                        markDirty();
+                        // Don't mark dirty - rename saves immediately to database
+                        // markDirty(); // Removed - no need to save again
                         renderItems(); // Re-render to show the new title
-                        alert('Page title updated successfully!');
+                        alert('Page title updated successfully! (Saved immediately)');
                     } else {
                         alert('Error updating page: ' + (response.data || 'Unknown error'));
                     }
