@@ -1170,7 +1170,7 @@ class JotunheimDashboardConfig {
             $update_data['quick_action'] = (bool)$page_data['quick_action'] ? 1 : 0;
         }
         if (isset($page_data['enabled'])) {
-            $update_data['enabled'] = (bool)$page_data['enabled'] ? 1 : 0;
+            $update_data['is_active'] = (bool)$page_data['enabled'] ? 1 : 0;
         }
         if (isset($page_data['display_order'])) {
             $update_data['display_order'] = (int)$page_data['display_order'];
