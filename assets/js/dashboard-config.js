@@ -593,17 +593,17 @@ jQuery(document).ready(function($) {
             enabled: section.enabled
         }));
         
-        // Build items array - use menuItems data that gets updated by toggleQuickAction
-        const itemsData = menuItems.map(menuItem => {
-            // Find corresponding config item for section/order info
-            const configItem = currentConfig.items.find(item => item.id === menuItem.id);
+        // Build items array - combine menuItems (for quick_action, titles) with currentConfig.items (for enabled, section, order)
+        const itemsData = currentConfig.items.map(configItem => {
+            // Find corresponding menuItem for title and quick_action info
+            const menuItem = findMenuItem(configItem.id);
             return {
-                id: menuItem.id,
-                title: menuItem.menu_title || menuItem.title || '',
-                order: configItem ? configItem.order : 0,
-                section: configItem ? configItem.section : 'core',
-                enabled: configItem ? configItem.enabled : true,
-                quick_action: menuItem.quick_action || false  // Use the value from menuItems
+                id: configItem.id,
+                title: menuItem?.menu_title || menuItem?.title || configItem.title || '',
+                order: configItem.order,
+                section: configItem.section,
+                enabled: configItem.enabled,  // From currentConfig.items (updated by toggleItem)
+                quick_action: menuItem?.quick_action || false  // From menuItems (updated by toggleQuickAction)
             };
         });
         
