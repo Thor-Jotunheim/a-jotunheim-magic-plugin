@@ -583,47 +583,26 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
-        // Make sure all current checkbox states are captured in menuItems
+        // Capture current checkbox states and update data structures
         $('#items-container .quick-action-checkbox').each(function() {
             const $checkbox = $(this);
             const itemId = $checkbox.data('id');
             const isChecked = $checkbox.prop('checked');
             
-            console.log('Processing checkbox for item:', itemId, 'checked:', isChecked);
-            
             // Update menuItem
             const menuItem = findMenuItem(itemId);
             if (menuItem) {
-                console.log('Found menuItem for', itemId, 'updating quick_action from', menuItem.quick_action, 'to', isChecked);
                 menuItem.quick_action = isChecked;
             }
             
             // Update currentConfig item
             const configItem = currentConfig.items.find(item => item.id === itemId);
             if (configItem) {
-                console.log('Found configItem for', itemId, 'updating quick_action from', configItem.quick_action, 'to', isChecked);
                 configItem.quick_action = isChecked;
             }
         });
         
-        // Build items array with proper field names for PHP
-        const itemsData = currentConfig.items.map(item => {
-            const menuItem = findMenuItem(item.id);
-            const result = {
-                id: item.id,
-                title: menuItem?.menu_title || item.title || '',
-                order: item.order,
-                section: item.section,
-                enabled: item.enabled,
-                quick_action: item.quick_action || false
-            };
-            console.log('Building item data for', item.id, ':', result);
-            return result;
-        });
-        
-        console.log('Final itemsData being sent:', itemsData);
-        
-        // Build sections array with proper field names for PHP
+        // Build sections array
         const sectionsData = currentConfig.sections.map(section => ({
             id: section.id,
             title: section.title,
@@ -632,6 +611,19 @@ jQuery(document).ready(function($) {
             icon: section.icon || '',
             enabled: section.enabled
         }));
+        
+        // Build items array  
+        const itemsData = currentConfig.items.map(item => {
+            const menuItem = findMenuItem(item.id);
+            return {
+                id: item.id,
+                title: menuItem?.menu_title || item.title || '',
+                order: item.order,
+                section: item.section,
+                enabled: item.enabled,
+                quick_action: item.quick_action || false
+            };
+        });
         
         const data = {
             action: 'save_dashboard_config',
