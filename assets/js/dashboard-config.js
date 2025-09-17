@@ -456,21 +456,12 @@ jQuery(document).ready(function($) {
         const itemId = $(e.currentTarget).data('id');
         const isChecked = $(e.currentTarget).is(':checked');
         
-        console.log('TOGGLE DEBUG: itemId:', itemId, 'isChecked:', isChecked);
-        
         if (!itemId) {
             console.error('Error: Page ID is missing. Element:', e.currentTarget);
             alert('Error: Page ID is missing. Please refresh the page and try again.');
             $(e.currentTarget).prop('checked', !isChecked); // Revert checkbox
             return;
         }
-        
-        console.log('TOGGLE DEBUG: About to send AJAX with data:', {
-            action: 'edit_dashboard_page',
-            page_id: itemId,
-            page_data: { quick_action: isChecked },
-            nonce: dashboardConfig.nonce
-        });
         
         // Save immediately to database like rename function does
         $.ajax({
@@ -485,14 +476,10 @@ jQuery(document).ready(function($) {
                 nonce: dashboardConfig.nonce
             },
             success: function(response) {
-                console.log('TOGGLE DEBUG: AJAX response received:', response);
-                
                 if (response.success) {
                     // Update local data - focus on itemConfig since that's what template uses
                     const configItem = currentConfig.items.find(item => item.id === itemId);
                     const menuItem = findMenuItem(itemId);
-                    
-                    console.log('TOGGLE DEBUG: Before update - configItem.quick_action:', configItem?.quick_action, 'menuItem.quick_action:', menuItem?.quick_action);
                     
                     // Primary update: configItem (used by template)
                     if (configItem) {
@@ -503,31 +490,28 @@ jQuery(document).ready(function($) {
                         menuItem.quick_action = isChecked;
                     }
                     
-                    console.log('TOGGLE DEBUG: After update - configItem.quick_action:', configItem?.quick_action, 'menuItem.quick_action:', menuItem?.quick_action);
-                    
-                    // Don't mark dirty - quick action saves immediately to database
-                    // markDirty(); // Removed - no need to save again
-                    console.log('TOGGLE DEBUG: Quick action saved immediately. New value:', isChecked);
+                    // Force checkbox to reflect the saved state
+                    $(e.currentTarget).prop('checked', isChecked);
                     
                     // Update label to show saved status
                     const $checkbox = $(e.currentTarget);
                     const $label = $checkbox.closest('.item-quick-action-control').find('label');
-                    $label.text('Quick Action (saved)').removeClass('unsaved-change');
+                    $label.text('Quick Action (saved)');
                     
                     // Clear the saved status after 2 seconds
                     setTimeout(() => {
                         $label.text('Quick Action');
                     }, 2000);
+                    
+                    console.log('Quick action saved successfully. Item:', itemId, 'Value:', isChecked);
                 } else {
                     // Revert checkbox on error
-                    console.log('TOGGLE DEBUG: AJAX failed - response.success = false, response:', response);
                     $(e.currentTarget).prop('checked', !isChecked);
                     alert('Error updating quick action: ' + (response.data || 'Unknown error'));
                 }
             },
             error: function(xhr, status, error) {
                 // Revert checkbox on error
-                console.log('TOGGLE DEBUG: AJAX error - status:', status, 'error:', error, 'xhr:', xhr);
                 $(e.currentTarget).prop('checked', !isChecked);
                 alert('Error updating quick action. Please try again.');
             }

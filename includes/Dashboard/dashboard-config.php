@@ -1167,7 +1167,10 @@ class JotunheimDashboardConfig {
             $update_data['description'] = sanitize_text_field($page_data['description']);
         }
         if (isset($page_data['quick_action'])) {
+            error_log('DEBUG: quick_action raw value: ' . var_export($page_data['quick_action'], true));
+            error_log('DEBUG: quick_action bool cast: ' . var_export((bool)$page_data['quick_action'], true));
             $update_data['quick_action'] = (bool)$page_data['quick_action'] ? 1 : 0;
+            error_log('DEBUG: final quick_action value: ' . $update_data['quick_action']);
         }
         if (isset($page_data['enabled'])) {
             $update_data['is_active'] = (bool)$page_data['enabled'] ? 1 : 0;
