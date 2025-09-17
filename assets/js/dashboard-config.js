@@ -483,12 +483,16 @@ jQuery(document).ready(function($) {
                     const menuItem = findMenuItem(itemId);
                     const configItem = currentConfig.items.find(item => item.id === itemId);
                     
+                    console.log('TOGGLE DEBUG: Before update - menuItem.quick_action:', menuItem?.quick_action, 'configItem.quick_action:', configItem?.quick_action);
+                    
                     if (menuItem) {
                         menuItem.quick_action = isChecked;
                     }
                     if (configItem) {
                         configItem.quick_action = isChecked;
                     }
+                    
+                    console.log('TOGGLE DEBUG: After update - menuItem.quick_action:', menuItem?.quick_action, 'configItem.quick_action:', configItem?.quick_action);
                     
                     // Don't mark dirty - quick action saves immediately to database
                     // markDirty(); // Removed - no need to save again
