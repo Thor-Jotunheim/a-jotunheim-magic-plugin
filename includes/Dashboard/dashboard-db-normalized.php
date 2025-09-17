@@ -345,6 +345,47 @@ class Jotunheim_Dashboard_DB_Normalized {
     }
     
     /**
+     * Add a new menu item (wrapper for save_item with proper data transformation)
+     */
+    public function add_menu_item($item_data) {
+        // Transform the data to match what save_item expects
+        $normalized_data = array(
+            'section_key' => $item_data['section'] ?? 'main',
+            'item_key' => $item_data['id'],
+            'item_name' => $item_data['menu_title'] ?? $item_data['title'],
+            'callback_function' => $item_data['callback'],
+            'quick_action' => $item_data['quick_action'] ?? false,
+            'display_order' => $item_data['order'] ?? 0,
+            'enabled' => $item_data['enabled'] ?? true,
+            'description' => $item_data['description'] ?? null,
+            'icon' => $item_data['icon'] ?? null
+        );
+        
+        return $this->save_item($normalized_data);
+    }
+    
+    /**
+     * Delete a menu item by its key
+     */
+    public function delete_menu_item($item_key) {
+        global $wpdb;
+        
+        $result = $wpdb->delete(
+            $this->items_table,
+            array('item_key' => $item_key),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            error_log('Jotunheim Dashboard DB: Failed to delete item ' . $item_key . ': ' . $wpdb->last_error);
+            return false;
+        } else {
+            error_log('Jotunheim Dashboard DB: Successfully deleted item ' . $item_key);
+            return true;
+        }
+    }
+    
+    /**
      * Migrate from old serialized format
      */
     public function migrate_from_serialized() {

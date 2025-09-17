@@ -1079,10 +1079,10 @@ class JotunheimDashboardConfig {
             }
         }
         
-        // Add to config
-        $config['items'][] = $new_page;
+        // Add to normalized database instead of using update_option
+        $result = $this->normalized_db->add_menu_item($new_page);
         
-        if (update_option('jotunheim_dashboard_config', $config)) {
+        if ($result) {
             wp_send_json_success($new_page);
         } else {
             wp_send_json_error('Failed to save configuration');
@@ -1107,30 +1107,13 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        $config = $this->get_config();
-        $found = false;
+        // Delete from normalized database instead of using update_option
+        $result = $this->normalized_db->delete_menu_item($page_id);
         
-        // Remove from items array
-        foreach ($config['items'] as $key => $item) {
-            if ($item['id'] === $page_id) {
-                unset($config['items'][$key]);
-                $found = true;
-                break;
-            }
-        }
-        
-        if (!$found) {
-            wp_send_json_error('Page not found in configuration');
-            return;
-        }
-        
-        // Re-index array
-        $config['items'] = array_values($config['items']);
-        
-        if (update_option('jotunheim_dashboard_config', $config)) {
+        if ($result) {
             wp_send_json_success('Page deleted successfully');
         } else {
-            wp_send_json_error('Failed to save configuration');
+            wp_send_json_error('Page not found or failed to delete');
         }
     }
     
