@@ -415,7 +415,6 @@ jQuery(document).ready(function($) {
         const isChecked = $(e.currentTarget).is(':checked');
         
         console.log('TOGGLE DEBUG: itemId:', itemId, 'isChecked:', isChecked);
-        console.log('TOGGLE DEBUG: currentConfig.items before:', JSON.stringify(currentConfig.items));
         
         if (!itemId) {
             console.error('Error: Page ID is missing. Element:', e.currentTarget);
@@ -424,12 +423,11 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        // Update currentConfig.items just like toggleSection does with currentConfig.sections
-        const itemConfig = findItemConfig(itemId);
-        if (itemConfig) {
-            itemConfig.quick_action = isChecked;
-            console.log('TOGGLE DEBUG: Updated item:', JSON.stringify(itemConfig));
-            console.log('TOGGLE DEBUG: currentConfig.items after:', JSON.stringify(currentConfig.items));
+        // Update the menuItem directly (like the working version did)
+        const menuItem = findMenuItem(itemId);
+        if (menuItem) {
+            menuItem.quick_action = isChecked;
+            console.log('TOGGLE DEBUG: Updated menuItem:', menuItem);
             markDirty();
             
             // Show visual feedback that change needs to be saved
@@ -583,42 +581,47 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
-        console.log('SAVE DEBUG: currentConfig.sections:', currentConfig.sections);
-        console.log('SAVE DEBUG: currentConfig.items:', currentConfig.items);
-        console.log('SAVE DEBUG: menuItems:', menuItems);
+        // Build current configuration from DOM state instead of using static currentConfig
+        const currentSections = [];
+        const currentItems = [];
         
-        // Build sections array - same as working section logic
-        const sectionsData = currentConfig.sections.map(section => ({
-            id: section.id,
-            title: section.title,
-            order: section.order,
-            description: section.description || '',
-            icon: section.icon || '',
-            enabled: section.enabled
-        }));
-        
-        // Build items array - use ONLY currentConfig.items just like sections do
-        const itemsData = currentConfig.items.map(item => {
-            // Get title from menuItems for display
-            const menuItem = findMenuItem(item.id);
-            return {
-                id: item.id,
-                title: menuItem?.menu_title || menuItem?.title || item.title || '',
-                order: item.order,
-                section: item.section,
-                enabled: item.enabled,
-                quick_action: item.quick_action || false
+        // Build sections from DOM
+        $('.sections-container .section-item').each(function() {
+            const $section = $(this);
+            const sectionId = $section.data('id');
+            const section = {
+                id: sectionId,
+                section_name: $section.find('.section-title').text().trim(),
+                enabled: !$section.hasClass('section-disabled'),
+                display_order: $section.index()
             };
+            currentSections.push(section);
         });
         
-        console.log('SAVE DEBUG: sectionsData being sent:', sectionsData);
-        console.log('SAVE DEBUG: itemsData being sent:', itemsData);
+        // Build items from DOM 
+        $('.items-container .item').each(function() {
+            const $item = $(this);
+            const itemId = $item.data('id');
+            const $checkbox = $item.find('.quick-action-checkbox');
+            const item = {
+                id: itemId,
+                menu_title: $item.find('.item-title').text().trim(),
+                quick_action: $checkbox.prop('checked'),
+                enabled: !$item.hasClass('item-disabled'),
+                display_order: $item.index(),
+                section_key: $item.find('.item-section-select').val()
+            };
+            currentItems.push(item);
+        });
+        
+        console.log('SAVE DEBUG: DOM sections:', currentSections);
+        console.log('SAVE DEBUG: DOM items:', currentItems);
         
         const data = {
             action: 'save_dashboard_config',
             nonce: dashboardConfig.nonce,
-            sections: JSON.stringify(sectionsData),
-            items: JSON.stringify(itemsData)
+            sections: JSON.stringify(currentSections),
+            items: JSON.stringify(currentItems)
         };
         
         $('#save-config').prop('disabled', true).text('Saving...');
