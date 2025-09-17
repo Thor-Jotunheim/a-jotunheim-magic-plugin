@@ -457,6 +457,7 @@ jQuery(document).ready(function($) {
         const isChecked = $(e.currentTarget).is(':checked');
         
         console.log('TOGGLE DEBUG: itemId:', itemId, 'isChecked:', isChecked);
+        alert('Quick Action Toggle: ' + itemId + ' = ' + isChecked); // Temporary debug
         
         if (!itemId) {
             console.error('Error: Page ID is missing. Element:', e.currentTarget);
