@@ -583,26 +583,7 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
-        // Capture current checkbox states and update data structures
-        $('#items-container .quick-action-checkbox').each(function() {
-            const $checkbox = $(this);
-            const itemId = $checkbox.data('id');
-            const isChecked = $checkbox.prop('checked');
-            
-            // Update menuItem
-            const menuItem = findMenuItem(itemId);
-            if (menuItem) {
-                menuItem.quick_action = isChecked;
-            }
-            
-            // Update currentConfig item
-            const configItem = currentConfig.items.find(item => item.id === itemId);
-            if (configItem) {
-                configItem.quick_action = isChecked;
-            }
-        });
-        
-        // Build sections array
+        // Build sections array - same as working section logic
         const sectionsData = currentConfig.sections.map(section => ({
             id: section.id,
             title: section.title,
@@ -612,16 +593,17 @@ jQuery(document).ready(function($) {
             enabled: section.enabled
         }));
         
-        // Build items array  
-        const itemsData = currentConfig.items.map(item => {
-            const menuItem = findMenuItem(item.id);
+        // Build items array - use menuItems data that gets updated by toggleQuickAction
+        const itemsData = menuItems.map(menuItem => {
+            // Find corresponding config item for section/order info
+            const configItem = currentConfig.items.find(item => item.id === menuItem.id);
             return {
-                id: item.id,
-                title: menuItem?.menu_title || item.title || '',
-                order: item.order,
-                section: item.section,
-                enabled: item.enabled,
-                quick_action: item.quick_action || false
+                id: menuItem.id,
+                title: menuItem.menu_title || menuItem.title || '',
+                order: configItem ? configItem.order : 0,
+                section: configItem ? configItem.section : 'core',
+                enabled: configItem ? configItem.enabled : true,
+                quick_action: menuItem.quick_action || false  // Use the value from menuItems
             };
         });
         
