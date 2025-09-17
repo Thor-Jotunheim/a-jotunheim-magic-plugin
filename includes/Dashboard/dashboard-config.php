@@ -1375,16 +1375,15 @@ function render_dashboard_config_page() {
     wp_enqueue_script('jquery-ui-sortable');
     wp_enqueue_script('wp-api'); // WordPress REST API
     
-    // Use the REST API dashboard config JavaScript
-    wp_enqueue_script('dashboard-config-js', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-rest-client.js', ['jquery', 'jquery-ui-sortable', 'wp-api'], '1.0.0', true);
+    // Use the original dashboard config JavaScript (AJAX version works fine with our fix)
+    wp_enqueue_script('dashboard-config-js', plugin_dir_url(__FILE__) . '../../assets/js/dashboard-config.js', ['jquery', 'jquery-ui-sortable'], '1.0.0', true);
     
     wp_enqueue_style('dashboard-config-css', plugin_dir_url(__FILE__) . '../../assets/css/dashboard-config.css', [], '1.0.0');
 
     // Provide configuration to JavaScript
     wp_localize_script('dashboard-config-js', 'dashboardConfig', [
         'ajaxurl' => admin_url('admin-ajax.php'),
-        'restUrl' => rest_url('jotunheim/v1/dashboard'),
-        'nonce' => wp_create_nonce('wp_rest'),
+        'nonce' => wp_create_nonce('dashboard_config_nonce'),
         'config' => $config,
         'menuItems' => $menu_items
     ]);

@@ -54,17 +54,19 @@ class JotunheimDashboardAPI {
 class DashboardConfigManager {
     constructor() {
         this.api = new JotunheimDashboardAPI();
-        this.currentConfig = null;
-        this.menuItems = null;
+        
+        // Use pre-loaded data from wp_localize_script (like the original AJAX version)
+        this.currentConfig = dashboardConfig.config;
+        this.menuItems = dashboardConfig.menuItems;
+        
         this.init();
     }
 
     async init() {
         try {
-            console.log('Loading dashboard data via REST API...');
-            
-            // Load configuration from REST API
-            await this.loadConfig();
+            console.log('Initializing dashboard with pre-loaded data...');
+            console.log('Loaded config:', this.currentConfig);
+            console.log('Loaded menu items:', this.menuItems);
             
             // Setup event listeners
             this.setupEventListeners();
