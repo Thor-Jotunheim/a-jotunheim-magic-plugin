@@ -841,6 +841,9 @@ class JotunheimDashboardConfig {
         }
 
         // Handle full configuration save using normalized database
+        // CRITICAL: Ensure default menu items are loaded for validation
+        $this->load_default_menu_items();
+        
         error_log('Dashboard Config Save: Raw $_POST sections: ' . $_POST['sections']);
         error_log('Dashboard Config Save: Raw $_POST items: ' . $_POST['items']);
         
