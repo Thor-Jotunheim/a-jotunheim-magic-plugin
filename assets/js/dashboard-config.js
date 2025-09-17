@@ -414,11 +414,6 @@ jQuery(document).ready(function($) {
         const itemId = $(e.currentTarget).data('id');
         const isChecked = $(e.currentTarget).is(':checked');
         
-        console.log('toggleQuickAction called with itemId:', itemId, 'isChecked:', isChecked);
-        console.log('Event target:', e.currentTarget);
-        console.log('Data attributes:', $(e.currentTarget)[0].dataset);
-        console.log('All menu items:', menuItems);
-        
         if (!itemId) {
             console.error('Error: Page ID is missing. Element:', e.currentTarget);
             alert('Error: Page ID is missing. Please refresh the page and try again.');
@@ -426,10 +421,10 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        const menuItem = findMenuItem(itemId);
-        
-        if (menuItem) {
-            menuItem.quick_action = isChecked;
+        // Update currentConfig.items just like toggleSection does with currentConfig.sections
+        const itemConfig = findItemConfig(itemId);
+        if (itemConfig) {
+            itemConfig.quick_action = isChecked;
             markDirty();
             
             // Show visual feedback that change needs to be saved
@@ -593,27 +588,19 @@ jQuery(document).ready(function($) {
             enabled: section.enabled
         }));
         
-        // Build items array - combine menuItems (for quick_action, titles) with currentConfig.items (for enabled, section, order)
-        console.log('Building items data...');
-        console.log('currentConfig.items:', currentConfig.items);
-        console.log('menuItems:', menuItems);
-        
-        const itemsData = currentConfig.items.map(configItem => {
-            // Find corresponding menuItem for title and quick_action info
-            const menuItem = findMenuItem(configItem.id);
-            const result = {
-                id: configItem.id,
-                title: menuItem?.menu_title || menuItem?.title || configItem.title || '',
-                order: configItem.order,
-                section: configItem.section,
-                enabled: configItem.enabled,  // From currentConfig.items (updated by toggleItem)
-                quick_action: menuItem?.quick_action || false  // From menuItems (updated by toggleQuickAction)
+        // Build items array - use ONLY currentConfig.items just like sections do
+        const itemsData = currentConfig.items.map(item => {
+            // Get title from menuItems for display
+            const menuItem = findMenuItem(item.id);
+            return {
+                id: item.id,
+                title: menuItem?.menu_title || menuItem?.title || item.title || '',
+                order: item.order,
+                section: item.section,
+                enabled: item.enabled,
+                quick_action: item.quick_action || false
             };
-            console.log(`Item ${configItem.id}:`, result);
-            return result;
         });
-        
-        console.log('Final itemsData:', itemsData);
         
         const data = {
             action: 'save_dashboard_config',

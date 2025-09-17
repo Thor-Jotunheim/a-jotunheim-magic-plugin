@@ -232,7 +232,7 @@ class JotunheimDashboardConfig {
                 'callback' => 'render_item_list_editor_page',
                 'category' => 'items',
                 'description' => 'Edit and manage game items',
-                'quick_action' => false  // Changed from true to false to allow user control
+                'quick_action' => true
             ],
             [
                 'id' => 'item_list_add_new_item',
@@ -252,7 +252,7 @@ class JotunheimDashboardConfig {
                 'callback' => 'render_event_zone_editor_page',
                 'category' => 'events',
                 'description' => 'Edit and manage event zones',
-                'quick_action' => false  // Changed from true to false to allow user control
+                'quick_action' => true
             ],
             [
                 'id' => 'add_event_zone',
@@ -299,7 +299,7 @@ class JotunheimDashboardConfig {
                 'callback' => 'render_pos_interface_page',
                 'category' => 'commerce',
                 'description' => 'Point of sale transaction system',
-                'quick_action' => false  // Changed from true to false to allow user control
+                'quick_action' => true
             ],
             [
                 'id' => 'jotun-playerlist',
