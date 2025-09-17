@@ -591,31 +591,25 @@ jQuery(document).ready(function($) {
             enabled: section.enabled
         }));
         
-        // Build items from DOM (since currentConfig.items wasn't working)
-        const currentItems = [];
-        $('#items-container .menu-item').each(function() {
-            const $item = $(this);
-            const itemId = $item.data('id');
-            const $checkbox = $item.find('.quick-action-checkbox');
-            const item = {
-                id: itemId,
-                menu_title: $item.find('.item-title').text().trim(),
-                quick_action: $checkbox.prop('checked'),
-                enabled: !$item.hasClass('item-disabled'),
-                display_order: $item.index(),
-                section_key: $item.find('.item-section-select').val()
-            };
-            currentItems.push(item);
-        });
+        // Build items array - use currentConfig.items exactly like sections do
+        const itemsData = currentConfig.items.map(item => ({
+            id: item.id,
+            title: item.title || '',
+            menu_title: item.menu_title || item.title || '',
+            order: item.order,
+            section: item.section,
+            enabled: item.enabled,
+            quick_action: item.quick_action || false
+        }));
         
         console.log('SAVE DEBUG: sections (from currentConfig):', sectionsData);
-        console.log('SAVE DEBUG: items (from DOM):', currentItems);
+        console.log('SAVE DEBUG: items (from currentConfig):', itemsData);
         
         const data = {
             action: 'save_dashboard_config',
             nonce: dashboardConfig.nonce,
             sections: JSON.stringify(sectionsData),
-            items: JSON.stringify(currentItems)
+            items: JSON.stringify(itemsData)
         };
         
         $('#save-config').prop('disabled', true).text('Saving...');
