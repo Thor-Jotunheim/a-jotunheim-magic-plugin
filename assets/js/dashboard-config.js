@@ -457,7 +457,6 @@ jQuery(document).ready(function($) {
         const isChecked = $(e.currentTarget).is(':checked');
         
         console.log('TOGGLE DEBUG: itemId:', itemId, 'isChecked:', isChecked);
-        alert('Quick Action Toggle: ' + itemId + ' = ' + isChecked); // Temporary debug
         
         if (!itemId) {
             console.error('Error: Page ID is missing. Element:', e.currentTarget);
@@ -465,6 +464,13 @@ jQuery(document).ready(function($) {
             $(e.currentTarget).prop('checked', !isChecked); // Revert checkbox
             return;
         }
+        
+        console.log('TOGGLE DEBUG: About to send AJAX with data:', {
+            action: 'edit_dashboard_page',
+            page_id: itemId,
+            page_data: { quick_action: isChecked },
+            nonce: dashboardConfig.nonce
+        });
         
         // Save immediately to database like rename function does
         $.ajax({
@@ -479,6 +485,8 @@ jQuery(document).ready(function($) {
                 nonce: dashboardConfig.nonce
             },
             success: function(response) {
+                console.log('TOGGLE DEBUG: AJAX response received:', response);
+                
                 if (response.success) {
                     // Update local data - focus on itemConfig since that's what template uses
                     const configItem = currentConfig.items.find(item => item.id === itemId);
@@ -512,12 +520,14 @@ jQuery(document).ready(function($) {
                     }, 2000);
                 } else {
                     // Revert checkbox on error
+                    console.log('TOGGLE DEBUG: AJAX failed - response.success = false, response:', response);
                     $(e.currentTarget).prop('checked', !isChecked);
                     alert('Error updating quick action: ' + (response.data || 'Unknown error'));
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 // Revert checkbox on error
+                console.log('TOGGLE DEBUG: AJAX error - status:', status, 'error:', error, 'xhr:', xhr);
                 $(e.currentTarget).prop('checked', !isChecked);
                 alert('Error updating quick action. Please try again.');
             }
