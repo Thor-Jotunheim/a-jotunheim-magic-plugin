@@ -303,7 +303,7 @@ function jotunheim_magic_create_tables() {
     $charset_collate = $wpdb->get_charset_collate();
     
     // Create jotun_playerlist table with enhanced rename tracking
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     $sql = "CREATE TABLE $table_name (
         id int(11) NOT NULL AUTO_INCREMENT,
         playerName varchar(255) NOT NULL,
