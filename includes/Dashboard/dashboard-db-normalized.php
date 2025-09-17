@@ -34,6 +34,8 @@ class Jotunheim_Dashboard_DB_Normalized {
             section_name varchar(255) NOT NULL,
             display_order int(11) DEFAULT 0,
             is_active tinyint(1) DEFAULT 1,
+            icon varchar(100) DEFAULT NULL,
+            description text DEFAULT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -69,10 +71,31 @@ class Jotunheim_Dashboard_DB_Normalized {
         $sections_result = dbDelta($sections_sql);
         $items_result = dbDelta($items_sql);
         
+        // Add new columns to existing sections table if they don't exist
+        $this->add_missing_columns();
+        
         error_log('Jotunheim Dashboard DB: Created sections table: ' . print_r($sections_result, true));
         error_log('Jotunheim Dashboard DB: Created items table: ' . print_r($items_result, true));
         
         return array('sections' => $sections_result, 'items' => $items_result);
+    }
+    
+    /**
+     * Add missing columns to existing tables
+     */
+    private function add_missing_columns() {
+        global $wpdb;
+        
+        // Check if icon and description columns exist in sections table
+        $columns = $wpdb->get_col("DESCRIBE {$this->sections_table}");
+        
+        if (!in_array('icon', $columns)) {
+            $wpdb->query("ALTER TABLE {$this->sections_table} ADD COLUMN icon varchar(100) DEFAULT NULL AFTER is_active");
+        }
+        
+        if (!in_array('description', $columns)) {
+            $wpdb->query("ALTER TABLE {$this->sections_table} ADD COLUMN description text DEFAULT NULL AFTER icon");
+        }
     }
     
     /**
@@ -254,9 +277,6 @@ class Jotunheim_Dashboard_DB_Normalized {
     public function save_section($section_key, $section_name, $display_order = 0, $description = '', $icon = '', $enabled = 1) {
         global $wpdb;
         
-        // Note: Current table schema only supports section_key, section_name, display_order, is_active
-        // description and icon are not yet supported in the database schema
-        
         $result = $wpdb->replace(
             $this->sections_table,
             array(
@@ -264,9 +284,11 @@ class Jotunheim_Dashboard_DB_Normalized {
                 'section_name' => $section_name,
                 'display_order' => $display_order,
                 'is_active' => $enabled ? 1 : 0,
+                'icon' => $icon,
+                'description' => $description,
                 'updated_at' => current_time('mysql')
             ),
-            array('%s', '%s', '%d', '%d', '%s')
+            array('%s', '%s', '%d', '%d', '%s', '%s', '%s')
         );
         
         return $result !== false;

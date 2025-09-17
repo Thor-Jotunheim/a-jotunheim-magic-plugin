@@ -329,19 +329,63 @@ jQuery(document).ready(function($) {
         
         if (isNew) {
             sectionData.order = currentConfig.sections.length + 1;
-            currentConfig.sections.push(sectionData);
+            
+            // Save new section via AJAX
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'add_dashboard_section',
+                    section_data: sectionData,
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        currentConfig.sections.push(sectionData);
+                        closeSectionModal();
+                        renderSections();
+                        populateFilters();
+                        updateItemSectionSelects();
+                        showNotification('Section added successfully!', 'success');
+                    } else {
+                        alert('Error adding section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error adding section');
+                }
+            });
         } else {
-            const section = findSection(sectionData.id);
-            if (section) {
-                Object.assign(section, sectionData);
-            }
+            // Update existing section via AJAX
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'edit_dashboard_section',
+                    section_id: sectionData.id,
+                    section_data: sectionData,
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const section = findSection(sectionData.id);
+                        if (section) {
+                            Object.assign(section, sectionData);
+                        }
+                        closeSectionModal();
+                        renderSections();
+                        populateFilters();
+                        updateItemSectionSelects();
+                        showNotification('Section updated successfully!', 'success');
+                    } else {
+                        alert('Error updating section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error updating section');
+                }
+            });
         }
-        
-        closeSectionModal();
-        renderSections();
-        populateFilters();
-        updateItemSectionSelects();
-        markDirty();
     }
 
     function closeSectionModal() {
@@ -352,11 +396,35 @@ jQuery(document).ready(function($) {
         const sectionId = $(e.currentTarget).data('id');
         const section = findSection(sectionId);
         if (section) {
-            section.enabled = !section.enabled;
-            renderSections();
-            populateFilters();
-            updateItemSectionSelects();
-            markDirty();
+            const newEnabled = !section.enabled;
+            
+            // Update section via AJAX
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'edit_dashboard_section',
+                    section_id: sectionId,
+                    section_data: {
+                        enabled: newEnabled
+                    },
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        section.enabled = newEnabled;
+                        renderSections();
+                        populateFilters();
+                        updateItemSectionSelects();
+                        showNotification('Section ' + (newEnabled ? 'enabled' : 'disabled') + ' successfully!', 'success');
+                    } else {
+                        alert('Error updating section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error updating section');
+                }
+            });
         }
     }
 
@@ -373,23 +441,42 @@ jQuery(document).ready(function($) {
         }
         
         if (confirm(confirmMessage)) {
-            // Move items to first available section
-            if (itemsInSection.length > 0) {
-                const firstSection = currentConfig.sections.find(s => s.enabled && s.id !== sectionId);
-                if (firstSection) {
-                    itemsInSection.forEach(item => {
-                        item.section = firstSection.id;
-                    });
+            // Delete section via AJAX
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_dashboard_section',
+                    section_id: sectionId,
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Move items to first available section locally
+                        if (itemsInSection.length > 0) {
+                            const firstSection = currentConfig.sections.find(s => s.enabled && s.id !== sectionId);
+                            if (firstSection) {
+                                itemsInSection.forEach(item => {
+                                    item.section = firstSection.id;
+                                });
+                            }
+                        }
+                        
+                        // Remove section from local config
+                        currentConfig.sections = currentConfig.sections.filter(s => s.id !== sectionId);
+                        
+                        renderSections();
+                        renderItems();
+                        populateFilters();
+                        showNotification('Section deleted successfully!', 'success');
+                    } else {
+                        alert('Error deleting section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error deleting section');
                 }
-            }
-            
-            // Remove section
-            currentConfig.sections = currentConfig.sections.filter(s => s.id !== sectionId);
-            
-            renderSections();
-            renderItems();
-            populateFilters();
-            markDirty();
+            });
         }
     }
 

@@ -44,6 +44,9 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
         add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
+        add_action('wp_ajax_add_dashboard_section', [$this, 'ajax_add_dashboard_section']);
+        add_action('wp_ajax_delete_dashboard_section', [$this, 'ajax_delete_dashboard_section']);
+        add_action('wp_ajax_edit_dashboard_section', [$this, 'ajax_edit_dashboard_section']);
         
         // TEMPORARY: Force config reset for debugging (DISABLED after fixing duplicates)
         // delete_option('jotunheim_dashboard_config');
@@ -371,9 +374,22 @@ class JotunheimDashboardConfig {
         // First, ensure all our plugin files are loaded
         $this->load_all_plugin_files();
         
-        // Include all default menu items in the available pages
+        // Get current menu items to filter them out
+        $current_menu_items = $this->get_menu_items();
+        $current_item_ids = array_column($current_menu_items, 'id');
+        $current_callbacks = array_column($current_menu_items, 'callback');
+        
+        error_log('Jotunheim Dashboard: Current menu items: ' . implode(', ', $current_item_ids));
+        
+        // Include all default menu items in the available pages (but filter out already-added ones)
         // This way users can see everything that's available
         foreach ($this->default_menu_items as $item) {
+            // Skip if already in current menu
+            if (in_array($item['id'], $current_item_ids) || in_array($item['callback'], $current_callbacks)) {
+                error_log('Jotunheim Dashboard: Skipping default item (already added): ' . $item['id']);
+                continue;
+            }
+            
             $available_pages[] = [
                 'id' => $item['id'],
                 'title' => $item['title'],
@@ -398,17 +414,23 @@ class JotunheimDashboardConfig {
                 
                 error_log('Jotunheim Dashboard: Found render function: ' . $function . ' -> ' . $page_id);
                 
-                // Skip if already in our default menu items
-                $exists = false;
+                // Skip if already in our current menu items (not just default items)
+                if (in_array($page_id, $current_item_ids) || in_array($function, $current_callbacks)) {
+                    error_log('  - Skipping ' . $page_id . ' (already in current menu)');
+                    continue;
+                }
+                
+                // Also skip if already in our default menu items  
+                $exists_in_defaults = false;
                 foreach ($this->default_menu_items as $item) {
                     if ($item['id'] === $page_id || $item['callback'] === $function) {
-                        $exists = true;
+                        $exists_in_defaults = true;
                         error_log('  - Skipping ' . $page_id . ' (already in default items)');
                         break;
                     }
                 }
                 
-                if (!$exists) {
+                if (!$exists_in_defaults) {
                     $available_pages[] = [
                         'id' => $page_id,
                         'title' => $page_title,
@@ -1193,6 +1215,173 @@ class JotunheimDashboardConfig {
         }
         
         wp_send_json_success('Page updated successfully');
+    }
+
+    /**
+     * AJAX handler to add a new dashboard section
+     */
+    public function ajax_add_dashboard_section() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_data = $_POST['section_data'];
+        
+        // Validate required fields
+        if (empty($section_data['id']) || empty($section_data['title'])) {
+            wp_send_json_error('Missing required fields');
+            return;
+        }
+        
+        // Sanitize input
+        $section_key = sanitize_key($section_data['id']);
+        $section_name = sanitize_text_field($section_data['title']);
+        $description = sanitize_text_field($section_data['description'] ?? '');
+        $icon = sanitize_text_field($section_data['icon'] ?? '');
+        $enabled = (bool)($section_data['enabled'] ?? true);
+        $display_order = (int)($section_data['order'] ?? 0);
+        
+        // Check if section already exists
+        $config = $this->get_config();
+        foreach ($config['sections'] as $existing) {
+            if ($existing['id'] === $section_key) {
+                wp_send_json_error('Section with this ID already exists');
+                return;
+            }
+        }
+        
+        // Add section to normalized database
+        $result = $this->normalized_db->save_section($section_key, $section_name, $display_order, $description, $icon, $enabled ? 1 : 0);
+        
+        if ($result) {
+            $new_section = [
+                'id' => $section_key,
+                'title' => $section_name,
+                'description' => $description,
+                'icon' => $icon,
+                'enabled' => $enabled,
+                'order' => $display_order
+            ];
+            wp_send_json_success($new_section);
+        } else {
+            wp_send_json_error('Failed to save section');
+        }
+    }
+    
+    /**
+     * AJAX handler to delete a dashboard section
+     */
+    public function ajax_delete_dashboard_section() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_id = sanitize_key($_POST['section_id']);
+        if (empty($section_id)) {
+            wp_send_json_error('Section ID is required');
+            return;
+        }
+        
+        // Delete section from normalized database
+        global $wpdb;
+        
+        // First, move any items in this section to the first available section
+        $first_section = $wpdb->get_var($wpdb->prepare(
+            "SELECT section_key FROM jotun_dashboard_sections WHERE section_key != %s AND is_active = 1 ORDER BY display_order LIMIT 1",
+            $section_id
+        ));
+        
+        if ($first_section) {
+            // Move items to first available section
+            $wpdb->update(
+                'jotun_dashboard_items',
+                ['section_key' => $first_section, 'updated_at' => current_time('mysql')],
+                ['section_key' => $section_id],
+                ['%s', '%s'],
+                ['%s']
+            );
+        }
+        
+        // Delete the section
+        $result = $wpdb->delete(
+            'jotun_dashboard_sections',
+            ['section_key' => $section_id],
+            ['%s']
+        );
+        
+        if ($result !== false) {
+            wp_send_json_success('Section deleted successfully');
+        } else {
+            wp_send_json_error('Failed to delete section');
+        }
+    }
+    
+    /**
+     * AJAX handler to edit a dashboard section
+     */
+    public function ajax_edit_dashboard_section() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_id = sanitize_key($_POST['section_id']);
+        $section_data = $_POST['section_data'];
+        
+        if (empty($section_id)) {
+            wp_send_json_error('Section ID is required');
+            return;
+        }
+        
+        // Update section in normalized database
+        global $wpdb;
+        $update_data = [];
+        
+        if (isset($section_data['title'])) {
+            $update_data['section_name'] = sanitize_text_field($section_data['title']);
+        }
+        if (isset($section_data['description'])) {
+            $update_data['description'] = sanitize_text_field($section_data['description']);
+        }
+        if (isset($section_data['icon'])) {
+            $update_data['icon'] = sanitize_text_field($section_data['icon']);
+        }
+        if (isset($section_data['enabled'])) {
+            $update_data['is_active'] = (bool)$section_data['enabled'] ? 1 : 0;
+        }
+        if (isset($section_data['order'])) {
+            $update_data['display_order'] = (int)$section_data['order'];
+        }
+        
+        if (empty($update_data)) {
+            wp_send_json_error('No valid data to update');
+            return;
+        }
+        
+        $result = $wpdb->update(
+            'jotun_dashboard_sections',
+            array_merge($update_data, ['updated_at' => current_time('mysql')]),
+            ['section_key' => $section_id],
+            array_fill(0, count($update_data) + 1, '%s'),
+            ['%s']
+        );
+        
+        if ($result !== false) {
+            wp_send_json_success('Section updated successfully');
+        } else {
+            wp_send_json_error('Failed to update section');
+        }
     }
 
     /**
