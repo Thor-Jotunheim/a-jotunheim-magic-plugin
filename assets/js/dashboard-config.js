@@ -170,7 +170,7 @@ jQuery(document).ready(function($) {
                         <div class="item-quick-action-control">
                             <label>
                                 <input type="checkbox" class="quick-action-checkbox" data-id="${menuItem.id}" 
-                                       ${(menuItem.quick_action || false) ? 'checked' : ''}>
+                                       ${(itemConfig.quick_action || false) ? 'checked' : ''}>
                                 Quick Action
                             </label>
                         </div>
@@ -479,20 +479,22 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    // Update local data
-                    const menuItem = findMenuItem(itemId);
+                    // Update local data - focus on itemConfig since that's what template uses
                     const configItem = currentConfig.items.find(item => item.id === itemId);
+                    const menuItem = findMenuItem(itemId);
                     
-                    console.log('TOGGLE DEBUG: Before update - menuItem.quick_action:', menuItem?.quick_action, 'configItem.quick_action:', configItem?.quick_action);
+                    console.log('TOGGLE DEBUG: Before update - configItem.quick_action:', configItem?.quick_action, 'menuItem.quick_action:', menuItem?.quick_action);
                     
-                    if (menuItem) {
-                        menuItem.quick_action = isChecked;
-                    }
+                    // Primary update: configItem (used by template)
                     if (configItem) {
                         configItem.quick_action = isChecked;
                     }
+                    // Secondary update: menuItem (if it exists)
+                    if (menuItem) {
+                        menuItem.quick_action = isChecked;
+                    }
                     
-                    console.log('TOGGLE DEBUG: After update - menuItem.quick_action:', menuItem?.quick_action, 'configItem.quick_action:', configItem?.quick_action);
+                    console.log('TOGGLE DEBUG: After update - configItem.quick_action:', configItem?.quick_action, 'menuItem.quick_action:', menuItem?.quick_action);
                     
                     // Don't mark dirty - quick action saves immediately to database
                     // markDirty(); // Removed - no need to save again
