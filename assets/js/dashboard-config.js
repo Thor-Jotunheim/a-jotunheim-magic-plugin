@@ -419,10 +419,24 @@ jQuery(document).ready(function($) {
                         menuItem.enabled = newEnabledState;
                     }
                     
+                    // Update the button immediately without full re-render
+                    const $button = $(e.currentTarget);
+                    $button.removeClass('disabled').addClass(newEnabledState ? '' : 'disabled');
+                    $button.find('span').removeClass('dashicons-visibility dashicons-hidden')
+                           .addClass(newEnabledState ? 'dashicons-visibility' : 'dashicons-hidden');
+                    $button.contents().last().replaceWith(newEnabledState ? 'Enabled' : 'Disabled');
+                    $button.attr('title', (newEnabledState ? 'Disable' : 'Enable') + ' Item');
+                    
                     // Don't mark dirty - toggle saves immediately to database
                     // markDirty(); // Removed - no need to save again
-                    renderItems(); // Re-render to show the new state
                     console.log('TOGGLE DEBUG: Item visibility saved immediately. New state:', newEnabledState);
+                    
+                    // Show brief feedback
+                    const originalText = $button.contents().last()[0].textContent;
+                    $button.contents().last().replaceWith(newEnabledState ? 'Enabled ✓' : 'Disabled ✓');
+                    setTimeout(() => {
+                        $button.contents().last().replaceWith(originalText);
+                    }, 1500);
                 } else {
                     alert('Error updating item visibility: ' + (response.data || 'Unknown error'));
                 }
@@ -491,12 +505,13 @@ jQuery(document).ready(function($) {
                     // Update label to show saved status
                     const $checkbox = $(e.currentTarget);
                     const $label = $checkbox.closest('.item-quick-action-control').find('label');
-                    $label.text('Quick Action (saved)').removeClass('unsaved-change');
+                    const originalText = $label.text();
+                    $label.text('Quick Action ✓');
                     
                     // Clear the saved status after 2 seconds
                     setTimeout(() => {
                         $label.text('Quick Action');
-                    }, 2000);
+                    }, 1500);
                 } else {
                     // Revert checkbox on error
                     $(e.currentTarget).prop('checked', !isChecked);
