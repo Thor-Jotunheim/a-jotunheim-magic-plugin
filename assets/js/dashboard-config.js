@@ -635,28 +635,45 @@ jQuery(document).ready(function($) {
             const sectionId = $section.data('id');
             const section = {
                 id: sectionId,
-                section_name: $section.find('.section-title').text().trim(),
+                title: $section.find('.section-title').text().trim(),
                 enabled: !$section.hasClass('section-disabled'),
-                display_order: $section.index()
+                order: $section.index()
             };
             currentSections.push(section);
         });
         
-        // Build items from DOM 
-        $('.items-container .item').each(function() {
+        // Build items from DOM (use correct class name 'menu-item')
+        $('#items-container .menu-item').each(function() {
             const $item = $(this);
             const itemId = $item.data('id');
             const $checkbox = $item.find('.quick-action-checkbox');
             const item = {
                 id: itemId,
-                menu_title: $item.find('.item-title').text().trim(),
+                title: $item.find('.item-title').text().trim(),
                 quick_action: $checkbox.prop('checked'),
                 enabled: !$item.hasClass('item-disabled'),
-                display_order: $item.index(),
-                section_key: $item.find('.item-section-select').val()
+                order: $item.index(),
+                section: $item.find('.item-section-select').val()
             };
             currentItems.push(item);
         });
+        
+        // If no items found in DOM, fall back to original data with updated quick action states
+        if (currentItems.length === 0) {
+            console.log('No items found in DOM, using fallback approach');
+            menuItems.forEach(menuItem => {
+                const $checkbox = $(`#items-container .quick-action-checkbox[data-id="${menuItem.id}"]`);
+                const configItem = currentConfig.items.find(item => item.id === menuItem.id);
+                currentItems.push({
+                    id: menuItem.id,
+                    title: menuItem.menu_title,
+                    quick_action: $checkbox.length > 0 ? $checkbox.prop('checked') : (menuItem.quick_action || false),
+                    enabled: configItem ? configItem.enabled : true,
+                    order: configItem ? configItem.order : 0,
+                    section: configItem ? configItem.section : 'core'
+                });
+            });
+        }
         
         const data = {
             action: 'save_dashboard_config',
