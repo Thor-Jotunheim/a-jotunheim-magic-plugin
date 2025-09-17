@@ -414,6 +414,9 @@ jQuery(document).ready(function($) {
         const itemId = $(e.currentTarget).data('id');
         const isChecked = $(e.currentTarget).is(':checked');
         
+        console.log('TOGGLE DEBUG: itemId:', itemId, 'isChecked:', isChecked);
+        console.log('TOGGLE DEBUG: currentConfig.items before:', JSON.stringify(currentConfig.items));
+        
         if (!itemId) {
             console.error('Error: Page ID is missing. Element:', e.currentTarget);
             alert('Error: Page ID is missing. Please refresh the page and try again.');
@@ -425,6 +428,8 @@ jQuery(document).ready(function($) {
         const itemConfig = findItemConfig(itemId);
         if (itemConfig) {
             itemConfig.quick_action = isChecked;
+            console.log('TOGGLE DEBUG: Updated item:', JSON.stringify(itemConfig));
+            console.log('TOGGLE DEBUG: currentConfig.items after:', JSON.stringify(currentConfig.items));
             markDirty();
             
             // Show visual feedback that change needs to be saved
@@ -578,6 +583,10 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
+        console.log('SAVE DEBUG: currentConfig.sections:', currentConfig.sections);
+        console.log('SAVE DEBUG: currentConfig.items:', currentConfig.items);
+        console.log('SAVE DEBUG: menuItems:', menuItems);
+        
         // Build sections array - same as working section logic
         const sectionsData = currentConfig.sections.map(section => ({
             id: section.id,
@@ -601,6 +610,9 @@ jQuery(document).ready(function($) {
                 quick_action: item.quick_action || false
             };
         });
+        
+        console.log('SAVE DEBUG: sectionsData being sent:', sectionsData);
+        console.log('SAVE DEBUG: itemsData being sent:', itemsData);
         
         const data = {
             action: 'save_dashboard_config',
