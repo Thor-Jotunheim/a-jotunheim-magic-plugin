@@ -861,7 +861,9 @@ class JotunheimDashboardConfig {
         }
         
         // Save sections to normalized database
+        error_log('Dashboard Config Save: Starting to save ' . count($config['sections']) . ' sections');
         foreach ($config['sections'] as $section) {
+            error_log('Dashboard Config Save: Saving section ' . $section['id']);
             $this->normalized_db->save_section(
                 $section['id'],
                 $section['title'],
@@ -871,9 +873,12 @@ class JotunheimDashboardConfig {
                 $section['enabled']
             );
         }
+        error_log('Dashboard Config Save: Finished saving sections');
         
         // Save items to normalized database
+        error_log('Dashboard Config Save: Starting to save ' . count($config['items']) . ' items');
         foreach ($config['items'] as $item) {
+            error_log('Dashboard Config Save: Processing item ' . $item['id']);
             // Find the menu item to get callback info
             $menu_item = null;
             foreach ($this->default_menu_items as $default_item) {
@@ -884,6 +889,7 @@ class JotunheimDashboardConfig {
             }
             
             if ($menu_item) {
+                error_log('Dashboard Config Save: Found menu item for ' . $item['id'] . ', saving to database');
                 $item_data = [
                     'item_key' => $item['id'],
                     'section_key' => $item['section'],
@@ -894,9 +900,14 @@ class JotunheimDashboardConfig {
                     'quick_action' => $item['quick_action'] ? 1 : 0
                 ];
                 $this->normalized_db->save_item($item_data);
+                error_log('Dashboard Config Save: Successfully saved item ' . $item['id']);
+            } else {
+                error_log('Dashboard Config Save: WARNING - Could not find menu item for ' . $item['id']);
             }
         }
+        error_log('Dashboard Config Save: Finished saving all items');
 
+        error_log('Dashboard Config Save: Sending success response');
         wp_send_json_success('Configuration saved successfully');
     }
     
