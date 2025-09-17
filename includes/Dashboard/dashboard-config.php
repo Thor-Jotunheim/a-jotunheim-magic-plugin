@@ -1168,8 +1168,15 @@ class JotunheimDashboardConfig {
         }
         if (isset($page_data['quick_action'])) {
             error_log('DEBUG: quick_action raw value: ' . var_export($page_data['quick_action'], true));
-            error_log('DEBUG: quick_action bool cast: ' . var_export((bool)$page_data['quick_action'], true));
-            $update_data['quick_action'] = (bool)$page_data['quick_action'] ? 1 : 0;
+            // Properly handle string boolean values from JavaScript
+            $quick_action_value = $page_data['quick_action'];
+            if (is_string($quick_action_value)) {
+                $bool_value = ($quick_action_value === 'true' || $quick_action_value === '1');
+            } else {
+                $bool_value = (bool)$quick_action_value;
+            }
+            error_log('DEBUG: quick_action bool cast: ' . var_export($bool_value, true));
+            $update_data['quick_action'] = $bool_value ? 1 : 0;
             error_log('DEBUG: final quick_action value: ' . $update_data['quick_action']);
         }
         if (isset($page_data['enabled'])) {
