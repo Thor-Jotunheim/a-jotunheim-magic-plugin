@@ -15,6 +15,10 @@ class Jotunheim_Dashboard_DB_Normalized {
         $this->items_table = 'jotun_dashboard_items';
     }
     
+    public function get_items_table_name() {
+        return $this->items_table;
+    }
+    
     /**
      * Create the normalized dashboard tables
      */

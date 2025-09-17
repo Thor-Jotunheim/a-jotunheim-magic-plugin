@@ -913,6 +913,12 @@ class JotunheimDashboardConfig {
         }
         error_log('Dashboard Config Save: Finished saving all items');
 
+        // DEBUG: Check what's actually in the database
+        global $wpdb;
+        $items_table = $this->normalized_db->get_items_table_name();
+        $all_items = $wpdb->get_results("SELECT item_key, item_name, is_active, quick_action FROM {$items_table}");
+        error_log('Dashboard Config Save: Items in database after save: ' . print_r($all_items, true));
+
         error_log('Dashboard Config Save: Sending success response');
         wp_send_json_success('Configuration saved successfully');
     }
