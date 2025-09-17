@@ -841,10 +841,17 @@ class JotunheimDashboardConfig {
         }
 
         // Handle full configuration save using normalized database
+        error_log('Dashboard Config Save: Raw $_POST sections: ' . $_POST['sections']);
+        error_log('Dashboard Config Save: Raw $_POST items: ' . $_POST['items']);
+        
         $config = [
             'sections' => json_decode(stripslashes($_POST['sections']), true),
             'items' => json_decode(stripslashes($_POST['items']), true)
         ];
+        
+        error_log('Dashboard Config Save: Decoded sections count: ' . (is_array($config['sections']) ? count($config['sections']) : 'NOT ARRAY'));
+        error_log('Dashboard Config Save: Decoded items count: ' . (is_array($config['items']) ? count($config['items']) : 'NOT ARRAY'));
+        error_log('Dashboard Config Save: Items empty check: ' . (empty($config['items']) ? 'TRUE' : 'FALSE'));
         
         // SAFETY CHECK: Don't proceed if we have no items (this would break everything)
         if (empty($config['items'])) {
