@@ -736,3 +736,15 @@
     padding: 20px;
     font-size: 12px;
 }
+
+/* Unsaved changes styling */
+.unsaved-change {
+    color: #d63384 !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+}
+
+.unsaved-change:after {
+    content: " *";
+    color: #d63384;
+}

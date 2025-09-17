@@ -432,54 +432,12 @@ jQuery(document).ready(function($) {
             menuItem.quick_action = isChecked;
             markDirty();
             
-            // Auto-save quick action changes immediately
+            // Show visual feedback that change needs to be saved
             const $checkbox = $(e.currentTarget);
-            $checkbox.prop('disabled', true);
-            
-            const ajaxData = {
-                action: 'update_page_quick_action',
-                page_id: itemId,
-                quick_action: isChecked,
-                nonce: dashboardConfig.nonce
-            };
-            
-            console.log('Sending AJAX request with data:', ajaxData);
-            console.log('ajaxurl:', ajaxurl);
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: ajaxData,
-                success: function(response) {
-                    console.log('AJAX success response:', response);
-                    if (response.success) {
-                        // Update the UI to show the change was saved
-                        const $label = $checkbox.closest('.item-quick-action-control').find('label');
-                        const originalText = $label.text();
-                        $label.text(isChecked ? 'Added to Quick Actions ✓' : 'Removed from Quick Actions ✓');
-                        setTimeout(() => {
-                            $label.text(originalText);
-                        }, 2000);
-                    } else {
-                        console.error('AJAX request failed:', response);
-                        // Revert checkbox if save failed
-                        $checkbox.prop('checked', !isChecked);
-                        menuItem.quick_action = !isChecked;
-                        alert('Error updating quick action setting: ' + (response.data || 'Unknown error'));
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX error:', xhr, status, error);
-                    console.error('Response text:', xhr.responseText);
-                    // Revert checkbox if save failed
-                    $checkbox.prop('checked', !isChecked);
-                    menuItem.quick_action = !isChecked;
-                    alert('Error updating quick action setting: Failed to communicate with server');
-                },
-                complete: function() {
-                    $checkbox.prop('disabled', false);
-                }
-            });
+            const $label = $checkbox.closest('.item-quick-action-control').find('label');
+            const originalText = $label.text();
+            $label.text(isChecked ? 'Quick Action (unsaved)' : 'Quick Action (unsaved)');
+            $label.addClass('unsaved-change');
         }
     }
 
@@ -625,61 +583,50 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
-        // Build current configuration from DOM state instead of using static currentConfig
-        const currentSections = [];
-        const currentItems = [];
-        
-        // Build sections from DOM
-        $('.sections-container .section-item').each(function() {
-            const $section = $(this);
-            const sectionId = $section.data('id');
-            const section = {
-                id: sectionId,
-                title: $section.find('.section-title').text().trim(),
-                enabled: !$section.hasClass('section-disabled'),
-                order: $section.index()
-            };
-            currentSections.push(section);
+        // Make sure all current checkbox states are captured in menuItems
+        $('#items-container .quick-action-checkbox').each(function() {
+            const $checkbox = $(this);
+            const itemId = $checkbox.data('id');
+            const isChecked = $checkbox.prop('checked');
+            
+            // Update menuItem
+            const menuItem = findMenuItem(itemId);
+            if (menuItem) {
+                menuItem.quick_action = isChecked;
+            }
+            
+            // Update currentConfig item
+            const configItem = currentConfig.items.find(item => item.id === itemId);
+            if (configItem) {
+                configItem.quick_action = isChecked;
+            }
         });
         
-        // Build items from DOM (use correct class name 'menu-item')
-        $('#items-container .menu-item').each(function() {
-            const $item = $(this);
-            const itemId = $item.data('id');
-            const $checkbox = $item.find('.quick-action-checkbox');
-            const item = {
-                id: itemId,
-                title: $item.find('.item-title').text().trim(),
-                quick_action: $checkbox.prop('checked'),
-                enabled: !$item.hasClass('item-disabled'),
-                order: $item.index(),
-                section: $item.find('.item-section-select').val()
-            };
-            currentItems.push(item);
-        });
+        // Build sections array with proper field names for PHP
+        const sectionsData = currentConfig.sections.map(section => ({
+            id: section.id,
+            title: section.title,
+            order: section.order,
+            description: section.description || '',
+            icon: section.icon || '',
+            enabled: section.enabled
+        }));
         
-        // If no items found in DOM, fall back to original data with updated quick action states
-        if (currentItems.length === 0) {
-            console.log('No items found in DOM, using fallback approach');
-            menuItems.forEach(menuItem => {
-                const $checkbox = $(`#items-container .quick-action-checkbox[data-id="${menuItem.id}"]`);
-                const configItem = currentConfig.items.find(item => item.id === menuItem.id);
-                currentItems.push({
-                    id: menuItem.id,
-                    title: menuItem.menu_title,
-                    quick_action: $checkbox.length > 0 ? $checkbox.prop('checked') : (menuItem.quick_action || false),
-                    enabled: configItem ? configItem.enabled : true,
-                    order: configItem ? configItem.order : 0,
-                    section: configItem ? configItem.section : 'core'
-                });
-            });
-        }
+        // Build items array with proper field names for PHP
+        const itemsData = currentConfig.items.map(item => ({
+            id: item.id,
+            title: findMenuItem(item.id)?.menu_title || item.title || '',
+            order: item.order,
+            section: item.section,
+            enabled: item.enabled,
+            quick_action: item.quick_action || false
+        }));
         
         const data = {
             action: 'save_dashboard_config',
             nonce: dashboardConfig.nonce,
-            sections: JSON.stringify(currentSections),
-            items: JSON.stringify(currentItems)
+            sections: JSON.stringify(sectionsData),
+            items: JSON.stringify(itemsData)
         };
         
         $('#save-config').prop('disabled', true).text('Saving...');
@@ -689,6 +636,15 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     showNotification('Configuration saved successfully!', 'success');
                     isDirty = false;
+                    
+                    // Clear unsaved styling
+                    $('.unsaved-change').removeClass('unsaved-change');
+                    $('.item-quick-action-control label').each(function() {
+                        if ($(this).text().includes('(unsaved)')) {
+                            $(this).text('Quick Action');
+                        }
+                    });
+                    
                     // Reload page to show updated configuration
                     setTimeout(function() {
                         location.reload();
