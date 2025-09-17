@@ -201,61 +201,46 @@ class Jotunheim_Dashboard_DB_Normalized {
     public function get_full_configuration_for_admin() {
         global $wpdb;
         
-        $sql = "
-            SELECT 
-                s.section_key,
-                s.section_name,
-                s.display_order as section_order,
-                s.is_active as section_enabled,
-                i.item_key,
-                i.item_name,
-                i.callback_function,
-                i.quick_action,
-                i.display_order as item_order,
-                i.icon,
-                i.description,
-                i.permissions,
-                i.is_active as item_enabled
-            FROM {$this->sections_table} s
-            LEFT JOIN {$this->items_table} i ON s.id = i.section_id
-            ORDER BY s.display_order, i.display_order
-        ";
+        // Get ALL sections (no filtering)
+        $sections_sql = "SELECT * FROM {$this->sections_table} ORDER BY display_order";
+        $sections = $wpdb->get_results($sections_sql);
         
-        error_log('Dashboard DB Admin Config: SQL Query: ' . $sql);
+        // Get ALL items (no filtering) 
+        $items_sql = "SELECT i.*, s.section_key 
+                     FROM {$this->items_table} i 
+                     LEFT JOIN {$this->sections_table} s ON i.section_id = s.id 
+                     ORDER BY i.display_order";
+        $items = $wpdb->get_results($items_sql);
         
-        $results = $wpdb->get_results($sql);
-        
-        error_log('Dashboard DB Admin Config: SQL returned ' . count($results) . ' rows');
-        error_log('Dashboard DB Admin Config: First few results: ' . print_r(array_slice($results, 0, 3), true));
-        
-        // Check total items in database directly
-        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM {$this->items_table}");
-        error_log('Dashboard DB Admin Config: Total items in database: ' . $total_items);
+        error_log('Dashboard DB Admin Config: Found ' . count($sections) . ' sections and ' . count($items) . ' items');
         
         // Group by sections
         $config = array();
-        foreach ($results as $row) {
-            if (!isset($config[$row->section_key])) {
-                $config[$row->section_key] = array(
-                    'title' => $row->section_name,
-                    'description' => 'No description available',
-                    'order' => $row->section_order,
-                    'enabled' => (bool)$row->section_enabled, // Use actual database value
-                    'items' => array()
-                );
-            }
-            
-            if ($row->item_key) {
-                $config[$row->section_key]['items'][] = array(
-                    'item_id' => $row->item_key,
-                    'title' => $row->item_name,
-                    'callback' => $row->callback_function,
-                    'enabled' => (bool)$row->item_enabled, // Use actual database value
-                    'quick_action' => (bool)$row->quick_action,
-                    'order' => $row->item_order,
-                    'icon' => $row->icon,
-                    'description' => $row->description,
-                    'permissions' => $row->permissions
+        
+        // First, create all sections
+        foreach ($sections as $section) {
+            $config[$section->section_key] = array(
+                'title' => $section->section_name,
+                'description' => 'No description available',
+                'order' => $section->display_order,
+                'enabled' => (bool)$section->is_active,
+                'items' => array()
+            );
+        }
+        
+        // Then, add all items to their sections
+        foreach ($items as $item) {
+            if ($item->section_key && isset($config[$item->section_key])) {
+                $config[$item->section_key]['items'][] = array(
+                    'item_id' => $item->item_key,
+                    'title' => $item->item_name,
+                    'callback' => $item->callback_function,
+                    'enabled' => (bool)$item->is_active,
+                    'quick_action' => (bool)$item->quick_action,
+                    'order' => $item->display_order,
+                    'icon' => $item->icon,
+                    'description' => $item->description,
+                    'permissions' => $item->permissions
                 );
             }
         }
