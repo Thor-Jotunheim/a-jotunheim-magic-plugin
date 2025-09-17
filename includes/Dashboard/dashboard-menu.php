@@ -190,7 +190,7 @@ function register_organized_menu($config) {
     // The main menu already points to 'jotunheim_magic_dashboard' callback
     
     // Get the config from normalized database
-    $menu_config = $config->normalized_db->get_full_configuration();
+    $menu_config = $config->normalized_db->get_full_configuration_for_admin(); // Show ALL items including disabled ones
     $menu_items = $config->get_menu_items();
     
     if (!$menu_config || !is_array($menu_config)) {
@@ -212,15 +212,16 @@ function register_organized_menu($config) {
         $items_by_section[$section_id] = [];
         
         foreach ($section_data['items'] as $item_data) {
-            if (!isset($item_data['enabled']) || !$item_data['enabled']) continue;
+            // For config interface, show ALL items including disabled ones - let user manage them
+            // if (!isset($item_data['enabled']) || !$item_data['enabled']) continue;
             
             // Find the actual menu item by ID
             foreach ($menu_items as $menu_item) {
                 if (isset($menu_item['id'], $item_data['item_id']) && $menu_item['id'] === $item_data['item_id']) {
                     $items_by_section[$section_id][] = [
                         'slug' => $menu_item['id'] ?? '',
-                        'title' => $menu_item['title'] ?? 'Unknown',
-                        'menu_title' => $menu_item['menu_title'] ?? $menu_item['title'] ?? 'Unknown',
+                        'title' => $item_data['title'] ?? $menu_item['title'] ?? 'Unknown', // Use database title first
+                        'menu_title' => $item_data['title'] ?? $menu_item['title'] ?? 'Unknown', // Use database title first  
                         'callback' => $menu_item['callback'],
                         'order' => $item_data['order']
                     ];
