@@ -490,18 +490,8 @@ jQuery(document).ready(function($) {
                         menuItem.quick_action = isChecked;
                     }
                     
-                    // Force checkbox to reflect the saved state
-                    $(e.currentTarget).prop('checked', isChecked);
-                    
-                    // Update label to show saved status
-                    const $checkbox = $(e.currentTarget);
-                    const $label = $checkbox.closest('.item-quick-action-control').find('label');
-                    $label.text('Quick Action (saved)');
-                    
-                    // Clear the saved status after 2 seconds
-                    setTimeout(() => {
-                        $label.text('Quick Action');
-                    }, 2000);
+                    // Re-render to update the display with new data
+                    renderItems();
                     
                     console.log('Quick action saved successfully. Item:', itemId, 'Value:', isChecked);
                 } else {
