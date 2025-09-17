@@ -221,7 +221,16 @@ class Jotunheim_Dashboard_DB_Normalized {
             ORDER BY s.display_order, i.display_order
         ";
         
+        error_log('Dashboard DB Admin Config: SQL Query: ' . $sql);
+        
         $results = $wpdb->get_results($sql);
+        
+        error_log('Dashboard DB Admin Config: SQL returned ' . count($results) . ' rows');
+        error_log('Dashboard DB Admin Config: First few results: ' . print_r(array_slice($results, 0, 3), true));
+        
+        // Check total items in database directly
+        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM {$this->items_table}");
+        error_log('Dashboard DB Admin Config: Total items in database: ' . $total_items);
         
         // Group by sections
         $config = array();
