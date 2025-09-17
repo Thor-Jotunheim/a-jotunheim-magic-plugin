@@ -124,8 +124,14 @@ jQuery(document).ready(function($) {
         const items = [...currentConfig.items].sort((a, b) => a.order - b.order);
         
         items.forEach(itemConfig => {
-            const menuItem = findMenuItem(itemConfig.id);
-            if (!menuItem) return;
+            // For config page, use itemConfig data directly instead of relying on menuItems
+            // This ensures disabled items still show up for management
+            const menuItem = findMenuItem(itemConfig.id) || {
+                id: itemConfig.id,
+                menu_title: itemConfig.title || itemConfig.id,
+                description: itemConfig.description || '',
+                quick_action: itemConfig.quick_action || false
+            };
             
             const section = findSection(itemConfig.section);
             const sectionName = section ? section.title : 'Unknown Section';
@@ -419,24 +425,10 @@ jQuery(document).ready(function($) {
                         menuItem.enabled = newEnabledState;
                     }
                     
-                    // Update the button immediately without full re-render
-                    const $button = $(e.currentTarget);
-                    $button.removeClass('disabled').addClass(newEnabledState ? '' : 'disabled');
-                    $button.find('span').removeClass('dashicons-visibility dashicons-hidden')
-                           .addClass(newEnabledState ? 'dashicons-visibility' : 'dashicons-hidden');
-                    $button.contents().last().replaceWith(newEnabledState ? 'Enabled' : 'Disabled');
-                    $button.attr('title', (newEnabledState ? 'Disable' : 'Enable') + ' Item');
-                    
                     // Don't mark dirty - toggle saves immediately to database
                     // markDirty(); // Removed - no need to save again
+                    renderItems(); // Re-render to show the new state
                     console.log('TOGGLE DEBUG: Item visibility saved immediately. New state:', newEnabledState);
-                    
-                    // Show brief feedback
-                    const originalText = $button.contents().last()[0].textContent;
-                    $button.contents().last().replaceWith(newEnabledState ? 'Enabled ✓' : 'Disabled ✓');
-                    setTimeout(() => {
-                        $button.contents().last().replaceWith(originalText);
-                    }, 1500);
                 } else {
                     alert('Error updating item visibility: ' + (response.data || 'Unknown error'));
                 }
@@ -505,13 +497,12 @@ jQuery(document).ready(function($) {
                     // Update label to show saved status
                     const $checkbox = $(e.currentTarget);
                     const $label = $checkbox.closest('.item-quick-action-control').find('label');
-                    const originalText = $label.text();
-                    $label.text('Quick Action ✓');
+                    $label.text('Quick Action (saved)').removeClass('unsaved-change');
                     
                     // Clear the saved status after 2 seconds
                     setTimeout(() => {
                         $label.text('Quick Action');
-                    }, 1500);
+                    }, 2000);
                 } else {
                     // Revert checkbox on error
                     $(e.currentTarget).prop('checked', !isChecked);
