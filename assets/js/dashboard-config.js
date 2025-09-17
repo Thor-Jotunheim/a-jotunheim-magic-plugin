@@ -390,11 +390,47 @@ jQuery(document).ready(function($) {
     function toggleItem(e) {
         const itemId = $(e.currentTarget).data('id');
         const itemConfig = findItemConfig(itemId);
-        if (itemConfig) {
-            itemConfig.enabled = !itemConfig.enabled;
-            renderItems();
-            markDirty();
+        
+        if (!itemConfig) {
+            console.error('Error: Item config not found for ID:', itemId);
+            return;
         }
+        
+        const newEnabledState = !itemConfig.enabled;
+        
+        // Save immediately to database like rename and quick action functions do
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'edit_dashboard_page',
+                page_id: itemId,
+                page_data: {
+                    enabled: newEnabledState
+                },
+                nonce: dashboardConfig.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update local data
+                    itemConfig.enabled = newEnabledState;
+                    const menuItem = findMenuItem(itemId);
+                    if (menuItem) {
+                        menuItem.enabled = newEnabledState;
+                    }
+                    
+                    // Don't mark dirty - toggle saves immediately to database
+                    // markDirty(); // Removed - no need to save again
+                    renderItems(); // Re-render to show the new state
+                    console.log('TOGGLE DEBUG: Item visibility saved immediately. New state:', newEnabledState);
+                } else {
+                    alert('Error updating item visibility: ' + (response.data || 'Unknown error'));
+                }
+            },
+            error: function() {
+                alert('Error updating item visibility. Please try again.');
+            }
+        });
     }
 
     function changeItemSection(e) {
