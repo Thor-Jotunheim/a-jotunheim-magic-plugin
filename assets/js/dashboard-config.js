@@ -594,10 +594,14 @@ jQuery(document).ready(function($) {
         }));
         
         // Build items array - combine menuItems (for quick_action, titles) with currentConfig.items (for enabled, section, order)
+        console.log('Building items data...');
+        console.log('currentConfig.items:', currentConfig.items);
+        console.log('menuItems:', menuItems);
+        
         const itemsData = currentConfig.items.map(configItem => {
             // Find corresponding menuItem for title and quick_action info
             const menuItem = findMenuItem(configItem.id);
-            return {
+            const result = {
                 id: configItem.id,
                 title: menuItem?.menu_title || menuItem?.title || configItem.title || '',
                 order: configItem.order,
@@ -605,7 +609,11 @@ jQuery(document).ready(function($) {
                 enabled: configItem.enabled,  // From currentConfig.items (updated by toggleItem)
                 quick_action: menuItem?.quick_action || false  // From menuItems (updated by toggleQuickAction)
             };
+            console.log(`Item ${configItem.id}:`, result);
+            return result;
         });
+        
+        console.log('Final itemsData:', itemsData);
         
         const data = {
             action: 'save_dashboard_config',
