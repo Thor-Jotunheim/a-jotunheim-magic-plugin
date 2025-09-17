@@ -877,6 +877,9 @@ class JotunheimDashboardConfig {
         
         // Save items to normalized database
         error_log('Dashboard Config Save: Starting to save ' . count($config['items']) . ' items');
+        error_log('Dashboard Config Save: default_menu_items contains ' . count($this->default_menu_items) . ' items');
+        error_log('Dashboard Config Save: default_menu_items structure: ' . print_r(array_slice($this->default_menu_items, 0, 2), true));
+        
         foreach ($config['items'] as $item) {
             error_log('Dashboard Config Save: Processing item ' . $item['id']);
             // Find the menu item to get callback info
