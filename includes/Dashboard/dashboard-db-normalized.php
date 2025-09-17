@@ -122,7 +122,8 @@ class Jotunheim_Dashboard_DB_Normalized {
         error_log("Jotunheim Dashboard DB: Found {$sections_count} sections and {$items_count} items in normalized tables");
         
         // EMERGENCY: If we have sections but no items, this is a critical failure - auto-restore
-        if ($sections_count > 0 && $items_count == 0) {
+        // TEMPORARILY DISABLED - this was causing saved settings to be overwritten with defaults
+        if (false && $sections_count > 0 && $items_count == 0) {
             error_log("Jotunheim Dashboard DB: CRITICAL - Found sections but no items. Auto-restoring...");
             $this->emergency_restore_items();
             // Re-check after restore
