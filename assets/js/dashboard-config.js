@@ -591,6 +591,10 @@ jQuery(document).ready(function($) {
             enabled: section.enabled
         }));
         
+        console.log('SAVE DEBUG: currentConfig at save time:', currentConfig);
+        console.log('SAVE DEBUG: currentConfig.items at save time:', currentConfig.items);
+        console.log('SAVE DEBUG: currentConfig.items length:', currentConfig.items ? currentConfig.items.length : 'UNDEFINED');
+        
         // Build items array - use currentConfig.items exactly like sections do
         const itemsData = currentConfig.items.map(item => ({
             id: item.id,
@@ -612,11 +616,19 @@ jQuery(document).ready(function($) {
             items: JSON.stringify(itemsData)
         };
         
+        console.log('SAVE DEBUG: Final data object being sent to backend:');
+        console.log('SAVE DEBUG: - sections JSON:', data.sections);
+        console.log('SAVE DEBUG: - items JSON:', data.items);
+        console.log('SAVE DEBUG: - sections JSON length:', data.sections.length);
+        console.log('SAVE DEBUG: - items JSON length:', data.items.length);
+        
         $('#save-config').prop('disabled', true).text('Saving...');
         
         $.post(dashboardConfig.ajaxurl, data)
             .done(function(response) {
+                console.log('SAVE DEBUG: Server response:', response);
                 if (response.success) {
+                    console.log('SAVE DEBUG: Save was successful');
                     showNotification('Configuration saved successfully!', 'success');
                     isDirty = false;
                     
@@ -633,10 +645,12 @@ jQuery(document).ready(function($) {
                         location.reload();
                     }, 1000);
                 } else {
+                    console.log('SAVE DEBUG: Save failed, response.data:', response.data);
                     showNotification('Failed to save configuration: ' + response.data, 'error');
                 }
             })
-            .fail(function() {
+            .fail(function(xhr, status, error) {
+                console.log('SAVE DEBUG: Ajax request failed:', status, error);
                 showNotification('Failed to save configuration. Please try again.', 'error');
             })
             .always(function() {
