@@ -581,25 +581,19 @@ jQuery(document).ready(function($) {
     }
 
     function saveConfiguration() {
-        // Build current configuration from DOM state instead of using static currentConfig
-        const currentSections = [];
+        // Build sections array - keep the WORKING currentConfig approach for sections
+        const sectionsData = currentConfig.sections.map(section => ({
+            id: section.id,
+            title: section.title,
+            order: section.order,
+            description: section.description || '',
+            icon: section.icon || '',
+            enabled: section.enabled
+        }));
+        
+        // Build items from DOM (since currentConfig.items wasn't working)
         const currentItems = [];
-        
-        // Build sections from DOM
-        $('.sections-container .section-item').each(function() {
-            const $section = $(this);
-            const sectionId = $section.data('id');
-            const section = {
-                id: sectionId,
-                section_name: $section.find('.section-title').text().trim(),
-                enabled: !$section.hasClass('section-disabled'),
-                display_order: $section.index()
-            };
-            currentSections.push(section);
-        });
-        
-        // Build items from DOM 
-        $('.items-container .item').each(function() {
+        $('#items-container .menu-item').each(function() {
             const $item = $(this);
             const itemId = $item.data('id');
             const $checkbox = $item.find('.quick-action-checkbox');
@@ -614,13 +608,13 @@ jQuery(document).ready(function($) {
             currentItems.push(item);
         });
         
-        console.log('SAVE DEBUG: DOM sections:', currentSections);
-        console.log('SAVE DEBUG: DOM items:', currentItems);
+        console.log('SAVE DEBUG: sections (from currentConfig):', sectionsData);
+        console.log('SAVE DEBUG: items (from DOM):', currentItems);
         
         const data = {
             action: 'save_dashboard_config',
             nonce: dashboardConfig.nonce,
-            sections: JSON.stringify(currentSections),
+            sections: JSON.stringify(sectionsData),
             items: JSON.stringify(currentItems)
         };
         
