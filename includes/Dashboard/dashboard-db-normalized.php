@@ -321,6 +321,47 @@ class Jotunheim_Dashboard_DB_Normalized {
     }
     
     /**
+     * Delete a section and move its items to another section
+     */
+    public function delete_section($section_key, $move_items_to_section = null) {
+        global $wpdb;
+        
+        // If no target section specified, find the first available section
+        if (!$move_items_to_section) {
+            $move_items_to_section = $wpdb->get_var($wpdb->prepare(
+                "SELECT section_key FROM {$this->sections_table} WHERE section_key != %s AND is_active = 1 ORDER BY display_order LIMIT 1",
+                $section_key
+            ));
+        }
+        
+        // Move items to the target section if it exists
+        if ($move_items_to_section) {
+            $wpdb->update(
+                $this->items_table,
+                ['section_key' => $move_items_to_section, 'updated_at' => current_time('mysql')],
+                ['section_key' => $section_key],
+                ['%s', '%s'],
+                ['%s']
+            );
+        }
+        
+        // Delete the section
+        $result = $wpdb->delete(
+            $this->sections_table,
+            ['section_key' => $section_key],
+            ['%s']
+        );
+        
+        if ($result !== false) {
+            error_log('Jotunheim Dashboard DB: Successfully deleted section ' . $section_key);
+            return true;
+        } else {
+            error_log('Jotunheim Dashboard DB: Failed to delete section ' . $section_key . ': ' . $wpdb->last_error);
+            return false;
+        }
+    }
+    
+    /**
      * Add or update an item
      */
     public function save_item($item_data) {

@@ -380,15 +380,19 @@ class JotunheimDashboardConfig {
         $current_callbacks = array_column($current_menu_items, 'callback');
         
         error_log('Jotunheim Dashboard: Current menu items: ' . implode(', ', $current_item_ids));
+        error_log('Jotunheim Dashboard: Current callbacks: ' . implode(', ', $current_callbacks));
         
         // Include all default menu items in the available pages (but filter out already-added ones)
         // This way users can see everything that's available
         foreach ($this->default_menu_items as $item) {
+            // TEMPORARILY DISABLE FILTERING to debug Player List issue
+            /*
             // Skip if already in current menu
             if (in_array($item['id'], $current_item_ids) || in_array($item['callback'], $current_callbacks)) {
-                error_log('Jotunheim Dashboard: Skipping default item (already added): ' . $item['id']);
+                error_log('Jotunheim Dashboard: Skipping default item (already added): ' . $item['id'] . ' (callback: ' . $item['callback'] . ')');
                 continue;
             }
+            */
             
             $available_pages[] = [
                 'id' => $item['id'],
@@ -1290,34 +1294,10 @@ class JotunheimDashboardConfig {
             return;
         }
         
-        // Delete section from normalized database
-        global $wpdb;
+        // Delete section using normalized database method
+        $result = $this->normalized_db->delete_section($section_id);
         
-        // First, move any items in this section to the first available section
-        $first_section = $wpdb->get_var($wpdb->prepare(
-            "SELECT section_key FROM jotun_dashboard_sections WHERE section_key != %s AND is_active = 1 ORDER BY display_order LIMIT 1",
-            $section_id
-        ));
-        
-        if ($first_section) {
-            // Move items to first available section
-            $wpdb->update(
-                'jotun_dashboard_items',
-                ['section_key' => $first_section, 'updated_at' => current_time('mysql')],
-                ['section_key' => $section_id],
-                ['%s', '%s'],
-                ['%s']
-            );
-        }
-        
-        // Delete the section
-        $result = $wpdb->delete(
-            'jotun_dashboard_sections',
-            ['section_key' => $section_id],
-            ['%s']
-        );
-        
-        if ($result !== false) {
+        if ($result) {
             wp_send_json_success('Section deleted successfully');
         } else {
             wp_send_json_error('Failed to delete section');
@@ -1369,11 +1349,13 @@ class JotunheimDashboardConfig {
             return;
         }
         
+        $update_data['updated_at'] = current_time('mysql');
+        
         $result = $wpdb->update(
             'jotun_dashboard_sections',
-            array_merge($update_data, ['updated_at' => current_time('mysql')]),
+            $update_data,
             ['section_key' => $section_id],
-            array_fill(0, count($update_data) + 1, '%s'),
+            array_fill(0, count($update_data), '%s'),
             ['%s']
         );
         
