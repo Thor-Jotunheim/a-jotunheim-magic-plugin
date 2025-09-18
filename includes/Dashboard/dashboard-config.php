@@ -403,13 +403,20 @@ class JotunheimDashboardConfig {
                 'description' => $item['description'] ?? 'Default plugin page',
                 'is_default' => true
             ];
-            error_log('Jotunheim Dashboard: Added default item: ' . $item['id']);
+            error_log('Jotunheim Dashboard: Added default item to available pages: ' . $item['id'] . ' (title: ' . $item['title'] . ')');
         }
         
         // Scan for functions that match render_*_page pattern
         $functions = get_defined_functions()['user'];
         
         error_log('Jotunheim Dashboard: Found ' . count($functions) . ' user functions');
+        
+        // Check specifically for jotun_playerlist_interface
+        if (in_array('jotun_playerlist_interface', $functions)) {
+            error_log('Jotunheim Dashboard: jotun_playerlist_interface function EXISTS');
+        } else {
+            error_log('Jotunheim Dashboard: jotun_playerlist_interface function NOT FOUND');
+        }
         
         foreach ($functions as $function) {
             if (preg_match('/^render_(.+)_page$/', $function, $matches)) {
@@ -1352,7 +1359,7 @@ class JotunheimDashboardConfig {
         $update_data['updated_at'] = current_time('mysql');
         
         $result = $wpdb->update(
-            'jotun_dashboard_sections',
+            $this->normalized_db->get_sections_table_name(),
             $update_data,
             ['section_key' => $section_id],
             array_fill(0, count($update_data), '%s'),
@@ -1360,9 +1367,11 @@ class JotunheimDashboardConfig {
         );
         
         if ($result !== false) {
+            error_log('Jotunheim Dashboard: Successfully updated section ' . $section_id);
             wp_send_json_success('Section updated successfully');
         } else {
-            wp_send_json_error('Failed to update section');
+            error_log('Jotunheim Dashboard: Failed to update section ' . $section_id . ': ' . $wpdb->last_error);
+            wp_send_json_error('Failed to update section: ' . $wpdb->last_error);
         }
     }
 
