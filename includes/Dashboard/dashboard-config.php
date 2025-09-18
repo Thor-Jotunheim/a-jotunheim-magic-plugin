@@ -44,9 +44,6 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
         add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
-        add_action('wp_ajax_add_dashboard_section', [$this, 'ajax_add_dashboard_section']);
-        add_action('wp_ajax_delete_dashboard_section', [$this, 'ajax_delete_dashboard_section']);
-        add_action('wp_ajax_edit_dashboard_section', [$this, 'ajax_edit_dashboard_section']);
         
         // TEMPORARY: Force config reset for debugging (DISABLED after fixing duplicates)
         // delete_option('jotunheim_dashboard_config');
@@ -489,6 +486,28 @@ class JotunheimDashboardConfig {
                 $available_pages[] = $page;
                 error_log('Jotunheim Dashboard: Added hardcoded page: ' . $page['id']);
             }
+        }
+        
+        // FORCE ADD Player List if it's missing (temporary fix)
+        $playerlist_exists = false;
+        foreach ($available_pages as $page) {
+            if ($page['id'] === 'jotun-playerlist' || $page['callback'] === 'jotun_playerlist_interface') {
+                $playerlist_exists = true;
+                break;
+            }
+        }
+        
+        if (!$playerlist_exists) {
+            $available_pages[] = [
+                'id' => 'jotun-playerlist',
+                'title' => 'Player List Management',
+                'menu_title' => 'Player List',
+                'callback' => 'jotun_playerlist_interface',
+                'category' => 'commerce',
+                'description' => 'Manage registered players and customer database',
+                'is_default' => true
+            ];
+            error_log('Jotunheim Dashboard: FORCE ADDED Player List to available pages');
         }
         
         error_log('Jotunheim Dashboard: Final page count: ' . count($available_pages));
