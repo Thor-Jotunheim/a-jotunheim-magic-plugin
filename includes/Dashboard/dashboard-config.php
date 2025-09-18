@@ -1326,7 +1326,12 @@ class JotunheimDashboardConfig {
         $section_id = sanitize_key($_POST['section_id']);
         $section_data = $_POST['section_data'];
         
+        error_log('Jotunheim Dashboard: Edit section AJAX called');
+        error_log('Jotunheim Dashboard: Section ID: ' . $section_id);
+        error_log('Jotunheim Dashboard: Section data: ' . print_r($section_data, true));
+        
         if (empty($section_id)) {
+            error_log('Jotunheim Dashboard: ERROR - Section ID is empty');
             wp_send_json_error('Section ID is required');
             return;
         }
@@ -1352,19 +1357,29 @@ class JotunheimDashboardConfig {
         }
         
         if (empty($update_data)) {
+            error_log('Jotunheim Dashboard: ERROR - No valid data to update');
             wp_send_json_error('No valid data to update');
             return;
         }
         
+        error_log('Jotunheim Dashboard: Update data prepared: ' . print_r($update_data, true));
+        
         $update_data['updated_at'] = current_time('mysql');
         
+        $table_name = $this->normalized_db->get_sections_table_name();
+        error_log('Jotunheim Dashboard: Using table name: ' . $table_name);
+        
         $result = $wpdb->update(
-            $this->normalized_db->get_sections_table_name(),
+            $table_name,
             $update_data,
             ['section_key' => $section_id],
             array_fill(0, count($update_data), '%s'),
             ['%s']
         );
+        
+        error_log('Jotunheim Dashboard: Update result: ' . ($result !== false ? 'SUCCESS' : 'FAILED'));
+        error_log('Jotunheim Dashboard: Rows affected: ' . $result);
+        error_log('Jotunheim Dashboard: Last error: ' . $wpdb->last_error);
         
         if ($result !== false) {
             error_log('Jotunheim Dashboard: Successfully updated section ' . $section_id);
