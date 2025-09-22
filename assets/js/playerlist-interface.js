@@ -526,7 +526,7 @@ jQuery(document).ready(function($) {
         for (const row of data) {
             try {
                 const playerData = {
-                    playerName: row.playerName || row.player_name || row.name || row.Player || '',
+                    playerName: row.PlayerName || row.playerName || row.player_name || row.name || row.Player || '',
                     steam_id: row.steam_id || row.steamid || row.Steam || '', // Optional
                     discord_id: row.discord_id || row.discordid || row.Discord || '', // Optional
                     is_active: true
@@ -550,8 +550,12 @@ jQuery(document).ready(function($) {
 
         JotunAPI.handleSuccess(`Import completed: ${imported} players imported, ${errors} errors`);
         closeImportModal();
-        loadPlayers();
-        loadPlayerStats();
+        
+        // Prevent multiple simultaneous refreshes that could cause infinite loops
+        setTimeout(() => {
+            loadPlayers();
+            loadPlayerStats();
+        }, 100);
     }
 
     async function exportPlayers() {
