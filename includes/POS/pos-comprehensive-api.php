@@ -472,11 +472,10 @@ function jotun_api_add_player($request) {
     // Support both old and new field names for backwards compatibility
     $player_name = sanitize_text_field($data['playerName'] ?? $data['player_name']);
     
-    // Prepare data for insertion
+    // Prepare data for insertion using the intended schema
     $insert_data = [
-        'player_name' => $player_name,
-        'playerName' => $player_name,   // Keep both for backwards compatibility  
-        'activePlayerName' => $player_name,
+        'playerName' => $player_name,        // Original player name
+        'activePlayerName' => $player_name,  // Current active name (same initially)
         'steam_id' => sanitize_text_field($data['steam_id'] ?? ''),
         'discord_id' => sanitize_text_field($data['discord_id'] ?? ''),
         'registration_date' => current_time('mysql'),
