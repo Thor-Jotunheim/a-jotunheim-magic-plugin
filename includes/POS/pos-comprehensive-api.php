@@ -398,7 +398,7 @@ add_action('rest_api_init', function() {
 function jotun_api_get_playerlist($request) {
     global $wpdb;
     
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
     $search = $request->get_param('search');
@@ -428,7 +428,7 @@ function jotun_api_get_single_player($request) {
     global $wpdb;
     
     $id = (int) $request['id'];
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     
     $player = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id));
     
@@ -447,7 +447,7 @@ function jotun_api_add_player($request) {
     global $wpdb;
     
     $data = $request->get_json_params();
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     
     // Debug logging
     error_log('Player Import: Attempting to add player - ' . print_r($data, true));
@@ -464,25 +464,34 @@ function jotun_api_add_player($request) {
     
     // Prepare data for insertion
     $insert_data = [
-        'player_name' => $player_name,  // Use the database column name 'player_name'
-        'playerName' => $player_name,   // Keep both for backwards compatibility
-        'activePlayerName' => $player_name, // Initially the same as original name
+        'player_name' => $player_name,
+        'playerName' => $player_name,   // Keep both for backwards compatibility  
+        'activePlayerName' => $player_name,
         'steam_id' => sanitize_text_field($data['steam_id'] ?? ''),
         'discord_id' => sanitize_text_field($data['discord_id'] ?? ''),
         'registration_date' => current_time('mysql'),
+        'created_at' => current_time('mysql'), // Add created_at since it exists in your table
         'rename_count' => 0,
+        'score' => 0, // Default score
+        'level' => 1, // Default level
         'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true
     ];
+    
+    // Enhanced logging for debugging
+    error_log('Player Import: Attempting insert with data - ' . print_r($insert_data, true));
+    error_log('Player Import: Table name - ' . $table_name);
     
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {
-        error_log('Player Import: Database insert failed - ' . $wpdb->last_error);
-        return new WP_REST_Response(['error' => 'Failed to add player: ' . $wpdb->last_error], 500);
+        $error_msg = $wpdb->last_error ?: 'Unknown database error';
+        error_log('Player Import: Database insert failed - ' . $error_msg);
+        error_log('Player Import: Last query - ' . $wpdb->last_query);
+        return new WP_REST_Response(['error' => 'Failed to add player: ' . $error_msg], 500);
     }
     
     error_log('Player Import: Successfully added player with ID - ' . $wpdb->insert_id);
-    return new WP_REST_Response(['message' => 'Player added successfully', 'id' => $wpdb->insert_id], 201);
+    return new WP_REST_Response(['message' => 'Player added successfully', 'id' => $wpdb->insert_id, 'data' => $insert_data], 201);
 }
 
 function jotun_api_update_player($request) {
@@ -490,7 +499,7 @@ function jotun_api_update_player($request) {
     
     $id = (int) $request['id'];
     $data = $request->get_json_params();
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     
     // Support both old and new field names
     $player_name = $data['activePlayerName'] ?? $data['player_name'] ?? '';
@@ -519,7 +528,7 @@ function jotun_api_delete_player($request) {
     global $wpdb;
     
     $id = (int) $request['id'];
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     
     $result = $wpdb->delete($table_name, ['id' => $id]);
     
@@ -539,7 +548,7 @@ function jotun_api_rename_player($request) {
     
     $id = (int) $request['id'];
     $data = $request->get_json_params();
-    $table_name = $wpdb->prefix . 'jotun_playerlist';
+    $table_name = 'jotun_playerlist';
     
     $new_name = $data['new_name'] ?? '';
     
