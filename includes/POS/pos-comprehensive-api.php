@@ -12,6 +12,16 @@ if (!defined('ABSPATH')) {
 // Register all comprehensive REST API routes
 add_action('rest_api_init', function() {
     
+    // Debug endpoint to test API connectivity
+    register_rest_route('jotun-api/v1', '/debug-test', [
+        'methods' => 'GET',
+        'callback' => function() {
+            error_log('DEBUG: API endpoint test called successfully');
+            return new WP_REST_Response(['message' => 'API is working!', 'timestamp' => current_time('mysql')], 200);
+        },
+        'permission_callback' => '__return_true'
+    ]);
+    
     // ============================================================================
     // PLAYER LIST API ENDPOINTS (jotun_playerlist)
     // ============================================================================

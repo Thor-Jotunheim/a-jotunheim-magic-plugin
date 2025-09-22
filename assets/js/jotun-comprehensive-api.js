@@ -14,6 +14,8 @@ class JotunheimAPI {
      */
     async request(endpoint, method = 'GET', data = null) {
         const url = this.baseUrl + endpoint;
+        console.log('Making API request:', method, url, data);
+        
         const config = {
             method: method,
             headers: {
@@ -26,9 +28,15 @@ class JotunheimAPI {
             config.body = JSON.stringify(data);
         }
 
+        console.log('Request config:', config);
+
         try {
+            console.log('Sending fetch request...');
             const response = await fetch(url, config);
+            console.log('Response received:', response.status, response.statusText);
+            
             const result = await response.json();
+            console.log('Response data:', result);
             
             if (!response.ok) {
                 throw new Error(result.message || `HTTP error! status: ${response.status}`);

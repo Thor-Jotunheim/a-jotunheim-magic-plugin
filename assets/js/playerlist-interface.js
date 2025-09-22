@@ -532,9 +532,15 @@ jQuery(document).ready(function($) {
                     is_active: true
                 };
 
+                console.log('Attempting to import player:', playerData);
+
                 if (playerData.playerName) {
-                    await JotunAPI.addPlayer(playerData);
+                    console.log('Making API call for player:', playerData.playerName);
+                    const result = await JotunAPI.addPlayer(playerData);
+                    console.log('API result:', result);
                     imported++;
+                } else {
+                    console.log('Skipping player with empty name:', row);
                 }
             } catch (error) {
                 console.error('Error importing player:', row, error);
