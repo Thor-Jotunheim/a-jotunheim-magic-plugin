@@ -13,6 +13,11 @@ class Jotunheim_Dashboard_DB_Normalized {
         // Use jotun_ prefix like the existing table
         $this->sections_table = 'jotun_dashboard_sections';
         $this->items_table = 'jotun_dashboard_items';
+        
+        // Run migration if tables exist
+        if ($this->tables_exist()) {
+            $this->migrate_sections_table();
+        }
     }
     
     public function get_items_table_name() {
@@ -34,6 +39,8 @@ class Jotunheim_Dashboard_DB_Normalized {
             section_name varchar(255) NOT NULL,
             display_order int(11) DEFAULT 0,
             is_active tinyint(1) DEFAULT 1,
+            icon varchar(100) DEFAULT NULL,
+            description text DEFAULT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -112,6 +119,29 @@ class Jotunheim_Dashboard_DB_Normalized {
         $items_exists = $wpdb->get_var("SHOW TABLES LIKE '{$this->items_table}'") === $this->items_table;
         
         return $sections_exists && $items_exists;
+    }
+    
+    /**
+     * Check if sections table has description and icon columns, and add them if missing
+     */
+    public function migrate_sections_table() {
+        global $wpdb;
+        
+        // Check if icon column exists
+        $icon_column = $wpdb->get_results("SHOW COLUMNS FROM {$this->sections_table} LIKE 'icon'");
+        if (empty($icon_column)) {
+            $wpdb->query("ALTER TABLE {$this->sections_table} ADD COLUMN icon varchar(100) DEFAULT NULL AFTER is_active");
+            error_log('Jotunheim Dashboard DB: Added icon column to sections table');
+        }
+        
+        // Check if description column exists
+        $desc_column = $wpdb->get_results("SHOW COLUMNS FROM {$this->sections_table} LIKE 'description'");
+        if (empty($desc_column)) {
+            $wpdb->query("ALTER TABLE {$this->sections_table} ADD COLUMN description text DEFAULT NULL AFTER icon");
+            error_log('Jotunheim Dashboard DB: Added description column to sections table');
+        }
+        
+        return true;
     }
     
     /**
@@ -254,9 +284,6 @@ class Jotunheim_Dashboard_DB_Normalized {
     public function save_section($section_key, $section_name, $display_order = 0, $description = '', $icon = '', $enabled = 1) {
         global $wpdb;
         
-        // Note: Current table schema only supports section_key, section_name, display_order, is_active
-        // description and icon are not yet supported in the database schema
-        
         $result = $wpdb->replace(
             $this->sections_table,
             array(
@@ -264,9 +291,11 @@ class Jotunheim_Dashboard_DB_Normalized {
                 'section_name' => $section_name,
                 'display_order' => $display_order,
                 'is_active' => $enabled ? 1 : 0,
+                'icon' => $icon,
+                'description' => $description,
                 'updated_at' => current_time('mysql')
             ),
-            array('%s', '%s', '%d', '%d', '%s')
+            array('%s', '%s', '%d', '%d', '%s', '%s', '%s')
         );
         
         return $result !== false;
