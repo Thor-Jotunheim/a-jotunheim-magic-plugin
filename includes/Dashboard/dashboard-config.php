@@ -684,10 +684,10 @@ class JotunheimDashboardConfig {
             $frontend_config['sections'][] = [
                 'id' => $section_key,
                 'title' => $section_data['title'],
-                'description' => $section_data['description'] ?? 'No description available',
+                'description' => $section_data['description'] ?: '', // Use actual database value or empty string
                 'order' => $section_data['order'],
                 'enabled' => $section_data['enabled'],
-                'icon' => $default_section_icons[$section_key] ?? 'dashicons-admin-generic'
+                'icon' => $section_data['icon'] ?: ($default_section_icons[$section_key] ?? 'dashicons-admin-generic') // Use database icon or fallback
             ];
             
             // Convert items in this section

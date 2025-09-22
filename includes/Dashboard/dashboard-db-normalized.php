@@ -171,6 +171,8 @@ class Jotunheim_Dashboard_DB_Normalized {
                 s.section_name,
                 s.display_order as section_order,
                 s.is_active as section_enabled,
+                s.icon as section_icon,
+                s.description as section_description,
                 i.item_key,
                 i.item_name,
                 i.callback_function,
@@ -199,7 +201,8 @@ class Jotunheim_Dashboard_DB_Normalized {
             if (!isset($config[$row->section_key])) {
                 $config[$row->section_key] = array(
                     'title' => $row->section_name,
-                    'description' => 'No description available', // Default description
+                    'description' => $row->section_description ?: '', // Use database value or empty string
+                    'icon' => $row->section_icon ?: '', // Use database value or empty string
                     'order' => $row->section_order,
                     'enabled' => (bool)$row->section_enabled, // Use actual database value
                     'items' => array()
@@ -251,7 +254,8 @@ class Jotunheim_Dashboard_DB_Normalized {
         foreach ($sections as $section) {
             $config[$section->section_key] = array(
                 'title' => $section->section_name,
-                'description' => 'No description available',
+                'description' => $section->description ?: '', // Use database value or empty string
+                'icon' => $section->icon ?: '', // Use database value or empty string
                 'order' => $section->display_order,
                 'enabled' => (bool)$section->is_active,
                 'items' => array()
