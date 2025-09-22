@@ -519,6 +519,7 @@ jQuery(document).ready(function($) {
 
         const data = window.importData;
         let imported = 0;
+        let skipped = 0;
         let errors = 0;
 
         $('#start-import').prop('disabled', true).text('Importing...');
@@ -538,9 +539,16 @@ jQuery(document).ready(function($) {
                     console.log('Making API call for player:', playerData.playerName);
                     const result = await JotunAPI.addPlayer(playerData);
                     console.log('API result:', result);
-                    imported++;
+                    
+                    if (result.skipped) {
+                        console.log('Player skipped (duplicate):', playerData.playerName);
+                        skipped++;
+                    } else {
+                        imported++;
+                    }
                 } else {
                     console.log('Skipping player with empty name:', row);
+                    errors++;
                 }
             } catch (error) {
                 console.error('Error importing player:', row, error);
@@ -548,7 +556,8 @@ jQuery(document).ready(function($) {
             }
         }
 
-        JotunAPI.handleSuccess(`Import completed: ${imported} players imported, ${errors} errors`);
+        const message = `Import completed: ${imported} new players imported, ${skipped} duplicates skipped, ${errors} errors`;
+        JotunAPI.handleSuccess(message);
         closeImportModal();
         
         // Prevent multiple simultaneous refreshes that could cause infinite loops

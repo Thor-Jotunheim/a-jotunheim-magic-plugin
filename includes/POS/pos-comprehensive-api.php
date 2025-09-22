@@ -472,6 +472,23 @@ function jotun_api_add_player($request) {
     // Support both old and new field names for backwards compatibility
     $player_name = sanitize_text_field($data['playerName'] ?? $data['player_name']);
     
+    // Check for existing player to prevent duplicates
+    $existing_player = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, playerName, activePlayerName FROM $table_name WHERE playerName = %s OR activePlayerName = %s",
+        $player_name,
+        $player_name
+    ));
+    
+    if ($existing_player) {
+        error_log('Player Import: Duplicate detected - Player "' . $player_name . '" already exists with ID ' . $existing_player->id);
+        return new WP_REST_Response([
+            'message' => 'Player already exists - skipped',
+            'player_name' => $player_name,
+            'existing_id' => $existing_player->id,
+            'skipped' => true
+        ], 200);
+    }
+    
     // Prepare data for insertion using the intended schema
     $insert_data = [
         'playerName' => $player_name,        // Original player name
