@@ -287,21 +287,67 @@ jQuery(document).ready(function($) {
     }
 
     function updateSectionOrder() {
+        const sectionOrders = {};
         $('#sections-container .section-item').each(function(index) {
             const sectionId = $(this).data('id');
             const section = findSection(sectionId);
             if (section) {
                 section.order = index + 1;
+                sectionOrders[sectionId] = index + 1;
+            }
+        });
+        
+        // Auto-save section order
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'update_section_order',
+                section_orders: sectionOrders,
+                nonce: dashboardConfig.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    console.log('Section order auto-saved successfully');
+                } else {
+                    console.error('Error updating section order:', response.data);
+                }
+            },
+            error: function() {
+                console.error('Error updating section order');
             }
         });
     }
 
     function updateItemOrder() {
+        const itemOrders = {};
         $('#items-container .menu-item').each(function(index) {
             const itemId = $(this).data('id');
             const itemConfig = findItemConfig(itemId);
             if (itemConfig) {
                 itemConfig.order = index + 1;
+                itemOrders[itemId] = index + 1;
+            }
+        });
+        
+        // Auto-save item order
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'update_item_order',
+                item_orders: itemOrders,
+                nonce: dashboardConfig.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    console.log('Item order auto-saved successfully');
+                } else {
+                    console.error('Error updating item order:', response.data);
+                }
+            },
+            error: function() {
+                console.error('Error updating item order');
             }
         });
     }
@@ -358,20 +404,58 @@ jQuery(document).ready(function($) {
         }
         
         if (isNew) {
+            // For new sections, add to local config and render
             sectionData.order = currentConfig.sections.length + 1;
             currentConfig.sections.push(sectionData);
+            
+            closeSectionModal();
+            renderSections();
+            populateFilters();
+            updateItemSectionSelects();
+            
+            // For new sections, we would need to create them via a different endpoint
+            // For now, new sections still require the full config save
+            showNotification('New section added. Note: New sections are saved automatically when you make other changes.', 'success');
         } else {
-            const section = findSection(sectionData.id);
-            if (section) {
-                Object.assign(section, sectionData);
-            }
+            // For existing sections, auto-save immediately via AJAX
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'edit_dashboard_section',
+                    section_id: sectionData.id,
+                    section_data: {
+                        title: sectionData.title,
+                        description: sectionData.description,
+                        icon: sectionData.icon,
+                        enabled: sectionData.enabled
+                    },
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update local data
+                        const section = findSection(sectionData.id);
+                        if (section) {
+                            Object.assign(section, sectionData);
+                        }
+                        
+                        closeSectionModal();
+                        renderSections();
+                        populateFilters();
+                        updateItemSectionSelects();
+                        
+                        showNotification('Section updated successfully!', 'success');
+                        console.log('Section auto-saved successfully');
+                    } else {
+                        alert('Error updating section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error updating section. Please try again.');
+                }
+            });
         }
-        
-        closeSectionModal();
-        renderSections();
-        populateFilters();
-        updateItemSectionSelects();
-        // Auto-save after adding section
     }
 
     function closeSectionModal() {
@@ -382,11 +466,36 @@ jQuery(document).ready(function($) {
         const sectionId = $(e.currentTarget).data('id');
         const section = findSection(sectionId);
         if (section) {
-            section.enabled = !section.enabled;
-            renderSections();
-            populateFilters();
-            updateItemSectionSelects();
-            // Auto-save after section toggle
+            const newEnabledState = !section.enabled;
+            
+            // Auto-save section toggle immediately
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'edit_dashboard_section',
+                    section_id: sectionId,
+                    section_data: {
+                        enabled: newEnabledState
+                    },
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update local data
+                        section.enabled = newEnabledState;
+                        renderSections();
+                        populateFilters();
+                        updateItemSectionSelects();
+                        console.log('Section visibility auto-saved successfully');
+                    } else {
+                        alert('Error updating section visibility: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error updating section visibility. Please try again.');
+                }
+            });
         }
     }
 

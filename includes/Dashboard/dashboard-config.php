@@ -44,6 +44,9 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_add_custom_page', [$this, 'ajax_add_custom_page']);
         add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
+        add_action('wp_ajax_edit_dashboard_section', [$this, 'ajax_edit_dashboard_section']);
+        add_action('wp_ajax_update_section_order', [$this, 'ajax_update_section_order']);
+        add_action('wp_ajax_update_item_order', [$this, 'ajax_update_item_order']);
         add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
         add_action('wp_ajax_debug_dashboard_state', [$this, 'ajax_debug_dashboard_state']);
         
@@ -1463,6 +1466,144 @@ class JotunheimDashboardConfig {
     }
 
     /**
+     * AJAX handler to update section data
+     */
+    public function ajax_edit_dashboard_section() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_id = sanitize_key($_POST['section_id']);
+        $section_data = $_POST['section_data'];
+        
+        if (empty($section_id)) {
+            wp_send_json_error('Section ID is required');
+            return;
+        }
+        
+        // Update directly in normalized database
+        $update_data = [];
+        
+        if (isset($section_data['title'])) {
+            $update_data['section_name'] = sanitize_text_field($section_data['title']);
+        }
+        if (isset($section_data['description'])) {
+            $update_data['description'] = sanitize_text_field($section_data['description']);
+        }
+        if (isset($section_data['icon'])) {
+            $update_data['icon'] = sanitize_text_field($section_data['icon']);
+        }
+        if (isset($section_data['enabled'])) {
+            $update_data['is_active'] = (bool)$section_data['enabled'] ? 1 : 0;
+        }
+        if (isset($section_data['order'])) {
+            $update_data['display_order'] = (int)$section_data['order'];
+        }
+        
+        if (empty($update_data)) {
+            wp_send_json_error('No valid data to update');
+            return;
+        }
+        
+        // Update in normalized database
+        global $wpdb;
+        $result = $wpdb->update(
+            'jotun_dashboard_sections',
+            array_merge($update_data, ['updated_at' => current_time('mysql')]),
+            array('section_key' => $section_id),
+            array_fill(0, count($update_data) + 1, '%s'),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error('Failed to update section data');
+            return;
+        }
+        
+        wp_send_json_success('Section updated successfully');
+    }
+    
+    /**
+     * AJAX handler to update section display order
+     */
+    public function ajax_update_section_order() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_orders = $_POST['section_orders'];
+        
+        if (empty($section_orders) || !is_array($section_orders)) {
+            wp_send_json_error('Section order data is required');
+            return;
+        }
+        
+        global $wpdb;
+        $success_count = 0;
+        
+        foreach ($section_orders as $section_id => $order) {
+            $result = $wpdb->update(
+                'jotun_dashboard_sections',
+                array('display_order' => (int)$order, 'updated_at' => current_time('mysql')),
+                array('section_key' => sanitize_key($section_id)),
+                array('%d', '%s'),
+                array('%s')
+            );
+            
+            if ($result !== false) {
+                $success_count++;
+            }
+        }
+        
+        wp_send_json_success("Updated order for {$success_count} sections");
+    }
+    
+    /**
+     * AJAX handler to update item display order
+     */
+    public function ajax_update_item_order() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $item_orders = $_POST['item_orders'];
+        
+        if (empty($item_orders) || !is_array($item_orders)) {
+            wp_send_json_error('Item order data is required');
+            return;
+        }
+        
+        global $wpdb;
+        $success_count = 0;
+        
+        foreach ($item_orders as $item_id => $order) {
+            $result = $wpdb->update(
+                'jotun_dashboard_items',
+                array('display_order' => (int)$order, 'updated_at' => current_time('mysql')),
+                array('item_key' => sanitize_key($item_id)),
+                array('%d', '%s'),
+                array('%s')
+            );
+            
+            if ($result !== false) {
+                $success_count++;
+            }
+        }
+        
+        wp_send_json_success("Updated order for {$success_count} items");
+    }
     
     /**
      * AJAX handler to update quick action status for a page
