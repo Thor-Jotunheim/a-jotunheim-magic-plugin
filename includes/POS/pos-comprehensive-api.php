@@ -82,6 +82,13 @@ function jotun_ensure_shops_table() {
         
         error_log('Jotunheim POS: Created jotun_shops table');
     }
+    
+    // Migration: Add is_active column if it doesn't exist
+    $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shops_table LIKE 'is_active'");
+    if (empty($column_exists)) {
+        $wpdb->query("ALTER TABLE $shops_table ADD COLUMN is_active tinyint(1) DEFAULT 1 AFTER owner_name");
+        error_log('Jotunheim POS: Added is_active column to jotun_shops table');
+    }
 }
 
 function jotun_insert_default_shop_types() {
@@ -1217,7 +1224,7 @@ function jotun_api_add_shop($request) {
         'shop_name' => sanitize_text_field($data['shop_name']),
         'shop_type' => sanitize_text_field($data['shop_type'] ?? 'player'),
         'owner_name' => $owner_name,
-        'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1,
+        'is_active' => intval($data['is_active'] ?? 1),
         'created_at' => current_time('mysql')
     ];
     
@@ -1256,7 +1263,7 @@ function jotun_api_update_shop($request) {
     $update_data = [
         'shop_name' => sanitize_text_field($data['shop_name']),
         'shop_type' => sanitize_text_field($data['shop_type'] ?? 'player'),
-        'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1
+        'is_active' => intval($data['is_active'] ?? 1)
     ];
     
     // If owner_name is provided, update it
