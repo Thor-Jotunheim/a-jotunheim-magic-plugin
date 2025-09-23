@@ -192,6 +192,12 @@ include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-playerlist-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-scripts.php');
 
+// Include Shop Manager and Unified Teller
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/shop-manager-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/shop-manager-scripts.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/unified-teller-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/unified-teller-scripts.php');
+
 // Include UniversalUI components
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-ui-scripts.php';
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-editor-ui.php';
