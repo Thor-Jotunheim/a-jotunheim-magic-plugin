@@ -1993,4 +1993,65 @@ add_action('admin_menu', function() {
         error_log('Jotunheim Dashboard: Final submenu structure - ' . print_r($submenu['jotunheim_magic'], true));
     }
 }, 999); // Run very late to ensure we override everything
+
+/**
+ * Callback function for menu items that should redirect to WordPress pages
+ */
+function redirect_to_wordpress_page() {
+    // Get the page URL from the menu item data
+    // This will be stored in the database when the menu item is created
+    
+    // For now, provide a message and link
+    echo '<div class="wrap">';
+    echo '<h1>Redirecting...</h1>';
+    echo '<p>This page is available as a WordPress page. If you are not automatically redirected, please check the main navigation menu or go to the page directly.</p>';
+    echo '<script type="text/javascript">';
+    echo 'setTimeout(function() { window.location.href = "/"; }, 2000);'; // Redirect to homepage for now
+    echo '</script>';
+    echo '</div>';
+}
+
+/**
+ * Generic callback function for rendering shortcode-based admin pages
+ */
+function render_shortcode_admin_page() {
+    // Get the current page slug to identify which shortcode to render
+    $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+    
+    // Get the menu item from the database to find the shortcode
+    global $jotunheim_dashboard_config;
+    if ($jotunheim_dashboard_config) {
+        $menu_items = $jotunheim_dashboard_config->get_menu_items();
+        
+        $shortcode_to_render = null;
+        $page_title = 'Shortcode Page';
+        
+        foreach ($menu_items as $item) {
+            if ($item['id'] === $current_page && !empty($item['shortcode'])) {
+                $shortcode_to_render = $item['shortcode'];
+                $page_title = $item['title'];
+                break;
+            }
+        }
+        
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html($page_title) . '</h1>';
+        
+        if ($shortcode_to_render) {
+            echo '<div class="shortcode-admin-container">';
+            echo do_shortcode('[' . $shortcode_to_render . ']');
+            echo '</div>';
+        } else {
+            echo '<p>Error: Could not find shortcode for this page.</p>';
+            echo '<p>Page: ' . esc_html($current_page) . '</p>';
+        }
+        
+        echo '</div>';
+    } else {
+        echo '<div class="wrap">';
+        echo '<h1>Error</h1>';
+        echo '<p>Dashboard configuration not available.</p>';
+        echo '</div>';
+    }
+}
 ?>

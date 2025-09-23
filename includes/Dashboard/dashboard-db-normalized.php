@@ -381,6 +381,16 @@ class Jotunheim_Dashboard_DB_Normalized {
      * Add a new menu item (wrapper for save_item with proper data transformation)
      */
     public function add_menu_item($item_data) {
+        // Handle additional metadata (like shortcode) by storing in description as JSON
+        $description = $item_data['description'] ?? '';
+        $metadata = [];
+        
+        if (!empty($item_data['shortcode'])) {
+            $metadata['shortcode'] = $item_data['shortcode'];
+            $metadata['description'] = $description;
+            $description = json_encode($metadata);
+        }
+        
         // Transform the data to match what save_item expects
         $normalized_data = array(
             'section_key' => $item_data['section'] ?? 'main',
@@ -390,7 +400,7 @@ class Jotunheim_Dashboard_DB_Normalized {
             'quick_action' => $item_data['quick_action'] ?? false,
             'display_order' => $item_data['order'] ?? 0,
             'enabled' => $item_data['enabled'] ?? true,
-            'description' => $item_data['description'] ?? null,
+            'description' => $description,
             'icon' => $item_data['icon'] ?? null
         );
         

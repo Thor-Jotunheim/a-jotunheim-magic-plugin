@@ -894,7 +894,20 @@ class JotunheimDashboardConfig {
         foreach ($db_config as $section_key => $section_data) {
             if (isset($section_data['items'])) {
                 foreach ($section_data['items'] as $item) {
-                    $menu_items[] = [
+                    // Extract shortcode from description if it contains JSON metadata
+                    $description = $item['description'];
+                    $shortcode = null;
+                    
+                    if (!empty($description) && $description[0] === '{') {
+                        // Try to decode JSON metadata
+                        $metadata = json_decode($description, true);
+                        if (json_last_error() === JSON_ERROR_NONE && isset($metadata['shortcode'])) {
+                            $shortcode = $metadata['shortcode'];
+                            $description = $metadata['description'] ?? '';
+                        }
+                    }
+                    
+                    $menu_item = [
                         'id' => $item['item_id'],
                         'title' => $item['title'],
                         'menu_title' => $item['title'], // Add menu_title for JavaScript compatibility
@@ -903,10 +916,17 @@ class JotunheimDashboardConfig {
                         'quick_action' => $item['quick_action'], // Direct from database
                         'order' => $item['order'],
                         'icon' => $item['icon'],
-                        'description' => $item['description'],
+                        'description' => $description,
                         'permissions' => $item['permissions'],
                         'section' => $section_key
                     ];
+                    
+                    // Add shortcode if found
+                    if ($shortcode) {
+                        $menu_item['shortcode'] = $shortcode;
+                    }
+                    
+                    $menu_items[] = $menu_item;
                 }
             }
         }
@@ -1453,6 +1473,12 @@ class JotunheimDashboardConfig {
             'quick_action' => (bool)($page_data['quick_action'] ?: false),
             'order' => count($current_menu_items) + 1
         ];
+        
+        // Add shortcode information if this is a shortcode page
+        if (!empty($page_data['shortcode'])) {
+            $new_page['shortcode'] = sanitize_text_field($page_data['shortcode']);
+            error_log('Dashboard Config: Adding shortcode page with shortcode: ' . $new_page['shortcode']);
+        }
         
         // Check if page already exists
         foreach ($current_menu_items as $existing) {
@@ -3052,16 +3078,27 @@ function render_dashboard_config_page() {
             
             // Extract callback from meta text (format: "ID: xxx | Function: yyy")
             const callbackMatch = pageMeta.match(/Function:\s*(.+)/);
-            const callback = callbackMatch ? callbackMatch[1] : 'render_' + pageId + '_page';
+            let callback;
             
             // Check if this is a shortcode page that needs page creation
             const isShortcodePage = $item.hasClass('shortcode-page');
             const shortcode = $item.data('shortcode');
             
+            if (isShortcodePage && shortcode) {
+                // For shortcode pages, the callback should point to a WordPress page URL, not an admin function
+                // We'll use a special callback that redirects to the WordPress page
+                callback = 'redirect_to_shortcode_page_' + pageId;
+            } else {
+                // For regular admin pages, extract from meta or use default
+                callback = callbackMatch ? callbackMatch[1] : 'render_' + pageId + '_page';
+            }
+            
             $button.prop('disabled', true).text(isShortcodePage ? 'Creating Page...' : 'Adding...');
             
-            // If it's a shortcode page, create the WordPress page first
             if (isShortcodePage && shortcode) {
+                // For shortcode pages, we need to:
+                // 1. Create the WordPress page for public access  
+                // 2. Add a menu item that renders the shortcode in admin
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
@@ -3077,8 +3114,8 @@ function render_dashboard_config_page() {
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Now add to dashboard after page creation
-                            addPageToDashboard();
+                            // Page created successfully, now add dashboard menu item that renders the shortcode
+                            addShortcodePageToDashboard(shortcode);
                         } else {
                             alert('Error creating page: ' + (response.data || 'Unknown error'));
                             $button.prop('disabled', false).text('Add Page');
@@ -3091,8 +3128,81 @@ function render_dashboard_config_page() {
                     }
                 });
             } else {
-                // Regular page, add directly
+                // Regular admin page, add directly to admin menu
                 addPageToDashboard();
+            }
+            
+            function addShortcodePageToDashboard(shortcode) {
+                // Add a menu item that renders the shortcode in admin
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'add_custom_page',
+                        nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                        page_data: {
+                            id: pageId,
+                            title: pageTitle,
+                            menu_title: pageTitle,
+                            callback: 'render_shortcode_admin_page',
+                            shortcode: shortcode,
+                            category: 'shortcode',
+                            description: pageDescription,
+                            section: section,
+                            enabled: true,
+                            quick_action: false
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove from available list
+                            $item.fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                            
+                            // Show success message
+                            const $successMsg = $('<div class="notice notice-success"><p>Page "' + pageId + '" created and added to dashboard!</p></div>');
+                            $('.config-pages').before($successMsg);
+                            setTimeout(function() {
+                                $successMsg.fadeOut();
+                            }, 3000);
+                            
+                            // Add to currentConfig
+                            const newItem = {
+                                id: pageId,
+                                title: pageTitle,
+                                menu_title: pageTitle,
+                                section: section,
+                                order: 999,
+                                enabled: true,
+                                quick_action: false,
+                                callback: 'render_shortcode_admin_page',
+                                description: pageDescription,
+                                shortcode: shortcode
+                            };
+                            
+                            if (typeof dashboardConfig !== 'undefined' && dashboardConfig.config && dashboardConfig.config.items) {
+                                dashboardConfig.config.items.push(newItem);
+                            }
+                            
+                            if (typeof currentConfig !== 'undefined' && currentConfig.items) {
+                                currentConfig.items.push(newItem);
+                            }
+                            
+                            // Reload page to show in sidebar menu
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert('Error adding page to dashboard: ' + (response.data || 'Unknown error'));
+                            $button.prop('disabled', false).text('Add Page');
+                        }
+                    },
+                    error: function() {
+                        alert('Error adding page to dashboard');
+                        $button.prop('disabled', false).text('Add Page');
+                    }
+                });
             }
             
             function addPageToDashboard() {
