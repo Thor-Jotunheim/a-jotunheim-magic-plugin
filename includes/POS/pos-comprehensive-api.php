@@ -143,10 +143,23 @@ function jotun_ensure_shop_items_table() {
         
         error_log('Jotunheim POS: Created jotun_shop_items table with rotation support');
     } else {
+        // Migration: Add custom_price column if it doesn't exist
+        $custom_price_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'custom_price'");
+        if (empty($custom_price_column_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN custom_price decimal(10,2) DEFAULT NULL COMMENT 'Override price, NULL uses item default' AFTER item_name");
+            error_log('Jotunheim POS: Added custom_price column to jotun_shop_items table');
+        }
+
         // Migration: Add stock_quantity column if it doesn't exist (needed for other migrations)
         $stock_quantity_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'stock_quantity'");
         if (empty($stock_quantity_column_exists)) {
-            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN stock_quantity int(11) DEFAULT -1 COMMENT '-1 for unlimited stock' AFTER custom_price");
+            // Check if custom_price exists to determine correct positioning
+            $custom_price_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'custom_price'");
+            if (!empty($custom_price_exists)) {
+                $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN stock_quantity int(11) DEFAULT -1 COMMENT '-1 for unlimited stock' AFTER custom_price");
+            } else {
+                $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN stock_quantity int(11) DEFAULT -1 COMMENT '-1 for unlimited stock' AFTER item_name");
+            }
             error_log('Jotunheim POS: Added stock_quantity column to jotun_shop_items table');
         }
         
@@ -181,6 +194,25 @@ function jotun_ensure_shop_items_table() {
         if ($item_id_column && strpos(strtolower($item_id_column->Null), 'no') !== false) {
             $wpdb->query("ALTER TABLE $shop_items_table MODIFY COLUMN item_id int(11) NULL COMMENT 'Reference to jotun_itemlist, NULL for custom items'");
             error_log('Jotunheim POS: Made item_id column nullable for custom items');
+        }
+
+        // Migration: Add turn-in related columns for turn-in shop types
+        $turn_in_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'turn_in_quantity'");
+        if (empty($turn_in_quantity_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN turn_in_quantity int(11) DEFAULT 0 COMMENT 'Current quantity turned in by players'");
+            error_log('Jotunheim POS: Added turn_in_quantity column to jotun_shop_items table');
+        }
+
+        $turn_in_requirement_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'turn_in_requirement'");
+        if (empty($turn_in_requirement_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN turn_in_requirement int(11) DEFAULT 0 COMMENT 'Required quantity to complete turn-in event'");
+            error_log('Jotunheim POS: Added turn_in_requirement column to jotun_shop_items table');
+        }
+
+        $unlimited_stock_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'unlimited_stock'");
+        if (empty($unlimited_stock_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN unlimited_stock tinyint(1) DEFAULT 0 COMMENT 'Whether item has unlimited stock'");
+            error_log('Jotunheim POS: Added unlimited_stock column to jotun_shop_items table');
         }
     }
     
@@ -1727,12 +1759,20 @@ function jotun_api_add_shop_item($request) {
         'shop_id' => (int)$data['shop_id'],
         'item_id' => $is_custom_item ? null : (int)$data['item_id'],
         'item_name' => $item_name,
-        'custom_price' => !empty($data['custom_price']) ? floatval($data['custom_price']) : null,
         'stock_quantity' => (int)($data['stock_quantity'] ?? -1), // -1 for unlimited
         'rotation' => (int)($data['rotation'] ?? 1), // Default to rotation 1
         'is_available' => isset($data['is_available']) ? (bool)$data['is_available'] : true,
-        'added_date' => current_time('mysql')
+        'added_date' => current_time('mysql'),
+        'unlimited_stock' => isset($data['unlimited_stock']) ? (bool)$data['unlimited_stock'] : false,
+        'turn_in_quantity' => (int)($data['turn_in_quantity'] ?? 0),
+        'turn_in_requirement' => (int)($data['turn_in_requirement'] ?? 0)
     ];
+
+    // Add custom_price if the column exists and value provided
+    $custom_price_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'custom_price'");
+    if (!empty($custom_price_exists) && !empty($data['custom_price'])) {
+        $insert_data['custom_price'] = floatval($data['custom_price']);
+    }
     
     // Add custom item flag if it's a custom item
     if ($is_custom_item) {
@@ -1757,7 +1797,9 @@ function jotun_api_update_shop_item($request) {
     
     $update_data = [];
     
-    if (isset($data['custom_price'])) {
+    // Check if custom_price column exists before trying to update it
+    $custom_price_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'custom_price'");
+    if (!empty($custom_price_exists) && isset($data['custom_price'])) {
         $update_data['custom_price'] = !empty($data['custom_price']) ? floatval($data['custom_price']) : null;
     }
     
@@ -1771,6 +1813,18 @@ function jotun_api_update_shop_item($request) {
     
     if (isset($data['is_available'])) {
         $update_data['is_available'] = (bool)$data['is_available'];
+    }
+
+    if (isset($data['unlimited_stock'])) {
+        $update_data['unlimited_stock'] = (bool)$data['unlimited_stock'];
+    }
+
+    if (isset($data['turn_in_quantity'])) {
+        $update_data['turn_in_quantity'] = (int)$data['turn_in_quantity'];
+    }
+
+    if (isset($data['turn_in_requirement'])) {
+        $update_data['turn_in_requirement'] = (int)$data['turn_in_requirement'];
     }
     
     if (empty($update_data)) {

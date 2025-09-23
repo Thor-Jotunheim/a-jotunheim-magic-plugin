@@ -296,10 +296,25 @@ function shop_manager_interface() {
                             <div class="form-group">
                                 <label for="stock-quantity">Stock Quantity</label>
                                 <input type="number" id="stock-quantity" name="stock_quantity" value="0" min="0">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="unlimited-stock" name="unlimited_stock">
+                                    Unlimited Stock
+                                </label>
                             </div>
                             <div class="form-group">
                                 <label for="item-rotation">Rotation</label>
                                 <input type="number" id="item-rotation" name="rotation" value="1" min="1" title="Rotation number for grouping items">
+                            </div>
+                        </div>
+                        <!-- Turn-In Only Fields -->
+                        <div class="form-row turn-in-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="turn-in-quantity">Current Turn-In Quantity</label>
+                                <input type="number" id="turn-in-quantity" name="turn_in_quantity" value="0" min="0" title="Current amount turned in by players">
+                            </div>
+                            <div class="form-group">
+                                <label for="turn-in-requirement">Turn-In Requirement</label>
+                                <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="1" title="Total amount needed to complete this turn-in event">
                             </div>
                         </div>
                         <div class="form-row">

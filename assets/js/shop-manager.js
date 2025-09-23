@@ -59,6 +59,18 @@ class ShopManager {
         // Cancel edit buttons
         document.getElementById('cancel-edit-shop').addEventListener('click', () => this.cancelShopEdit());
         document.getElementById('cancel-edit-type').addEventListener('click', () => this.cancelShopTypeEdit());
+        
+        // Handle unlimited stock checkbox
+        document.getElementById('unlimited-stock').addEventListener('change', (e) => {
+            const stockInput = document.getElementById('stock-quantity');
+            if (e.target.checked) {
+                stockInput.disabled = true;
+                stockInput.value = -1;
+            } else {
+                stockInput.disabled = false;
+                stockInput.value = 0;
+            }
+        });
     }
 
     switchTab(tabName) {
@@ -203,10 +215,24 @@ class ShopManager {
         const suggestionsDiv = document.getElementById('item-suggestions');
         let currentSuggestionIndex = -1;
         
+        // Show all items when input is focused and empty
+        searchInput.addEventListener('focus', (e) => {
+            if (e.target.value.trim() === '' && this.allItems.length > 0) {
+                this.displaySuggestions(this.allItems.slice(0, 20), suggestionsDiv, searchInput, hiddenSelect);
+            }
+        });
+        
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             
-            if (query.length < 2) {
+            if (query.length === 0) {
+                // Show all items when empty
+                this.displaySuggestions(this.allItems.slice(0, 20), suggestionsDiv, searchInput, hiddenSelect);
+                hiddenSelect.value = '';
+                return;
+            }
+            
+            if (query.length < 1) {
                 suggestionsDiv.style.display = 'none';
                 hiddenSelect.value = '';
                 return;
@@ -215,7 +241,7 @@ class ShopManager {
             const filteredItems = this.allItems.filter(item => 
                 item.item_name.toLowerCase().includes(query) ||
                 (item.prefab_name && item.prefab_name.toLowerCase().includes(query))
-            ).slice(0, 10); // Show max 10 suggestions
+            ).slice(0, 20); // Show max 20 suggestions
             
             this.displaySuggestions(filteredItems, suggestionsDiv, searchInput, hiddenSelect);
         });
@@ -290,11 +316,18 @@ class ShopManager {
         });
     }
     
-    formatPrice(price, currency = 'coins') {
+    formatPrice(price, currency = 'coins', showBothFormats = true) {
         const numPrice = parseFloat(price) || 0;
+        
         if (currency === 'ymir') {
             return `${(numPrice / 120).toFixed(2)} Ymir Flesh`;
         }
+        
+        if (showBothFormats && numPrice >= 120) {
+            const ymirAmount = (numPrice / 120).toFixed(2);
+            return `${numPrice} Coins (${ymirAmount} Ymir)`;
+        }
+        
         return `${numPrice} Coins`;
     }
 
@@ -435,14 +468,18 @@ class ShopManager {
                 
                 const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in-only';
                 
+                // Show add item section for all shops
+                document.getElementById('add-item-section').style.display = 'block';
+                
+                // Show/hide fields based on shop type
+                this.toggleFieldsForShopType(isTurnInOnly);
+                
                 // Show/hide appropriate sections
                 if (isTurnInOnly) {
-                    document.getElementById('add-item-section').style.display = 'none';
                     document.getElementById('shop-items-table-container').style.display = 'none';
                     document.getElementById('turn-in-controls').style.display = 'block';
                     this.loadTurnInTracker(shopId);
                 } else {
-                    document.getElementById('add-item-section').style.display = 'block';
                     document.getElementById('shop-items-table-container').style.display = 'block';
                     document.getElementById('turn-in-controls').style.display = 'none';
                     await this.loadShopItems(shopId);
@@ -461,6 +498,30 @@ class ShopManager {
     hideShopItemsSection() {
         document.getElementById('add-item-section').style.display = 'none';
         document.getElementById('shop-items-list').style.display = 'none';
+    }
+
+    toggleFieldsForShopType(isTurnInOnly) {
+        // Elements to hide for turn-in shops
+        const regularShopFields = document.querySelectorAll('.form-group:has(#custom-price), .form-group:has(#price-currency), .form-group:has(#stock-quantity)');
+        const priceRow = document.querySelector('.form-row:has(#custom-price)');
+        const stockRow = document.querySelector('.form-row:has(#stock-quantity)');
+        
+        // Turn-in specific fields
+        const turnInFields = document.querySelectorAll('.turn-in-fields');
+        
+        if (isTurnInOnly) {
+            // Hide price and stock fields for turn-in shops
+            if (priceRow) priceRow.style.display = 'none';
+            if (stockRow) stockRow.style.display = 'none';
+            // Show turn-in fields
+            turnInFields.forEach(field => field.style.display = 'flex');
+        } else {
+            // Show price and stock fields for regular shops
+            if (priceRow) priceRow.style.display = 'flex';
+            if (stockRow) stockRow.style.display = 'flex';
+            // Hide turn-in fields
+            turnInFields.forEach(field => field.style.display = 'none');
+        }
     }
 
     async loadTurnInTracker(shopId) {
@@ -601,9 +662,12 @@ class ShopManager {
 
         const shopItemData = {
             shop_id: this.selectedShop,
-            stock_quantity: formData.get('stock_quantity') || 0,
+            stock_quantity: formData.get('unlimited_stock') === 'on' ? -1 : (formData.get('stock_quantity') || 0),
             rotation: parseInt(rotation),
-            is_available: formData.get('is_available') === '1'
+            is_available: formData.get('is_available') === '1',
+            unlimited_stock: formData.get('unlimited_stock') === 'on',
+            turn_in_quantity: formData.get('turn_in_quantity') || 0,
+            turn_in_requirement: formData.get('turn_in_requirement') || 0
         };
 
         // Handle custom items vs regular items
