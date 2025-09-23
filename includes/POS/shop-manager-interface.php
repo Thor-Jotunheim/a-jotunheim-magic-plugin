@@ -48,6 +48,13 @@ function shop_manager_interface() {
                                     <option value="staff">Staff Shop</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="shop-status">Status</label>
+                                <select id="shop-status" name="is_active">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Add Shop</button>

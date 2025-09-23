@@ -154,7 +154,7 @@ class ShopManager {
         const shopData = {
             shop_name: formData.get('shop_name'),
             shop_type: formData.get('shop_type'),
-            is_active: true
+            is_active: formData.get('is_active') || '1'
         };
 
         try {
@@ -188,6 +188,7 @@ class ShopManager {
                 // Populate form with shop data
                 document.getElementById('shop-name').value = shop.shop_name;
                 document.getElementById('shop-type').value = shop.shop_type;
+                document.getElementById('shop-status').value = shop.is_active || '1';
                 
                 // Update form state
                 this.currentEditingShop = shopId;
