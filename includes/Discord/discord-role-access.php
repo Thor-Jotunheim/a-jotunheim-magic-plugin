@@ -48,10 +48,14 @@ function get_configured_discord_roles_with_levels() {
     // Fallback to hardcoded values if no configuration exists
     if (empty($role_data)) {
         $role_data = [
-            'admin' => ['id' => '816462309274419250', 'name' => 'Admin', 'level' => 3],
-            'staff' => ['id' => '1390490815054221414', 'name' => 'Staff', 'level' => 2],
-            'valkyrie' => ['id' => '963502767173931039', 'name' => 'Valkyrie', 'level' => 2],
-            'vithar' => ['id' => '1104073178495602751', 'name' => 'Vithar', 'level' => 1]
+            'norn' => ['id' => '1370785913482903692', 'name' => 'Norn', 'level' => 8],
+            'aesir' => ['id' => '1389248725112852701', 'name' => 'Aesir', 'level' => 7],
+            'all_staff' => ['id' => '1400880227483127868', 'name' => 'All Staff', 'level' => 6],
+            'admin' => ['id' => '816462309274419250', 'name' => 'Admin', 'level' => 5],
+            'staff' => ['id' => '1390490815054221414', 'name' => 'Staff', 'level' => 4],
+            'valkyrie' => ['id' => '963502767173931039', 'name' => 'Valkyrie', 'level' => 3],
+            'vithar' => ['id' => '1104073178495602751', 'name' => 'Vithar', 'level' => 2],
+            'chosen' => ['id' => '888273935228626580', 'name' => 'Chosen', 'level' => 1]
         ];
     }
     

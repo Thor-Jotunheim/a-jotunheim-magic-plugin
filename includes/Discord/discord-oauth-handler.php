@@ -147,16 +147,18 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
                 
                 // Assign WordPress roles based on Discord role level
                 switch ($level) {
-                    case 4: // Owner/Highest Admin
+                    case 8: // Norn - Highest administrative role
                         $wp_role = 'administrator';
                         break;
-                    case 3: // Admin
+                    case 7: // Aesir - Senior administrative role
+                    case 6: // All Staff - General staff access role
+                    case 5: // Admin
+                    case 4: // Staff
+                    case 3: // Valkyrie
+                    case 2: // Vithar
                         $wp_role = 'editor';
                         break;
-                    case 2: // Moderator/Staff
-                        $wp_role = 'editor';
-                        break;
-                    case 1: // Basic/Member
+                    case 1: // Chosen - Basic/Member
                     default:
                         $wp_role = 'subscriber';
                         break;
@@ -175,18 +177,8 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
     $user = new WP_User($user_id);
     $user->set_role($wp_role);
 
-    // Additional custom roles based on configured Discord roles
-    foreach ($configured_roles as $role_key => $role_info) {
-        if (in_array($role_info['id'], $roles)) {
-            // Add custom WordPress roles that correspond to Discord roles
-            if ($role_key === 'valkyrie' && get_role('valkyrie')) {
-                $user->add_role('valkyrie');
-            }
-            if ($role_key === 'vithar' && get_role('vithar')) {
-                $user->add_role('vithar');
-            }
-        }
-    }
+    // Note: Removed additional role assignment to prevent users from getting multiple WordPress roles
+    // Only the single highest-priority role should be assigned based on Discord role hierarchy
 
     // Save roles and Discord info
     update_user_meta($user_id, 'discord_roles', $roles);

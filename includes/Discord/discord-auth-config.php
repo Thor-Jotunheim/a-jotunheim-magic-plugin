@@ -69,43 +69,51 @@ class JotunheimDiscordAuthConfig {
         return [
             'norn' => [
                 'name' => 'Norn',
-                'id' => '',
-                'description' => 'Highest administrative role'
+                'id' => '1370785913482903692',
+                'description' => 'Highest administrative role',
+                'level' => 8
             ],
             'aesir' => [
                 'name' => 'Aesir',
-                'id' => '',
-                'description' => 'Senior administrative role'
+                'id' => '1389248725112852701',
+                'description' => 'Senior administrative role',
+                'level' => 7
             ],
             'all_staff' => [
                 'name' => 'All Staff',
-                'id' => '',
-                'description' => 'General staff access role'
+                'id' => '1400880227483127868',
+                'description' => 'General staff access role',
+                'level' => 6
             ],
             'admin' => [
                 'name' => 'Admin',
                 'id' => '816462309274419250',
-                'description' => 'Administrator role'
+                'description' => 'Administrator role',
+                'level' => 5
             ],
             'staff' => [
                 'name' => 'Staff',
                 'id' => '1390490815054221414',
-                'description' => 'Staff member role'
+                'description' => 'Staff member role',
+                'level' => 4
             ],
             'valkyrie' => [
                 'name' => 'Valkyrie',
                 'id' => '963502767173931039',
-                'description' => 'Valkyrie team member'
+                'description' => 'Valkyrie team member',
+                'level' => 3
             ],
             'vithar' => [
                 'name' => 'Vithar',
                 'id' => '1104073178495602751',
-                'description' => 'Vithar team member'
+                'description' => 'Vithar team member',
+                'level' => 2
             ],
             'chosen' => [
                 'name' => 'Chosen',
-                'id' => '',
-                'description' => 'Special community member role'
+                'id' => '888273935228626580',
+                'description' => 'Special community member role',
+                'level' => 1
             ]
         ];
     }
