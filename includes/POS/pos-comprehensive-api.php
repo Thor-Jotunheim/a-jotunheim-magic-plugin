@@ -1800,9 +1800,38 @@ function jotun_api_add_shop_item($request) {
         $insert_data['is_custom_item'] = 1;
     }
     
+    // Enhanced debug logging
+    error_log('DEBUG - Final insert data: ' . json_encode($insert_data));
+    
+    // Check for existing duplicate before inserting
+    if ($is_custom_item) {
+        // For custom items, check by shop_id, custom_item_name, and rotation
+        $existing_check = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM $table_name WHERE shop_id = %d AND item_name = %s AND rotation = %d AND item_id IS NULL",
+            $insert_data['shop_id'],
+            $insert_data['item_name'],
+            $insert_data['rotation']
+        ));
+    } else {
+        // For regular items, check by shop_id, item_id, and rotation
+        $existing_check = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM $table_name WHERE shop_id = %d AND item_id = %d AND rotation = %d",
+            $insert_data['shop_id'],
+            $insert_data['item_id'],
+            $insert_data['rotation']
+        ));
+    }
+    
+    if ($existing_check) {
+        error_log('DEBUG - Duplicate item found: shop_id=' . $insert_data['shop_id'] . ', item_name=' . $insert_data['item_name'] . ', rotation=' . $insert_data['rotation']);
+        return new WP_REST_Response(['error' => 'Item already exists in this shop rotation'], 409);
+    }
+    
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {
+        error_log('DEBUG - Insert failed with error: ' . $wpdb->last_error);
+        error_log('DEBUG - Query was: ' . $wpdb->last_query);
         return new WP_REST_Response(['error' => 'Failed to add shop item: ' . $wpdb->last_error], 500);
     }
     
