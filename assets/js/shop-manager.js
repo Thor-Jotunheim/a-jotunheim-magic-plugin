@@ -289,7 +289,7 @@ class ShopManager {
             div.className = 'suggestion-item';
             div.innerHTML = `
                 <div class="item-name">${item.item_name}</div>
-                <div class="item-price">${this.formatPrice(item.price || 0)}</div>
+                <div class="item-price">${this.formatPrice(item.unit_price || 0)}</div>
             `;
             
             div.addEventListener('click', () => {
@@ -300,7 +300,7 @@ class ShopManager {
                 // Update price placeholder
                 const customPriceInput = document.getElementById('custom-price');
                 if (customPriceInput) {
-                    customPriceInput.placeholder = `Default: ${this.formatPrice(item.price || 0)}`;
+                    customPriceInput.placeholder = `Default: ${this.formatPrice(item.unit_price || 0)}`;
                 }
             });
             
@@ -369,8 +369,8 @@ class ShopManager {
         items.forEach(item => {
             const option = document.createElement('option');
             option.value = item.id;
-            option.textContent = `${item.item_name} - ${this.formatPrice(item.price || 0)}`;
-            option.dataset.defaultPrice = item.price || '0';
+            option.textContent = `${item.item_name} - ${this.formatPrice(item.unit_price || 0)}`;
+            option.dataset.defaultPrice = item.unit_price || '0';
             hiddenSelector.appendChild(option);
         });
     }
@@ -511,6 +511,7 @@ class ShopManager {
         
         // Turn-in specific fields
         const turnInFields = document.querySelectorAll('.turn-in-fields');
+        const turnInRequirementField = document.getElementById('turn-in-requirement');
         
         if (isTurnInOnly) {
             // Hide price and stock fields for turn-in shops
@@ -518,12 +519,24 @@ class ShopManager {
             if (stockRow) stockRow.style.display = 'none';
             // Show turn-in fields
             turnInFields.forEach(field => field.style.display = 'flex');
+            // Set min=1 for turn-in requirement when visible
+            if (turnInRequirementField) {
+                turnInRequirementField.setAttribute('min', '1');
+                if (turnInRequirementField.value === '0') {
+                    turnInRequirementField.value = '1';
+                }
+            }
         } else {
             // Show price and stock fields for regular shops
             if (priceRow) priceRow.style.display = 'flex';
             if (stockRow) stockRow.style.display = 'flex';
             // Hide turn-in fields
             turnInFields.forEach(field => field.style.display = 'none');
+            // Remove min constraint when hidden to prevent validation errors
+            if (turnInRequirementField) {
+                turnInRequirementField.setAttribute('min', '0');
+                turnInRequirementField.value = '0';
+            }
         }
     }
 

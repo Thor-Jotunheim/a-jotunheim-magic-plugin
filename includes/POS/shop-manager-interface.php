@@ -316,7 +316,7 @@ function shop_manager_interface() {
                             </div>
                             <div class="form-group">
                                 <label for="turn-in-requirement">Turn-In Requirement</label>
-                                <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="1" title="Total amount needed to complete this turn-in event">
+                                <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="0" title="Total amount needed to complete this turn-in event">
                             </div>
                         </div>
                         <div class="form-row">
