@@ -120,7 +120,7 @@ function jotun_ensure_shop_items_table() {
         $sql = "CREATE TABLE $shop_items_table (
             id int(11) NOT NULL AUTO_INCREMENT,
             shop_id int(11) NOT NULL,
-            item_id int(11) NOT NULL COMMENT 'Reference to jotun_itemlist',
+            item_id int(11) NULL COMMENT 'Reference to jotun_itemlist, NULL for custom items',
             item_name varchar(100) NOT NULL,
             custom_price decimal(10,2) DEFAULT NULL COMMENT 'Override price, NULL uses item default',
             stock_quantity int(11) DEFAULT -1 COMMENT '-1 for unlimited stock',
@@ -133,8 +133,7 @@ function jotun_ensure_shop_items_table() {
             KEY idx_item_id (item_id),
             KEY idx_rotation (rotation),
             KEY idx_shop_rotation (shop_id, rotation),
-            KEY idx_is_available (is_available),
-            UNIQUE KEY unique_shop_item_rotation (shop_id, item_id, rotation)
+            KEY idx_is_available (is_available)
         ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -142,6 +141,13 @@ function jotun_ensure_shop_items_table() {
         
         error_log('Jotunheim POS: Created jotun_shop_items table with rotation support');
     } else {
+        // Migration: Modify item_id column to allow NULL for custom items
+        $item_id_column = $wpdb->get_row("SHOW COLUMNS FROM $shop_items_table LIKE 'item_id'");
+        if ($item_id_column && strpos(strtolower($item_id_column->Null), 'no') !== false) {
+            $wpdb->query("ALTER TABLE $shop_items_table MODIFY COLUMN item_id int(11) NULL COMMENT 'Reference to jotun_itemlist, NULL for custom items'");
+            error_log('Jotunheim POS: Modified item_id column to allow NULL values for custom items');
+        }
+        
         // Migration: Add custom_price column if it doesn't exist
         $custom_price_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'custom_price'");
         if (empty($custom_price_column_exists)) {
@@ -235,8 +241,10 @@ function jotun_ensure_shop_items_table() {
             error_log('Jotunheim POS: Added updated_at column to jotun_shop_items table');
         }
 
-        // Migration: Remove problematic foreign key constraint if it exists
+        // Migration: Remove ALL problematic constraints if they exist
         // The constraint seems to be causing issues even when shop exists
+        
+        // 1. Remove foreign key constraints
         $foreign_keys = $wpdb->get_results("
             SELECT CONSTRAINT_NAME 
             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
@@ -250,8 +258,26 @@ function jotun_ensure_shop_items_table() {
             error_log("Jotunheim POS: Dropped foreign key constraint {$fk->CONSTRAINT_NAME} from jotun_shop_items table");
         }
 
-        // Also remove the named foreign key that might exist from the CREATE TABLE
+        // 2. Remove auto-generated foreign keys that might exist
         $wpdb->query("ALTER TABLE $shop_items_table DROP FOREIGN KEY IF EXISTS `{$shop_items_table}_ibfk_1`");
+        $wpdb->query("ALTER TABLE $shop_items_table DROP FOREIGN KEY IF EXISTS `{$shop_items_table}_ibfk_2`");
+        
+        // 3. Remove problematic unique constraint that conflicts with NULL item_id
+        $wpdb->query("ALTER TABLE $shop_items_table DROP INDEX IF EXISTS unique_shop_item_rotation");
+        error_log("Jotunheim POS: Dropped unique_shop_item_rotation constraint from jotun_shop_items table");
+        
+        // 4. Remove any CHECK constraints that might be validating shop_id
+        $check_constraints = $wpdb->get_results("
+            SELECT CONSTRAINT_NAME 
+            FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS 
+            WHERE TABLE_NAME = '$shop_items_table' 
+            AND TABLE_SCHEMA = DATABASE()
+        ");
+        
+        foreach ($check_constraints as $check) {
+            $wpdb->query("ALTER TABLE $shop_items_table DROP CHECK {$check->CONSTRAINT_NAME}");
+            error_log("Jotunheim POS: Dropped check constraint {$check->CONSTRAINT_NAME} from jotun_shop_items table");
+        }
     }
     
     // Create jotun_turn_ins table for tracking turn-ins
