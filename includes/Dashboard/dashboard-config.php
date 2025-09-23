@@ -1402,6 +1402,10 @@ class JotunheimDashboardConfig {
         $page_id = sanitize_key($_POST['page_id']);
         $page_data = $_POST['page_data'];
         
+        // Debug logging for item toggle
+        error_log('Dashboard AJAX (page): page_id = ' . $page_id);
+        error_log('Dashboard AJAX (page): page_data = ' . print_r($page_data, true));
+        
         if (empty($page_id)) {
             wp_send_json_error('Page ID is required');
             return;
@@ -1443,9 +1447,13 @@ class JotunheimDashboardConfig {
         }
         
         if (empty($update_data)) {
+            error_log('Dashboard AJAX (page): No update data found');
             wp_send_json_error('No valid data to update');
             return;
         }
+        
+        // Debug what we're about to update
+        error_log('Dashboard AJAX (page): update_data = ' . print_r($update_data, true));
         
         // Update in normalized database
         global $wpdb;
@@ -1457,8 +1465,11 @@ class JotunheimDashboardConfig {
             array('%s')
         );
         
+        error_log('Dashboard AJAX (page): wpdb->update result = ' . ($result === false ? 'FALSE' : $result));
+        error_log('Dashboard AJAX (page): wpdb last_error = ' . $wpdb->last_error);
+        
         if ($result === false) {
-            wp_send_json_error('Failed to update page data');
+            wp_send_json_error('Failed to update page data: ' . $wpdb->last_error);
             return;
         }
         
@@ -1479,6 +1490,10 @@ class JotunheimDashboardConfig {
         
         $section_id = sanitize_key($_POST['section_id']);
         $section_data = $_POST['section_data'];
+        
+        // Debug logging
+        error_log('Dashboard AJAX: section_id = ' . $section_id);
+        error_log('Dashboard AJAX: section_data = ' . print_r($section_data, true));
         
         if (empty($section_id)) {
             wp_send_json_error('Section ID is required');
@@ -1505,9 +1520,13 @@ class JotunheimDashboardConfig {
         }
         
         if (empty($update_data)) {
+            error_log('Dashboard AJAX: No update data found');
             wp_send_json_error('No valid data to update');
             return;
         }
+        
+        // Debug what we're about to update
+        error_log('Dashboard AJAX: update_data = ' . print_r($update_data, true));
         
         // Update in normalized database
         global $wpdb;
@@ -1519,8 +1538,11 @@ class JotunheimDashboardConfig {
             array('%s')
         );
         
+        error_log('Dashboard AJAX: wpdb->update result = ' . ($result === false ? 'FALSE' : $result));
+        error_log('Dashboard AJAX: wpdb last_error = ' . $wpdb->last_error);
+        
         if ($result === false) {
-            wp_send_json_error('Failed to update section data');
+            wp_send_json_error('Failed to update section data: ' . $wpdb->last_error);
             return;
         }
         
