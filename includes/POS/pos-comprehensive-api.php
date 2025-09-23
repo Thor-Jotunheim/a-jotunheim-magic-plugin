@@ -11,6 +11,7 @@ if (!defined('ABSPATH')) {
 
 // Ensure shop types table exists
 add_action('init', 'jotun_ensure_shop_types_table');
+add_action('init', 'jotun_ensure_shops_table');
 
 function jotun_ensure_shop_types_table() {
     global $wpdb;
@@ -44,6 +45,42 @@ function jotun_ensure_shop_types_table() {
         jotun_insert_default_shop_types();
         
         error_log('Jotunheim POS: Created jotun_shop_types table');
+    }
+}
+
+function jotun_ensure_shops_table() {
+    global $wpdb;
+    
+    // Create jotun_shops table if it doesn't exist
+    $shops_table = 'jotun_shops';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$shops_table'") !== $shops_table) {
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $shops_table (
+            shop_id int(11) NOT NULL AUTO_INCREMENT,
+            shop_name varchar(100) NOT NULL,
+            description text,
+            shop_type varchar(50) DEFAULT 'player',
+            staff_only tinyint(1) DEFAULT 0,
+            auto_archive tinyint(1) DEFAULT 0,
+            ledger_name varchar(100),
+            owner_name varchar(100),
+            is_active tinyint(1) DEFAULT 1,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            created_date datetime DEFAULT CURRENT_TIMESTAMP,
+            created_by int(11),
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (shop_id),
+            UNIQUE KEY unique_shop_name (shop_name),
+            KEY idx_shop_type (shop_type),
+            KEY idx_is_active (is_active),
+            KEY idx_owner_name (owner_name)
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        error_log('Jotunheim POS: Created jotun_shops table');
     }
 }
 
