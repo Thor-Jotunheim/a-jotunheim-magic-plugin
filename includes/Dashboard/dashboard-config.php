@@ -703,6 +703,9 @@ class JotunheimDashboardConfig {
             update_post_meta($page_id, '_jotunheim_dashboard_page', true);
             update_post_meta($page_id, '_jotunheim_shortcode', $shortcode);
             
+            // Set page to allow normal WordPress permissions (not Discord role restrictions)
+            update_post_meta($page_id, '_jotunheim_use_wp_permissions', true);
+            
             return $page_id;
         } else {
             error_log('Jotunheim Dashboard: Failed to create page for: ' . $page_slug);

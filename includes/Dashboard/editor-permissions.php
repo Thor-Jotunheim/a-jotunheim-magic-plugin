@@ -67,6 +67,52 @@ function jotunheim_allow_editor_specific_page_access() {
 add_action('init', 'jotunheim_allow_editor_specific_page_access', 1);
 
 /**
+ * Allow editors to access dashboard-created shortcode pages
+ */
+function jotunheim_allow_editor_page_access() {
+    // Only run on frontend pages
+    if (is_admin()) {
+        return;
+    }
+    
+    // Check if this is a dashboard-created page
+    global $post;
+    if (!$post || !is_page()) {
+        return;
+    }
+    
+    $is_dashboard_page = get_post_meta($post->ID, '_jotunheim_dashboard_page', true);
+    if (!$is_dashboard_page) {
+        return;
+    }
+    
+    $current_user = wp_get_current_user();
+    
+    // Don't interfere with administrators
+    if (in_array('administrator', $current_user->roles)) {
+        return;
+    }
+    
+    // Grant access to editors on dashboard-created pages
+    if (in_array('editor', $current_user->roles)) {
+        // Temporarily grant read access to this page
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
+            if ($user->ID === $current_user->ID) {
+                // Grant necessary capabilities for viewing pages
+                $allcaps['read'] = true;
+                $allcaps['edit_posts'] = true; // Ensure they maintain edit_posts
+            }
+            return $allcaps;
+        }, 10, 4);
+        
+        error_log('Jotunheim Editor Permissions: Granted access to dashboard page: ' . $post->post_name);
+    }
+}
+
+// Hook to run early on page load
+add_action('wp', 'jotunheim_allow_editor_page_access', 1);
+
+/**
  * Ensure editors can see Pages in their menu
  */
 function jotunheim_restore_editor_pages_menu() {

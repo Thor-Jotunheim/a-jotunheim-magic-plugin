@@ -167,6 +167,14 @@ function jotunheim_magic_staff_page_access() {
 
     // Check if the current page is a staff page and user has the required role
     if (array_key_exists($post->post_name, $staff_pages_roles)) {
+        // IMPORTANT: Skip Discord role checks for dashboard-created shortcode pages
+        // These pages should use normal WordPress permissions instead
+        $is_dashboard_page = get_post_meta($post->ID, '_jotunheim_dashboard_page', true);
+        if ($is_dashboard_page) {
+            error_log("Page " . $post->post_name . " is a dashboard-created page, skipping Discord role check");
+            return; // Let WordPress handle permissions normally
+        }
+        
         $required_role = $staff_pages_roles[$post->post_name];
         error_log("Page being accessed: " . $post->post_name);
         error_log("Required role for this page: " . $required_role);
