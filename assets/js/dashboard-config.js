@@ -155,72 +155,169 @@ jQuery(document).ready(function($) {
         const container = $('#items-container');
         container.empty();
         
-        const items = [...currentConfig.items].sort((a, b) => a.order - b.order);
+        // Group items by section
+        const itemsBySection = {};
+        currentConfig.items.forEach(itemConfig => {
+            const sectionId = itemConfig.section || 'unknown';
+            if (!itemsBySection[sectionId]) {
+                itemsBySection[sectionId] = [];
+            }
+            itemsBySection[sectionId].push(itemConfig);
+        });
         
-        items.forEach(itemConfig => {
-            // For config page, use itemConfig data directly instead of relying on menuItems
-            // This ensures disabled items still show up for management
-            const menuItem = findMenuItem(itemConfig.id) || {
-                id: itemConfig.id,
-                menu_title: itemConfig.title || itemConfig.id,
-                description: itemConfig.description || '',
-                quick_action: itemConfig.quick_action || false
-            };
-            
-            const section = findSection(itemConfig.section);
-            const sectionName = section ? section.title : 'Unknown Section';
-            
-            const itemHtml = `
-                <div class="menu-item" data-id="${itemConfig.id}" data-section="${itemConfig.section}">
-                    <div class="item-content">
-                        <div class="item-title">
-                            ${escapeHtml(menuItem.menu_title)}
-                        </div>
-                        <div class="item-description">
-                            ${escapeHtml(menuItem.description || '')}
-                        </div>
-                        <div class="item-meta">
-                            <span class="item-section">${escapeHtml(sectionName)}</span>
-                            <span class="item-status ${itemConfig.enabled ? 'enabled' : 'disabled'}">
-                                ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="item-controls">
-                        <div class="item-section-control">
-                            <label>Section:</label>
-                            <select class="item-section-select" data-id="${menuItem.id}">
-                                ${renderSectionOptions(itemConfig.section)}
-                            </select>
-                        </div>
-                        <div class="item-status-control">
-                            <label>Status:</label>
-                            <button class="control-btn toggle toggle-item ${itemConfig.enabled ? '' : 'disabled'}" 
-                                    data-id="${menuItem.id}" title="${itemConfig.enabled ? 'Disable' : 'Enable'} Item">
-                                <span class="dashicons dashicons-${itemConfig.enabled ? 'visibility' : 'hidden'}"></span>
-                                ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
-                            </button>
-                        </div>
-                        <div class="item-quick-action-control">
-                            <label>
-                                <input type="checkbox" class="quick-action-checkbox" data-id="${menuItem.id}" 
-                                       ${(itemConfig.quick_action || false) ? 'checked' : ''}>
-                                Quick Action
-                            </label>
-                        </div>
-                        <div class="item-action-buttons">
-                            <button class="control-btn edit edit-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Edit Item">
-                                <span class="dashicons dashicons-edit"></span>
-                            </button>
-                            <button class="control-btn delete delete-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Delete Item">
-                                <span class="dashicons dashicons-trash"></span>
-                            </button>
-                        </div>
-                    </div>
+        // Sort sections by their display order
+        const sortedSections = currentConfig.sections
+            .filter(section => itemsBySection[section.id] && itemsBySection[section.id].length > 0)
+            .sort((a, b) => a.order - b.order);
+        
+        // Render items grouped by section
+        sortedSections.forEach(section => {
+            // Add section header
+            const sectionHeaderHtml = `
+                <div class="section-header">
+                    <h4><span class="dashicons ${section.icon}"></span> ${escapeHtml(section.title)} 
+                        <span class="item-count">(${itemsBySection[section.id].length} items)</span>
+                    </h4>
                 </div>
             `;
-            container.append(itemHtml);
+            container.append(sectionHeaderHtml);
+            
+            // Sort items within this section by their display order
+            const sectionItems = itemsBySection[section.id].sort((a, b) => a.order - b.order);
+            
+            sectionItems.forEach(itemConfig => {
+                // For config page, use itemConfig data directly instead of relying on menuItems
+                // This ensures disabled items still show up for management
+                const menuItem = findMenuItem(itemConfig.id) || {
+                    id: itemConfig.id,
+                    menu_title: itemConfig.title || itemConfig.id,
+                    description: itemConfig.description || '',
+                    quick_action: itemConfig.quick_action || false
+                };
+                
+                const itemHtml = `
+                    <div class="menu-item" data-id="${itemConfig.id}" data-section="${itemConfig.section}">
+                        <div class="item-content">
+                            <div class="item-title">
+                                ${escapeHtml(menuItem.menu_title)}
+                            </div>
+                            <div class="item-description">
+                                ${escapeHtml(menuItem.description || '')}
+                            </div>
+                            <div class="item-meta">
+                                <span class="item-status ${itemConfig.enabled ? 'enabled' : 'disabled'}">
+                                    ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="item-controls">
+                            <div class="item-section-control">
+                                <label>Section:</label>
+                                <select class="item-section-select" data-id="${menuItem.id}">
+                                    ${renderSectionOptions(itemConfig.section)}
+                                </select>
+                            </div>
+                            <div class="item-status-control">
+                                <label>Status:</label>
+                                <button class="control-btn toggle toggle-item ${itemConfig.enabled ? '' : 'disabled'}" 
+                                        data-id="${menuItem.id}" title="${itemConfig.enabled ? 'Disable' : 'Enable'} Item">
+                                    <span class="dashicons dashicons-${itemConfig.enabled ? 'visibility' : 'hidden'}"></span>
+                                    ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
+                                </button>
+                            </div>
+                            <div class="item-quick-action-control">
+                                <label>
+                                    <input type="checkbox" class="quick-action-checkbox" data-id="${menuItem.id}" 
+                                           ${(itemConfig.quick_action || false) ? 'checked' : ''}>
+                                    Quick Action
+                                </label>
+                            </div>
+                            <div class="item-action-buttons">
+                                <button class="control-btn edit edit-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Edit Item">
+                                    <span class="dashicons dashicons-edit"></span>
+                                </button>
+                                <button class="control-btn delete delete-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Delete Item">
+                                    <span class="dashicons dashicons-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(itemHtml);
+            });
         });
+        
+        // Handle items in unknown sections
+        if (itemsBySection['unknown']) {
+            const unknownHeaderHtml = `
+                <div class="section-header">
+                    <h4><span class="dashicons dashicons-warning"></span> Uncategorized Items 
+                        <span class="item-count">(${itemsBySection['unknown'].length} items)</span>
+                    </h4>
+                </div>
+            `;
+            container.append(unknownHeaderHtml);
+            
+            itemsBySection['unknown'].sort((a, b) => a.order - b.order).forEach(itemConfig => {
+                const menuItem = findMenuItem(itemConfig.id) || {
+                    id: itemConfig.id,
+                    menu_title: itemConfig.title || itemConfig.id,
+                    description: itemConfig.description || '',
+                    quick_action: itemConfig.quick_action || false
+                };
+                
+                const itemHtml = `
+                    <div class="menu-item" data-id="${itemConfig.id}" data-section="${itemConfig.section}">
+                        <div class="item-content">
+                            <div class="item-title">
+                                ${escapeHtml(menuItem.menu_title)}
+                            </div>
+                            <div class="item-description">
+                                ${escapeHtml(menuItem.description || '')}
+                            </div>
+                            <div class="item-meta">
+                                <span class="item-section">Uncategorized</span>
+                                <span class="item-status ${itemConfig.enabled ? 'enabled' : 'disabled'}">
+                                    ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="item-controls">
+                            <div class="item-section-control">
+                                <label>Section:</label>
+                                <select class="item-section-select" data-id="${menuItem.id}">
+                                    ${renderSectionOptions(itemConfig.section)}
+                                </select>
+                            </div>
+                            <div class="item-status-control">
+                                <label>Status:</label>
+                                <button class="control-btn toggle toggle-item ${itemConfig.enabled ? '' : 'disabled'}" 
+                                        data-id="${menuItem.id}" title="${itemConfig.enabled ? 'Disable' : 'Enable'} Item">
+                                    <span class="dashicons dashicons-${itemConfig.enabled ? 'visibility' : 'hidden'}"></span>
+                                    ${itemConfig.enabled ? 'Enabled' : 'Disabled'}
+                                </button>
+                            </div>
+                            <div class="item-quick-action-control">
+                                <label>
+                                    <input type="checkbox" class="quick-action-checkbox" data-id="${menuItem.id}" 
+                                           ${(itemConfig.quick_action || false) ? 'checked' : ''}>
+                                    Quick Action
+                                </label>
+                            </div>
+                            <div class="item-action-buttons">
+                                <button class="control-btn edit edit-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Edit Item">
+                                    <span class="dashicons dashicons-edit"></span>
+                                </button>
+                                <button class="control-btn delete delete-item" data-id="${menuItem.id}" data-title="${escapeHtml(menuItem.menu_title)}" title="Delete Item">
+                                    <span class="dashicons dashicons-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(itemHtml);
+            });
+        }
     }
 
     function renderSectionOptions(selectedSection) {
