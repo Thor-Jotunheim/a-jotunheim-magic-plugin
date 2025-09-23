@@ -59,7 +59,30 @@ class JotunheimDiscordAuthConfig {
      * Get Discord role configurations
      */
     public function get_discord_roles() {
-        return get_option('jotunheim_discord_roles', $this->get_default_discord_roles());
+        $saved_roles = get_option('jotunheim_discord_roles', []);
+        $default_roles = $this->get_default_discord_roles();
+        
+        // If no saved roles, return defaults
+        if (empty($saved_roles)) {
+            return $default_roles;
+        }
+        
+        // Merge saved roles with defaults to ensure all roles have proper levels
+        $merged_roles = [];
+        foreach ($default_roles as $role_key => $default_data) {
+            if (isset($saved_roles[$role_key])) {
+                // Use saved data but ensure level is set
+                $merged_roles[$role_key] = $saved_roles[$role_key];
+                if (!isset($merged_roles[$role_key]['level'])) {
+                    $merged_roles[$role_key]['level'] = $default_data['level'];
+                }
+            } else {
+                // Use default for missing roles
+                $merged_roles[$role_key] = $default_data;
+            }
+        }
+        
+        return $merged_roles;
     }
     
     /**

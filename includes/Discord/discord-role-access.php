@@ -35,12 +35,28 @@ function get_configured_discord_roles_with_levels() {
     $roles = get_option('jotunheim_discord_roles', []);
     $role_data = [];
     
+    // Default role levels for proper hierarchy
+    $default_levels = [
+        'norn' => 8,
+        'aesir' => 7,
+        'all_staff' => 6,
+        'admin' => 5,
+        'staff' => 4,
+        'valkyrie' => 3,
+        'vithar' => 2,
+        'chosen' => 1
+    ];
+    
     foreach ($roles as $role_key => $role_info) {
         if (!empty($role_info['id'])) {
+            // Ensure level is set, use default if not present
+            $level = isset($role_info['level']) ? intval($role_info['level']) : 
+                     (isset($default_levels[$role_key]) ? $default_levels[$role_key] : 1);
+                     
             $role_data[$role_key] = [
                 'id' => $role_info['id'],
                 'name' => $role_info['name'],
-                'level' => isset($role_info['level']) ? intval($role_info['level']) : 1
+                'level' => $level
             ];
         }
     }
