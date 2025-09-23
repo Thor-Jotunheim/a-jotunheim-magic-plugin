@@ -1655,6 +1655,9 @@ class JotunheimDashboardConfig {
         
         $section_orders = $_POST['section_orders'];
         
+        // Debug logging
+        error_log('UPDATE SECTION ORDER: section_orders = ' . print_r($section_orders, true));
+        
         if (empty($section_orders) || !is_array($section_orders)) {
             wp_send_json_error('Section order data is required');
             return;
@@ -1693,6 +1696,9 @@ class JotunheimDashboardConfig {
         }
         
         $item_orders = $_POST['item_orders'];
+        
+        // Debug logging
+        error_log('UPDATE ITEM ORDER: item_orders = ' . print_r($item_orders, true));
         
         if (empty($item_orders) || !is_array($item_orders)) {
             wp_send_json_error('Item order data is required');

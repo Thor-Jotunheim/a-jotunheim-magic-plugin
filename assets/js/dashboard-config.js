@@ -313,12 +313,15 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     console.log('Section order auto-saved successfully');
+                    showNotification('Section order updated!', 'success');
                 } else {
                     console.error('Error updating section order:', response.data);
+                    alert('Error updating section order: ' + (response.data || 'Unknown error'));
                 }
             },
             error: function() {
                 console.error('Error updating section order');
+                alert('Error updating section order. Please try again.');
             }
         });
     }
@@ -346,12 +349,15 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     console.log('Item order auto-saved successfully');
+                    showNotification('Item order updated!', 'success');
                 } else {
                     console.error('Error updating item order:', response.data);
+                    alert('Error updating item order: ' + (response.data || 'Unknown error'));
                 }
             },
             error: function() {
                 console.error('Error updating item order');
+                alert('Error updating item order. Please try again.');
             }
         });
     }
