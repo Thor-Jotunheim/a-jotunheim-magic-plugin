@@ -426,6 +426,20 @@ add_action('rest_api_init', function() {
             error_log('DEBUG: API endpoint test called successfully');
             return new WP_REST_Response(['message' => 'API is working!', 'timestamp' => current_time('mysql')], 200);
         },
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Debug endpoint to check what shops exist
+    register_rest_route('jotun-api/v1', '/debug-shops', [
+        'methods' => 'GET',
+        'callback' => function() {
+            global $wpdb;
+            $shops = $wpdb->get_results("SELECT shop_id, shop_name FROM jotun_shops ORDER BY shop_id");
+            error_log('DEBUG: Found ' . count($shops) . ' shops in database: ' . json_encode($shops));
+            return new WP_REST_Response(['shops' => $shops], 200);
+        },
         'permission_callback' => '__return_true'
     ]);
     
@@ -1747,15 +1761,20 @@ function jotun_api_add_shop_item($request) {
     }
     
     // Validate that the shop exists in jotun_shops table
+    error_log('DEBUG - Checking if shop ID ' . $data['shop_id'] . ' exists in jotun_shops table');
     $shop_exists = $wpdb->get_var($wpdb->prepare(
         "SELECT shop_id FROM jotun_shops WHERE shop_id = %d",
         (int)$data['shop_id']
     ));
     
+    error_log('DEBUG - Shop validation query result: ' . ($shop_exists ? 'FOUND' : 'NOT FOUND'));
+    
     if (!$shop_exists) {
         error_log('DEBUG - Shop ID ' . $data['shop_id'] . ' does not exist in jotun_shops table');
         return new WP_REST_Response(['error' => 'Shop ID ' . $data['shop_id'] . ' does not exist'], 404);
     }
+    
+    error_log('DEBUG - Shop validation passed, proceeding with item creation');
     
     // Check if it's a custom item or regular item
     $is_custom_item = !empty($data['custom_item_name']);
