@@ -477,7 +477,7 @@ class ShopManager {
 
     async loadShopTypesTable() {
         try {
-            const response = await JotunAPI.getShopTypes();
+            const response = await JotunAPI.getShopTypes({ show_all: 'true' });
             const shopTypes = response.data || [];
             this.renderShopTypesTable(shopTypes);
         } catch (error) {
@@ -557,7 +557,18 @@ class ShopManager {
             await this.loadShopTypes(); // Refresh dropdowns
         } catch (error) {
             console.error('Error managing shop type:', error);
-            this.showStatus('Failed to save shop type', 'error');
+            
+            // Try to extract the error message from the API response
+            let errorMessage = 'Failed to save shop type';
+            if (error.message && error.message !== 'HTTP error! status: 409' && error.message !== 'HTTP error! status: 400') {
+                errorMessage = error.message;
+            } else {
+                // For HTTP errors, we need to check if there's a response with error details
+                // This might need to be enhanced based on how the API client handles errors
+                errorMessage = 'Failed to save shop type. Please check that the shop type name is unique.';
+            }
+            
+            this.showStatus(errorMessage, 'error');
         }
     }
 

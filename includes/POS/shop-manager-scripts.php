@@ -15,7 +15,7 @@ function shop_manager_scripts_shortcode($atts) {
         'jotun-comprehensive-api',
         plugin_dir_url(__FILE__) . '../../assets/js/jotun-comprehensive-api.js',
         ['jquery'],
-        '0.9.3.1', // Updated version for rotation system fixes
+        filemtime(plugin_dir_path(__FILE__) . '../../assets/js/jotun-comprehensive-api.js'),
         true
     );
 
@@ -29,7 +29,7 @@ function shop_manager_scripts_shortcode($atts) {
         'shop-manager-js',
         plugin_dir_url(__FILE__) . '../../assets/js/shop-manager.js',
         ['jquery', 'jotun-comprehensive-api'],
-        '0.9.3.1', // Updated version for rotation system fixes
+        filemtime(plugin_dir_path(__FILE__) . '../../assets/js/shop-manager.js'),
         true
     );
 

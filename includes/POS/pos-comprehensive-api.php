@@ -2008,7 +2008,15 @@ function jotun_api_get_shop_types($request) {
     global $wpdb;
     
     $table_name = 'jotun_shop_types';
-    $results = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active = 1 ORDER BY type_name ASC");
+    
+    // For admin management, show all shop types. For dropdowns, show only active ones.
+    $show_all = $request->get_param('show_all');
+    
+    if ($show_all === 'true') {
+        $results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY type_name ASC");
+    } else {
+        $results = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active = 1 ORDER BY type_name ASC");
+    }
     
     if ($wpdb->last_error) {
         return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);
@@ -2029,12 +2037,23 @@ function jotun_api_add_shop_type($request) {
     if (empty($data['type_name'])) {
         return new WP_REST_Response(['error' => 'Type name is required'], 400);
     }
-    
+
     if (empty($data['type_key'])) {
         return new WP_REST_Response(['error' => 'Type key is required'], 400);
     }
+
+    // Check if type_key already exists
+    $existing_type = $wpdb->get_row($wpdb->prepare(
+        "SELECT type_id, type_name FROM $table_name WHERE type_key = %s",
+        sanitize_key($data['type_key'])
+    ));
     
-    $insert_data = [
+    if ($existing_type) {
+        error_log('Shop type key already exists: ' . $data['type_key'] . ' (existing type: ' . $existing_type->type_name . ')');
+        return new WP_REST_Response([
+            'error' => 'A shop type with the key "' . $data['type_key'] . '" already exists (existing type: "' . $existing_type->type_name . '"). Please choose a different name.'
+        ], 409);
+    }    $insert_data = [
         'type_name' => sanitize_text_field($data['type_name']),
         'type_key' => sanitize_key($data['type_key']),
         'description' => sanitize_textarea_field($data['description'] ?? ''),
@@ -2092,8 +2111,18 @@ function jotun_api_delete_shop_type($request) {
     $id = (int) $request['id'];
     $table_name = 'jotun_shop_types';
     
-    // Soft delete by setting is_active to 0
-    $result = $wpdb->update($table_name, ['is_active' => 0], ['type_id' => $id]);
+    // Check if this shop type is being used by any shops
+    $shops_using_type = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM jotun_shops WHERE shop_type = (SELECT type_key FROM $table_name WHERE type_id = %d)",
+        $id
+    ));
+    
+    if ($shops_using_type > 0) {
+        return new WP_REST_Response(['error' => 'Cannot delete shop type: it is currently being used by ' . $shops_using_type . ' shop(s). Please remove or change the shop type for those shops first.'], 400);
+    }
+    
+    // Actually delete the record
+    $result = $wpdb->delete($table_name, ['type_id' => $id]);
     
     if ($result === false) {
         return new WP_REST_Response(['error' => 'Failed to delete shop type: ' . $wpdb->last_error], 500);

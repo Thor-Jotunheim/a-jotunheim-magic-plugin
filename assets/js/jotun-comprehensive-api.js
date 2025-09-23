@@ -165,8 +165,9 @@ class JotunheimAPI {
     // SHOP TYPES API METHODS (jotun_shop_types)
     // ============================================================================
 
-    async getShopTypes() {
-        return this.request('/shop-types');
+    async getShopTypes(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return this.request(`/shop-types${queryString ? '?' + queryString : ''}`);
     }
 
     async addShopType(typeData) {
