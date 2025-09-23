@@ -470,7 +470,7 @@ function jotunheim_magic_dashboard() {
                         <?php if (!empty($section['items'])): ?>
                             <?php foreach ($section['items'] as $item): ?>
                                 <div class="dashboard-item">
-                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . ($item['id'] ?? ''))); ?>" class="item-link">
+                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . ($item['slug'] ?? $item['id'] ?? ''))); ?>" class="item-link">
                                         <div class="item-content">
                                             <h4><?php echo esc_html($item['title'] ?? $item['menu_title'] ?? 'Unknown Item'); ?></h4>
                                             <p><?php echo esc_html($item['description'] ?? ''); ?></p>

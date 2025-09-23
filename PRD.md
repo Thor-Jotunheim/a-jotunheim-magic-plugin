@@ -118,3 +118,10 @@ Subtle and functional animations that provide immediate feedback without interfe
 - **Icon Selection**: Plus for add actions, Check for confirmations, X for cancellations, Search for lookups
 - **Spacing**: Consistent 16px base spacing with 8px for tight areas and 24px for section separation
 - **Mobile**: Stacked forms on mobile, collapsible navigation, responsive tables with horizontal scroll
+
+## Bugs/Problems 
+- In Dashboard Manager search, Shop Manager[shop_manager] & Unified Teller[unified_teller] pages do not show up when searching. Enhance the add pages search to ensure any new pages made can be found. If the problem is these are short codes and no page for it currently exists, i want the search function to be able to handle those and create a page in the dashboard for them if selected. 
+- Overview page of the Dashboard links to pages do not work. I get an error about not having permissions. 
+
+## Spark Integration
+- I started using Spark to create an app, but i realized it wasn't going to work with my website plugin well, so i decided to bring what was made over there, to here in this magic plugin. Here is the git, if you can review it, maybe we can use some of it over here to save us time and energy. https://github.com/Thor-Jotunheim/jotunheim-admin-dash.git. Alternativly, i can drag and drop all these files into this same project folder so you have access to those files. . or i can just give you the local files location. 

@@ -40,6 +40,7 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_save_discord_roles', [$this, 'ajax_save_discord_roles']);
         add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
         add_action('wp_ajax_get_available_pages', [$this, 'ajax_get_available_pages']);
+        add_action('wp_ajax_create_shortcode_page', [$this, 'ajax_create_shortcode_page']);
         add_action('wp_ajax_add_custom_page', [$this, 'ajax_add_custom_page']);
         add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
@@ -361,7 +362,7 @@ class JotunheimDashboardConfig {
     }
     
     /**
-     * Auto-detect available plugin pages by scanning render functions
+     * Auto-detect available plugin pages by scanning render functions and shortcodes
      */
     public function get_available_plugin_pages() {
         $available_pages = [];
@@ -423,6 +424,9 @@ class JotunheimDashboardConfig {
             }
         }
         
+        // Scan for shortcode-based pages
+        $this->add_shortcode_pages($available_pages);
+        
         // Also scan includes directory for PHP files that might contain page renders
         $plugin_dir = plugin_dir_path(__FILE__) . '../';
         error_log('Jotunheim Dashboard: Scanning directory: ' . $plugin_dir);
@@ -461,6 +465,147 @@ class JotunheimDashboardConfig {
         error_log('Jotunheim Dashboard: Final page count: ' . count($available_pages));
         
         return $available_pages;
+    }
+    
+    /**
+     * Add shortcode-based pages to the available pages list
+     */
+    private function add_shortcode_pages(&$available_pages) {
+        error_log('Jotunheim Dashboard: Scanning for shortcode-based pages...');
+        
+        // Define shortcode pages that should be available in the dashboard
+        $shortcode_pages = [
+            'shop_manager' => [
+                'title' => 'Shop Manager',
+                'description' => 'Complete shop management interface for all Jotunheim shops',
+                'shortcode' => 'shop_manager',
+                'interface_function' => 'shop_manager_interface'
+            ],
+            'unified_teller' => [
+                'title' => 'Unified Teller',
+                'description' => 'Unified point of sale interface for transactions',
+                'shortcode' => 'unified_teller', 
+                'interface_function' => 'unified_teller_interface'
+            ],
+            'legacy_shop_teller' => [
+                'title' => 'Legacy Shop Teller',
+                'description' => 'Google Sheets replacement shop interface',
+                'shortcode' => 'legacy_shop_teller',
+                'interface_function' => 'legacy_shop_teller_interface'
+            ]
+        ];
+        
+        foreach ($shortcode_pages as $page_id => $page_info) {
+            // Check if shortcode is registered
+            global $shortcode_tags;
+            if (isset($shortcode_tags[$page_info['shortcode']])) {
+                error_log('Jotunheim Dashboard: Found registered shortcode: ' . $page_info['shortcode']);
+                
+                // Check if already exists
+                $exists = false;
+                foreach ($this->default_menu_items as $item) {
+                    if ($item['id'] === $page_id) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                foreach ($available_pages as $existing) {
+                    if ($existing['id'] === $page_id) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                
+                if (!$exists) {
+                    $available_pages[] = [
+                        'id' => $page_id,
+                        'title' => $page_info['title'],
+                        'menu_title' => $page_info['title'],
+                        'callback' => 'render_shortcode_page', // Generic callback for shortcode pages
+                        'shortcode' => $page_info['shortcode'],
+                        'interface_function' => $page_info['interface_function'],
+                        'category' => 'shortcode',
+                        'description' => $page_info['description'],
+                        'is_default' => false,
+                        'is_shortcode' => true,
+                        'needs_page_creation' => true
+                    ];
+                    error_log('Jotunheim Dashboard: Added shortcode page: ' . $page_id);
+                }
+            } else {
+                error_log('Jotunheim Dashboard: Shortcode not registered: ' . $page_info['shortcode']);
+            }
+        }
+    }
+    
+    /**
+     * Create a WordPress page for a shortcode-based dashboard item
+     */
+    public function create_shortcode_page($page_data) {
+        if (!current_user_can('manage_options')) {
+            return false;
+        }
+        
+        $page_slug = sanitize_title($page_data['id']);
+        $page_title = sanitize_text_field($page_data['title']);
+        $shortcode = sanitize_text_field($page_data['shortcode']);
+        
+        // Check if page already exists
+        $existing_page = get_page_by_path($page_slug);
+        if ($existing_page) {
+            error_log('Jotunheim Dashboard: Page already exists for: ' . $page_slug);
+            return $existing_page->ID;
+        }
+        
+        // Create new page with shortcode content
+        $page_content = '[' . $shortcode . ']';
+        
+        $page_args = [
+            'post_title' => $page_title,
+            'post_content' => $page_content,
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_name' => $page_slug,
+            'post_author' => get_current_user_id(),
+            'comment_status' => 'closed',
+            'ping_status' => 'closed'
+        ];
+        
+        $page_id = wp_insert_post($page_args);
+        
+        if ($page_id && !is_wp_error($page_id)) {
+            error_log('Jotunheim Dashboard: Created page for shortcode: ' . $page_slug . ' (ID: ' . $page_id . ')');
+            
+            // Add meta to identify this as a dashboard-created page
+            update_post_meta($page_id, '_jotunheim_dashboard_page', true);
+            update_post_meta($page_id, '_jotunheim_shortcode', $shortcode);
+            
+            return $page_id;
+        } else {
+            error_log('Jotunheim Dashboard: Failed to create page for: ' . $page_slug);
+            return false;
+        }
+    }
+    
+    /**
+     * Generic render function for shortcode-based pages
+     */
+    public function render_shortcode_page($page_data) {
+        if (isset($page_data['interface_function']) && function_exists($page_data['interface_function'])) {
+            // Call the specific interface function
+            call_user_func($page_data['interface_function']);
+        } elseif (isset($page_data['shortcode'])) {
+            // Fallback to displaying the shortcode
+            echo '<div class="wrap">';
+            echo '<h1>' . esc_html($page_data['title']) . '</h1>';
+            echo do_shortcode('[' . esc_attr($page_data['shortcode']) . ']');
+            echo '</div>';
+        } else {
+            echo '<div class="wrap">';
+            echo '<h1>' . esc_html($page_data['title']) . '</h1>';
+            echo '<p>Error: No shortcode or interface function defined for this page.</p>';
+            echo '</div>';
+        }
     }
     
     /**
@@ -1032,6 +1177,38 @@ class JotunheimDashboardConfig {
         error_log('Jotunheim Dashboard: Returning ' . count($available_pages) . ' pages to frontend');
         
         wp_send_json_success(['pages' => $available_pages]);
+    }
+    
+    /**
+     * AJAX handler to create a shortcode page
+     */
+    public function ajax_create_shortcode_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $page_data = $_POST['page_data'];
+        
+        if (empty($page_data['shortcode']) || empty($page_data['title'])) {
+            wp_send_json_error('Missing required page data');
+            return;
+        }
+        
+        $page_id = $this->create_shortcode_page($page_data);
+        
+        if ($page_id) {
+            wp_send_json_success([
+                'page_id' => $page_id,
+                'page_url' => get_permalink($page_id),
+                'message' => 'Page created successfully'
+            ]);
+        } else {
+            wp_send_json_error('Failed to create page');
+        }
     }
     
     /**
@@ -2484,9 +2661,10 @@ function render_dashboard_config_page() {
                         if (pages.length === 0) {
                             html = '<div class="no-pages-found">No additional pages found to add.</div>';
                         } else {
-                            // Separate default and discovered pages
+                            // Separate pages by category
                             const defaultPages = pages.filter(page => page.is_default);
-                            const discoveredPages = pages.filter(page => !page.is_default);
+                            const discoveredPages = pages.filter(page => !page.is_default && page.category !== 'shortcode');
+                            const shortcodePages = pages.filter(page => page.category === 'shortcode');
                             
                             if (defaultPages.length > 0) {
                                 html += '<div class="page-category">';
@@ -2514,6 +2692,41 @@ function render_dashboard_config_page() {
                                     }
                                     html += '</select>';
                                     html += '<button type="button" class="button add-detected-page">Add Page</button>';
+                                    html += '</div>';
+                                    html += '</div>';
+                                });
+                                html += '</div>';
+                            }
+                            
+                            if (shortcodePages.length > 0) {
+                                html += '<div class="page-category">';
+                                html += '<h3><span class="dashicons dashicons-shortcode"></span> Shortcode-Based Pages</h3>';
+                                html += '<p class="category-description">These pages use shortcodes and will have WordPress pages created for them.</p>';
+                                
+                                shortcodePages.forEach(function(page) {
+                                    html += '<div class="available-page-item shortcode-page" data-page-id="' + page.id + '" data-shortcode="' + (page.shortcode || '') + '">';
+                                    html += '<div class="page-info">';
+                                    html += '<h4 class="page-title">' + page.title + '</h4>';
+                                    html += '<div class="page-meta">ID: ' + page.id + ' | Shortcode: [' + (page.shortcode || page.id) + ']</div>';
+                                    if (page.description) {
+                                        html += '<div class="page-description">' + page.description + '</div>';
+                                    }
+                                    if (page.needs_page_creation) {
+                                        html += '<div class="page-note"><em>Note: A WordPress page will be created automatically</em></div>';
+                                    }
+                                    html += '</div>';
+                                    html += '<div class="page-actions">';
+                                    html += '<select class="page-section-select">';
+                                    // Populate sections dynamically from config.sections
+                                    if (dashboardConfig.config && dashboardConfig.config.sections) {
+                                        dashboardConfig.config.sections.forEach(function(section) {
+                                            if (section.enabled) {
+                                                html += '<option value="' + section.id + '">' + section.title + '</option>';
+                                            }
+                                        });
+                                    }
+                                    html += '</select>';
+                                    html += '<button type="button" class="button button-primary add-detected-page">Create & Add Page</button>';
                                     html += '</div>';
                                     html += '</div>';
                                 });
@@ -2552,7 +2765,7 @@ function render_dashboard_config_page() {
                                 html += '</div>';
                             }
                             
-                            if (defaultPages.length === 0 && discoveredPages.length === 0) {
+                            if (defaultPages.length === 0 && discoveredPages.length === 0 && shortcodePages.length === 0) {
                                 html = '<div class="no-pages-found">No additional pages found to add.</div>';
                             }
                         }
@@ -2588,54 +2801,98 @@ function render_dashboard_config_page() {
             const callbackMatch = pageMeta.match(/Function:\s*(.+)/);
             const callback = callbackMatch ? callbackMatch[1] : 'render_' + pageId + '_page';
             
-            $button.prop('disabled', true).text('Adding...');
+            // Check if this is a shortcode page that needs page creation
+            const isShortcodePage = $item.hasClass('shortcode-page');
+            const shortcode = $item.data('shortcode');
             
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'add_custom_page',
-                    nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
-                    page_data: {
-                        id: pageId,
-                        title: pageTitle,
-                        menu_title: pageTitle,
-                        callback: callback,
-                        category: 'auto-detected',
-                        description: pageDescription,
-                        section: section,
-                        enabled: true,
-                        quick_action: false
-                    }
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Remove from available list
-                        $item.fadeOut(300, function() {
-                            $(this).remove();
-                        });
-                        
-                        // Show success message
-                        const $successMsg = $('<div class="notice notice-success"><p>Page "' + pageId + '" added successfully!</p></div>');
-                        $('.config-pages').before($successMsg);
-                        setTimeout(function() {
-                            $successMsg.fadeOut();
-                        }, 3000);
-                        
-                        // Refresh the dashboard config
-                        location.reload();
-                    } else {
-                        alert('Error adding page: ' + (response.data || 'Unknown error'));
+            $button.prop('disabled', true).text(isShortcodePage ? 'Creating Page...' : 'Adding...');
+            
+            // If it's a shortcode page, create the WordPress page first
+            if (isShortcodePage && shortcode) {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'create_shortcode_page',
+                        nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                        page_data: {
+                            id: pageId,
+                            title: pageTitle,
+                            shortcode: shortcode,
+                            description: pageDescription
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Now add to dashboard after page creation
+                            addPageToDashboard();
+                        } else {
+                            alert('Error creating page: ' + (response.data || 'Unknown error'));
+                            $button.prop('disabled', false).text('Add Page');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error creating page:', status, error);
+                        alert('Failed to create page: ' + error);
                         $button.prop('disabled', false).text('Add Page');
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', status, error);
-                    console.error('Response:', xhr.responseText);
-                    alert('Failed to communicate with server: ' + error + '\n\nPlease check the console for more details.');
-                    $button.prop('disabled', false).text('Add Page');
-                }
-            });
+                });
+            } else {
+                // Regular page, add directly
+                addPageToDashboard();
+            }
+            
+            function addPageToDashboard() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'add_custom_page',
+                        nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                        page_data: {
+                            id: pageId,
+                            title: pageTitle,
+                            menu_title: pageTitle,
+                            callback: callback,
+                            category: 'auto-detected',
+                            description: pageDescription,
+                            section: section,
+                            enabled: true,
+                            quick_action: false
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove from available list
+                            $item.fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                            
+                            // Show success message
+                            const successMessage = isShortcodePage ? 
+                                'Page "' + pageId + '" created and added to dashboard!' :
+                                'Page "' + pageId + '" added successfully!';
+                            const $successMsg = $('<div class="notice notice-success"><p>' + successMessage + '</p></div>');
+                            $('.config-pages').before($successMsg);
+                            setTimeout(function() {
+                                $successMsg.fadeOut();
+                            }, 3000);
+                            
+                            // Refresh the dashboard config
+                            location.reload();
+                        } else {
+                            alert('Error adding page: ' + (response.data || 'Unknown error'));
+                            $button.prop('disabled', false).text('Add Page');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', status, error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Failed to communicate with server: ' + error + '\n\nPlease check the console for more details.');
+                        $button.prop('disabled', false).text('Add Page');
+                    }
+                });
+            }
         });
         
         // Manual page form
