@@ -240,8 +240,6 @@ function register_organized_menu($config) {
         }
     }
     
-    error_log('Jotunheim Dashboard: Items by section - ' . print_r($items_by_section, true));
-    
     // Get sections from normalized database (sections are already in the config)
     $sections = [];
     foreach ($menu_config as $section_id => $section_data) {
@@ -274,7 +272,6 @@ function register_organized_menu($config) {
         if (!$section['enabled']) continue;
         
         $section_id = $section['id'];
-        error_log('Jotunheim Dashboard: Processing section - ' . $section['title']);
         
         // Add section separator
         add_submenu_page(
@@ -293,13 +290,6 @@ function register_organized_menu($config) {
         // Add items in this section
         if (isset($items_by_section[$section_id])) {
             foreach ($items_by_section[$section_id] as $item) {
-                // Debug: Show a sample item structure (only log first item to avoid spam)
-                static $logged_sample = false;
-                if (!$logged_sample) {
-                    error_log('Jotunheim Dashboard: SAMPLE item structure - ' . print_r($item, true));
-                    $logged_sample = true;
-                }
-                
                 // Validate item has required keys
                 if (!isset($item['slug']) || empty($item['slug'])) {
                     error_log('Jotunheim Dashboard: SKIPPING item with missing slug - ' . print_r($item, true));
@@ -321,7 +311,6 @@ function register_organized_menu($config) {
                     continue;
                 }
                 
-                error_log('Jotunheim Dashboard: Adding item - ' . $item['title'] . ' with callback ' . $item['callback']);
                 if (function_exists($item['callback'])) {
                     add_submenu_page(
                         'jotunheim_magic',
@@ -340,7 +329,6 @@ function register_organized_menu($config) {
         }
     }
     
-    error_log('Jotunheim Dashboard: Organized menu registration completed');
     return true;
 }
 
@@ -1979,8 +1967,6 @@ add_action('admin_menu', function() {
         
         // Re-index the array
         $submenu['jotunheim_magic'] = array_values($submenu['jotunheim_magic']);
-        
-        error_log('Jotunheim Dashboard: Final submenu structure - ' . print_r($submenu['jotunheim_magic'], true));
     }
 }, 999); // Run very late to ensure we override everything
 

@@ -221,6 +221,20 @@ function jotun_ensure_shop_items_table() {
             $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN is_available tinyint(1) DEFAULT 1 COMMENT 'Whether item is available for purchase'");
             error_log('Jotunheim POS: Added is_available column to jotun_shop_items table');
         }
+
+        // Migration: Add added_date column if it doesn't exist
+        $added_date_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'added_date'");
+        if (empty($added_date_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN added_date datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'When item was added to shop'");
+            error_log('Jotunheim POS: Added added_date column to jotun_shop_items table');
+        }
+
+        // Migration: Add updated_at column if it doesn't exist  
+        $updated_at_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'updated_at'");
+        if (empty($updated_at_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When item was last updated'");
+            error_log('Jotunheim POS: Added updated_at column to jotun_shop_items table');
+        }
     }
     
     // Create jotun_turn_ins table for tracking turn-ins
