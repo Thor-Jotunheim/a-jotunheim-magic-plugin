@@ -15,7 +15,7 @@ function shop_manager_scripts_shortcode($atts) {
         'jotun-comprehensive-api',
         plugin_dir_url(__FILE__) . '../../assets/js/jotun-comprehensive-api.js',
         ['jquery'],
-        '1.0.0',
+        '1.0.1',
         true
     );
 
@@ -29,7 +29,7 @@ function shop_manager_scripts_shortcode($atts) {
         'shop-manager-js',
         plugin_dir_url(__FILE__) . '../../assets/js/shop-manager.js',
         ['jquery', 'jotun-comprehensive-api'],
-        '1.0.0',
+        '1.0.1',
         true
     );
 
