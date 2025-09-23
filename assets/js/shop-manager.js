@@ -475,7 +475,9 @@ class ShopManager {
                 const shops = await JotunAPI.getShops();
                 this.selectedShopData = shops.data.find(shop => shop.shop_id == shopId);
                 
-                const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in-only';
+                console.log('DEBUG - Selected shop data:', this.selectedShopData);
+                const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in_only';
+                console.log('DEBUG - Shop type:', this.selectedShopData?.shop_type, 'isTurnInOnly:', isTurnInOnly);
                 
                 // Show add item section for all shops
                 document.getElementById('add-item-section').style.display = 'block';
@@ -510,16 +512,27 @@ class ShopManager {
     }
 
     toggleFieldsForShopType(isTurnInOnly) {
-        // Get form sections
-        const priceRow = document.querySelector('.form-row:has(#custom-price)');
-        const stockRow = document.querySelector('.form-row:has(#stock-quantity)');
+        console.log('DEBUG - toggleFieldsForShopType called with isTurnInOnly:', isTurnInOnly);
+        
+        // Get form sections - using more reliable selectors
+        const priceRow = document.getElementById('custom-price')?.closest('.form-row');
+        const stockRow = document.getElementById('stock-quantity')?.closest('.form-row');
         const turnInFields = document.querySelectorAll('.turn-in-fields');
         const turnInRequirementField = document.getElementById('turn-in-requirement');
         const addItemSection = document.getElementById('add-item-section');
-        const addItemTitle = addItemSection.querySelector('h3');
+        const addItemTitle = addItemSection?.querySelector('h3');
         const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
         
+        console.log('DEBUG - Found elements:', {
+            priceRow: !!priceRow,
+            stockRow: !!stockRow,
+            turnInFields: turnInFields.length,
+            addItemTitle: !!addItemTitle,
+            submitButton: !!submitButton
+        });
+        
         if (isTurnInOnly) {
+            console.log('DEBUG - Configuring for Turn-In Only shop');
             // Update the interface for Turn-In Only shops
             if (addItemTitle) {
                 addItemTitle.textContent = 'Add Turn-In Event Items';
