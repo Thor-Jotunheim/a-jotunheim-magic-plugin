@@ -1148,17 +1148,35 @@ class JotunheimDashboardConfig {
         // Save items to normalized database
         error_log('Dashboard Config Save: Starting to save ' . count($config['items']) . ' items');
         error_log('Dashboard Config Save: default_menu_items contains ' . count($this->default_menu_items) . ' items');
-        error_log('Dashboard Config Save: default_menu_items structure: ' . print_r(array_slice($this->default_menu_items, 0, 2), true));
+        
+        // Get existing items from database to preserve custom/shortcode pages
+        $existing_items = $this->get_menu_items();
+        $existing_items_by_id = [];
+        foreach ($existing_items as $existing_item) {
+            $existing_items_by_id[$existing_item['id']] = $existing_item;
+        }
         
         foreach ($config['items'] as $item) {
             error_log('Dashboard Config Save: Processing item ' . $item['id']);
-            // Find the menu item to get callback info
+            
+            // First, try to find in default menu items
             $menu_item = null;
             foreach ($this->default_menu_items as $default_item) {
                 if ($default_item['id'] === $item['id']) {
                     $menu_item = $default_item;
                     break;
                 }
+            }
+            
+            // If not found in defaults, check if it exists in database (shortcode/custom pages)
+            if (!$menu_item && isset($existing_items_by_id[$item['id']])) {
+                $existing_item = $existing_items_by_id[$item['id']];
+                $menu_item = [
+                    'id' => $existing_item['id'],
+                    'callback' => $existing_item['callback'],
+                    'title' => $existing_item['title'] ?? $existing_item['item_name'] ?? $item['title']
+                ];
+                error_log('Dashboard Config Save: Found existing custom/shortcode item for ' . $item['id']);
             }
             
             if ($menu_item) {
@@ -1354,7 +1372,7 @@ class JotunheimDashboardConfig {
         }
         
         // Get current config
-        $config = $this->get_config();
+        $current_menu_items = $this->get_menu_items();
         
         // Sanitize input
         $new_page = [
@@ -1367,11 +1385,11 @@ class JotunheimDashboardConfig {
             'section' => sanitize_text_field($page_data['section'] ?: 'main'),
             'enabled' => (bool)($page_data['enabled'] ?: true),
             'quick_action' => (bool)($page_data['quick_action'] ?: false),
-            'order' => count($config['items'] ?: []) + 1
+            'order' => count($current_menu_items) + 1
         ];
         
         // Check if page already exists
-        foreach ($this->get_menu_items() as $existing) {
+        foreach ($current_menu_items as $existing) {
             if ($existing['id'] === $new_page['id']) {
                 wp_send_json_error('Page with this ID already exists');
                 return;
