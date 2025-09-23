@@ -10,6 +10,31 @@ if (!defined('ABSPATH')) {
 function shop_manager_interface() {
     if (!is_user_logged_in()) {
         return do_shortcode('[discord_login_button]');
+        }
+        ?>
+        <style>
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 15px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            margin: 0;
+        }
+        .no-roles-message {
+            font-style: italic;
+            color: #666;
+        }
+        </style>
     }
 
     if (!current_user_can('edit_posts')) {
@@ -202,6 +227,26 @@ function shop_manager_interface() {
                                     <option value="0">Inactive</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="type-permissions">Discord Permissions</label>
+                                <div class="checkbox-group" id="type-permissions">
+                                    <?php
+                                    $discord_roles = get_option('jotunheim_discord_roles', []);
+                                    if (!empty($discord_roles)) {
+                                        foreach ($discord_roles as $role_key => $role_data) {
+                                            if (!empty($role_data['name'])) {
+                                                echo '<label class="checkbox-label">';
+                                                echo '<input type="checkbox" name="default_permissions[]" value="' . esc_attr($role_key) . '">';
+                                                echo '<span>' . esc_html($role_data['name']) . '</span>';
+                                                echo '</label>';
+                                            }
+                                        }
+                                    } else {
+                                        echo '<p class="no-roles-message">No Discord roles configured. <a href="' . admin_url('admin.php?page=discord_auth_config') . '">Configure Discord roles first</a>.</p>';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
                         </div>
                         <!-- Hidden field for auto-generated type key -->
                         <input type="hidden" id="type-key" name="type_key">
@@ -221,6 +266,7 @@ function shop_manager_interface() {
                                 <tr>
                                     <th>Type Name</th>
                                     <th>Description</th>
+                                    <th>Discord Permissions</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>

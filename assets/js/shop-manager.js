@@ -496,10 +496,24 @@ class ShopManager {
         tbody.innerHTML = '';
 
         shopTypes.forEach(type => {
+            // Parse Discord permissions
+            let permissionsDisplay = 'None';
+            if (type.default_permissions) {
+                try {
+                    const permissions = JSON.parse(type.default_permissions);
+                    if (permissions && permissions.length > 0) {
+                        permissionsDisplay = permissions.join(', ');
+                    }
+                } catch (e) {
+                    console.warn('Could not parse permissions for type:', type.type_name, type.default_permissions);
+                }
+            }
+            
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${this.escapeHtml(type.type_name)}</td>
                 <td>${this.escapeHtml(type.description || '')}</td>
+                <td><span class="permissions-list">${this.escapeHtml(permissionsDisplay)}</span></td>
                 <td><span class="status-badge ${type.is_active == 1 ? 'active' : 'inactive'}">${type.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShopType(${type.type_id})">Edit</button>
@@ -514,11 +528,17 @@ class ShopManager {
         e.preventDefault();
         
         const formData = new FormData(e.target);
+        
+        // Collect Discord permissions
+        const permissionCheckboxes = document.querySelectorAll('#type-permissions input[type="checkbox"]:checked');
+        const defaultPermissions = Array.from(permissionCheckboxes).map(cb => cb.value);
+        
         const typeData = {
             type_name: formData.get('type_name'),
             type_key: formData.get('type_key'),
             description: formData.get('description') || '',
-            is_active: parseInt(formData.get('is_active') || '1')
+            is_active: parseInt(formData.get('is_active') || '1'),
+            default_permissions: defaultPermissions
         };
 
         console.log('Submitting shop type data:', typeData);
@@ -577,10 +597,11 @@ class ShopManager {
 
     async editShopType(typeId) {
         try {
-            const response = await JotunAPI.getShopTypes();
+            const response = await JotunAPI.getShopTypes({ show_all: 'true' });
             const shopType = response.data.find(type => type.type_id == typeId);
             
             if (shopType) {
+                console.log('Editing shop type:', shopType);
                 this.currentEditingShopType = typeId;
                 
                 // Populate form
@@ -588,6 +609,32 @@ class ShopManager {
                 document.getElementById('type-key').value = shopType.type_key;
                 document.getElementById('type-description').value = shopType.description || '';
                 document.getElementById('type-status').value = shopType.is_active || '1';
+                
+                // Handle Discord permissions
+                const permissionsContainer = document.getElementById('type-permissions');
+                if (permissionsContainer) {
+                    // Clear all checkboxes first
+                    const checkboxes = permissionsContainer.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => cb.checked = false);
+                    
+                    // Set permissions from shop type
+                    if (shopType.default_permissions) {
+                        let permissions = [];
+                        try {
+                            permissions = JSON.parse(shopType.default_permissions);
+                        } catch (e) {
+                            console.warn('Could not parse permissions:', shopType.default_permissions);
+                            permissions = [];
+                        }
+                        
+                        permissions.forEach(perm => {
+                            const checkbox = permissionsContainer.querySelector(`input[value="${perm}"]`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                            }
+                        });
+                    }
+                }
                 
                 // Update form UI
                 document.querySelector('#add-shop-type-form button[type="submit"]').textContent = 'Update Shop Type';
@@ -610,6 +657,10 @@ class ShopManager {
         document.getElementById('add-shop-type-form').reset();
         document.getElementById('type-key').value = '';
         this.currentEditingShopType = null;
+        
+        // Clear Discord permissions checkboxes
+        const permissionCheckboxes = document.querySelectorAll('#type-permissions input[type="checkbox"]');
+        permissionCheckboxes.forEach(cb => cb.checked = false);
         
         // Trigger type key generation if there's already text in the name field
         const typeNameField = document.getElementById('type-name');
