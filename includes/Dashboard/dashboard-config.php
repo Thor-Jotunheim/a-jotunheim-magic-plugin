@@ -36,7 +36,6 @@ class JotunheimDashboardConfig {
         $this->init();
         
         add_action('wp_ajax_save_dashboard_config', [$this, 'save_dashboard_config']);
-        add_action('wp_ajax_reset_dashboard_config', [$this, 'reset_dashboard_config']);
         add_action('wp_ajax_get_dashboard_config_frontend', [$this, 'ajax_get_dashboard_config_frontend']);
         add_action('wp_ajax_save_discord_roles', [$this, 'ajax_save_discord_roles']);
         add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
@@ -1130,247 +1129,6 @@ class JotunheimDashboardConfig {
         return null;
     }
     
-    public function save_dashboard_config() {
-        if (!current_user_can('manage_options')) {
-            wp_die('Unauthorized');
-        }
-        
-        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
-            wp_die('Invalid nonce');
-        }
-
-        // Handle organized menu toggle
-        if (isset($_POST['use_organized_menu'])) {
-            update_option('jotunheim_use_organized_menu', (bool)$_POST['use_organized_menu']);
-            wp_send_json_success('Menu mode updated successfully');
-            return;
-        }
-
-        // Handle full configuration save using normalized database
-        // CRITICAL: Ensure default menu items are loaded for validation
-        $this->load_default_menu_items();
-        
-        error_log('Dashboard Config Save: Raw $_POST sections: ' . $_POST['sections']);
-        error_log('Dashboard Config Save: Raw $_POST items: ' . $_POST['items']);
-        
-        $config = [
-            'sections' => json_decode(stripslashes($_POST['sections']), true),
-            'items' => json_decode(stripslashes($_POST['items']), true)
-        ];
-        
-        error_log('Dashboard Config Save: Decoded sections count: ' . (is_array($config['sections']) ? count($config['sections']) : 'NOT ARRAY'));
-        error_log('Dashboard Config Save: Decoded items count: ' . (is_array($config['items']) ? count($config['items']) : 'NOT ARRAY'));
-        error_log('Dashboard Config Save: Items empty check: ' . (empty($config['items']) ? 'TRUE' : 'FALSE'));
-        
-        // Log all item IDs that came from frontend
-        if (is_array($config['items'])) {
-            $frontend_item_ids = array_column($config['items'], 'id');
-            error_log('Dashboard Config Save: Frontend item IDs: ' . implode(', ', $frontend_item_ids));
-        }
-        
-        // SAFETY CHECK: Don't proceed if we have no items (this would break everything)
-        if (empty($config['items'])) {
-            error_log('Dashboard Config: Refusing to save empty items configuration');
-            wp_send_json_error('Configuration appears to be empty. Save cancelled to prevent data loss.');
-            return;
-        }
-        
-        // Save sections to normalized database
-        error_log('Dashboard Config Save: Starting to save ' . count($config['sections']) . ' sections');
-        foreach ($config['sections'] as $section) {
-            error_log('Dashboard Config Save: Saving section ' . $section['id']);
-            $this->normalized_db->save_section(
-                $section['id'],
-                $section['title'],
-                $section['order'],
-                $section['description'],
-                $section['icon'] ?? '',
-                $section['enabled']
-            );
-        }
-        error_log('Dashboard Config Save: Finished saving sections');
-        
-        // Save items to normalized database
-        error_log('Dashboard Config Save: Starting to save ' . count($config['items']) . ' items');
-        error_log('Dashboard Config Save: default_menu_items contains ' . count($this->default_menu_items) . ' items');
-        
-        // CRITICAL PROTECTION: Before doing anything, identify and protect shortcode pages
-        global $wpdb;
-        $items_table = $this->normalized_db->get_items_table_name();
-        $shortcode_pages_query = "SELECT * FROM {$items_table} WHERE description LIKE '%shortcode%' OR callback_function = 'render_shortcode_admin_page'";
-        $shortcode_pages = $wpdb->get_results($shortcode_pages_query);
-        
-        error_log('Dashboard Config Save: Found ' . count($shortcode_pages) . ' shortcode pages to protect');
-        foreach ($shortcode_pages as $sp) {
-            error_log('Dashboard Config Save: Protecting shortcode page: ' . $sp->item_key . ' (callback: ' . $sp->callback_function . ')');
-        }
-        
-        // Get existing items from database to preserve custom/shortcode pages
-        $existing_items = $this->get_menu_items();
-        $existing_items_by_id = [];
-        foreach ($existing_items as $existing_item) {
-            $existing_items_by_id[$existing_item['id']] = $existing_item;
-        }
-        
-        // Process items from the frontend form
-        $processed_item_ids = [];
-        foreach ($config['items'] as $item) {
-            error_log('Dashboard Config Save: Processing item ' . $item['id']);
-            $processed_item_ids[] = $item['id'];
-            
-            // First, try to find in default menu items
-            $menu_item = null;
-            foreach ($this->default_menu_items as $default_item) {
-                if ($default_item['id'] === $item['id']) {
-                    $menu_item = $default_item;
-                    break;
-                }
-            }
-            
-            // If not found in defaults, check if it exists in database (shortcode/custom pages)
-            if (!$menu_item && isset($existing_items_by_id[$item['id']])) {
-                $existing_item = $existing_items_by_id[$item['id']];
-                $menu_item = [
-                    'id' => $existing_item['id'],
-                    'callback' => $existing_item['callback'],
-                    'title' => $existing_item['title'] ?? $existing_item['item_name'] ?? $item['title']
-                ];
-                error_log('Dashboard Config Save: Found existing custom/shortcode item for ' . $item['id']);
-            }
-            
-            if ($menu_item) {
-                error_log('Dashboard Config Save: Found menu item for ' . $item['id'] . ', saving to database');
-                $item_data = [
-                    'item_key' => $item['id'],
-                    'section_key' => $item['section'],
-                    'item_name' => $item['title'],
-                    'callback_function' => $menu_item['callback'],
-                    'display_order' => $item['order'],
-                    'enabled' => $item['enabled'] ? 1 : 0,
-                    'quick_action' => $item['quick_action'] ? 1 : 0
-                ];
-                $this->normalized_db->save_item($item_data);
-                error_log('Dashboard Config Save: Successfully saved item ' . $item['id']);
-            } else {
-                error_log('Dashboard Config Save: WARNING - Could not find menu item for ' . $item['id']);
-            }
-        }
-        
-        // CRITICAL: Preserve existing items that weren't in the frontend form (e.g., shortcode pages added via AJAX)
-        // Enhanced protection for shortcode pages - never delete them during saves
-        foreach ($existing_items_by_id as $item_id => $existing_item) {
-            if (!in_array($item_id, $processed_item_ids)) {
-                error_log('Dashboard Config Save: Preserving existing item not in form: ' . $item_id);
-                
-                // Check if this is a shortcode page by looking for shortcode metadata
-                $is_shortcode_page = false;
-                if (!empty($existing_item['shortcode'])) {
-                    $is_shortcode_page = true;
-                    error_log('Dashboard Config Save: Detected shortcode page: ' . $item_id . ' with shortcode: ' . $existing_item['shortcode']);
-                }
-                
-                // For shortcode pages, be extra careful to preserve all data
-                if ($is_shortcode_page) {
-                    // Get the current data from the database to ensure we don't lose anything
-                    global $wpdb;
-                    $items_table = $this->normalized_db->get_items_table_name();
-                    $db_item = $wpdb->get_row($wpdb->prepare(
-                        "SELECT * FROM {$items_table} WHERE item_key = %s",
-                        $item_id
-                    ));
-                    
-                    if ($db_item) {
-                        // Preserve the exact database state for shortcode pages
-                        error_log('Dashboard Config Save: Preserving shortcode page database state for: ' . $item_id);
-                        continue; // Skip re-saving, just leave it as-is
-                    }
-                }
-                
-                // Re-save existing item to maintain it in the database (for non-shortcode items)
-                $item_data = [
-                    'item_key' => $existing_item['id'],
-                    'section_key' => $existing_item['section'] ?? 'system', // Default section if missing
-                    'item_name' => $existing_item['title'] ?? $existing_item['item_name'] ?? $item_id,
-                    'callback_function' => $existing_item['callback'],
-                    'display_order' => $existing_item['order'] ?? 999, // Put at end if no order
-                    'enabled' => isset($existing_item['enabled']) ? ($existing_item['enabled'] ? 1 : 0) : 1,
-                    'quick_action' => isset($existing_item['quick_action']) ? ($existing_item['quick_action'] ? 1 : 0) : 0
-                ];
-                $this->normalized_db->save_item($item_data);
-                error_log('Dashboard Config Save: Preserved existing item ' . $item_id);
-            }
-        }
-        error_log('Dashboard Config Save: Finished saving all items');
-
-        // FINAL PROTECTION: Restore any shortcode pages that might have been lost
-        foreach ($shortcode_pages as $sp) {
-            // Check if this shortcode page still exists
-            $check_query = "SELECT COUNT(*) FROM {$items_table} WHERE item_key = %s";
-            $exists = $wpdb->get_var($wpdb->prepare($check_query, $sp->item_key));
-            
-            if (!$exists) {
-                error_log('Dashboard Config Save: CRITICAL - Shortcode page lost, restoring: ' . $sp->item_key);
-                
-                // Restore the shortcode page exactly as it was
-                $wpdb->insert(
-                    $items_table,
-                    array(
-                        'section_id' => $sp->section_id,
-                        'item_key' => $sp->item_key,
-                        'item_name' => $sp->item_name,
-                        'callback_function' => $sp->callback_function,
-                        'quick_action' => $sp->quick_action,
-                        'display_order' => $sp->display_order,
-                        'is_active' => $sp->is_active,
-                        'icon' => $sp->icon,
-                        'description' => $sp->description,
-                        'permissions' => $sp->permissions,
-                        'created_at' => $sp->created_at,
-                        'updated_at' => current_time('mysql')
-                    ),
-                    array('%d', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s')
-                );
-                
-                if ($wpdb->last_error) {
-                    error_log('Dashboard Config Save: Error restoring shortcode page: ' . $wpdb->last_error);
-                } else {
-                    error_log('Dashboard Config Save: Successfully restored shortcode page: ' . $sp->item_key);
-                }
-            } else {
-                error_log('Dashboard Config Save: Shortcode page still exists: ' . $sp->item_key);
-            }
-        }
-
-        // DEBUG: Check what's actually in the database
-        $all_items = $wpdb->get_results("SELECT item_key, item_name, is_active, quick_action FROM {$items_table}");
-        error_log('Dashboard Config Save: Items in database after save: ' . print_r($all_items, true));
-        
-        // DEBUG: Count items by type
-        $default_item_count = 0;
-        $shortcode_item_count = 0;
-        foreach ($all_items as $db_item) {
-            $is_default = false;
-            foreach ($this->default_menu_items as $default_item) {
-                if ($default_item['id'] === $db_item->item_key) {
-                    $is_default = true;
-                    break;
-                }
-            }
-            if ($is_default) {
-                $default_item_count++;
-            } else {
-                $shortcode_item_count++;
-            }
-        }
-        error_log("Dashboard Config Save: Final counts - Default items: $default_item_count, Shortcode/Custom items: $shortcode_item_count");
-
-        error_log('Dashboard Config Save: Sending success response');
-        wp_send_json_success('Configuration saved successfully');
-    }
-    
-    /**
-     * Emergency method to restore database if items get lost
-     */
     public function restore_dashboard_items() {
         error_log('Dashboard Config: EMERGENCY RESTORE - Rebuilding menu items');
         
@@ -1381,27 +1139,28 @@ class JotunheimDashboardConfig {
         $this->init_config();
         
         error_log('Dashboard Config: Emergency restore completed');
-    }    public function reset_dashboard_config() {
+    }
+    
+    public function save_dashboard_config() {
         if (!current_user_can('manage_options')) {
             wp_die('Unauthorized');
         }
-
+        
         if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
             wp_die('Invalid nonce');
         }
 
-        // Clear normalized database tables
-        $this->normalized_db->clear_all_data();
+        // Only handle organized menu toggle now
+        if (isset($_POST['use_organized_menu'])) {
+            update_option('jotunheim_use_organized_menu', (bool)$_POST['use_organized_menu']);
+            wp_send_json_success('Menu mode updated successfully');
+            return;
+        }
         
-        // Reload default configuration into normalized database
-        $this->init_config();
-
-        wp_send_json_success('Configuration reset to defaults');
+        // If someone tries to save full configuration, inform them it's auto-save now
+        wp_send_json_error('Manual save is no longer needed - changes are automatically saved');
     }
-    
-    /**
-     * AJAX handler for saving Discord roles
-     */
+
     public function ajax_save_discord_roles() {
         if (!current_user_can('manage_options')) {
             wp_die('Unauthorized');
@@ -1949,21 +1708,10 @@ function render_dashboard_config_page() {
             
             <div class="dashboard-config-description">
                 <p>Customize your Jotunheim Magic dashboard by organizing menu items into sections, reordering them, and enabling/disabling features as needed.</p>
+                <p><strong>Auto-Save:</strong> All changes are automatically saved as you make them - no need to manually save your configuration!</p>
             </div>
         
         <div class="dashboard-config-actions">
-            <button type="button" class="button button-primary" id="save-config">
-                <span class="dashicons dashicons-saved"></span>
-                Save Configuration
-            </button>
-            <button type="button" class="button button-secondary" id="preview-config">
-                <span class="dashicons dashicons-visibility"></span>
-                Preview Changes
-            </button>
-            <button type="button" class="button button-secondary" id="reset-config">
-                <span class="dashicons dashicons-undo"></span>
-                Reset to Defaults
-            </button>
             <button type="button" class="button button-secondary" id="add-section">
                 <span class="dashicons dashicons-plus-alt"></span>
                 Add Section

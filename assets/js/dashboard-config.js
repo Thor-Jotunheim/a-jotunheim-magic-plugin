@@ -6,7 +6,6 @@
 jQuery(document).ready(function($) {
     let currentConfig = dashboardConfig.config;
     let menuItems = dashboardConfig.menuItems;
-    let isDirty = false;
 
     // Make currentConfig globally accessible for the Add Pages modal
     window.currentConfig = currentConfig;
@@ -69,16 +68,6 @@ jQuery(document).ready(function($) {
     }
 
     function bindEvents() {
-        // Save configuration
-        $('#save-config').on('click', saveConfiguration);
-        
-        // Reset configuration
-        $('#reset-config').on('click', resetConfiguration);
-        
-        // Preview changes
-        $('#preview-config').on('click', togglePreview);
-        $('#close-preview').on('click', closePreview);
-        
         // Add new section
         $('#add-section').on('click', addNewSection);
         
@@ -112,14 +101,6 @@ jQuery(document).ready(function($) {
             }
         });
         
-        // Warn about unsaved changes
-        window.addEventListener('beforeunload', function(e) {
-            if (isDirty) {
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
-            }
-        });
     }
 
     function renderSections() {
@@ -255,7 +236,7 @@ jQuery(document).ready(function($) {
             placeholder: 'section-item ui-sortable-placeholder',
             update: function(event, ui) {
                 updateSectionOrder();
-                markDirty();
+                // Auto-save when section order changes
             }
         });
         
@@ -264,7 +245,7 @@ jQuery(document).ready(function($) {
             placeholder: 'menu-item ui-sortable-placeholder',
             update: function(event, ui) {
                 updateItemOrder();
-                markDirty();
+                // Auto-save when item order changes
             }
         });
     }
@@ -390,7 +371,7 @@ jQuery(document).ready(function($) {
         renderSections();
         populateFilters();
         updateItemSectionSelects();
-        markDirty();
+        // Auto-save after adding section
     }
 
     function closeSectionModal() {
@@ -405,7 +386,7 @@ jQuery(document).ready(function($) {
             renderSections();
             populateFilters();
             updateItemSectionSelects();
-            markDirty();
+            // Auto-save after section toggle
         }
     }
 
@@ -438,7 +419,7 @@ jQuery(document).ready(function($) {
             renderSections();
             renderItems();
             populateFilters();
-            markDirty();
+            // Auto-save after section deletion
         }
     }
 
@@ -497,7 +478,7 @@ jQuery(document).ready(function($) {
             itemConfig.section = newSection;
             $(e.currentTarget).closest('.menu-item').attr('data-section', newSection);
             renderItems(); // Re-render to update section display
-            markDirty();
+            // Auto-save after section change
         }
     }
 
@@ -622,7 +603,7 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         // Remove the item from the config
                         currentConfig.items = currentConfig.items.filter(item => item.id !== itemId);
-                        markDirty();
+                        // Auto-save after page deletion
                         renderItems(); // Re-render to remove the item
                         alert('Page deleted successfully!');
                     } else {
@@ -646,165 +627,7 @@ jQuery(document).ready(function($) {
         });
     }
 
-    function togglePreview() {
-        const preview = $('#preview-panel');
-        if (preview.is(':visible')) {
-            closePreview();
-        } else {
-            renderPreview();
-            preview.show();
-        }
-    }
 
-    function closePreview() {
-        $('#preview-panel').hide();
-    }
-
-    function renderPreview() {
-        const container = $('#preview-menu');
-        container.empty();
-        
-        const sections = [...currentConfig.sections]
-            .filter(s => s.enabled)
-            .sort((a, b) => a.order - b.order);
-        
-        sections.forEach(section => {
-            const sectionItems = currentConfig.items
-                .filter(item => item.section === section.id && item.enabled)
-                .sort((a, b) => a.order - b.order)
-                .map(itemConfig => findMenuItem(itemConfig.id))
-                .filter(item => item !== null);
-            
-            if (sectionItems.length === 0) return;
-            
-            const sectionHtml = `
-                <div class="preview-section">
-                    <div class="preview-section-header">
-                        <span class="dashicons ${section.icon}"></span>
-                        ${escapeHtml(section.title)}
-                    </div>
-                    <div class="preview-section-items">
-                        ${sectionItems.map(item => `
-                            <div class="preview-item">
-                                <div>
-                                    <div class="preview-item-title">${escapeHtml(item.menu_title)}</div>
-                                    <div class="preview-item-description">${escapeHtml(item.description || '')}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-            container.append(sectionHtml);
-        });
-    }
-
-    function saveConfiguration() {
-        // Build sections array - keep the WORKING currentConfig approach for sections
-        const sectionsData = currentConfig.sections.map(section => ({
-            id: section.id,
-            title: section.title,
-            order: section.order,
-            description: section.description || '',
-            icon: section.icon || '',
-            enabled: section.enabled
-        }));
-        
-        console.log('SAVE DEBUG: currentConfig at save time:', currentConfig);
-        console.log('SAVE DEBUG: currentConfig.items at save time:', currentConfig.items);
-        console.log('SAVE DEBUG: currentConfig.items length:', currentConfig.items ? currentConfig.items.length : 'UNDEFINED');
-        
-        // Build items array - use currentConfig.items exactly like sections do
-        const itemsData = currentConfig.items.map(item => ({
-            id: item.id,
-            title: item.title || '',
-            menu_title: item.menu_title || item.title || '',
-            order: item.order,
-            section: item.section,
-            enabled: item.enabled,
-            quick_action: item.quick_action || false
-        }));
-        
-        console.log('SAVE DEBUG: sections (from currentConfig):', sectionsData);
-        console.log('SAVE DEBUG: items (from currentConfig):', itemsData);
-        
-        const data = {
-            action: 'save_dashboard_config',
-            nonce: dashboardConfig.nonce,
-            sections: JSON.stringify(sectionsData),
-            items: JSON.stringify(itemsData)
-        };
-        
-        console.log('SAVE DEBUG: Final data object being sent to backend:');
-        console.log('SAVE DEBUG: - sections JSON:', data.sections);
-        console.log('SAVE DEBUG: - items JSON:', data.items);
-        console.log('SAVE DEBUG: - sections JSON length:', data.sections.length);
-        console.log('SAVE DEBUG: - items JSON length:', data.items.length);
-        
-        $('#save-config').prop('disabled', true).text('Saving...');
-        
-        $.post(dashboardConfig.ajaxurl, data)
-            .done(function(response) {
-                console.log('SAVE DEBUG: Server response:', response);
-                if (response.success) {
-                    console.log('SAVE DEBUG: Save was successful');
-                    showNotification('Configuration saved successfully!', 'success');
-                    isDirty = false;
-                    
-                    // Clear unsaved styling
-                    $('.unsaved-change').removeClass('unsaved-change');
-                    $('.item-quick-action-control label').each(function() {
-                        if ($(this).text().includes('(unsaved)')) {
-                            $(this).text('Quick Action');
-                        }
-                    });
-                    
-                    // Reload page to show updated configuration
-                    setTimeout(function() {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    console.log('SAVE DEBUG: Save failed, response.data:', response.data);
-                    showNotification('Failed to save configuration: ' + response.data, 'error');
-                }
-            })
-            .fail(function(xhr, status, error) {
-                console.log('SAVE DEBUG: Ajax request failed:', status, error);
-                showNotification('Failed to save configuration. Please try again.', 'error');
-            })
-            .always(function() {
-                $('#save-config').prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Save Configuration');
-            });
-    }
-
-    function resetConfiguration() {
-        if (!confirm('Are you sure you want to reset the dashboard configuration to defaults? This will remove all your customizations.')) {
-            return;
-        }
-        
-        const data = {
-            action: 'reset_dashboard_config',
-            nonce: dashboardConfig.nonce
-        };
-        
-        $('#reset-config').prop('disabled', true).text('Resetting...');
-        
-        $.post(dashboardConfig.ajaxurl, data)
-            .done(function(response) {
-                if (response.success) {
-                    showNotification('Configuration reset to defaults!', 'success');
-                    location.reload(); // Reload to get fresh default config
-                } else {
-                    showNotification('Failed to reset configuration: ' + response.data, 'error');
-                }
-            })
-            .fail(function() {
-                showNotification('Failed to reset configuration. Please try again.', 'error');
-            })
-            .always(function() {
-                $('#reset-config').prop('disabled', false).html('<span class="dashicons dashicons-undo"></span> Reset to Defaults');
-            });
-    }
 
     // Helper functions
     function findSection(id) {
@@ -823,12 +646,7 @@ jQuery(document).ready(function($) {
         return currentConfig.items.filter(item => item.section === sectionId);
     }
 
-    function markDirty() {
-        isDirty = true;
-        if (!$('#save-config').hasClass('button-primary-dirty')) {
-            $('#save-config').addClass('button-primary-dirty');
-        }
-    }
+
 
     function escapeHtml(text) {
         const div = document.createElement('div');
