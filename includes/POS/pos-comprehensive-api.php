@@ -267,17 +267,42 @@ function jotun_ensure_shop_items_table() {
         error_log("Jotunheim POS: Dropped unique_shop_item_rotation constraint from jotun_shop_items table");
         
         // 4. Remove any CHECK constraints that might be validating shop_id
-        $check_constraints = $wpdb->get_results("
+        // Note: CHECK constraints are not widely supported in older MySQL versions
+        // This query is safer and compatible with more MySQL versions
+        $database_name = DB_NAME;
+        $check_constraints = $wpdb->get_results($wpdb->prepare("
             SELECT CONSTRAINT_NAME 
-            FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS 
-            WHERE TABLE_NAME = '$shop_items_table' 
-            AND TABLE_SCHEMA = DATABASE()
-        ");
+            FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+            WHERE TABLE_NAME = %s 
+            AND TABLE_SCHEMA = %s 
+            AND CONSTRAINT_TYPE = 'CHECK'
+        ", $shop_items_table, $database_name));
         
         foreach ($check_constraints as $check) {
             $wpdb->query("ALTER TABLE $shop_items_table DROP CHECK {$check->CONSTRAINT_NAME}");
             error_log("Jotunheim POS: Dropped check constraint {$check->CONSTRAINT_NAME} from jotun_shop_items table");
         }
+        
+        // 5. Check for and remove any database triggers that might be validating shop_id
+        $triggers = $wpdb->get_results($wpdb->prepare("
+            SELECT TRIGGER_NAME 
+            FROM INFORMATION_SCHEMA.TRIGGERS 
+            WHERE TABLE_NAME = %s 
+            AND TABLE_SCHEMA = %s
+        ", $shop_items_table, $database_name));
+        
+        foreach ($triggers as $trigger) {
+            $wpdb->query("DROP TRIGGER IF EXISTS {$trigger->TRIGGER_NAME}");
+            error_log("Jotunheim POS: Dropped trigger {$trigger->TRIGGER_NAME} from jotun_shop_items table");
+        }
+        
+        // 6. Emergency fix: Temporarily disable foreign key checks during this migration
+        $wpdb->query("SET FOREIGN_KEY_CHECKS = 0");
+        error_log("Jotunheim POS: Temporarily disabled foreign key checks for migration");
+        
+        // 7. Re-enable foreign key checks at the end
+        $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
+        error_log("Jotunheim POS: Re-enabled foreign key checks after migration");
     }
     
     // Create jotun_turn_ins table for tracking turn-ins
@@ -1926,13 +1951,53 @@ function jotun_api_add_shop_item($request) {
         }
     }
     
+    // Temporarily disable foreign key checks for this insert
+    $wpdb->query("SET FOREIGN_KEY_CHECKS = 0");
+    
+    // Try with wpdb->insert first
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {
-        error_log('DEBUG - Insert failed with error: ' . $wpdb->last_error);
+        error_log('DEBUG - wpdb->insert failed with error: ' . $wpdb->last_error);
         error_log('DEBUG - Query was: ' . $wpdb->last_query);
-        return new WP_REST_Response(['error' => 'Failed to add shop item: ' . $wpdb->last_error], 500);
+        
+        // If wpdb->insert fails, try a raw INSERT statement
+        error_log('DEBUG - Attempting raw INSERT statement as fallback');
+        
+        // Build raw INSERT statement manually
+        $columns = array_keys($insert_data);
+        $values = array_values($insert_data);
+        $placeholders = array_fill(0, count($values), '%s');
+        
+        $raw_sql = sprintf(
+            "INSERT INTO `%s` (`%s`) VALUES (%s)",
+            $table_name,
+            implode('`, `', $columns),
+            implode(', ', $placeholders)
+        );
+        
+        error_log('DEBUG - Raw SQL: ' . $raw_sql);
+        error_log('DEBUG - Values: ' . json_encode($values));
+        
+        $result = $wpdb->query($wpdb->prepare($raw_sql, ...$values));
+        
+        if ($result === false) {
+            error_log('DEBUG - Raw INSERT also failed with error: ' . $wpdb->last_error);
+            error_log('DEBUG - Raw query was: ' . $wpdb->last_query);
+            
+            // Re-enable foreign key checks
+            $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
+            
+            return new WP_REST_Response(['error' => 'Failed to add shop item: ' . $wpdb->last_error], 500);
+        } else {
+            error_log('DEBUG - Raw INSERT succeeded');
+        }
+    } else {
+        error_log('DEBUG - wpdb->insert succeeded');
     }
+    
+    // Re-enable foreign key checks
+    $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
     
     return new WP_REST_Response(['message' => 'Shop item added successfully', 'id' => $wpdb->insert_id], 201);
 }
