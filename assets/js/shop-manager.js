@@ -487,10 +487,13 @@ class ShopManager {
                 
                 // Show/hide appropriate sections
                 if (isTurnInOnly) {
-                    document.getElementById('shop-items-table-container').style.display = 'none';
+                    // For Turn-In Only shops, show BOTH the items grid and turn-in controls
+                    document.getElementById('shop-items-table-container').style.display = 'block';
                     document.getElementById('turn-in-controls').style.display = 'block';
                     this.loadTurnInTracker(shopId);
+                    await this.loadShopItems(shopId); // Also load items for editing/deleting
                 } else {
+                    // For regular shops, show only items grid
                     document.getElementById('shop-items-table-container').style.display = 'block';
                     document.getElementById('turn-in-controls').style.display = 'none';
                     await this.loadShopItems(shopId);
