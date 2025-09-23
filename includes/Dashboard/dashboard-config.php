@@ -45,6 +45,7 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_section', [$this, 'ajax_edit_dashboard_section']);
+        add_action('wp_ajax_create_dashboard_section', [$this, 'ajax_create_dashboard_section']);
         add_action('wp_ajax_update_section_order', [$this, 'ajax_update_section_order']);
         add_action('wp_ajax_update_item_order', [$this, 'ajax_update_item_order']);
         add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
@@ -1542,6 +1543,60 @@ class JotunheimDashboardConfig {
     }
     
     /**
+     * AJAX handler to create a new dashboard section
+     */
+    public function ajax_create_dashboard_section() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_data = $_POST['section_data'];
+        
+        if (empty($section_data['id']) || empty($section_data['title'])) {
+            wp_send_json_error('Section ID and title are required');
+            return;
+        }
+        
+        $section_key = sanitize_key($section_data['id']);
+        $section_name = sanitize_text_field($section_data['title']);
+        $description = isset($section_data['description']) ? sanitize_text_field($section_data['description']) : '';
+        $icon = isset($section_data['icon']) ? sanitize_text_field($section_data['icon']) : '';
+        $display_order = isset($section_data['order']) ? (int)$section_data['order'] : 0;
+        
+        // Handle enabled boolean properly
+        $enabled = 1; // Default to enabled
+        if (isset($section_data['enabled'])) {
+            $enabled_value = $section_data['enabled'];
+            if (is_string($enabled_value)) {
+                $enabled = ($enabled_value === 'true' || $enabled_value === '1') ? 1 : 0;
+            } else {
+                $enabled = (bool)$enabled_value ? 1 : 0;
+            }
+        }
+        
+        // Use the normalized database to create the section
+        $result = $this->normalized_db->save_section(
+            $section_key,
+            $section_name,
+            $display_order,
+            $description,
+            $icon,
+            $enabled
+        );
+        
+        if (!$result) {
+            wp_send_json_error('Failed to create section');
+            return;
+        }
+        
+        wp_send_json_success('Section created successfully');
+    }
+    
+    /**
      * AJAX handler to update section display order
      */
     public function ajax_update_section_order() {
@@ -1988,6 +2043,37 @@ function render_dashboard_config_page() {
             <div class="dashboard-modal-footer">
                 <button type="button" class="button button-secondary" id="cancel-section">Cancel</button>
                 <button type="button" class="button button-primary" id="save-section">Save Section</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Item Edit Modal -->
+    <div id="item-modal" class="dashboard-modal" style="display: none;">
+        <div class="dashboard-modal-content">
+            <div class="dashboard-modal-header">
+                <h3 id="item-modal-title">Edit Item</h3>
+                <button type="button" class="dashboard-modal-close" id="close-item-modal">
+                    <span class="dashicons dashicons-no-alt"></span>
+                </button>
+            </div>
+            <div class="dashboard-modal-body">
+                <form id="item-form">
+                    <input type="hidden" id="item-id" name="item_id">
+                    
+                    <div class="form-group">
+                        <label for="item-title">Item Title</label>
+                        <input type="text" id="item-title" name="item_title" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-description">Description</label>
+                        <textarea id="item-description" name="item_description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="dashboard-modal-footer">
+                <button type="button" class="button button-secondary" id="cancel-item">Cancel</button>
+                <button type="button" class="button button-primary" id="save-item">Save Item</button>
             </div>
         </div>
     </div>

@@ -75,6 +75,10 @@ jQuery(document).ready(function($) {
         $('#save-section').on('click', saveSection);
         $('#cancel-section, #close-section-modal').on('click', closeSectionModal);
         
+        // Item modal events
+        $('#save-item').on('click', saveItem);
+        $('#cancel-item, #close-item-modal').on('click', closeItemModal);
+        
         // Filter events
         $('#section-filter, #status-filter').on('change', filterItems);
         
@@ -404,18 +408,40 @@ jQuery(document).ready(function($) {
         }
         
         if (isNew) {
-            // For new sections, add to local config and render
-            sectionData.order = currentConfig.sections.length + 1;
-            currentConfig.sections.push(sectionData);
-            
-            closeSectionModal();
-            renderSections();
-            populateFilters();
-            updateItemSectionSelects();
-            
-            // For new sections, we would need to create them via a different endpoint
-            // For now, new sections still require the full config save
-            showNotification('New section added. Note: New sections are saved automatically when you make other changes.', 'success');
+            // For new sections, use the create endpoint
+            $.ajax({
+                url: dashboardConfig.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'create_dashboard_section',
+                    section_data: {
+                        id: sectionData.id,
+                        title: sectionData.title,
+                        description: sectionData.description,
+                        icon: sectionData.icon,
+                        enabled: sectionData.enabled,
+                        order: sectionData.order
+                    },
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        closeSectionModal();
+                        showNotification('New section created successfully! Refreshing page...', 'success');
+                        console.log('New section created successfully');
+                        
+                        // Refresh page to show the new section
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        alert('Error creating section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error creating section. Please try again.');
+                }
+            });
         } else {
             // For existing sections, auto-save immediately via AJAX
             $.ajax({
@@ -461,6 +487,65 @@ jQuery(document).ready(function($) {
 
     function closeSectionModal() {
         $('#section-modal').hide();
+    }
+
+    function openItemModal(itemConfig) {
+        $('#item-modal-title').text('Edit Item');
+        $('#item-id').val(itemConfig.id);
+        $('#item-title').val(itemConfig.menu_title || itemConfig.title);
+        $('#item-description').val(itemConfig.description || '');
+        
+        $('#item-modal').show();
+        $('#item-title').focus();
+    }
+
+    function closeItemModal() {
+        $('#item-modal').hide();
+    }
+
+    function saveItem() {
+        const itemData = {
+            id: $('#item-id').val(),
+            title: $('#item-title').val().trim(),
+            description: $('#item-description').val().trim()
+        };
+        
+        if (!itemData.title) {
+            alert('Item title is required');
+            return;
+        }
+        
+        // Save immediately via AJAX
+        $.ajax({
+            url: dashboardConfig.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'edit_dashboard_page',
+                page_id: itemData.id,
+                page_data: {
+                    menu_title: itemData.title,
+                    description: itemData.description
+                },
+                nonce: dashboardConfig.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    closeItemModal();
+                    showNotification('Item updated successfully! Refreshing page...', 'success');
+                    console.log('Item auto-saved successfully');
+                    
+                    // Refresh page to show changes
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    alert('Error updating item: ' + (response.data || 'Unknown error'));
+                }
+            },
+            error: function() {
+                alert('Error updating item. Please try again.');
+            }
+        });
     }
 
     function toggleSection(e) {
@@ -656,50 +741,14 @@ jQuery(document).ready(function($) {
 
     function editItem(e) {
         const itemId = $(e.currentTarget).data('id');
-        const itemTitle = $(e.currentTarget).data('title');
+        const itemConfig = findItemConfig(itemId);
         
-        // Create simple prompt for editing page title
-        const newTitle = prompt('Edit dashboard title for: ' + itemTitle, itemTitle);
-        
-        if (newTitle && newTitle !== itemTitle) {
-            // Send AJAX request to update the page
-            $.ajax({
-                url: dashboardConfig.ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'edit_dashboard_page',
-                    page_id: itemId,
-                    page_data: {
-                        menu_title: newTitle
-                    },
-                    nonce: dashboardConfig.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Find and update both the menu item and config item
-                        const menuItem = findMenuItem(itemId);
-                        const configItem = currentConfig.items.find(item => item.id === itemId);
-                        
-                        if (menuItem) {
-                            menuItem.menu_title = newTitle;
-                        }
-                        if (configItem) {
-                            configItem.menu_title = newTitle;
-                        }
-                        
-                        // Don't mark dirty - rename saves immediately to database
-                        // markDirty(); // Removed - no need to save again
-                        renderItems(); // Re-render to show the new title
-                        alert('Page title updated successfully! (Saved immediately)');
-                    } else {
-                        alert('Error updating page: ' + (response.data || 'Unknown error'));
-                    }
-                },
-                error: function() {
-                    alert('Error updating page');
-                }
-            });
+        if (!itemConfig) {
+            console.error('Error: Item config not found for ID:', itemId);
+            return;
         }
+        
+        openItemModal(itemConfig);
     }
 
     function deleteItem(e) {
