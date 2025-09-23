@@ -9,6 +9,83 @@ if (!defined('ABSPATH')) {
  * Provides CRUD operations for all major database tables
  */
 
+// Ensure shop types table exists
+add_action('init', 'jotun_ensure_shop_types_table');
+
+function jotun_ensure_shop_types_table() {
+    global $wpdb;
+    
+    $shop_types_table = 'jotun_shop_types';
+    
+    // Check if table exists
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$shop_types_table'") == $shop_types_table;
+    
+    if (!$table_exists) {
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $shop_types_table (
+            type_id int(11) NOT NULL AUTO_INCREMENT,
+            type_name varchar(100) NOT NULL,
+            type_key varchar(50) NOT NULL,
+            description text,
+            default_permissions text COMMENT 'JSON array of default Discord roles',
+            is_active tinyint(1) DEFAULT 1,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (type_id),
+            UNIQUE KEY unique_type_key (type_key),
+            KEY idx_is_active (is_active)
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        // Insert default shop types
+        jotun_insert_default_shop_types();
+        
+        error_log('Jotunheim POS: Created jotun_shop_types table');
+    }
+}
+
+function jotun_insert_default_shop_types() {
+    global $wpdb;
+    
+    $default_types = [
+        [
+            'type_name' => 'Player Shop',
+            'type_key' => 'player',
+            'description' => 'Standard player-owned shop',
+            'default_permissions' => json_encode(['all_members']),
+            'is_active' => 1
+        ],
+        [
+            'type_name' => 'Staff Shop',
+            'type_key' => 'staff',
+            'description' => 'Staff-only administrative shop',
+            'default_permissions' => json_encode(['staff', 'admin', 'aesir']),
+            'is_active' => 1
+        ],
+        [
+            'type_name' => 'Admin Shop',
+            'type_key' => 'admin',
+            'description' => 'Administrator shop with special privileges',
+            'default_permissions' => json_encode(['admin', 'aesir']),
+            'is_active' => 1
+        ],
+        [
+            'type_name' => 'Popup Shop',
+            'type_key' => 'popup',
+            'description' => 'Temporary event-based shop',
+            'default_permissions' => json_encode(['staff', 'admin', 'aesir']),
+            'is_active' => 1
+        ]
+    ];
+    
+    foreach ($default_types as $type) {
+        $wpdb->insert('jotun_shop_types', $type);
+    }
+}
+
 // Register all comprehensive REST API routes
 add_action('rest_api_init', function() {
     
@@ -235,6 +312,46 @@ add_action('rest_api_init', function() {
     register_rest_route('jotun-api/v1', '/shops/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'jotun_api_delete_shop',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // ============================================================================
+    // SHOP TYPES API ENDPOINTS (jotun_shop_types)
+    // ============================================================================
+    
+    // Get all shop types
+    register_rest_route('jotun-api/v1', '/shop-types', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_shop_types',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Add new shop type
+    register_rest_route('jotun-api/v1', '/shop-types', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_add_shop_type',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Update shop type
+    register_rest_route('jotun-api/v1', '/shop-types/(?P<id>\d+)', [
+        'methods' => 'PUT',
+        'callback' => 'jotun_api_update_shop_type',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Delete shop type
+    register_rest_route('jotun-api/v1', '/shop-types/(?P<id>\d+)', [
+        'methods' => 'DELETE',
+        'callback' => 'jotun_api_delete_shop_type',
         'permission_callback' => function() {
             return current_user_can('edit_posts');
         }
@@ -1580,4 +1697,96 @@ function jotun_api_delete_ledger_entry($request) {
     }
     
     return new WP_REST_Response(['message' => 'Ledger entry deleted successfully'], 200);
+}
+
+// ============================================================================
+// SHOP TYPES FUNCTIONS (jotun_shop_types)
+// ============================================================================
+
+function jotun_api_get_shop_types($request) {
+    global $wpdb;
+    
+    $table_name = 'jotun_shop_types';
+    $results = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active = 1 ORDER BY type_name ASC");
+    
+    if ($wpdb->last_error) {
+        return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response(['data' => $results], 200);
+}
+
+function jotun_api_add_shop_type($request) {
+    global $wpdb;
+    
+    $data = $request->get_json_params();
+    $table_name = 'jotun_shop_types';
+    
+    if (empty($data['type_name']) || empty($data['type_key'])) {
+        return new WP_REST_Response(['error' => 'Type name and key are required'], 400);
+    }
+    
+    $insert_data = [
+        'type_name' => sanitize_text_field($data['type_name']),
+        'type_key' => sanitize_key($data['type_key']),
+        'description' => sanitize_textarea_field($data['description'] ?? ''),
+        'default_permissions' => json_encode($data['default_permissions'] ?? []),
+        'is_active' => 1,
+        'created_at' => current_time('mysql')
+    ];
+    
+    $result = $wpdb->insert($table_name, $insert_data);
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to add shop type: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response(['message' => 'Shop type added successfully', 'id' => $wpdb->insert_id], 201);
+}
+
+function jotun_api_update_shop_type($request) {
+    global $wpdb;
+    
+    $id = (int) $request['id'];
+    $data = $request->get_json_params();
+    $table_name = 'jotun_shop_types';
+    
+    if (empty($data['type_name'])) {
+        return new WP_REST_Response(['error' => 'Type name is required'], 400);
+    }
+    
+    $update_data = [
+        'type_name' => sanitize_text_field($data['type_name']),
+        'description' => sanitize_textarea_field($data['description'] ?? ''),
+        'default_permissions' => json_encode($data['default_permissions'] ?? []),
+        'updated_at' => current_time('mysql')
+    ];
+    
+    $result = $wpdb->update($table_name, $update_data, ['type_id' => $id]);
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to update shop type: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response(['message' => 'Shop type updated successfully'], 200);
+}
+
+function jotun_api_delete_shop_type($request) {
+    global $wpdb;
+    
+    $id = (int) $request['id'];
+    $table_name = 'jotun_shop_types';
+    
+    // Soft delete by setting is_active to 0
+    $result = $wpdb->update($table_name, ['is_active' => 0], ['type_id' => $id]);
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to delete shop type: ' . $wpdb->last_error], 500);
+    }
+    
+    if ($result === 0) {
+        return new WP_REST_Response(['error' => 'Shop type not found'], 404);
+    }
+    
+    return new WP_REST_Response(['message' => 'Shop type deleted successfully'], 200);
 }
