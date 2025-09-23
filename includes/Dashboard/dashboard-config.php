@@ -3000,7 +3000,7 @@ function render_dashboard_config_page() {
                                 html += '<button type="button" id="select-all-pages" class="button">Select All</button>';
                                 html += '<button type="button" id="deselect-all-pages" class="button">Deselect All</button>';
                                 html += '<button type="button" id="add-selected-pages" class="button button-primary" disabled>Add Selected Pages</button>';
-                                html += '<span id="selection-count" class="selection-count">0 pages selected</span>';
+                                html += '<span id="selection-count" class="selection-counter">0 pages selected</span>';
                                 html += '</div>';
                                 html += '</div>';
                                 
@@ -3140,6 +3140,21 @@ function render_dashboard_config_page() {
         
         // Add detected page
         $(document).on('click', '.add-detected-page', function() {
+            const $item = $(this).closest('.available-page-item');
+            const $checkbox = $item.find('.page-select-checkbox');
+            
+            // Check this page's checkbox
+            $checkbox.prop('checked', true);
+            updateSelectionCount();
+            
+            // Trigger the bulk add for just this item
+            $('#add-selected-pages').trigger('click');
+            
+            return false; // Prevent any other processing
+        });
+        
+        // Legacy add detected page handler (disabled - using bulk selection instead)
+        $(document).on('click', '.add-detected-page-legacy', function() {
             const $item = $(this).closest('.available-page-item');
             const pageId = $item.data('page-id');
             const section = $item.find('.page-section-select').val();
@@ -3592,7 +3607,7 @@ function render_dashboard_config_page() {
         
         function updateSelectionCount() {
             const selectedCount = $('.page-select-checkbox:checked').length;
-            $('#selection-count').text(selectedCount);
+            $('#selection-count').text(selectedCount + ' page' + (selectedCount !== 1 ? 's' : '') + ' selected');
             $('#add-selected-pages').prop('disabled', selectedCount === 0);
         }
         
