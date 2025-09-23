@@ -45,6 +45,7 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_delete_dashboard_page', [$this, 'ajax_delete_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
         add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
+        add_action('wp_ajax_debug_dashboard_state', [$this, 'ajax_debug_dashboard_state']);
         
         // TEMPORARY: Force config reset for debugging (DISABLED after fixing duplicates)
         // delete_option('jotunheim_dashboard_config');
@@ -960,7 +961,7 @@ class JotunheimDashboardConfig {
             // Convert items in this section
             if (isset($section_data['items']) && is_array($section_data['items'])) {
                 foreach ($section_data['items'] as $item_data) {
-                    $frontend_config['items'][] = [
+                    $frontend_item = [
                         'id' => $item_data['item_id'],
                         'title' => $item_data['title'],
                         'section' => $section_key,
@@ -970,6 +971,8 @@ class JotunheimDashboardConfig {
                         'callback' => $item_data['callback'],
                         'description' => $item_data['description'] ?? ''
                     ];
+                    $frontend_config['items'][] = $frontend_item;
+                    error_log('Dashboard Config Frontend: Added item ' . $item_data['item_id'] . ' to frontend config');
                 }
             }
         }
@@ -1123,6 +1126,12 @@ class JotunheimDashboardConfig {
         error_log('Dashboard Config Save: Decoded items count: ' . (is_array($config['items']) ? count($config['items']) : 'NOT ARRAY'));
         error_log('Dashboard Config Save: Items empty check: ' . (empty($config['items']) ? 'TRUE' : 'FALSE'));
         
+        // Log all item IDs that came from frontend
+        if (is_array($config['items'])) {
+            $frontend_item_ids = array_column($config['items'], 'id');
+            error_log('Dashboard Config Save: Frontend item IDs: ' . implode(', ', $frontend_item_ids));
+        }
+        
         // SAFETY CHECK: Don't proceed if we have no items (this would break everything)
         if (empty($config['items'])) {
             error_log('Dashboard Config: Refusing to save empty items configuration');
@@ -1156,8 +1165,11 @@ class JotunheimDashboardConfig {
             $existing_items_by_id[$existing_item['id']] = $existing_item;
         }
         
+        // Process items from the frontend form
+        $processed_item_ids = [];
         foreach ($config['items'] as $item) {
             error_log('Dashboard Config Save: Processing item ' . $item['id']);
+            $processed_item_ids[] = $item['id'];
             
             // First, try to find in default menu items
             $menu_item = null;
@@ -1196,6 +1208,26 @@ class JotunheimDashboardConfig {
                 error_log('Dashboard Config Save: WARNING - Could not find menu item for ' . $item['id']);
             }
         }
+        
+        // CRITICAL: Preserve existing items that weren't in the frontend form (e.g., shortcode pages added via AJAX)
+        foreach ($existing_items_by_id as $item_id => $existing_item) {
+            if (!in_array($item_id, $processed_item_ids)) {
+                error_log('Dashboard Config Save: Preserving existing item not in form: ' . $item_id);
+                
+                // Re-save existing item to maintain it in the database
+                $item_data = [
+                    'item_key' => $existing_item['id'],
+                    'section_key' => $existing_item['section'] ?? 'system', // Default section if missing
+                    'item_name' => $existing_item['title'] ?? $existing_item['item_name'] ?? $item_id,
+                    'callback_function' => $existing_item['callback'],
+                    'display_order' => $existing_item['order'] ?? 999, // Put at end if no order
+                    'enabled' => isset($existing_item['enabled']) ? ($existing_item['enabled'] ? 1 : 0) : 1,
+                    'quick_action' => isset($existing_item['quick_action']) ? ($existing_item['quick_action'] ? 1 : 0) : 0
+                ];
+                $this->normalized_db->save_item($item_data);
+                error_log('Dashboard Config Save: Preserved existing item ' . $item_id);
+            }
+        }
         error_log('Dashboard Config Save: Finished saving all items');
 
         // DEBUG: Check what's actually in the database
@@ -1203,6 +1235,25 @@ class JotunheimDashboardConfig {
         $items_table = $this->normalized_db->get_items_table_name();
         $all_items = $wpdb->get_results("SELECT item_key, item_name, is_active, quick_action FROM {$items_table}");
         error_log('Dashboard Config Save: Items in database after save: ' . print_r($all_items, true));
+        
+        // DEBUG: Count items by type
+        $default_item_count = 0;
+        $shortcode_item_count = 0;
+        foreach ($all_items as $db_item) {
+            $is_default = false;
+            foreach ($this->default_menu_items as $default_item) {
+                if ($default_item['id'] === $db_item->item_key) {
+                    $is_default = true;
+                    break;
+                }
+            }
+            if ($is_default) {
+                $default_item_count++;
+            } else {
+                $shortcode_item_count++;
+            }
+        }
+        error_log("Dashboard Config Save: Final counts - Default items: $default_item_count, Shortcode/Custom items: $shortcode_item_count");
 
         error_log('Dashboard Config Save: Sending success response');
         wp_send_json_success('Configuration saved successfully');
@@ -1553,6 +1604,50 @@ class JotunheimDashboardConfig {
             error_log('DEBUG: Failed to update quick action in normalized database');
             wp_send_json_error('Failed to save configuration');
         }
+    }
+    
+    /**
+     * AJAX handler for debugging dashboard state
+     */
+    public function ajax_debug_dashboard_state() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $response = [
+            'current_menu_items' => [],
+            'all_db_items' => [],
+            'shortcode_detections' => [],
+            'next_order_number' => 0
+        ];
+        
+        // Get current menu items
+        $current_menu_items = $this->normalized_db->get_full_configuration_for_admin();
+        $response['current_menu_items'] = $current_menu_items;
+        
+        // Count for order calculation
+        $response['next_order_number'] = count($current_menu_items) + 1;
+        
+        // Test shortcode detection
+        foreach ($this->predefined_shortcodes as $shortcode => $definition) {
+            $is_registered = shortcode_exists($shortcode);
+            $response['shortcode_detections'][$shortcode] = [
+                'registered' => $is_registered,
+                'definition' => $definition
+            ];
+        }
+        
+        // Get all items directly from database
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'jotun_dashboard_items';
+        $all_items = $wpdb->get_results("SELECT * FROM $table_name ORDER BY order_num", ARRAY_A);
+        $response['all_db_items'] = $all_items;
+        
+        wp_send_json_success($response);
     }
     
     /**
