@@ -2011,14 +2011,23 @@ function jotun_api_get_shop_types($request) {
     
     // For admin management, show all shop types. For dropdowns, show only active ones.
     $show_all = $request->get_param('show_all');
+    error_log('jotun_api_get_shop_types: show_all parameter = ' . ($show_all ? $show_all : 'null'));
     
     if ($show_all === 'true') {
-        $results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY type_name ASC");
+        $query = "SELECT * FROM $table_name ORDER BY type_name ASC";
+        error_log('jotun_api_get_shop_types: Using query for all types: ' . $query);
+        $results = $wpdb->get_results($query);
     } else {
-        $results = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active = 1 ORDER BY type_name ASC");
+        $query = "SELECT * FROM $table_name WHERE is_active = 1 ORDER BY type_name ASC";
+        error_log('jotun_api_get_shop_types: Using query for active only: ' . $query);
+        $results = $wpdb->get_results($query);
     }
     
+    error_log('jotun_api_get_shop_types: Found ' . count($results) . ' shop types');
+    error_log('jotun_api_get_shop_types: Results: ' . print_r($results, true));
+    
     if ($wpdb->last_error) {
+        error_log('jotun_api_get_shop_types: Database error: ' . $wpdb->last_error);
         return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);
     }
     
@@ -2085,6 +2094,9 @@ function jotun_api_update_shop_type($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shop_types';
     
+    error_log('jotun_api_update_shop_type: Updating shop type ID ' . $id);
+    error_log('jotun_api_update_shop_type: Received data: ' . print_r($data, true));
+    
     if (empty($data['type_name'])) {
         return new WP_REST_Response(['error' => 'Type name is required'], 400);
     }
@@ -2092,11 +2104,19 @@ function jotun_api_update_shop_type($request) {
     $update_data = [
         'type_name' => sanitize_text_field($data['type_name']),
         'description' => sanitize_textarea_field($data['description'] ?? ''),
+        'is_active' => isset($data['is_active']) ? (int) $data['is_active'] : 1,
         'default_permissions' => json_encode($data['default_permissions'] ?? []),
         'updated_at' => current_time('mysql')
     ];
     
+    error_log('jotun_api_update_shop_type: Update data: ' . print_r($update_data, true));
+    
     $result = $wpdb->update($table_name, $update_data, ['type_id' => $id]);
+    
+    error_log('jotun_api_update_shop_type: Update result: ' . $result);
+    if ($wpdb->last_error) {
+        error_log('jotun_api_update_shop_type: Database error: ' . $wpdb->last_error);
+    }
     
     if ($result === false) {
         return new WP_REST_Response(['error' => 'Failed to update shop type: ' . $wpdb->last_error], 500);

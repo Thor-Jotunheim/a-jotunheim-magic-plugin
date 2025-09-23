@@ -477,8 +477,11 @@ class ShopManager {
 
     async loadShopTypesTable() {
         try {
+            console.log('Loading shop types table with show_all=true');
             const response = await JotunAPI.getShopTypes({ show_all: 'true' });
+            console.log('Shop types response:', response);
             const shopTypes = response.data || [];
+            console.log('Shop types data:', shopTypes);
             this.renderShopTypesTable(shopTypes);
         } catch (error) {
             console.error('Error loading shop types for table:', error);
