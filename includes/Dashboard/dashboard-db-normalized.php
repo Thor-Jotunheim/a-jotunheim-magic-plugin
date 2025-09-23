@@ -153,7 +153,6 @@ class Jotunheim_Dashboard_DB_Normalized {
         // Debug: Check if tables exist and have data
         $sections_count = $wpdb->get_var("SELECT COUNT(*) FROM {$this->sections_table}");
         $items_count = $wpdb->get_var("SELECT COUNT(*) FROM {$this->items_table}");
-        error_log("Jotunheim Dashboard DB: Found {$sections_count} sections and {$items_count} items in normalized tables");
         
         // EMERGENCY: If we have sections but no items, this is a critical failure - auto-restore
         // TEMPORARILY DISABLED - this was causing saved settings to be overwritten with defaults
@@ -189,7 +188,6 @@ class Jotunheim_Dashboard_DB_Normalized {
         ";
         
         $results = $wpdb->get_results($sql);
-        error_log("Jotunheim Dashboard DB: SQL query returned " . count($results) . " rows");
         
         if ($wpdb->last_error) {
             error_log("Jotunheim Dashboard DB: SQL Error: " . $wpdb->last_error);
@@ -224,7 +222,6 @@ class Jotunheim_Dashboard_DB_Normalized {
             }
         }
         
-        error_log("Jotunheim Dashboard DB: Returning config with " . count($config) . " sections");
         return $config;
     }
 
@@ -244,8 +241,6 @@ class Jotunheim_Dashboard_DB_Normalized {
                      LEFT JOIN {$this->sections_table} s ON i.section_id = s.id 
                      ORDER BY i.display_order";
         $items = $wpdb->get_results($items_sql);
-        
-        error_log('Dashboard DB Admin Config: Found ' . count($sections) . ' sections and ' . count($items) . ' items');
         
         // Group by sections
         $config = array();

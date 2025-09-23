@@ -8,8 +8,6 @@ if (!defined('ABSPATH')) {
 function jotunheim_magic_plugin_menu() {
     // Check current user role for debugging
     $current_user = wp_get_current_user();
-    error_log('Jotunheim Dashboard: Current user roles: ' . implode(', ', $current_user->roles));
-    error_log('Jotunheim Dashboard: Can user manage_options? ' . (current_user_can('manage_options') ? 'YES' : 'NO'));
 
     // Use appropriate capability for main menu - admin users get manage_options, others get edit_posts
     $main_capability = current_user_can('manage_options') ? 'manage_options' : 'edit_posts';
@@ -111,10 +109,6 @@ function jotunheim_magic_plugin_menu() {
     global $jotunheim_dashboard_config;
     $use_organized_menu = get_option('jotunheim_use_organized_menu', false);
     
-    // Debug logging
-    error_log('Jotunheim Dashboard: use_organized_menu = ' . ($use_organized_menu ? 'true' : 'false'));
-    error_log('Jotunheim Dashboard: jotunheim_dashboard_config exists = ' . (isset($jotunheim_dashboard_config) ? 'true' : 'false'));
-    
     // IMPORTANT: Ensure main menu always goes to dashboard overview
     // We need to ensure this happens BEFORE any other submenu registration
     global $submenu;
@@ -209,10 +203,6 @@ function register_organized_menu($config) {
         error_log('Jotunheim Dashboard: Invalid menu config structure from normalized database');
         return false;
     }
-    
-    error_log('Jotunheim Dashboard: Found ' . count($menu_config) . ' sections and ' . array_sum(array_map(function($section) { 
-        return isset($section['items']) ? count($section['items']) : 0; 
-    }, $menu_config)) . ' item assignments');
     
     // Create a map of items by section using normalized database structure
     $items_by_section = [];

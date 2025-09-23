@@ -121,13 +121,10 @@ class JotunheimDashboardConfig {
     }
     
     public function init() {
-        error_log('Jotunheim Dashboard: Starting init() with normalized database');
-        
         // Load configuration from normalized database ONLY
         $this->menu_config = $this->normalized_db->get_full_configuration();
         
         if (empty($this->menu_config)) {
-            error_log('Jotunheim Dashboard: No configuration found in normalized database, loading defaults');
             $this->load_default_menu_items();
             $default_config = $this->get_default_config();
             

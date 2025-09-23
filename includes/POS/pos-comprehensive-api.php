@@ -214,6 +214,13 @@ function jotun_ensure_shop_items_table() {
             $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN unlimited_stock tinyint(1) DEFAULT 0 COMMENT 'Whether item has unlimited stock'");
             error_log('Jotunheim POS: Added unlimited_stock column to jotun_shop_items table');
         }
+
+        // Migration: Add is_available column if it doesn't exist
+        $is_available_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'is_available'");
+        if (empty($is_available_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN is_available tinyint(1) DEFAULT 1 COMMENT 'Whether item is available for purchase'");
+            error_log('Jotunheim POS: Added is_available column to jotun_shop_items table');
+        }
     }
     
     // Create jotun_turn_ins table for tracking turn-ins
@@ -1803,28 +1810,39 @@ function jotun_api_add_shop_item($request) {
     // Enhanced debug logging
     error_log('DEBUG - Final insert data: ' . json_encode($insert_data));
     
-    // Check for existing duplicate before inserting
-    if ($is_custom_item) {
-        // For custom items, check by shop_id, custom_item_name, and rotation
-        $existing_check = $wpdb->get_row($wpdb->prepare(
-            "SELECT id FROM $table_name WHERE shop_id = %d AND item_name = %s AND rotation = %d AND item_id IS NULL",
-            $insert_data['shop_id'],
-            $insert_data['item_name'],
-            $insert_data['rotation']
-        ));
-    } else {
-        // For regular items, check by shop_id, item_id, and rotation
-        $existing_check = $wpdb->get_row($wpdb->prepare(
-            "SELECT id FROM $table_name WHERE shop_id = %d AND item_id = %d AND rotation = %d",
-            $insert_data['shop_id'],
-            $insert_data['item_id'],
-            $insert_data['rotation']
-        ));
+    // Check for existing duplicate before inserting (only if table has proper structure)
+    $table_structure = $wpdb->get_results("SHOW COLUMNS FROM $table_name");
+    $has_id_column = false;
+    foreach ($table_structure as $column) {
+        if ($column->Field === 'id') {
+            $has_id_column = true;
+            break;
+        }
     }
     
-    if ($existing_check) {
-        error_log('DEBUG - Duplicate item found: shop_id=' . $insert_data['shop_id'] . ', item_name=' . $insert_data['item_name'] . ', rotation=' . $insert_data['rotation']);
-        return new WP_REST_Response(['error' => 'Item already exists in this shop rotation'], 409);
+    if ($has_id_column) {
+        if ($is_custom_item) {
+            // For custom items, check by shop_id, custom_item_name, and rotation
+            $existing_check = $wpdb->get_row($wpdb->prepare(
+                "SELECT id FROM $table_name WHERE shop_id = %d AND item_name = %s AND rotation = %d AND item_id IS NULL",
+                $insert_data['shop_id'],
+                $insert_data['item_name'],
+                $insert_data['rotation']
+            ));
+        } else {
+            // For regular items, check by shop_id, item_id, and rotation
+            $existing_check = $wpdb->get_row($wpdb->prepare(
+                "SELECT id FROM $table_name WHERE shop_id = %d AND item_id = %d AND rotation = %d",
+                $insert_data['shop_id'],
+                $insert_data['item_id'],
+                $insert_data['rotation']
+            ));
+        }
+        
+        if ($existing_check) {
+            error_log('DEBUG - Duplicate item found: shop_id=' . $insert_data['shop_id'] . ', item_name=' . $insert_data['item_name'] . ', rotation=' . $insert_data['rotation']);
+            return new WP_REST_Response(['error' => 'Item already exists in this shop rotation'], 409);
+        }
     }
     
     $result = $wpdb->insert($table_name, $insert_data);
