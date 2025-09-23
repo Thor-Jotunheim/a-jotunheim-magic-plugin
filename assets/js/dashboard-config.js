@@ -341,8 +341,9 @@ jQuery(document).ready(function($) {
             }
         });
         
-        // Make items sortable
+        // Make items sortable but exclude section headers
         $('#items-container').sortable({
+            items: '.menu-item:not(.section-header)',
             placeholder: 'menu-item ui-sortable-placeholder',
             update: function(event, ui) {
                 updateItemOrder();
