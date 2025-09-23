@@ -472,7 +472,6 @@ class ShopManager {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${this.escapeHtml(type.type_name)}</td>
-                <td><code>${this.escapeHtml(type.type_key)}</code></td>
                 <td>${this.escapeHtml(type.description || '')}</td>
                 <td><span class="status-badge ${type.is_active == 1 ? 'active' : 'inactive'}">${type.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
                 <td>

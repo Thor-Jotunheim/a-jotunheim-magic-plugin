@@ -212,7 +212,6 @@ function shop_manager_interface() {
                             <thead>
                                 <tr>
                                     <th>Type Name</th>
-                                    <th>Type Key</th>
                                     <th>Description</th>
                                     <th>Status</th>
                                     <th>Actions</th>
