@@ -46,6 +46,7 @@ class JotunheimDashboardConfig {
         add_action('wp_ajax_edit_dashboard_page', [$this, 'ajax_edit_dashboard_page']);
         add_action('wp_ajax_edit_dashboard_section', [$this, 'ajax_edit_dashboard_section']);
         add_action('wp_ajax_create_dashboard_section', [$this, 'ajax_create_dashboard_section']);
+        add_action('wp_ajax_delete_dashboard_section', [$this, 'ajax_delete_dashboard_section']);
         add_action('wp_ajax_update_section_order', [$this, 'ajax_update_section_order']);
         add_action('wp_ajax_update_item_order', [$this, 'ajax_update_item_order']);
         add_action('wp_ajax_update_page_quick_action', [$this, 'ajax_update_page_quick_action']);
@@ -1600,6 +1601,44 @@ class JotunheimDashboardConfig {
         }
         
         wp_send_json_success('Section created successfully');
+    }
+    
+    /**
+     * AJAX handler to delete a dashboard section
+     */
+    public function ajax_delete_dashboard_section() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $section_id = sanitize_key($_POST['section_id']);
+        
+        if (empty($section_id)) {
+            wp_send_json_error('Section ID is required');
+            return;
+        }
+        
+        // First, move any items in this section to another section if needed
+        // (This could be enhanced to specify which section to move items to)
+        
+        // Delete the section from the database
+        global $wpdb;
+        $result = $wpdb->delete(
+            'jotun_dashboard_sections',
+            array('section_key' => $section_id),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error('Failed to delete section: ' . $wpdb->last_error);
+            return;
+        }
+        
+        wp_send_json_success('Section deleted successfully');
     }
     
     /**

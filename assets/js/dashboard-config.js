@@ -603,23 +603,32 @@ jQuery(document).ready(function($) {
         }
         
         if (confirm(confirmMessage)) {
-            // Move items to first available section
-            if (itemsInSection.length > 0) {
-                const firstSection = currentConfig.sections.find(s => s.enabled && s.id !== sectionId);
-                if (firstSection) {
-                    itemsInSection.forEach(item => {
-                        item.section = firstSection.id;
-                    });
+            // Delete section via AJAX
+            $.ajax({
+                url: dashboardConfig.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_dashboard_section',
+                    section_id: sectionId,
+                    nonce: dashboardConfig.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showNotification('Section deleted successfully! Refreshing page...', 'success');
+                        console.log('Section deleted successfully');
+                        
+                        // Refresh page to show changes
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        alert('Error deleting section: ' + (response.data || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error deleting section. Please try again.');
                 }
-            }
-            
-            // Remove section
-            currentConfig.sections = currentConfig.sections.filter(s => s.id !== sectionId);
-            
-            renderSections();
-            renderItems();
-            populateFilters();
-            // Auto-save after section deletion
+            });
         }
     }
 
