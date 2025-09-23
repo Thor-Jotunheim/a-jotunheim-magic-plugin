@@ -1972,24 +1972,19 @@ function render_dashboard_config_page() {
                 <p><strong>Auto-Save:</strong> All changes are automatically saved as you make them - no need to manually save your configuration!</p>
             </div>
         
-        <div class="dashboard-config-actions">
-            <button type="button" class="button button-secondary" id="add-section">
-                <span class="dashicons dashicons-plus-alt"></span>
-                Add Section
-            </button>
-            <button type="button" class="button button-secondary" id="add-pages">
-                <span class="dashicons dashicons-admin-page"></span>
-                Add Pages
-            </button>
-        </div>
-        
         <div class="dashboard-config-container">
             <!-- Sections Management -->
             <div class="config-sections">
-                <h2>
-                    <span class="dashicons dashicons-category"></span>
-                    Menu Sections
-                </h2>
+                <div class="section-header-with-button">
+                    <h2>
+                        <span class="dashicons dashicons-category"></span>
+                        Menu Sections
+                    </h2>
+                    <button type="button" class="button button-secondary" id="add-section">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        Add Section
+                    </button>
+                </div>
                 <p class="section-description">Organize your menu items into logical sections. Drag to reorder.</p>
                 
                 <div id="sections-container" class="sections-list sortable">
@@ -1999,10 +1994,16 @@ function render_dashboard_config_page() {
             
             <!-- Items Management -->
             <div class="config-items">
-                <h2>
-                    <span class="dashicons dashicons-menu-alt"></span>
-                    Menu Items
-                </h2>
+                <div class="section-header-with-button">
+                    <h2>
+                        <span class="dashicons dashicons-menu-alt"></span>
+                        Menu Items
+                    </h2>
+                    <button type="button" class="button button-secondary" id="add-pages">
+                        <span class="dashicons dashicons-admin-page"></span>
+                        Add Pages
+                    </button>
+                </div>
                 <p class="section-description">Assign menu items to sections and control their visibility. Drag to reorder within sections.</p>
                 
                 <div class="items-filter">

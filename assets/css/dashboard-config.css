@@ -850,3 +850,39 @@
 .section-header + .dashboard-item {
     margin-top: 10px;
 }
+
+/* Section header with button layout */
+.section-header-with-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.section-header-with-button h2 {
+    margin: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+.section-header-with-button .button {
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    height: auto;
+    line-height: 1.2;
+}
+
+.section-header-with-button .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
