@@ -8,7 +8,10 @@ class ShopManager {
         this.currentEditingShop = null;
         this.currentEditingShopType = null;
         this.selectedShop = null;
+        this.selectedShopData = null;
         this.shopTypes = [];
+        this.allItems = [];
+        this.turnInTrackers = {};
         this.loadedRotations = new Set(); // Track which shops have rotations loaded
         this.initializeEventListeners();
         this.loadInitialData();
@@ -37,6 +40,15 @@ class ShopManager {
 
         // Shop item form submission
         document.getElementById('add-shop-item-form').addEventListener('submit', (e) => this.handleAddShopItem(e));
+
+        // Turn-in form submission
+        document.getElementById('record-turn-in-form').addEventListener('submit', (e) => this.handleRecordTurnIn(e));
+        
+        // Reset turn-in tracker
+        document.getElementById('reset-turn-in-tracker').addEventListener('click', () => this.resetTurnInTracker());
+        
+        // Item autocomplete
+        this.setupItemAutocomplete();
 
         // Shop types form submission
         document.getElementById('add-shop-type-form').addEventListener('submit', (e) => this.handleAddShopType(e));
@@ -144,6 +156,7 @@ class ShopManager {
         try {
             const response = await JotunAPI.getItemlist();
             const items = response.data || [];
+            this.allItems = items;
             this.populateItemSelector(items);
         } catch (error) {
             console.error('Error loading item list:', error);
@@ -184,6 +197,107 @@ class ShopManager {
         });
     }
 
+    setupItemAutocomplete() {
+        const searchInput = document.getElementById('item-selector');
+        const hiddenSelect = document.getElementById('item-selector-hidden');
+        const suggestionsDiv = document.getElementById('item-suggestions');
+        let currentSuggestionIndex = -1;
+        
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (query.length < 2) {
+                suggestionsDiv.style.display = 'none';
+                hiddenSelect.value = '';
+                return;
+            }
+            
+            const filteredItems = this.allItems.filter(item => 
+                item.item_name.toLowerCase().includes(query) ||
+                (item.prefab_name && item.prefab_name.toLowerCase().includes(query))
+            ).slice(0, 10); // Show max 10 suggestions
+            
+            this.displaySuggestions(filteredItems, suggestionsDiv, searchInput, hiddenSelect);
+        });
+        
+        searchInput.addEventListener('keydown', (e) => {
+            const suggestions = suggestionsDiv.querySelectorAll('.suggestion-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+                this.highlightSuggestion(suggestions, currentSuggestionIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+                this.highlightSuggestion(suggestions, currentSuggestionIndex);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
+                    suggestions[currentSuggestionIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                suggestionsDiv.style.display = 'none';
+                currentSuggestionIndex = -1;
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+    }
+    
+    displaySuggestions(items, container, searchInput, hiddenSelect) {
+        if (items.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `
+                <div class="item-name">${item.item_name}</div>
+                <div class="item-price">${this.formatPrice(item.price || 0)}</div>
+            `;
+            
+            div.addEventListener('click', () => {
+                searchInput.value = item.item_name;
+                hiddenSelect.value = item.id;
+                container.style.display = 'none';
+                
+                // Update price placeholder
+                const customPriceInput = document.getElementById('custom-price');
+                if (customPriceInput) {
+                    customPriceInput.placeholder = `Default: ${this.formatPrice(item.price || 0)}`;
+                }
+            });
+            
+            container.appendChild(div);
+        });
+        
+        container.style.display = 'block';
+    }
+    
+    highlightSuggestion(suggestions, index) {
+        suggestions.forEach((s, i) => {
+            s.classList.toggle('highlighted', i === index);
+        });
+    }
+    
+    formatPrice(price, currency = 'coins') {
+        const numPrice = parseFloat(price) || 0;
+        if (currency === 'ymir') {
+            return `${(numPrice / 120).toFixed(2)} Ymir Flesh`;
+        }
+        return `${numPrice} Coins`;
+    }
+
     populateShopSelector(shops) {
         console.log('populateShopSelector called with shops:', shops);
         const selector = document.getElementById('items-shop-selector');
@@ -211,26 +325,17 @@ class ShopManager {
     }
 
     populateItemSelector(items) {
-        const selector = document.getElementById('item-selector');
-        selector.innerHTML = '<option value="">Select an item...</option>';
+        const hiddenSelector = document.getElementById('item-selector-hidden');
+        if (!hiddenSelector) return;
+        
+        hiddenSelector.innerHTML = '<option value="">Select an item...</option>';
 
         items.forEach(item => {
             const option = document.createElement('option');
             option.value = item.id;
-            option.textContent = `${item.item_name} - $${item.price || '0.00'}`;
-            option.dataset.defaultPrice = item.price || '0.00';
-            selector.appendChild(option);
-        });
-
-        // Update custom price when item is selected
-        selector.addEventListener('change', (e) => {
-            const selectedOption = e.target.selectedOptions[0];
-            const customPriceInput = document.getElementById('custom-price');
-            if (selectedOption && selectedOption.dataset.defaultPrice) {
-                customPriceInput.placeholder = `Default: $${selectedOption.dataset.defaultPrice}`;
-            } else {
-                customPriceInput.placeholder = 'Leave empty for default price';
-            }
+            option.textContent = `${item.item_name} - ${this.formatPrice(item.price || 0)}`;
+            option.dataset.defaultPrice = item.price || '0';
+            hiddenSelector.appendChild(option);
         });
     }
 
@@ -323,9 +428,31 @@ class ShopManager {
         this.selectedShop = shopId;
         
         if (shopId) {
-            document.getElementById('add-item-section').style.display = 'block';
-            document.getElementById('shop-items-list').style.display = 'block';
-            await this.loadShopItems(shopId);
+            // Get shop data to check if it's a Turn-In Only shop
+            try {
+                const shops = await JotunAPI.getShops();
+                this.selectedShopData = shops.data.find(shop => shop.shop_id == shopId);
+                
+                const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in-only';
+                
+                // Show/hide appropriate sections
+                if (isTurnInOnly) {
+                    document.getElementById('add-item-section').style.display = 'none';
+                    document.getElementById('shop-items-table-container').style.display = 'none';
+                    document.getElementById('turn-in-controls').style.display = 'block';
+                    this.loadTurnInTracker(shopId);
+                } else {
+                    document.getElementById('add-item-section').style.display = 'block';
+                    document.getElementById('shop-items-table-container').style.display = 'block';
+                    document.getElementById('turn-in-controls').style.display = 'none';
+                    await this.loadShopItems(shopId);
+                }
+                
+                document.getElementById('shop-items-list').style.display = 'block';
+            } catch (error) {
+                console.error('Error getting shop data:', error);
+                this.hideShopItemsSection();
+            }
         } else {
             this.hideShopItemsSection();
         }
@@ -334,6 +461,66 @@ class ShopManager {
     hideShopItemsSection() {
         document.getElementById('add-item-section').style.display = 'none';
         document.getElementById('shop-items-list').style.display = 'none';
+    }
+
+    async loadTurnInTracker(shopId) {
+        try {
+            // Load turn-in count for this shop
+            const response = await JotunAPI.getTurnInCount(shopId);
+            const count = response.data?.total_count || 0;
+            document.getElementById('turn-in-count').textContent = count;
+        } catch (error) {
+            console.error('Error loading turn-in tracker:', error);
+            document.getElementById('turn-in-count').textContent = '0';
+        }
+    }
+
+    async handleRecordTurnIn(e) {
+        e.preventDefault();
+        
+        if (!this.selectedShop) {
+            this.showStatus('No shop selected', 'error');
+            return;
+        }
+        
+        const formData = new FormData(e.target);
+        const turnInData = {
+            shop_id: this.selectedShop,
+            item_name: formData.get('item_name'),
+            quantity: parseInt(formData.get('quantity') || '1'),
+            player_name: formData.get('player_name') || null
+        };
+        
+        try {
+            await JotunAPI.recordTurnIn(turnInData);
+            this.showStatus('Turn-in recorded successfully', 'success');
+            e.target.reset();
+            // Reload tracker count
+            await this.loadTurnInTracker(this.selectedShop);
+        } catch (error) {
+            console.error('Error recording turn-in:', error);
+            this.showStatus('Failed to record turn-in', 'error');
+        }
+    }
+
+    async resetTurnInTracker() {
+        if (!this.selectedShop) {
+            this.showStatus('No shop selected', 'error');
+            return;
+        }
+        
+        if (!confirm('Are you sure you want to reset the turn-in tracker for this shop? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            await JotunAPI.resetTurnInTracker(this.selectedShop);
+            this.showStatus('Turn-in tracker reset successfully', 'success');
+            await this.loadTurnInTracker(this.selectedShop);
+        } catch (error) {
+            console.error('Error resetting turn-in tracker:', error);
+            this.showStatus('Failed to reset turn-in tracker', 'error');
+        }
     }
 
     async loadShopItems(shopId) {
@@ -365,11 +552,15 @@ class ShopManager {
             const row = document.createElement('tr');
             const defaultPrice = item.default_price || 0;
             const shopPrice = item.custom_price || defaultPrice;
+            const isCustomItem = item.is_custom_item == 1;
             
             row.innerHTML = `
-                <td>${this.escapeHtml(item.master_item_name || item.item_name)}</td>
-                <td>$${defaultPrice.toFixed(2)}</td>
-                <td>$${shopPrice.toFixed(2)}</td>
+                <td>
+                    ${this.escapeHtml(item.master_item_name || item.item_name)}
+                    ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
+                </td>
+                <td>${this.formatPrice(defaultPrice)}</td>
+                <td>${this.formatPrice(shopPrice)}</td>
                 <td>${item.stock_quantity || 0}</td>
                 <td><span class="rotation-badge">${item.rotation || 1}</span></td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
@@ -392,23 +583,38 @@ class ShopManager {
 
         const formData = new FormData(e.target);
         const itemId = formData.get('item_id');
-        const customPrice = formData.get('custom_price');
+        const customItemName = formData.get('custom_item_name');
+        let customPrice = formData.get('custom_price');
+        const priceCurrency = formData.get('price_currency') || 'coins';
         const rotation = formData.get('rotation') || 1;
         
-        if (!itemId) {
-            this.showStatus('Please select an item', 'error');
+        // Check if we have either an item selection or custom item name
+        if (!itemId && !customItemName) {
+            this.showStatus('Please select an item or enter a custom item name', 'error');
             return;
+        }
+
+        // Convert price if in Ymir Flesh to Coins
+        if (customPrice && priceCurrency === 'ymir') {
+            customPrice = parseFloat(customPrice) * 120; // 1 Ymir = 120 Coins
         }
 
         const shopItemData = {
             shop_id: this.selectedShop,
-            item_id: itemId,
             stock_quantity: formData.get('stock_quantity') || 0,
             rotation: parseInt(rotation),
             is_available: formData.get('is_available') === '1'
         };
 
-        if (customPrice && customPrice.trim() !== '') {
+        // Handle custom items vs regular items
+        if (customItemName) {
+            shopItemData.custom_item_name = customItemName;
+            shopItemData.item_id = null; // No item_id for custom items
+        } else {
+            shopItemData.item_id = itemId;
+        }
+
+        if (customPrice && customPrice.toString().trim() !== '') {
             shopItemData.custom_price = parseFloat(customPrice);
         }
 
@@ -421,6 +627,8 @@ class ShopManager {
             // Reset form and reload shop items
             e.target.reset();
             document.getElementById('item-rotation').value = '1'; // Reset rotation to 1
+            document.getElementById('item-selector').value = ''; // Clear search field
+            document.getElementById('item-selector-hidden').value = ''; // Clear hidden field
             await this.loadShopItems(this.selectedShop);
         } catch (error) {
             console.error('Error adding item to shop:', error);

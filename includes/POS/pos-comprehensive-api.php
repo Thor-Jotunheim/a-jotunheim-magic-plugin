@@ -149,6 +149,60 @@ function jotun_ensure_shop_items_table() {
             $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN rotation int(11) DEFAULT 1 COMMENT 'Rotation number for shop item sets' AFTER stock_quantity");
             error_log('Jotunheim POS: Added rotation column to jotun_shop_items table');
         }
+        
+        // Migration: Add is_custom_item column if it doesn't exist
+        $custom_item_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'is_custom_item'");
+        if (empty($custom_item_column_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN is_custom_item tinyint(1) DEFAULT 0 COMMENT 'Flag for custom items like Aesir spells' AFTER rotation");
+            error_log('Jotunheim POS: Added is_custom_item column to jotun_shop_items table');
+        }
+    }
+    
+    // Create jotun_turn_ins table for tracking turn-ins
+    $turn_ins_table = 'jotun_turn_ins';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$turn_ins_table'") !== $turn_ins_table) {
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $turn_ins_table (
+            id int(11) NOT NULL AUTO_INCREMENT,
+            shop_id int(11) NOT NULL,
+            item_name varchar(255) NOT NULL,
+            quantity int(11) DEFAULT 1,
+            player_name varchar(100),
+            recorded_at datetime DEFAULT CURRENT_TIMESTAMP,
+            recorded_by int(11),
+            PRIMARY KEY (id),
+            KEY idx_shop_id (shop_id),
+            KEY idx_recorded_at (recorded_at),
+            FOREIGN KEY (shop_id) REFERENCES jotun_shops(shop_id) ON DELETE CASCADE
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        error_log('Jotunheim POS: Created jotun_turn_ins table');
+    }
+    
+    // Create jotun_turn_in_trackers table for reset tracking
+    $trackers_table = 'jotun_turn_in_trackers';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$trackers_table'") !== $trackers_table) {
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $trackers_table (
+            id int(11) NOT NULL AUTO_INCREMENT,
+            shop_id int(11) NOT NULL,
+            total_count int(11) DEFAULT 0,
+            last_reset datetime DEFAULT CURRENT_TIMESTAMP,
+            reset_by int(11),
+            PRIMARY KEY (id),
+            UNIQUE KEY unique_shop_tracker (shop_id),
+            FOREIGN KEY (shop_id) REFERENCES jotun_shops(shop_id) ON DELETE CASCADE
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        error_log('Jotunheim POS: Created jotun_turn_in_trackers table');
     }
 }
 
@@ -181,6 +235,13 @@ function jotun_insert_default_shop_types() {
             'type_name' => 'Popup Shop',
             'type_key' => 'popup',
             'description' => 'Temporary event-based shop',
+            'default_permissions' => json_encode(['staff', 'admin', 'aesir']),
+            'is_active' => 1
+        ],
+        [
+            'type_name' => 'Turn-In Only',
+            'type_key' => 'turn-in-only',
+            'description' => 'Shop for tracking item turn-ins with no purchases',
             'default_permissions' => json_encode(['staff', 'admin', 'aesir']),
             'is_active' => 1
         ]
@@ -658,6 +719,37 @@ add_action('rest_api_init', function() {
         }
     ]);
     
+    // ============================================================================
+    // TURN-IN TRACKING ENDPOINTS
+    // ============================================================================
+    
+    // Get turn-in count for a shop
+    register_rest_route('jotun-api/v1', '/shops/(?P<shop_id>\d+)/turn-in-count', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_turn_in_count',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Record a turn-in
+    register_rest_route('jotun-api/v1', '/turn-ins', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_record_turn_in',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Reset turn-in tracker for a shop
+    register_rest_route('jotun-api/v1', '/shops/(?P<shop_id>\d+)/reset-turn-in-tracker', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_reset_turn_in_tracker',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
     // ============================================================================
     // TRANSACTIONS API ENDPOINTS (jotun_transactions)
     // ============================================================================
@@ -1576,31 +1668,50 @@ function jotun_api_add_shop_item($request) {
     // Debug logging
     error_log('DEBUG - Add shop item received data: ' . json_encode($data));
     
-    if (empty($data['shop_id']) || empty($data['item_id'])) {
-        error_log('DEBUG - Missing shop_id or item_id. shop_id: ' . ($data['shop_id'] ?? 'missing') . ', item_id: ' . ($data['item_id'] ?? 'missing'));
-        return new WP_REST_Response(['error' => 'Shop ID and item ID are required'], 400);
+    if (empty($data['shop_id'])) {
+        error_log('DEBUG - Missing shop_id');
+        return new WP_REST_Response(['error' => 'Shop ID is required'], 400);
     }
     
-    // Get item details from master list
-    $item = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM jotun_itemlist WHERE id = %d", 
-        (int)$data['item_id']
-    ));
+    // Check if it's a custom item or regular item
+    $is_custom_item = !empty($data['custom_item_name']);
     
-    if (!$item) {
-        return new WP_REST_Response(['error' => 'Item not found in master list'], 404);
+    if (!$is_custom_item && empty($data['item_id'])) {
+        error_log('DEBUG - Missing item_id for regular item');
+        return new WP_REST_Response(['error' => 'Item ID is required for regular items'], 400);
+    }
+    
+    // Get item details from master list for regular items
+    $item_name = '';
+    if (!$is_custom_item) {
+        $item = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM jotun_itemlist WHERE id = %d", 
+            (int)$data['item_id']
+        ));
+        
+        if (!$item) {
+            return new WP_REST_Response(['error' => 'Item not found in master list'], 404);
+        }
+        $item_name = $item->item_name;
+    } else {
+        $item_name = sanitize_text_field($data['custom_item_name']);
     }
     
     $insert_data = [
         'shop_id' => (int)$data['shop_id'],
-        'item_id' => (int)$data['item_id'],
-        'item_name' => $item->item_name,
+        'item_id' => $is_custom_item ? null : (int)$data['item_id'],
+        'item_name' => $item_name,
         'custom_price' => !empty($data['custom_price']) ? floatval($data['custom_price']) : null,
         'stock_quantity' => (int)($data['stock_quantity'] ?? -1), // -1 for unlimited
         'rotation' => (int)($data['rotation'] ?? 1), // Default to rotation 1
         'is_available' => isset($data['is_available']) ? (bool)$data['is_available'] : true,
         'added_date' => current_time('mysql')
     ];
+    
+    // Add custom item flag if it's a custom item
+    if ($is_custom_item) {
+        $insert_data['is_custom_item'] = 1;
+    }
     
     $result = $wpdb->insert($table_name, $insert_data);
     
@@ -2263,4 +2374,103 @@ function jotun_api_delete_shop_type($request) {
     }
     
     return new WP_REST_Response(['message' => 'Shop type deleted successfully'], 200);
+}
+
+// ============================================================================
+// TURN-IN TRACKING FUNCTIONS
+// ============================================================================
+
+function jotun_api_get_turn_in_count($request) {
+    global $wpdb;
+    
+    $shop_id = (int) $request['shop_id'];
+    
+    // Get or create tracker for this shop
+    $tracker = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM jotun_turn_in_trackers WHERE shop_id = %d",
+        $shop_id
+    ));
+    
+    if (!$tracker) {
+        // Create new tracker
+        $wpdb->insert('jotun_turn_in_trackers', [
+            'shop_id' => $shop_id,
+            'total_count' => 0,
+            'last_reset' => current_time('mysql')
+        ]);
+        $total_count = 0;
+    } else {
+        // Count turn-ins since last reset
+        $total_count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(quantity), 0) FROM jotun_turn_ins 
+             WHERE shop_id = %d AND recorded_at >= %s",
+            $shop_id,
+            $tracker->last_reset
+        ));
+    }
+    
+    return new WP_REST_Response(['data' => ['total_count' => $total_count]], 200);
+}
+
+function jotun_api_record_turn_in($request) {
+    global $wpdb;
+    
+    $data = $request->get_json_params();
+    
+    if (empty($data['shop_id']) || empty($data['item_name'])) {
+        return new WP_REST_Response(['error' => 'Shop ID and item name are required'], 400);
+    }
+    
+    $insert_data = [
+        'shop_id' => (int)$data['shop_id'],
+        'item_name' => sanitize_text_field($data['item_name']),
+        'quantity' => (int)($data['quantity'] ?? 1),
+        'player_name' => !empty($data['player_name']) ? sanitize_text_field($data['player_name']) : null,
+        'recorded_at' => current_time('mysql'),
+        'recorded_by' => get_current_user_id()
+    ];
+    
+    $result = $wpdb->insert('jotun_turn_ins', $insert_data);
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to record turn-in: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response(['message' => 'Turn-in recorded successfully', 'id' => $wpdb->insert_id], 201);
+}
+
+function jotun_api_reset_turn_in_tracker($request) {
+    global $wpdb;
+    
+    $shop_id = (int) $request['shop_id'];
+    
+    // Update or create tracker
+    $existing = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM jotun_turn_in_trackers WHERE shop_id = %d",
+        $shop_id
+    ));
+    
+    if ($existing) {
+        $result = $wpdb->update(
+            'jotun_turn_in_trackers',
+            [
+                'last_reset' => current_time('mysql'),
+                'reset_by' => get_current_user_id()
+            ],
+            ['shop_id' => $shop_id]
+        );
+    } else {
+        $result = $wpdb->insert('jotun_turn_in_trackers', [
+            'shop_id' => $shop_id,
+            'total_count' => 0,
+            'last_reset' => current_time('mysql'),
+            'reset_by' => get_current_user_id()
+        ]);
+    }
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to reset tracker: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response(['message' => 'Turn-in tracker reset successfully'], 200);
 }

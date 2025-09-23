@@ -53,6 +53,111 @@ function shop_manager_interface() {
             background-color: #f0f0f0;
             border-radius: 4px;
         }
+        
+        /* Item selector autocomplete styles */
+        .item-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .suggestion-item:hover, .suggestion-item.highlighted {
+            background-color: #f0f7ff;
+        }
+        
+        .suggestion-item .item-name {
+            font-weight: bold;
+        }
+        
+        .suggestion-item .item-price {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* Price input group */
+        .price-input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .price-input-group input {
+            flex: 1;
+        }
+        
+        .price-input-group select {
+            flex: 0 0 auto;
+            min-width: 120px;
+        }
+        
+        .price-conversion {
+            display: block;
+            margin-top: 4px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Turn-in tracker styles */
+        .turn-in-controls {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .turn-in-stats {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tracker-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .total-count {
+            font-size: 16px;
+        }
+        
+        .turn-in-form h4 {
+            margin-bottom: 12px;
+        }
+        
+        /* Custom item badge */
+        .custom-item-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Relative positioning for autocomplete */
+        .form-group {
+            position: relative;
+        }
         .permissions-list {
             font-size: 12px;
             color: #555;
@@ -165,14 +270,26 @@ function shop_manager_interface() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="item-selector">Select Item from Master List</label>
-                                <select id="item-selector" name="item_id">
+                                <input type="text" id="item-selector" name="item_search" placeholder="Type to search items..." autocomplete="off">
+                                <select id="item-selector-hidden" name="item_id" style="display: none;">
                                     <option value="">Select an item...</option>
-                                    <!-- Items from jotun_itemlist will be loaded here -->
                                 </select>
+                                <div id="item-suggestions" class="item-suggestions" style="display: none;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="custom-item-name">Custom Item Name (for Aesir Spells)</label>
+                                <input type="text" id="custom-item-name" name="custom_item_name" placeholder="Enter custom item name for spells/special items">
                             </div>
                             <div class="form-group">
                                 <label for="custom-price">Custom Price (optional)</label>
-                                <input type="number" id="custom-price" name="custom_price" step="0.01" placeholder="Leave empty for default price">
+                                <div class="price-input-group">
+                                    <input type="number" id="custom-price" name="custom_price" step="1" placeholder="Leave empty for default price">
+                                    <select id="price-currency" name="price_currency">
+                                        <option value="coins">Coins (Gold)</option>
+                                        <option value="ymir">Ymir Flesh</option>
+                                    </select>
+                                </div>
+                                <small class="price-conversion">1 Ymir Flesh = 120 Coins</small>
                             </div>
                         </div>
                         <div class="form-row">
@@ -203,13 +320,46 @@ function shop_manager_interface() {
                 <!-- Shop Items List -->
                 <div id="shop-items-list" class="shop-items-list" style="display: none;">
                     <h3>Items in Selected Shop</h3>
+                    
+                    <!-- Turn-In Only Shop Controls -->
+                    <div id="turn-in-controls" class="turn-in-controls" style="display: none;">
+                        <div class="turn-in-stats">
+                            <h4>Turn-In Tracker</h4>
+                            <div class="tracker-info">
+                                <span class="total-count">Total Turned In: <strong id="turn-in-count">0</strong></span>
+                                <button type="button" id="reset-turn-in-tracker" class="btn btn-warning">Reset Tracker</button>
+                            </div>
+                        </div>
+                        <div class="turn-in-form">
+                            <h4>Record Turn-In</h4>
+                            <form id="record-turn-in-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="turn-in-item">Item Being Turned In</label>
+                                        <input type="text" id="turn-in-item" name="item_name" required placeholder="Enter item name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="turn-in-quantity">Quantity</label>
+                                        <input type="number" id="turn-in-quantity" name="quantity" value="1" min="1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="turn-in-player">Player Name (optional)</label>
+                                        <input type="text" id="turn-in-player" name="player_name" placeholder="Player who turned in">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Record Turn-In</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Regular Shop Items Table -->
                     <div id="shop-items-table-container">
                         <table id="shop-items-table" class="shop-table">
                             <thead>
                                 <tr>
                                     <th>Item Name</th>
-                                    <th>Default Price</th>
-                                    <th>Shop Price</th>
+                                    <th>Default Price (Coins)</th>
+                                    <th>Shop Price (Coins)</th>
                                     <th>Stock</th>
                                     <th>Rotation</th>
                                     <th>Available</th>

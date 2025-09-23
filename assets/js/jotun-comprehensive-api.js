@@ -220,6 +220,22 @@ class JotunheimAPI {
     }
 
     // ============================================================================
+    // TURN-IN TRACKING API METHODS
+    // ============================================================================
+
+    async getTurnInCount(shopId) {
+        return this.request(`/shops/${shopId}/turn-in-count`);
+    }
+
+    async recordTurnIn(turnInData) {
+        return this.request('/turn-ins', 'POST', turnInData);
+    }
+
+    async resetTurnInTracker(shopId) {
+        return this.request(`/shops/${shopId}/reset-turn-in-tracker`, 'POST');
+    }
+
+    // ============================================================================
     // TRANSACTIONS API METHODS (jotun_transactions)
     // ============================================================================
 
