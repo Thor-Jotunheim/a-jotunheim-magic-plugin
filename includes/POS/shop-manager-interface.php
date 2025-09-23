@@ -60,7 +60,7 @@ function shop_manager_interface() {
             word-wrap: break-word;
         }
         </style>
-    }
+        <?php
 
     if (!current_user_can('edit_posts')) {
         return '<div class="shop-manager-error">You do not have permission to access the Shop Manager.</div>';

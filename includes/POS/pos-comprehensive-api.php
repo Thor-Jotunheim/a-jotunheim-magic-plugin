@@ -1524,6 +1524,8 @@ function jotun_api_get_shop_items($request) {
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
     
+    error_log('jotun_api_get_shop_items: Called with shop_id=' . $shop_id . ', rotation=' . $rotation);
+    
     $sql = "SELECT si.*, il.item_name as master_item_name, il.price as default_price 
             FROM $table_name si 
             LEFT JOIN jotun_itemlist il ON si.item_id = il.id";
@@ -1548,7 +1550,15 @@ function jotun_api_get_shop_items($request) {
     $params[] = $limit;
     $params[] = $offset;
     
+    error_log('jotun_api_get_shop_items: SQL query: ' . $sql);
+    error_log('jotun_api_get_shop_items: Parameters: ' . print_r($params, true));
+    
     $results = $wpdb->get_results($wpdb->prepare($sql, $params));
+    
+    error_log('jotun_api_get_shop_items: Found ' . count($results) . ' shop items');
+    if ($wpdb->last_error) {
+        error_log('jotun_api_get_shop_items: Database error: ' . $wpdb->last_error);
+    }
     
     if ($wpdb->last_error) {
         return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);

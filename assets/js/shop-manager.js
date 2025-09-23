@@ -185,17 +185,29 @@ class ShopManager {
     }
 
     populateShopSelector(shops) {
+        console.log('populateShopSelector called with shops:', shops);
         const selector = document.getElementById('items-shop-selector');
+        if (!selector) {
+            console.error('Shop selector element not found');
+            return;
+        }
+        
         selector.innerHTML = '<option value="">Select a shop...</option>';
 
         shops.forEach(shop => {
+            console.log('Processing shop:', shop);
             if (shop.is_active == 1) { // Only show active shops
                 const option = document.createElement('option');
                 option.value = shop.shop_id;
                 option.textContent = `${shop.shop_name} (${this.getShopTypeLabel(shop.shop_type)})`;
                 selector.appendChild(option);
+                console.log('Added shop option:', option.textContent);
+            } else {
+                console.log('Skipping inactive shop:', shop.shop_name);
             }
         });
+        
+        console.log('Shop selector populated with', selector.options.length - 1, 'shops');
     }
 
     populateItemSelector(items) {
@@ -325,13 +337,23 @@ class ShopManager {
     }
 
     async loadShopItems(shopId) {
+        console.log('loadShopItems called with shopId:', shopId);
         try {
+            if (!shopId) {
+                console.warn('No shopId provided to loadShopItems');
+                this.renderShopItemsTable([]);
+                return;
+            }
+            
+            console.log('Making API call to getShopItems with params:', { shop_id: shopId });
             const response = await JotunAPI.getShopItems({ shop_id: shopId });
+            console.log('Shop items API response:', response);
             const shopItems = response.data || [];
+            console.log('Shop items data:', shopItems);
             this.renderShopItemsTable(shopItems);
         } catch (error) {
             console.error('Error loading shop items:', error);
-            this.showStatus('Failed to load shop items', 'error');
+            this.showStatus('Failed to load shop items: ' + error.message, 'error');
         }
     }
 
