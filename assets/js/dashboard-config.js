@@ -568,10 +568,13 @@ jQuery(document).ready(function($) {
                         menuItem.enabled = newEnabledState;
                     }
                     
-                    // Don't mark dirty - toggle saves immediately to database
-                    // markDirty(); // Removed - no need to save again
-                    renderItems(); // Re-render to show the new state
-                    console.log('TOGGLE DEBUG: Item visibility saved immediately. New state:', newEnabledState);
+                    showNotification('Item visibility updated! Refreshing page...', 'success');
+                    console.log('Item visibility auto-saved successfully');
+                    
+                    // Refresh page to show changes like section toggle does
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
                 } else {
                     alert('Error updating item visibility: ' + (response.data || 'Unknown error'));
                 }
