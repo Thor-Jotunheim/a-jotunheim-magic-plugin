@@ -79,6 +79,7 @@ function shop_manager_interface() {
                                 <tr>
                                     <th>Shop Name</th>
                                     <th>Type</th>
+                                    <th>Current Rotation</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Actions</th>
@@ -130,6 +131,12 @@ function shop_manager_interface() {
                                 <input type="number" id="stock-quantity" name="stock_quantity" value="0" min="0">
                             </div>
                             <div class="form-group">
+                                <label for="item-rotation">Rotation</label>
+                                <input type="number" id="item-rotation" name="rotation" value="1" min="1" title="Rotation number for grouping items">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label for="item-available">Available</label>
                                 <select id="item-available" name="is_available">
                                     <option value="1">Yes</option>
@@ -154,6 +161,7 @@ function shop_manager_interface() {
                                     <th>Default Price</th>
                                     <th>Shop Price</th>
                                     <th>Stock</th>
+                                    <th>Rotation</th>
                                     <th>Available</th>
                                     <th>Actions</th>
                                 </tr>

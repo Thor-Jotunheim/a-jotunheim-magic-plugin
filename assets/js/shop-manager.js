@@ -155,9 +155,16 @@ class ShopManager {
 
         shops.forEach(shop => {
             const row = document.createElement('tr');
+            const rotationDropdownId = `rotation-${shop.shop_id}`;
+            
             row.innerHTML = `
                 <td>${this.escapeHtml(shop.shop_name)}</td>
                 <td><span class="shop-type-badge ${shop.shop_type}">${this.getShopTypeLabel(shop.shop_type)}</span></td>
+                <td>
+                    <select id="${rotationDropdownId}" class="rotation-selector" data-shop-id="${shop.shop_id}">
+                        <option value="">Loading...</option>
+                    </select>
+                </td>
                 <td><span class="status-badge ${shop.is_active == 1 ? 'active' : 'inactive'}">${shop.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
                 <td>${this.formatDate(shop.created_at)}</td>
                 <td>
@@ -166,6 +173,9 @@ class ShopManager {
                 </td>
             `;
             tbody.appendChild(row);
+            
+            // Load rotations for this shop
+            this.loadShopRotations(shop.shop_id, rotationDropdownId);
         });
     }
 
@@ -326,15 +336,19 @@ class ShopManager {
 
         shopItems.forEach(item => {
             const row = document.createElement('tr');
+            const defaultPrice = item.default_price || 0;
+            const shopPrice = item.custom_price || defaultPrice;
+            
             row.innerHTML = `
-                <td>${this.escapeHtml(item.item_name)}</td>
-                <td>$${item.default_price || '0.00'}</td>
-                <td>$${item.price || item.default_price || '0.00'}</td>
+                <td>${this.escapeHtml(item.master_item_name || item.item_name)}</td>
+                <td>$${defaultPrice.toFixed(2)}</td>
+                <td>$${shopPrice.toFixed(2)}</td>
                 <td>${item.stock_quantity || 0}</td>
+                <td><span class="rotation-badge">${item.rotation || 1}</span></td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.id})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShopItem(${item.id}, '${this.escapeHtml(item.item_name)}')">Remove</button>
+                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShopItem(${item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}')">Remove</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -352,6 +366,7 @@ class ShopManager {
         const formData = new FormData(e.target);
         const itemId = formData.get('item_id');
         const customPrice = formData.get('custom_price');
+        const rotation = formData.get('rotation') || 1;
         
         if (!itemId) {
             this.showStatus('Please select an item', 'error');
@@ -362,11 +377,12 @@ class ShopManager {
             shop_id: this.selectedShop,
             item_id: itemId,
             stock_quantity: formData.get('stock_quantity') || 0,
+            rotation: parseInt(rotation),
             is_available: formData.get('is_available') === '1'
         };
 
         if (customPrice && customPrice.trim() !== '') {
-            shopItemData.price = parseFloat(customPrice);
+            shopItemData.custom_price = parseFloat(customPrice);
         }
 
         try {
@@ -375,6 +391,7 @@ class ShopManager {
             
             // Reset form and reload shop items
             e.target.reset();
+            document.getElementById('item-rotation').value = '1'; // Reset rotation to 1
             await this.loadShopItems(this.selectedShop);
         } catch (error) {
             console.error('Error adding item to shop:', error);
@@ -596,6 +613,63 @@ class ShopManager {
         }
     }
 
+    async loadShopRotations(shopId, dropdownId) {
+        try {
+            const response = await JotunAPI.getShopRotations(shopId);
+            const rotations = response.rotations || [];
+            const currentRotation = response.current_rotation || 1;
+            
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = '';
+            
+            if (rotations.length === 0) {
+                dropdown.innerHTML = '<option value="">No items</option>';
+                dropdown.disabled = true;
+                return;
+            }
+            
+            rotations.forEach(rotation => {
+                const option = document.createElement('option');
+                option.value = rotation.rotation;
+                option.textContent = `Rotation ${rotation.rotation} (${rotation.item_count} items)`;
+                option.selected = rotation.rotation == currentRotation;
+                dropdown.appendChild(option);
+            });
+            
+            dropdown.disabled = false;
+            
+            // Add change event listener
+            dropdown.addEventListener('change', async (e) => {
+                const newRotation = parseInt(e.target.value);
+                if (newRotation && newRotation !== currentRotation) {
+                    await this.updateShopRotation(shopId, newRotation);
+                }
+            });
+            
+        } catch (error) {
+            console.error(`Error loading rotations for shop ${shopId}:`, error);
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">Error loading</option>';
+                dropdown.disabled = true;
+            }
+        }
+    }
+
+    async updateShopRotation(shopId, rotation) {
+        try {
+            await JotunAPI.updateShopRotation(shopId, rotation);
+            this.showStatus(`Shop rotation updated to ${rotation}`, 'success');
+        } catch (error) {
+            console.error('Error updating shop rotation:', error);
+            this.showStatus('Failed to update shop rotation', 'error');
+            // Reload the shops table to reset the dropdown
+            this.loadShops();
+        }
+    }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -652,6 +726,30 @@ const additionalCSS = `
     .status-badge.inactive {
         background: #ffebee;
         color: #c62828;
+    }
+
+    .rotation-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #fff3e0;
+        color: #f57c00;
+        border: 1px solid #ffcc02;
+    }
+
+    .rotation-selector {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        font-size: 12px;
+        background: white;
+        min-width: 120px;
+    }
+
+    .rotation-selector:disabled {
+        background: #f5f5f5;
+        color: #999;
     }
 `;
 

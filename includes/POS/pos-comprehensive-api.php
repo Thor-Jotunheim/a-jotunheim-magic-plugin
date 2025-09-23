@@ -12,6 +12,7 @@ if (!defined('ABSPATH')) {
 // Ensure shop types table exists
 add_action('init', 'jotun_ensure_shop_types_table');
 add_action('init', 'jotun_ensure_shops_table');
+add_action('init', 'jotun_ensure_shop_items_table');
 
 function jotun_ensure_shop_types_table() {
     global $wpdb;
@@ -95,6 +96,59 @@ function jotun_ensure_shops_table() {
     if ($shop_type_column && strpos($shop_type_column->Type, 'enum') !== false) {
         $wpdb->query("ALTER TABLE $shops_table MODIFY COLUMN shop_type varchar(50) NOT NULL DEFAULT 'general'");
         error_log('Jotunheim POS: Changed shop_type column from ENUM to VARCHAR for dynamic types');
+    }
+    
+    // Migration: Add current_rotation column if it doesn't exist
+    $rotation_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shops_table LIKE 'current_rotation'");
+    if (empty($rotation_column_exists)) {
+        $wpdb->query("ALTER TABLE $shops_table ADD COLUMN current_rotation int(11) DEFAULT 1 AFTER shop_type");
+        error_log('Jotunheim POS: Added current_rotation column to jotun_shops table');
+    }
+}
+
+function jotun_ensure_shop_items_table() {
+    global $wpdb;
+    
+    $shop_items_table = 'jotun_shop_items';
+    
+    // Check if table exists
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$shop_items_table'") == $shop_items_table;
+    
+    if (!$table_exists) {
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $shop_items_table (
+            id int(11) NOT NULL AUTO_INCREMENT,
+            shop_id int(11) NOT NULL,
+            item_id int(11) NOT NULL COMMENT 'Reference to jotun_itemlist',
+            item_name varchar(100) NOT NULL,
+            custom_price decimal(10,2) DEFAULT NULL COMMENT 'Override price, NULL uses item default',
+            stock_quantity int(11) DEFAULT -1 COMMENT '-1 for unlimited stock',
+            rotation int(11) DEFAULT 1 COMMENT 'Rotation number for shop item sets',
+            is_available tinyint(1) DEFAULT 1,
+            added_date datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_shop_id (shop_id),
+            KEY idx_item_id (item_id),
+            KEY idx_rotation (rotation),
+            KEY idx_shop_rotation (shop_id, rotation),
+            KEY idx_is_available (is_available),
+            UNIQUE KEY unique_shop_item_rotation (shop_id, item_id, rotation),
+            FOREIGN KEY (shop_id) REFERENCES jotun_shops(shop_id) ON DELETE CASCADE
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        error_log('Jotunheim POS: Created jotun_shop_items table with rotation support');
+    } else {
+        // Migration: Add rotation column if it doesn't exist
+        $rotation_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'rotation'");
+        if (empty($rotation_column_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN rotation int(11) DEFAULT 1 COMMENT 'Rotation number for shop item sets' AFTER stock_quantity");
+            error_log('Jotunheim POS: Added rotation column to jotun_shop_items table');
+        }
     }
 }
 
@@ -482,6 +536,28 @@ add_action('rest_api_init', function() {
     register_rest_route('jotun-api/v1', '/shop-items/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'jotun_api_delete_shop_item',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // ============================================================================
+    // SHOP ROTATION ENDPOINTS
+    // ============================================================================
+    
+    // Get available rotations for a shop
+    register_rest_route('jotun-api/v1', '/shops/(?P<shop_id>\d+)/rotations', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_shop_rotations',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Update shop's current rotation
+    register_rest_route('jotun-api/v1', '/shops/(?P<shop_id>\d+)/current-rotation', [
+        'methods' => 'PUT',
+        'callback' => 'jotun_api_update_shop_rotation',
         'permission_callback' => function() {
             return current_user_can('edit_posts');
         }
@@ -1349,18 +1425,31 @@ function jotun_api_get_shop_items($request) {
     
     $table_name = 'jotun_shop_items';
     $shop_id = $request->get_param('shop_id');
+    $rotation = $request->get_param('rotation');
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
     
-    $sql = "SELECT * FROM $table_name";
+    $sql = "SELECT si.*, il.item_name as master_item_name, il.price as default_price 
+            FROM $table_name si 
+            LEFT JOIN jotun_itemlist il ON si.item_id = il.id";
     $params = [];
+    $where_clauses = [];
     
     if ($shop_id) {
-        $sql .= " WHERE shop_id = %d";
+        $where_clauses[] = "si.shop_id = %d";
         $params[] = (int)$shop_id;
     }
     
-    $sql .= " ORDER BY item_name ASC LIMIT %d OFFSET %d";
+    if ($rotation !== null) {
+        $where_clauses[] = "si.rotation = %d";
+        $params[] = (int)$rotation;
+    }
+    
+    if (!empty($where_clauses)) {
+        $sql .= " WHERE " . implode(" AND ", $where_clauses);
+    }
+    
+    $sql .= " ORDER BY si.item_name ASC LIMIT %d OFFSET %d";
     $params[] = $limit;
     $params[] = $offset;
     
@@ -1379,18 +1468,29 @@ function jotun_api_add_shop_item($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shop_items';
     
-    if (empty($data['shop_id']) || empty($data['item_name']) || empty($data['price'])) {
-        return new WP_REST_Response(['error' => 'Shop ID, item name, and price are required'], 400);
+    if (empty($data['shop_id']) || empty($data['item_id'])) {
+        return new WP_REST_Response(['error' => 'Shop ID and item ID are required'], 400);
+    }
+    
+    // Get item details from master list
+    $item = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM jotun_itemlist WHERE id = %d", 
+        (int)$data['item_id']
+    ));
+    
+    if (!$item) {
+        return new WP_REST_Response(['error' => 'Item not found in master list'], 404);
     }
     
     $insert_data = [
         'shop_id' => (int)$data['shop_id'],
-        'item_name' => sanitize_text_field($data['item_name']),
-        'price' => floatval($data['price']),
-        'quantity_available' => (int)($data['quantity_available'] ?? -1), // -1 for unlimited
-        'description' => sanitize_textarea_field($data['description'] ?? ''),
-        'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true,
-        'created_date' => current_time('mysql')
+        'item_id' => (int)$data['item_id'],
+        'item_name' => $item->item_name,
+        'custom_price' => !empty($data['custom_price']) ? floatval($data['custom_price']) : null,
+        'stock_quantity' => (int)($data['stock_quantity'] ?? -1), // -1 for unlimited
+        'rotation' => (int)($data['rotation'] ?? 1), // Default to rotation 1
+        'is_available' => isset($data['is_available']) ? (bool)$data['is_available'] : true,
+        'added_date' => current_time('mysql')
     ];
     
     $result = $wpdb->insert($table_name, $insert_data);
@@ -1409,17 +1509,27 @@ function jotun_api_update_shop_item($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shop_items';
     
-    if (empty($data['item_name']) || empty($data['price'])) {
-        return new WP_REST_Response(['error' => 'Item name and price are required'], 400);
+    $update_data = [];
+    
+    if (isset($data['custom_price'])) {
+        $update_data['custom_price'] = !empty($data['custom_price']) ? floatval($data['custom_price']) : null;
     }
     
-    $update_data = [
-        'item_name' => sanitize_text_field($data['item_name']),
-        'price' => floatval($data['price']),
-        'quantity_available' => (int)($data['quantity_available'] ?? -1),
-        'description' => sanitize_textarea_field($data['description'] ?? ''),
-        'is_active' => isset($data['is_active']) ? (bool)$data['is_active'] : true
-    ];
+    if (isset($data['stock_quantity'])) {
+        $update_data['stock_quantity'] = (int)$data['stock_quantity'];
+    }
+    
+    if (isset($data['rotation'])) {
+        $update_data['rotation'] = (int)$data['rotation'];
+    }
+    
+    if (isset($data['is_available'])) {
+        $update_data['is_available'] = (bool)$data['is_available'];
+    }
+    
+    if (empty($update_data)) {
+        return new WP_REST_Response(['error' => 'No valid fields to update'], 400);
+    }
     
     $result = $wpdb->update($table_name, $update_data, ['id' => $id]);
     
@@ -1447,6 +1557,72 @@ function jotun_api_delete_shop_item($request) {
     }
     
     return new WP_REST_Response(['message' => 'Shop item deleted successfully'], 200);
+}
+
+// ============================================================================
+// SHOP ROTATION FUNCTIONS
+// ============================================================================
+
+function jotun_api_get_shop_rotations($request) {
+    global $wpdb;
+    
+    $shop_id = (int) $request['shop_id'];
+    
+    // Get all unique rotations for this shop
+    $rotations = $wpdb->get_results($wpdb->prepare(
+        "SELECT DISTINCT rotation, COUNT(*) as item_count 
+         FROM jotun_shop_items 
+         WHERE shop_id = %d 
+         GROUP BY rotation 
+         ORDER BY rotation ASC",
+        $shop_id
+    ));
+    
+    // Get current rotation from shop
+    $current_rotation = $wpdb->get_var($wpdb->prepare(
+        "SELECT current_rotation FROM jotun_shops WHERE shop_id = %d",
+        $shop_id
+    ));
+    
+    return new WP_REST_Response([
+        'rotations' => $rotations,
+        'current_rotation' => (int)$current_rotation ?: 1
+    ], 200);
+}
+
+function jotun_api_update_shop_rotation($request) {
+    global $wpdb;
+    
+    $shop_id = (int) $request['shop_id'];
+    $data = $request->get_json_params();
+    $new_rotation = (int) $data['rotation'];
+    
+    if ($new_rotation < 1) {
+        return new WP_REST_Response(['error' => 'Rotation must be 1 or greater'], 400);
+    }
+    
+    // Verify this rotation exists for the shop
+    $rotation_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM jotun_shop_items WHERE shop_id = %d AND rotation = %d",
+        $shop_id, $new_rotation
+    ));
+    
+    if (!$rotation_exists) {
+        return new WP_REST_Response(['error' => 'No items found for this rotation'], 400);
+    }
+    
+    // Update shop's current rotation
+    $result = $wpdb->update(
+        'jotun_shops',
+        ['current_rotation' => $new_rotation],
+        ['shop_id' => $shop_id]
+    );
+    
+    if ($result === false) {
+        return new WP_REST_Response(['error' => 'Failed to update shop rotation: ' . $wpdb->last_error], 500);
+    }
+    
+    return new WP_REST_Response(['message' => 'Shop rotation updated successfully'], 200);
 }
 
 // ============================================================================

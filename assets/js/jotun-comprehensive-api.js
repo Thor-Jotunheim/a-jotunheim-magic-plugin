@@ -203,6 +203,18 @@ class JotunheimAPI {
     }
 
     // ============================================================================
+    // SHOP ROTATION API METHODS
+    // ============================================================================
+
+    async getShopRotations(shopId) {
+        return this.request(`/shops/${shopId}/rotations`);
+    }
+
+    async updateShopRotation(shopId, rotation) {
+        return this.request(`/shops/${shopId}/current-rotation`, 'PUT', { rotation });
+    }
+
+    // ============================================================================
     // TRANSACTIONS API METHODS (jotun_transactions)
     // ============================================================================
 
