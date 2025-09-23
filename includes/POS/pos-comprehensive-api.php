@@ -143,18 +143,44 @@ function jotun_ensure_shop_items_table() {
         
         error_log('Jotunheim POS: Created jotun_shop_items table with rotation support');
     } else {
+        // Migration: Add stock_quantity column if it doesn't exist (needed for other migrations)
+        $stock_quantity_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'stock_quantity'");
+        if (empty($stock_quantity_column_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN stock_quantity int(11) DEFAULT -1 COMMENT '-1 for unlimited stock' AFTER custom_price");
+            error_log('Jotunheim POS: Added stock_quantity column to jotun_shop_items table');
+        }
+        
         // Migration: Add rotation column if it doesn't exist
         $rotation_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'rotation'");
         if (empty($rotation_column_exists)) {
-            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN rotation int(11) DEFAULT 1 COMMENT 'Rotation number for shop item sets' AFTER stock_quantity");
+            // Try to add after stock_quantity first, fall back to add at end if stock_quantity doesn't exist
+            $stock_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'stock_quantity'");
+            if (!empty($stock_exists)) {
+                $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN rotation int(11) DEFAULT 1 COMMENT 'Rotation number for shop item sets' AFTER stock_quantity");
+            } else {
+                $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN rotation int(11) DEFAULT 1 COMMENT 'Rotation number for shop item sets'");
+            }
             error_log('Jotunheim POS: Added rotation column to jotun_shop_items table');
         }
         
         // Migration: Add is_custom_item column if it doesn't exist
         $custom_item_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'is_custom_item'");
         if (empty($custom_item_column_exists)) {
-            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN is_custom_item tinyint(1) DEFAULT 0 COMMENT 'Flag for custom items like Aesir spells' AFTER rotation");
+            // Try to add after rotation first, fall back to add at end if rotation doesn't exist
+            $rotation_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'rotation'");
+            if (!empty($rotation_exists)) {
+                $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN is_custom_item tinyint(1) DEFAULT 0 COMMENT 'Flag for custom items like Aesir spells' AFTER rotation");
+            } else {
+                $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN is_custom_item tinyint(1) DEFAULT 0 COMMENT 'Flag for custom items like Aesir spells'");
+            }
             error_log('Jotunheim POS: Added is_custom_item column to jotun_shop_items table');
+        }
+        
+        // Migration: Make item_id nullable for custom items
+        $item_id_column = $wpdb->get_row("SHOW COLUMNS FROM $shop_items_table LIKE 'item_id'");
+        if ($item_id_column && strpos(strtolower($item_id_column->Null), 'no') !== false) {
+            $wpdb->query("ALTER TABLE $shop_items_table MODIFY COLUMN item_id int(11) NULL COMMENT 'Reference to jotun_itemlist, NULL for custom items'");
+            error_log('Jotunheim POS: Made item_id column nullable for custom items');
         }
     }
     
