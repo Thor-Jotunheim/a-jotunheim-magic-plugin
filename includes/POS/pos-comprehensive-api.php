@@ -134,8 +134,7 @@ function jotun_ensure_shop_items_table() {
             KEY idx_rotation (rotation),
             KEY idx_shop_rotation (shop_id, rotation),
             KEY idx_is_available (is_available),
-            UNIQUE KEY unique_shop_item_rotation (shop_id, item_id, rotation),
-            FOREIGN KEY (shop_id) REFERENCES jotun_shops(shop_id) ON DELETE CASCADE
+            UNIQUE KEY unique_shop_item_rotation (shop_id, item_id, rotation)
         ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -235,6 +234,24 @@ function jotun_ensure_shop_items_table() {
             $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When item was last updated'");
             error_log('Jotunheim POS: Added updated_at column to jotun_shop_items table');
         }
+
+        // Migration: Remove problematic foreign key constraint if it exists
+        // The constraint seems to be causing issues even when shop exists
+        $foreign_keys = $wpdb->get_results("
+            SELECT CONSTRAINT_NAME 
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+            WHERE TABLE_NAME = '$shop_items_table' 
+            AND CONSTRAINT_NAME LIKE '%fk%' 
+            AND TABLE_SCHEMA = DATABASE()
+        ");
+        
+        foreach ($foreign_keys as $fk) {
+            $wpdb->query("ALTER TABLE $shop_items_table DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+            error_log("Jotunheim POS: Dropped foreign key constraint {$fk->CONSTRAINT_NAME} from jotun_shop_items table");
+        }
+
+        // Also remove the named foreign key that might exist from the CREATE TABLE
+        $wpdb->query("ALTER TABLE $shop_items_table DROP FOREIGN KEY IF EXISTS `{$shop_items_table}_ibfk_1`");
     }
     
     // Create jotun_turn_ins table for tracking turn-ins
