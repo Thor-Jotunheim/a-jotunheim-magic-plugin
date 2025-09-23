@@ -17,18 +17,31 @@ function jotunheim_allow_editor_specific_page_access() {
     // Get current user
     $current_user = wp_get_current_user();
     
+    // Don't interfere with administrators at all
+    if (in_array('administrator', $current_user->roles)) {
+        return;
+    }
+    
     // Only apply to users with editor role (but not administrator)
-    if (!in_array('editor', $current_user->roles) || in_array('administrator', $current_user->roles)) {
+    if (!in_array('editor', $current_user->roles)) {
         return;
     }
 
     // List of pages that editors should have access to
     $allowed_pages = [
+        'jotunheim_magic',              // Main overview page
         'event_zone_editor',
         'item_list_editor', 
         'item_list_add_new_item',
         'add_event_zone',
-        'eventzone_field_config'
+        'eventzone_field_config',
+        'prefab_image_import',
+        'pos_interface',
+        'trade',
+        'barter',
+        'jotun-playerlist',
+        'universal_ui_table_config',
+        'weather_calendar_config'
     ];
 
     // Grant manage_options capability for editors, but ONLY for specific pages
@@ -104,7 +117,15 @@ function jotunheim_block_editor_admin_access() {
 
     $current_user = wp_get_current_user();
     
+    // Don't interfere with administrators at all
+    if (in_array('administrator', $current_user->roles)) {
+        return;
+    }
+    
     // Only apply to editors, not administrators
+    if (!in_array('editor', $current_user->roles)) {
+        return;
+    }
     if (in_array('editor', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
         // Get current page
         $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';

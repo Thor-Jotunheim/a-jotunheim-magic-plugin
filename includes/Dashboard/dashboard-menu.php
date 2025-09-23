@@ -6,11 +6,19 @@ if (!defined('ABSPATH')) {
 
 // Function to add the main menu item and submenu items
 function jotunheim_magic_plugin_menu() {
+    // Check current user role for debugging
+    $current_user = wp_get_current_user();
+    error_log('Jotunheim Dashboard: Current user roles: ' . implode(', ', $current_user->roles));
+    error_log('Jotunheim Dashboard: Can user manage_options? ' . (current_user_can('manage_options') ? 'YES' : 'NO'));
+
+    // Use appropriate capability for main menu - admin users get manage_options, others get edit_posts
+    $main_capability = current_user_can('manage_options') ? 'manage_options' : 'edit_posts';
+    
     // Main Menu Page for Jotunheim Magic Plugin
     add_menu_page(
         'Jotunheim Magic',              // Page title
         'Jotunheim Magic',              // Menu title in admin sidebar
-        'manage_options',               // Capability required (restricted to admins by default)
+        $main_capability,               // Dynamic capability based on user role
         'jotunheim_magic',              // Menu slug
         'jotunheim_magic_dashboard',    // Callback function for main page
         'dashicons-hammer',             // Icon URL or Dashicon
@@ -138,23 +146,27 @@ function jotunheim_magic_plugin_menu() {
     if (!$use_organized_menu) {
         error_log('Jotunheim Dashboard: Using legacy menu mode');
         
+        // For administrators, use 'manage_options', for editors use 'edit_posts'
+        $required_capability = current_user_can('manage_options') ? 'manage_options' : 'edit_posts';
+        error_log('Jotunheim Dashboard: Using capability: ' . $required_capability);
+        
         // Add Overview submenu first (this will replace the auto-generated first submenu)
         add_submenu_page(
             'jotunheim_magic',          // Parent slug
             'Overview',                 // Page title
             'Overview',                 // Menu title
-            'manage_options',           // Capability required
+            $required_capability,       // Use dynamic capability
             'jotunheim_magic',          // Same slug as parent to make it the default
             'jotunheim_magic_dashboard' // Callback function
         );
-        
+
         // Register each submenu (legacy mode)
         foreach ($submenus as $submenu) {
             add_submenu_page(
                 'jotunheim_magic',          // Parent slug
                 $submenu['title'],          // Page title
                 $submenu['menu_title'],     // Menu title
-                'manage_options',           // Capability required (restricted to admins by default)
+                $required_capability,       // Use dynamic capability instead of hardcoded 'manage_options'
                 $submenu['slug'],           // Submenu slug
                 $submenu['callback']        // Callback function
             );

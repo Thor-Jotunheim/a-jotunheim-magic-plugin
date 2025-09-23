@@ -387,8 +387,13 @@ class JotunheimPagePermissions {
             $user_id = get_current_user_id();
         }
         
-        // Admins can always access everything
+        // Admins can ALWAYS access everything - don't even check Discord permissions
         if (user_can($user_id, 'manage_options')) {
+            return true;
+        }
+        
+        // For now, also allow editors to access everything until Discord integration is fully set up
+        if (user_can($user_id, 'edit_posts')) {
             return true;
         }
         
