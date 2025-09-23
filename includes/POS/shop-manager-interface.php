@@ -182,16 +182,11 @@ function shop_manager_interface() {
                                 <input type="text" id="type-name" name="type_name" required placeholder="e.g., VIP Only Shop">
                             </div>
                             <div class="form-group">
-                                <label for="type-key">Type Key *</label>
-                                <input type="text" id="type-key" name="type_key" required placeholder="e.g., vip-only">
-                                <small>Used internally, should be lowercase with dashes</small>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
                                 <label for="type-description">Description</label>
                                 <textarea id="type-description" name="description" placeholder="Optional description of this shop type"></textarea>
                             </div>
+                        </div>
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="type-status">Status</label>
                                 <select id="type-status" name="is_active">
@@ -200,6 +195,8 @@ function shop_manager_interface() {
                                 </select>
                             </div>
                         </div>
+                        <!-- Hidden field for auto-generated type key -->
+                        <input type="hidden" id="type-key" name="type_key">
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Add Shop Type</button>
                             <button type="button" id="cancel-edit-type" class="btn btn-secondary" style="display: none;">Cancel Edit</button>

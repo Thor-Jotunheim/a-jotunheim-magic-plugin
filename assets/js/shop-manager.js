@@ -40,6 +40,9 @@ class ShopManager {
         // Shop types form submission
         document.getElementById('add-shop-type-form').addEventListener('submit', (e) => this.handleAddShopType(e));
 
+        // Auto-generate type key from type name
+        document.getElementById('type-name').addEventListener('input', (e) => this.generateTypeKey(e.target.value));
+
         // Cancel edit buttons
         document.getElementById('cancel-edit-shop').addEventListener('click', () => this.cancelShopEdit());
         document.getElementById('cancel-edit-type').addEventListener('click', () => this.cancelShopTypeEdit());
@@ -421,6 +424,21 @@ class ShopManager {
     // SHOP TYPES METHODS
     // ============================================================================
 
+    generateTypeKey(typeName) {
+        // Only auto-generate if not editing an existing type
+        if (this.currentEditingShopType) return;
+        
+        const typeKey = typeName
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '_')  // Replace spaces with underscores
+            .replace(/[^a-z0-9_-]/g, '')  // Remove any characters that aren't letters, numbers, underscores, or dashes
+            .replace(/_+/g, '_')  // Replace multiple underscores with single underscore
+            .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+            
+        document.getElementById('type-key').value = typeKey;
+    }
+
     async loadShopTypesTable() {
         try {
             const response = await JotunAPI.getShopTypes();
@@ -475,9 +493,10 @@ class ShopManager {
                 // Add new shop type
                 await JotunAPI.addShopType(typeData);
                 this.showStatus('Shop type added successfully', 'success');
+                e.target.reset();
+                document.getElementById('type-key').value = ''; // Clear hidden field
             }
             
-            e.target.reset();
             await this.loadShopTypesTable();
             await this.loadShopTypes(); // Refresh dropdowns
         } catch (error) {
@@ -515,6 +534,9 @@ class ShopManager {
         document.getElementById('add-shop-type-form').reset();
         document.querySelector('#add-shop-type-form button[type="submit"]').textContent = 'Add Shop Type';
         document.getElementById('cancel-edit-type').style.display = 'none';
+        
+        // Clear the type key field so auto-generation works again
+        document.getElementById('type-key').value = '';
     }
 
     async deleteShopType(typeId, typeName) {
