@@ -6,6 +6,7 @@
 class ShopManager {
     constructor() {
         this.currentEditingShop = null;
+        this.currentEditingShopType = null;
         this.selectedShop = null;
         this.shopTypes = [];
         this.initializeEventListeners();
@@ -36,8 +37,12 @@ class ShopManager {
         // Shop item form submission
         document.getElementById('add-shop-item-form').addEventListener('submit', (e) => this.handleAddShopItem(e));
 
-        // Cancel edit button
+        // Shop types form submission
+        document.getElementById('add-shop-type-form').addEventListener('submit', (e) => this.handleAddShopType(e));
+
+        // Cancel edit buttons
         document.getElementById('cancel-edit-shop').addEventListener('click', () => this.cancelShopEdit());
+        document.getElementById('cancel-edit-type').addEventListener('click', () => this.cancelShopTypeEdit());
     }
 
     switchTab(tabName) {
@@ -55,6 +60,8 @@ class ShopManager {
         } else if (tabName === 'items') {
             this.loadShopsForSelector();
             this.loadMasterItemList();
+        } else if (tabName === 'types') {
+            this.loadShopTypesTable();
         }
     }
 
@@ -408,6 +415,122 @@ class ShopManager {
         setTimeout(() => {
             statusDiv.style.display = 'none';
         }, 3000);
+    }
+
+    // ============================================================================
+    // SHOP TYPES METHODS
+    // ============================================================================
+
+    async loadShopTypesTable() {
+        try {
+            const response = await JotunAPI.getShopTypes();
+            const shopTypes = response.data || [];
+            this.renderShopTypesTable(shopTypes);
+        } catch (error) {
+            console.error('Error loading shop types for table:', error);
+            this.showStatus('Failed to load shop types', 'error');
+        }
+    }
+
+    renderShopTypesTable(shopTypes) {
+        const tbody = document.getElementById('shop-types-table-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        shopTypes.forEach(type => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${this.escapeHtml(type.type_name)}</td>
+                <td><code>${this.escapeHtml(type.type_key)}</code></td>
+                <td>${this.escapeHtml(type.description || '')}</td>
+                <td><span class="status-badge ${type.is_active == 1 ? 'active' : 'inactive'}">${type.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="shopManager.editShopType(${type.type_id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShopType(${type.type_id}, '${this.escapeHtml(type.type_name)}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    async handleAddShopType(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const typeData = {
+            type_name: formData.get('type_name'),
+            type_key: formData.get('type_key'),
+            description: formData.get('description') || '',
+            is_active: parseInt(formData.get('is_active') || '1')
+        };
+
+        try {
+            if (this.currentEditingShopType) {
+                // Update existing shop type
+                await JotunAPI.updateShopType(this.currentEditingShopType, typeData);
+                this.showStatus('Shop type updated successfully', 'success');
+                this.cancelShopTypeEdit();
+            } else {
+                // Add new shop type
+                await JotunAPI.addShopType(typeData);
+                this.showStatus('Shop type added successfully', 'success');
+            }
+            
+            e.target.reset();
+            await this.loadShopTypesTable();
+            await this.loadShopTypes(); // Refresh dropdowns
+        } catch (error) {
+            console.error('Error managing shop type:', error);
+            this.showStatus('Failed to save shop type', 'error');
+        }
+    }
+
+    async editShopType(typeId) {
+        try {
+            const response = await JotunAPI.getShopTypes();
+            const shopType = response.data.find(type => type.type_id == typeId);
+            
+            if (shopType) {
+                this.currentEditingShopType = typeId;
+                
+                // Populate form
+                document.getElementById('type-name').value = shopType.type_name;
+                document.getElementById('type-key').value = shopType.type_key;
+                document.getElementById('type-description').value = shopType.description || '';
+                document.getElementById('type-status').value = shopType.is_active || '1';
+                
+                // Update form UI
+                document.querySelector('#add-shop-type-form button[type="submit"]').textContent = 'Update Shop Type';
+                document.getElementById('cancel-edit-type').style.display = 'inline-block';
+            }
+        } catch (error) {
+            console.error('Error loading shop type for edit:', error);
+            this.showStatus('Failed to load shop type', 'error');
+        }
+    }
+
+    cancelShopTypeEdit() {
+        this.currentEditingShopType = null;
+        document.getElementById('add-shop-type-form').reset();
+        document.querySelector('#add-shop-type-form button[type="submit"]').textContent = 'Add Shop Type';
+        document.getElementById('cancel-edit-type').style.display = 'none';
+    }
+
+    async deleteShopType(typeId, typeName) {
+        if (!confirm(`Are you sure you want to delete the shop type "${typeName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            await JotunAPI.deleteShopType(typeId);
+            this.showStatus('Shop type deleted successfully', 'success');
+            await this.loadShopTypesTable();
+            await this.loadShopTypes(); // Refresh dropdowns
+        } catch (error) {
+            console.error('Error deleting shop type:', error);
+            this.showStatus('Failed to delete shop type', 'error');
+        }
     }
 
     escapeHtml(text) {

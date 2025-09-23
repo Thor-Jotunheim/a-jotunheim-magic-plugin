@@ -25,6 +25,7 @@ function shop_manager_interface() {
         <div class="shop-manager-tabs">
             <button class="shop-tab-button active" data-tab="shops">Shop Management</button>
             <button class="shop-tab-button" data-tab="items">Shop Items</button>
+            <button class="shop-tab-button" data-tab="types">Shop Types</button>
         </div>
 
         <!-- Shop Management Tab -->
@@ -159,6 +160,69 @@ function shop_manager_interface() {
                             </thead>
                             <tbody id="shop-items-table-body">
                                 <!-- Shop items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Types Tab -->
+        <div id="types-tab" class="shop-tab-content">
+            <div class="shop-types-section">
+                <h2>Shop Types Management</h2>
+                
+                <!-- Add New Shop Type -->
+                <div class="add-shop-type-section">
+                    <h3>Add New Shop Type</h3>
+                    <form id="add-shop-type-form" class="shop-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="type-name">Type Name *</label>
+                                <input type="text" id="type-name" name="type_name" required placeholder="e.g., VIP Only Shop">
+                            </div>
+                            <div class="form-group">
+                                <label for="type-key">Type Key *</label>
+                                <input type="text" id="type-key" name="type_key" required placeholder="e.g., vip-only">
+                                <small>Used internally, should be lowercase with dashes</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="type-description">Description</label>
+                                <textarea id="type-description" name="description" placeholder="Optional description of this shop type"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="type-status">Status</label>
+                                <select id="type-status" name="is_active">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Add Shop Type</button>
+                            <button type="button" id="cancel-edit-type" class="btn btn-secondary" style="display: none;">Cancel Edit</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Shop Types List -->
+                <div class="shop-types-list-section">
+                    <h3>Existing Shop Types</h3>
+                    <div id="shop-types-table-container">
+                        <table id="shop-types-table" class="shop-table">
+                            <thead>
+                                <tr>
+                                    <th>Type Name</th>
+                                    <th>Type Key</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shop-types-table-body">
+                                <!-- Shop types will be loaded here -->
                             </tbody>
                         </table>
                     </div>
