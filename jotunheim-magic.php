@@ -198,6 +198,16 @@ include_once(plugin_dir_path(__FILE__) . 'includes/POS/shop-manager-scripts.php'
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/unified-teller-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/unified-teller-scripts.php');
 
+// Include Legacy Shop Teller components (Google Sheets replacement)
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/legacy-shop-teller-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/legacy-shop-teller-scripts.php');
+
+// Include Enhanced POS Systems
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/player-rename-db.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/shop-config.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/ledger-archival.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/world-reset-api.php');
+
 // Include UniversalUI components
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-ui-scripts.php';
 //require_once plugin_dir_path(__FILE__) . 'includes/UniversalUI/universal-editor-ui.php';

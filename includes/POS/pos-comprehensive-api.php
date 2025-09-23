@@ -607,9 +607,11 @@ function jotun_api_rename_player($request) {
         error_log("Added rename column: $rename_column");
     }
     
+    $old_name = $player->activePlayerName;
+    
     // Store the current active name in the rename history
     $update_data = [
-        $rename_column => $player->activePlayerName,
+        $rename_column => $old_name,
         'activePlayerName' => sanitize_text_field($new_name),
         'last_rename_date' => current_time('mysql'),
         'rename_count' => $rename_count
@@ -621,11 +623,60 @@ function jotun_api_rename_player($request) {
         return new WP_REST_Response(['error' => 'Failed to rename player: ' . $wpdb->last_error], 500);
     }
     
+    // Update all historical transactions and ledger entries
+    $update_results = [];
+    
+    // Update jotun_transactions table - player field
+    $transactions_updated = $wpdb->update(
+        'jotun_transactions',
+        ['player' => $new_name],
+        ['player' => $old_name]
+    );
+    if ($transactions_updated !== false) {
+        $update_results['transactions'] = $transactions_updated;
+    }
+    
+    // Update jotun_ledger table - both activePlayerName and playerName fields
+    $ledger_active_updated = $wpdb->update(
+        'jotun_ledger',
+        ['activePlayerName' => $new_name],
+        ['activePlayerName' => $old_name]
+    );
+    
+    $ledger_player_updated = $wpdb->update(
+        'jotun_ledger',
+        ['playerName' => $new_name],
+        ['playerName' => $old_name]
+    );
+    
+    if ($ledger_active_updated !== false) {
+        $update_results['ledger_active'] = $ledger_active_updated;
+    }
+    if ($ledger_player_updated !== false) {
+        $update_results['ledger_player'] = $ledger_player_updated;
+    }
+    
+    // Create rename history entry
+    $history_result = $wpdb->insert(
+        'jotun_player_rename_history',
+        [
+            'player_id' => $id,
+            'old_name' => $old_name,
+            'new_name' => $new_name,
+            'renamed_by' => get_current_user_id(),
+            'rename_date' => current_time('mysql')
+        ]
+    );
+    
+    // Log the comprehensive rename operation
+    error_log("Player rename completed - Old: $old_name, New: $new_name, Updates: " . json_encode($update_results));
+    
     return new WP_REST_Response([
-        'message' => 'Player renamed successfully',
-        'old_name' => $player->activePlayerName,
+        'message' => 'Player renamed successfully across all systems',
+        'old_name' => $old_name,
         'new_name' => $new_name,
-        'rename_count' => $rename_count
+        'rename_count' => $rename_count,
+        'updates' => $update_results
     ], 200);
 }
 

@@ -1,0 +1,650 @@
+/**
+ * Legacy Shop Teller CSS
+ * Styling for the comprehensive shop management interface
+ */
+
+.jotun-legacy-interface {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Shop Type Selector */
+.shop-type-selector {
+    margin-bottom: 30px;
+}
+
+.shop-type-selector h2 {
+    color: oklch(0.25 0.05 240);
+    margin-bottom: 15px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.shop-tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid oklch(0.90 0.02 240);
+    padding-bottom: 10px;
+}
+
+.shop-tab {
+    padding: 12px 24px;
+    background: oklch(0.95 0.01 240);
+    border: 2px solid oklch(0.85 0.02 240);
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    color: oklch(0.35 0.02 240);
+    transition: all 0.2s ease;
+    border-bottom: none;
+}
+
+.shop-tab:hover {
+    background: oklch(0.92 0.02 240);
+    transform: translateY(-2px);
+}
+
+.shop-tab.active {
+    background: oklch(0.45 0.15 240);
+    color: white;
+    border-color: oklch(0.45 0.15 240);
+}
+
+/* Player Registration */
+.player-registration-section {
+    background: oklch(0.98 0.01 240);
+    border: 1px solid oklch(0.90 0.02 240);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.registration-panel h3 {
+    color: oklch(0.25 0.05 240);
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.player-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.player-input-group input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.player-input-group input:focus {
+    outline: none;
+    border-color: oklch(0.45 0.15 240);
+    box-shadow: 0 0 0 3px oklch(0.45 0.15 240 / 0.1);
+}
+
+/* Transaction Section */
+.transaction-section {
+    background: oklch(0.98 0.01 240);
+    border: 1px solid oklch(0.90 0.02 240);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.player-selection {
+    margin-bottom: 25px;
+}
+
+.player-selection h3 {
+    color: oklch(0.25 0.05 240);
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.player-dropdown {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px 12px;
+    border: 2px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Shop Transaction Forms */
+.shop-transaction-form {
+    display: none;
+}
+
+.shop-transaction-form.active {
+    display: block;
+}
+
+.transaction-form h3 {
+    color: oklch(0.25 0.05 240);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Admin Transaction Specific */
+.transaction-options {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: oklch(0.95 0.01 240);
+    border-radius: 6px;
+}
+
+.transaction-options label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.transaction-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.buy-section,
+.claim-section {
+    border: 1px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    padding: 15px;
+    background: oklch(0.99 0.005 240);
+}
+
+.buy-section h4,
+.claim-section h4 {
+    color: oklch(0.35 0.02 240);
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Item Grids */
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.shop-item {
+    border: 1px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    padding: 12px;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.shop-item:hover {
+    border-color: oklch(0.45 0.15 240);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px oklch(0.45 0.15 240 / 0.1);
+}
+
+.shop-item .item-name {
+    font-weight: 600;
+    color: oklch(0.25 0.05 240);
+    margin-bottom: 5px;
+}
+
+.shop-item .item-price {
+    color: oklch(0.75 0.15 60);
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.item-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.item-quantity {
+    width: 60px;
+    padding: 5px 8px;
+    border: 1px solid oklch(0.85 0.02 240);
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Transaction Items */
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: oklch(0.95 0.01 240);
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.remove-item-btn {
+    background: oklch(0.65 0.15 0);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.remove-item-btn:hover {
+    background: oklch(0.55 0.15 0);
+}
+
+/* Transaction Summary */
+.transaction-summary {
+    margin-top: 20px;
+    padding: 15px;
+    background: oklch(0.95 0.01 240);
+    border-radius: 6px;
+    border-left: 4px solid oklch(0.45 0.15 240);
+}
+
+.summary-totals {
+    display: flex;
+    gap: 20px;
+    font-weight: 600;
+    color: oklch(0.25 0.05 240);
+}
+
+.summary-totals span {
+    padding: 5px 10px;
+    background: white;
+    border-radius: 4px;
+}
+
+/* Transaction Actions */
+.transaction-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid oklch(0.90 0.02 240);
+}
+
+/* Admin Tools */
+.admin-tools-section {
+    background: oklch(0.98 0.01 240);
+    border: 1px solid oklch(0.90 0.02 240);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.admin-tools-section h3 {
+    color: oklch(0.25 0.05 240);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.admin-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.tool-panel {
+    border: 1px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    padding: 15px;
+    background: white;
+}
+
+.tool-panel h4 {
+    color: oklch(0.35 0.02 240);
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.tool-panel button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: oklch(0.45 0.15 240);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: oklch(0.40 0.15 240);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: oklch(0.35 0.02 240);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: oklch(0.30 0.02 240);
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: oklch(0.75 0.15 60);
+    color: oklch(0.25 0.05 240);
+}
+
+.btn-warning:hover {
+    background: oklch(0.70 0.15 60);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: oklch(0.65 0.15 0);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: oklch(0.55 0.15 0);
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.add-item-btn {
+    width: 100%;
+    background: oklch(0.75 0.15 60);
+    color: oklch(0.25 0.05 240);
+    border: 2px dashed oklch(0.65 0.15 60);
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.add-item-btn:hover {
+    background: oklch(0.70 0.15 60);
+    transform: translateY(-2px);
+}
+
+/* Status Messages */
+.status-message {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    display: none;
+}
+
+.status-message.success {
+    background: oklch(0.85 0.05 140);
+    color: oklch(0.25 0.05 140);
+    border: 1px solid oklch(0.75 0.05 140);
+    display: block;
+}
+
+.status-message.error {
+    background: oklch(0.85 0.05 0);
+    color: oklch(0.25 0.05 0);
+    border: 1px solid oklch(0.75 0.05 0);
+    display: block;
+}
+
+.status-message.warning {
+    background: oklch(0.85 0.05 60);
+    color: oklch(0.25 0.05 60);
+    border: 1px solid oklch(0.75 0.05 60);
+    display: block;
+}
+
+/* Modals */
+.jotun-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.jotun-modal-content {
+    background-color: white;
+    margin: 5% auto;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.jotun-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid oklch(0.90 0.02 240);
+}
+
+.jotun-modal-header h3 {
+    margin: 0;
+    color: oklch(0.25 0.05 240);
+}
+
+.jotun-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: oklch(0.35 0.02 240);
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.jotun-modal-close:hover {
+    color: oklch(0.65 0.15 0);
+}
+
+.jotun-modal-body {
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.jotun-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid oklch(0.90 0.02 240);
+}
+
+/* Item Selection Modal */
+.item-search {
+    margin-bottom: 20px;
+}
+
+.item-search input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.available-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.available-item {
+    border: 2px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.available-item:hover {
+    border-color: oklch(0.45 0.15 240);
+    background: oklch(0.98 0.01 240);
+}
+
+.available-item.selected {
+    border-color: oklch(0.45 0.15 240);
+    background: oklch(0.45 0.15 240);
+    color: white;
+}
+
+.available-item .item-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.available-item .item-type {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.available-item .item-price {
+    font-weight: 500;
+    color: oklch(0.75 0.15 60);
+}
+
+.available-item.selected .item-price {
+    color: white;
+}
+
+/* Warning Panel */
+.warning-panel {
+    background: oklch(0.85 0.05 0);
+    border: 1px solid oklch(0.75 0.05 0);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: oklch(0.25 0.05 0);
+}
+
+.warning-panel strong {
+    color: oklch(0.15 0.05 0);
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: oklch(0.25 0.05 240);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid oklch(0.85 0.02 240);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: oklch(0.45 0.15 240);
+    box-shadow: 0 0 0 3px oklch(0.45 0.15 240 / 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .jotun-legacy-interface {
+        padding: 10px;
+    }
+    
+    .shop-tabs {
+        flex-direction: column;
+    }
+    
+    .transaction-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-tools-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .item-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .player-input-group {
+        flex-direction: column;
+    }
+    
+    .transaction-actions {
+        flex-direction: column;
+    }
+    
+    .summary-totals {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
