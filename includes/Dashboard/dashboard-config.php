@@ -923,6 +923,8 @@ class JotunheimDashboardConfig {
         // Use the admin version that includes disabled sections AND items
         $normalized_config = $this->normalized_db->get_full_configuration_for_admin();
         
+        error_log('Dashboard Config Frontend: Raw normalized config has ' . count($normalized_config) . ' sections');
+        
         // Default icons for sections
         $default_section_icons = [
             'core' => 'dashicons-admin-settings',
@@ -947,6 +949,8 @@ class JotunheimDashboardConfig {
             'items' => []
         ];
         
+        $total_items = 0;
+        
         // Convert sections
         foreach ($normalized_config as $section_key => $section_data) {
             $frontend_config['sections'][] = [
@@ -960,6 +964,10 @@ class JotunheimDashboardConfig {
             
             // Convert items in this section
             if (isset($section_data['items']) && is_array($section_data['items'])) {
+                $section_item_count = count($section_data['items']);
+                $total_items += $section_item_count;
+                error_log("Dashboard Config Frontend: Section '$section_key' has $section_item_count items");
+                
                 foreach ($section_data['items'] as $item_data) {
                     $frontend_item = [
                         'id' => $item_data['item_id'],
@@ -972,10 +980,14 @@ class JotunheimDashboardConfig {
                         'description' => $item_data['description'] ?? ''
                     ];
                     $frontend_config['items'][] = $frontend_item;
-                    error_log('Dashboard Config Frontend: Added item ' . $item_data['item_id'] . ' to frontend config');
+                    error_log('Dashboard Config Frontend: Added item ' . $item_data['item_id'] . ' to frontend config (section: ' . $section_key . ')');
                 }
+            } else {
+                error_log("Dashboard Config Frontend: Section '$section_key' has no items or items is not an array");
             }
         }
+        
+        error_log("Dashboard Config Frontend: Total items sent to frontend: $total_items");
         
         return $frontend_config;
     }
@@ -3116,8 +3128,34 @@ function render_dashboard_config_page() {
                                 $successMsg.fadeOut();
                             }, 3000);
                             
-                            // Refresh the dashboard config
-                            location.reload();
+                            // Instead of page reload, update the current config and refresh the interface
+                            // Add the new page to currentConfig so it doesn't disappear on save
+                            const newItem = {
+                                id: pageId,
+                                title: pageTitle,
+                                menu_title: pageTitle,
+                                section: section,
+                                order: 999, // Put at end
+                                enabled: true,
+                                quick_action: false,
+                                callback: callback,
+                                description: pageDescription
+                            };
+                            
+                            // Add to currentConfig.items if it exists
+                            if (typeof dashboardConfig !== 'undefined' && dashboardConfig.config && dashboardConfig.config.items) {
+                                dashboardConfig.config.items.push(newItem);
+                            }
+                            
+                            // Also add to global currentConfig if it exists (for AJAX version)
+                            if (typeof currentConfig !== 'undefined' && currentConfig.items) {
+                                currentConfig.items.push(newItem);
+                            }
+                            
+                            // Reload page to show in sidebar menu
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
                         } else {
                             alert('Error adding page: ' + (response.data || 'Unknown error'));
                             $button.prop('disabled', false).text('Add Page');
