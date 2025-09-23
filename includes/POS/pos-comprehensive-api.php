@@ -1222,7 +1222,7 @@ function jotun_api_add_shop($request) {
     
     $insert_data = [
         'shop_name' => sanitize_text_field($data['shop_name']),
-        'shop_type' => sanitize_text_field($data['shop_type'] ?? 'player'),
+        'shop_type' => sanitize_text_field($data['shop_type'] ?? 'general'),
         'owner_name' => $owner_name,
         'is_active' => intval($data['is_active'] ?? 1),
         'created_at' => current_time('mysql')
@@ -1262,7 +1262,7 @@ function jotun_api_update_shop($request) {
     
     $update_data = [
         'shop_name' => sanitize_text_field($data['shop_name']),
-        'shop_type' => sanitize_text_field($data['shop_type'] ?? 'player'),
+        'shop_type' => sanitize_text_field($data['shop_type'] ?? 'general'),
         'is_active' => intval($data['is_active'] ?? 1)
     ];
     

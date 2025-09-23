@@ -44,8 +44,9 @@ function shop_manager_interface() {
                             <div class="form-group">
                                 <label for="shop-type">Shop Type</label>
                                 <select id="shop-type" name="shop_type">
-                                    <option value="player">Player Shop</option>
-                                    <option value="staff">Staff Shop</option>
+                                    <option value="general">General Shop</option>
+                                    <option value="staff-only">Staff Only</option>
+                                    <option value="admin-only">Admin Only</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -69,8 +70,9 @@ function shop_manager_interface() {
                     <div class="shop-filters">
                         <select id="shop-type-filter">
                             <option value="">All Shop Types</option>
-                            <option value="player">Player Shops</option>
-                            <option value="staff">Staff Shops</option>
+                            <option value="general">General Shops</option>
+                            <option value="staff-only">Staff Only</option>
+                            <option value="admin-only">Admin Only</option>
                         </select>
                         <input type="text" id="shop-search" placeholder="Search shops...">
                     </div>

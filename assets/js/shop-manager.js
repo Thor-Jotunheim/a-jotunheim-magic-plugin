@@ -11,6 +11,15 @@ class ShopManager {
         this.loadInitialData();
     }
 
+    getShopTypeLabel(shopType) {
+        const labels = {
+            'general': 'General Shop',
+            'staff-only': 'Staff Only',
+            'admin-only': 'Admin Only'
+        };
+        return labels[shopType] || shopType;
+    }
+
     initializeEventListeners() {
         // Tab switching
         document.querySelectorAll('.shop-tab-button').forEach(button => {
@@ -97,7 +106,7 @@ class ShopManager {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${this.escapeHtml(shop.shop_name)}</td>
-                <td><span class="shop-type-badge ${shop.shop_type}">${shop.shop_type}</span></td>
+                <td><span class="shop-type-badge ${shop.shop_type}">${this.getShopTypeLabel(shop.shop_type)}</span></td>
                 <td><span class="status-badge ${shop.is_active == 1 ? 'active' : 'inactive'}">${shop.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
                 <td>${this.formatDate(shop.created_at)}</td>
                 <td>
@@ -117,7 +126,7 @@ class ShopManager {
             if (shop.is_active == 1) { // Only show active shops
                 const option = document.createElement('option');
                 option.value = shop.shop_id;
-                option.textContent = `${shop.shop_name} (${shop.shop_type})`;
+                option.textContent = `${shop.shop_name} (${this.getShopTypeLabel(shop.shop_type)})`;
                 selector.appendChild(option);
             }
         });
