@@ -1759,14 +1759,34 @@ function jotun_api_add_shop_item($request) {
         'shop_id' => (int)$data['shop_id'],
         'item_id' => $is_custom_item ? null : (int)$data['item_id'],
         'item_name' => $item_name,
-        'stock_quantity' => (int)($data['stock_quantity'] ?? -1), // -1 for unlimited
         'rotation' => (int)($data['rotation'] ?? 1), // Default to rotation 1
         'is_available' => isset($data['is_available']) ? (bool)$data['is_available'] : true,
-        'added_date' => current_time('mysql'),
-        'unlimited_stock' => isset($data['unlimited_stock']) ? (bool)$data['unlimited_stock'] : false,
-        'turn_in_quantity' => (int)($data['turn_in_quantity'] ?? 0),
-        'turn_in_requirement' => (int)($data['turn_in_requirement'] ?? 0)
+        'added_date' => current_time('mysql')
     ];
+
+    // Add stock_quantity if column exists
+    $stock_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'stock_quantity'");
+    if (!empty($stock_quantity_exists)) {
+        $insert_data['stock_quantity'] = (int)($data['stock_quantity'] ?? -1);
+    }
+
+    // Add unlimited_stock if column exists
+    $unlimited_stock_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'unlimited_stock'");
+    if (!empty($unlimited_stock_exists)) {
+        $insert_data['unlimited_stock'] = isset($data['unlimited_stock']) ? (bool)$data['unlimited_stock'] : false;
+    }
+
+    // Add turn_in_quantity if column exists
+    $turn_in_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'turn_in_quantity'");
+    if (!empty($turn_in_quantity_exists)) {
+        $insert_data['turn_in_quantity'] = (int)($data['turn_in_quantity'] ?? 0);
+    }
+
+    // Add turn_in_requirement if column exists
+    $turn_in_requirement_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'turn_in_requirement'");
+    if (!empty($turn_in_requirement_exists)) {
+        $insert_data['turn_in_requirement'] = (int)($data['turn_in_requirement'] ?? 0);
+    }
 
     // Add custom_price if the column exists and value provided
     $custom_price_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'custom_price'");
@@ -1774,8 +1794,9 @@ function jotun_api_add_shop_item($request) {
         $insert_data['custom_price'] = floatval($data['custom_price']);
     }
     
-    // Add custom item flag if it's a custom item
-    if ($is_custom_item) {
+    // Add is_custom_item if column exists
+    $is_custom_item_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'is_custom_item'");
+    if (!empty($is_custom_item_exists) && $is_custom_item) {
         $insert_data['is_custom_item'] = 1;
     }
     

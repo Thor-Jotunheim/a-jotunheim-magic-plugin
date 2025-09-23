@@ -99,9 +99,14 @@ function shop_manager_interface() {
             flex: 1;
         }
         
-        .price-input-group select {
+        .price-unit {
             flex: 0 0 auto;
-            min-width: 120px;
+            padding: 8px 12px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-weight: 500;
+            color: #555;
         }
         
         .price-conversion {
@@ -281,15 +286,12 @@ function shop_manager_interface() {
                                 <input type="text" id="custom-item-name" name="custom_item_name" placeholder="Enter custom item name for spells/special items">
                             </div>
                             <div class="form-group">
-                                <label for="custom-price">Custom Price (optional)</label>
+                                <label for="custom-price">Custom Price (Coins)</label>
                                 <div class="price-input-group">
-                                    <input type="number" id="custom-price" name="custom_price" step="1" placeholder="Leave empty for default price">
-                                    <select id="price-currency" name="price_currency">
-                                        <option value="coins">Coins (Gold)</option>
-                                        <option value="ymir">Ymir Flesh</option>
-                                    </select>
+                                    <input type="number" id="custom-price" name="custom_price" step="1" placeholder="Enter price in Coins (leave empty for default)">
+                                    <span class="price-unit">Coins</span>
                                 </div>
-                                <small class="price-conversion">1 Ymir Flesh = 120 Coins</small>
+                                <small class="price-conversion">Display will show both Coins and Ymir Flesh equivalent (1 Ymir = 120 Coins)</small>
                             </div>
                         </div>
                         <div class="form-row">

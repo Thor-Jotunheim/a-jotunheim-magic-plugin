@@ -319,15 +319,18 @@ class ShopManager {
     formatPrice(price, currency = 'coins', showBothFormats = true) {
         const numPrice = parseFloat(price) || 0;
         
+        // For legacy support - if currency is ymir, convert from ymir to coins display
         if (currency === 'ymir') {
             return `${(numPrice / 120).toFixed(2)} Ymir Flesh`;
         }
         
-        if (showBothFormats && numPrice >= 120) {
+        // Always show both formats when price is 120+ coins (1+ Ymir)
+        if (numPrice >= 120) {
             const ymirAmount = (numPrice / 120).toFixed(2);
             return `${numPrice} Coins (${ymirAmount} Ymir)`;
         }
         
+        // For small amounts, just show coins
         return `${numPrice} Coins`;
     }
 
@@ -646,7 +649,6 @@ class ShopManager {
         const itemId = formData.get('item_id');
         const customItemName = formData.get('custom_item_name');
         let customPrice = formData.get('custom_price');
-        const priceCurrency = formData.get('price_currency') || 'coins';
         const rotation = formData.get('rotation') || 1;
         
         // Check if we have either an item selection or custom item name
@@ -655,9 +657,9 @@ class ShopManager {
             return;
         }
 
-        // Convert price if in Ymir Flesh to Coins
-        if (customPrice && priceCurrency === 'ymir') {
-            customPrice = parseFloat(customPrice) * 120; // 1 Ymir = 120 Coins
+        // Price is always in Coins (no conversion needed)
+        if (customPrice) {
+            customPrice = parseFloat(customPrice);
         }
 
         const shopItemData = {

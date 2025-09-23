@@ -11,56 +11,138 @@ Create a comprehensive shop management system for the Jotunheim gaming community
 - Complex Application (advanced functionality, accounts, authentication)
 - This system handles multiple interconnected data types (players, transactions, items, ledgers) with role-based access, Discord OAuth integration, and complex business logic for legacy item management and world resets.
 
-## Essential Features
+## Implementation Status
+
+### ✅ **COMPLETED FEATURES**
+
+**Player List Management System**
+- Functionality: Complete player registration and management with duplicate checking
+- Implementation: Full CRUD operations with database storage and validation
+- Features: Add/edit/delete players, search functionality, bulk operations
+- Access: Role-based permissions (Admin/Staff access required)
 
 **Discord Authentication System**
 - Functionality: Secure login through Discord OAuth via jotun.games backend
-- Purpose: Ensure only authorized community members can access shop management tools
-- Trigger: User clicks "Login with Discord" button
-- Progression: Redirect to Discord → authorize application → return with user data → validate roles → grant appropriate permissions
-- Success criteria: User logged in with correct role-based permissions displayed
+- Implementation: Complete OAuth flow with role validation and session management
+- Features: Automatic role detection, secure token handling, graceful error handling
+- Integration: Seamless integration with WordPress user system
 
-**Role-Based Access Control**
-- Functionality: Different permission levels based on Discord server roles
-- Purpose: Ensure users only access features appropriate to their responsibilities
-- Trigger: User authentication completion
-- Progression: Retrieve Discord roles → map to application permissions → show/hide interface elements
-- Success criteria: Interface adapts to user's permission level (Norn/Aesir/Staff/Chosen)
+**Dashboard Configuration System**
+- Functionality: Dynamic admin menu reorganization with normalized database storage
+- Implementation: Flexible menu system with drag-and-drop organization
+- Features: Custom sections, menu ordering, permission-based visibility
+- Storage: Normalized database structure for scalability
 
-**Player Registration System**
-- Functionality: Add new players to registry with duplicate checking
-- Purpose: Maintain centralized player database across all shop types
-- Trigger: Staff enters player name in registration form
-- Progression: Enter name → validate uniqueness → confirm registration → success notification
-- Success criteria: Player appears in registry and can be selected for transactions
+**Page Permissions Configuration**
+- Functionality: Role-based access control for all system pages
+- Implementation: Discord role hierarchy integration with WordPress capabilities
+- Features: Fine-grained permissions, role inheritance, access logging
+- Roles: Norn > Aesir > All Staff > Admin > Staff > Valkyrie > Vithar
+
+**Database API Infrastructure**
+- Functionality: Comprehensive REST endpoints for all system data
+- Implementation: Full CRUD operations with authentication and validation
+- Features: Rate limiting, error handling, data sanitization
+- Coverage: Players, shops, items, transactions, ledgers, all jotun_* tables
+
+**Shop Management Core System**
+- Functionality: Multi-type shop creation and management
+- Implementation: Flexible shop type system with role-based access
+- Features: Shop creation, type management, rotation support
+- Types: Standard shops, Turn-In Only shops, custom shop types
+
+### 🚧 **IN PROGRESS FEATURES**
+
+**Shop Items Management (Recently Enhanced)**
+- Functionality: Complete item management with master list integration
+- Current Status: Core functionality implemented, testing in progress
+- Recent Enhancements:
+  - ✅ Fixed database schema issues preventing item additions
+  - ✅ Added unlimited stock checkbox functionality
+  - ✅ Enhanced pricing system (stores as Coins, displays Ymir+Coins)
+  - ✅ Implemented Turn-In shop specific fields (turn-in quantity/requirements)
+  - ✅ Fixed master item list search with live results and dropdown
+  - ✅ Added proper field toggling based on shop type
+
+**Advanced Shop Features (In Development)**
+- Custom price overrides with currency conversion (Ymir ↔ Coins)
+- Stock quantity management with unlimited stock options
+- Item rotation system for seasonal/event items
+- Turn-in tracking for community events
+- Integration with master item database
+
+### 📋 **PLANNED FEATURES**
+
+## Essential Features
+
+**Player Shop Creation System (Chosen Role)**
+- Functionality: Allow Chosen players to create and manage personal shops
+- Purpose: Enable player-driven economy with custom shops
+- Features: Shop creation wizard, item management, permission delegation
+- Access Control: Chosen role and above can create shops
+
+**Shop Permission Delegation**
+- Functionality: Shop owners can grant access to other players
+- Purpose: Enable collaborative shop management and trusted operators
+- Features: Granular permissions (view/edit/manage), temporary access, audit logging
+- Use Cases: Trusted friends, temporary shop-sitters, co-op businesses
+
+**Unified Teller System**
+- Functionality: Single interface for all shop transactions across multiple shops
+- Purpose: Streamline transaction processing for staff and reduce interface switching
+- Features: Multi-shop view, bulk operations, transaction batching, real-time updates
+- Multi-User: Multiple staff can operate simultaneously on same interface
 
 **Transaction Recording (Multi-Shop)**
 - Functionality: Record purchases/sales across Admin, Popup, Haldore, and Beehive shops
 - Purpose: Track all economic activity with proper validation and archival
-- Trigger: Staff completes transaction form with player and items
-- Progression: Select player → enter items/quantities → validate transaction → record to ledger → clear form
-- Success criteria: Transaction appears in both active and archive ledgers
+- Integration: Seamless integration with existing shop types and new player shops
 
 **Item Management System**
-- Functionality: Display current item database with pricing and availability
-- Purpose: Provide reference for transaction recording and price consistency
-- Trigger: User navigates to item list or searches for specific items
-- Progression: Browse/search items → view details → use in transactions
-- Success criteria: Items display with correct pricing and can be selected for transactions
+- Functionality: Centralized item database with pricing and availability
+- Purpose: Maintain consistency across all shops and transaction types
+- Features: Master item list, price management, availability tracking, bulk updates
 
 **Player Rename Functionality**
 - Functionality: Update player names across all systems and historical data
 - Purpose: Maintain data integrity when players change names
-- Trigger: Admin initiates rename with old and new names
-- Progression: Enter names → validate existence → confirm action → update all records → log change
-- Success criteria: All instances of old name replaced, change logged in history
+- Features: Bulk rename across all tables, change logging, rollback capability
 
 **Ledger Management**
-- Functionality: Clear/archive ledgers and handle world resets with legacy item tracking
-- Purpose: Manage periodic data archival and special game mechanics
-- Trigger: Admin initiates ledger clear or world reset
-- Progression: Select operation → confirm action → process data transfer → update legacy items → notify completion
-- Success criteria: Data properly archived, legacy items tracked correctly
+- Functionality: Advanced transaction ledger with archival and world reset support
+- Purpose: Handle periodic data management and special game mechanics
+- Features: Automated archival, legacy item tracking, world reset procedures
+
+**Advanced Analytics Dashboard**
+- Functionality: Economic insights and transaction analytics
+- Purpose: Provide data-driven insights for server economy management
+- Features: Transaction trends, popular items, player activity, shop performance
+
+## Technical Implementation Details
+
+**Database Architecture**
+- Custom table prefix: `jotun_` for all plugin tables
+- Normalized database design for scalability
+- Comprehensive foreign key relationships
+- Automated migration system for schema updates
+
+**API Architecture** 
+- RESTful endpoints with WordPress nonce authentication
+- Namespace: `jotunheim/v1` for all custom endpoints
+- Rate limiting and error handling
+- Consistent response format with success/error states
+
+**Security Implementation**
+- Discord OAuth integration with role-based permissions
+- WordPress capability system integration
+- SQL injection prevention with prepared statements
+- Input sanitization and validation on all endpoints
+
+**Performance Optimizations**
+- Efficient database queries with proper indexing
+- Conditional asset loading (only when shortcodes present)
+- Caching for frequently accessed data
+- Optimized REST API responses
 
 ## Edge Case Handling
 
@@ -119,9 +201,45 @@ Subtle and functional animations that provide immediate feedback without interfe
 - **Spacing**: Consistent 16px base spacing with 8px for tight areas and 24px for section separation
 - **Mobile**: Stacked forms on mobile, collapsible navigation, responsive tables with horizontal scroll
 
-## Bugs/Problems 
-- In Dashboard Manager search, Shop Manager[shop_manager] & Unified Teller[unified_teller] pages now show up when searching. But i sorta expected other shortcodes to show up too. I have others in my plugin. Currently these add pages to the overview page, but it's not adding it to the side dash menubar. 
-- Overview page of the Dashboard links stil does not work. I get an error about not having permissions. 
+## Known Issues & Technical Debt
 
-## Spark Integration
-- I started using Spark to create an app, but i realized it wasn't going to work with my website plugin well, so i decided to bring what was made over there, to here in this magic plugin. Here is the git, if you can review it, maybe we can use some of it over here to save us time and energy. https://github.com/Thor-Jotunheim/jotunheim-admin-dash.git. Alternativly, i can drag and drop all these files into this same project folder so you have access to those files. . or i can just give you the local files location. 
+**Dashboard Manager Search Issues**
+- Problem: Shop Manager[shop_manager] & Unified Teller[unified_teller] pages appear in search but other shortcodes don't
+- Impact: Inconsistent search results, some pages missing from navigation
+- Status: Under investigation
+
+**Overview Page Permissions**
+- Problem: Dashboard overview links return permission errors despite proper authentication
+- Impact: Navigation broken for some admin functions
+- Status: Requires permission system debugging
+
+**Database Schema Migration**
+- Recent Fix: Resolved "Unknown column 'custom_price'" errors causing 500 status responses
+- Solution: Added proper column existence checking and safe migration logic
+- Status: ✅ Resolved in latest update
+
+## Integration Opportunities
+
+**Spark Framework Integration**
+- Source: https://github.com/Thor-Jotunheim/jotunheim-admin-dash.git
+- Potential: Reusable components and design patterns from Spark-based prototype
+- Consideration: Evaluate compatibility with WordPress plugin architecture
+- Status: Available for selective integration
+
+## Future Enhancements
+
+**In-Game Integration**
+- Real-time shop data via game mod integration
+- Automatic transaction recording from in-game purchases
+- Live inventory sync between game and web interface
+
+**Mobile Optimization**
+- Responsive design improvements for mobile shop management
+- Touch-optimized interfaces for tablet-based POS systems
+- Offline capability for transaction recording
+
+**Advanced Economics**
+- Dynamic pricing based on supply/demand
+- Seasonal event shop automation
+- Economic trend analysis and reporting
+- Integration with external economy tracking tools 
