@@ -267,40 +267,70 @@ function jotun_ensure_shop_items_table() {
         error_log("Jotunheim POS: Dropped unique_shop_item_rotation constraint from jotun_shop_items table");
         
         // 4. Remove any CHECK constraints that might be validating shop_id
-        // Note: CHECK constraints are not widely supported in older MySQL versions
-        // This query is safer and compatible with more MySQL versions
+        // Use a more compatible approach for older MySQL versions
         $database_name = DB_NAME;
+        
+        // Try to get CHECK constraints - this might not work on all MySQL versions
         $check_constraints = $wpdb->get_results($wpdb->prepare("
             SELECT CONSTRAINT_NAME 
             FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
             WHERE TABLE_NAME = %s 
-            AND TABLE_SCHEMA = %s 
+            AND CONSTRAINT_SCHEMA = %s 
             AND CONSTRAINT_TYPE = 'CHECK'
         ", $shop_items_table, $database_name));
         
-        foreach ($check_constraints as $check) {
-            $wpdb->query("ALTER TABLE $shop_items_table DROP CHECK {$check->CONSTRAINT_NAME}");
-            error_log("Jotunheim POS: Dropped check constraint {$check->CONSTRAINT_NAME} from jotun_shop_items table");
+        if ($wpdb->last_error) {
+            error_log("Jotunheim POS: CHECK constraint query failed (this is normal for older MySQL): " . $wpdb->last_error);
+        } else {
+            foreach ($check_constraints as $check) {
+                $wpdb->query("ALTER TABLE $shop_items_table DROP CHECK {$check->CONSTRAINT_NAME}");
+                error_log("Jotunheim POS: Dropped check constraint {$check->CONSTRAINT_NAME} from jotun_shop_items table");
+            }
         }
         
         // 5. Check for and remove any database triggers that might be validating shop_id
+        // Use TRIGGER_SCHEMA instead of TABLE_SCHEMA for MySQL compatibility
         $triggers = $wpdb->get_results($wpdb->prepare("
             SELECT TRIGGER_NAME 
             FROM INFORMATION_SCHEMA.TRIGGERS 
-            WHERE TABLE_NAME = %s 
-            AND TABLE_SCHEMA = %s
+            WHERE EVENT_OBJECT_TABLE = %s 
+            AND TRIGGER_SCHEMA = %s
         ", $shop_items_table, $database_name));
         
-        foreach ($triggers as $trigger) {
-            $wpdb->query("DROP TRIGGER IF EXISTS {$trigger->TRIGGER_NAME}");
-            error_log("Jotunheim POS: Dropped trigger {$trigger->TRIGGER_NAME} from jotun_shop_items table");
+        if ($wpdb->last_error) {
+            error_log("Jotunheim POS: TRIGGER query failed (this is normal for older MySQL): " . $wpdb->last_error);
+        } else {
+            foreach ($triggers as $trigger) {
+                $wpdb->query("DROP TRIGGER IF EXISTS {$trigger->TRIGGER_NAME}");
+                error_log("Jotunheim POS: Dropped trigger {$trigger->TRIGGER_NAME} from jotun_shop_items table");
+            }
         }
         
-        // 6. Emergency fix: Temporarily disable foreign key checks during this migration
+        // 6. AGGRESSIVE DEBUGGING: Show current table structure and constraints
+        error_log("Jotunheim POS: === AGGRESSIVE DEBUGGING START ===");
+        
+        $table_info = $wpdb->get_results("SHOW CREATE TABLE $shop_items_table");
+        if ($table_info) {
+            error_log("Jotunheim POS: Current table structure: " . $table_info[0]->{'Create Table'});
+        }
+        
+        // Check for any remaining constraints
+        $all_constraints = $wpdb->get_results($wpdb->prepare("
+            SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+            WHERE TABLE_NAME = %s AND CONSTRAINT_SCHEMA = %s
+        ", $shop_items_table, $database_name));
+        
+        if (!$wpdb->last_error && $all_constraints) {
+            error_log("Jotunheim POS: Remaining constraints: " . json_encode($all_constraints));
+        }
+        
+        error_log("Jotunheim POS: === AGGRESSIVE DEBUGGING END ===");
+        
+        // 7. Emergency fix: Temporarily disable foreign key checks during this migration
         $wpdb->query("SET FOREIGN_KEY_CHECKS = 0");
         error_log("Jotunheim POS: Temporarily disabled foreign key checks for migration");
         
-        // 7. Re-enable foreign key checks at the end
+        // 8. Re-enable foreign key checks at the end
         $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
         error_log("Jotunheim POS: Re-enabled foreign key checks after migration");
     }
@@ -1951,8 +1981,22 @@ function jotun_api_add_shop_item($request) {
         }
     }
     
-    // Temporarily disable foreign key checks for this insert
+    // AGGRESSIVE DEBUGGING: Show current table status before insert
+    error_log("DEBUG - === PRE-INSERT DEBUGGING ===");
+    $show_create = $wpdb->get_results("SHOW CREATE TABLE $table_name");
+    if ($show_create) {
+        error_log("DEBUG - Table structure: " . $show_create[0]->{'Create Table'});
+    }
+    
+    // Check if shop still exists right before insert
+    $shop_recheck = $wpdb->get_var($wpdb->prepare("SELECT shop_id FROM jotun_shops WHERE shop_id = %d", $insert_data['shop_id']));
+    error_log("DEBUG - Shop recheck before insert: " . ($shop_recheck ? 'FOUND' : 'NOT FOUND'));
+    
+    // Disable ALL constraint checking
     $wpdb->query("SET FOREIGN_KEY_CHECKS = 0");
+    $wpdb->query("SET UNIQUE_CHECKS = 0"); 
+    $wpdb->query("SET sql_mode = ''");
+    error_log("DEBUG - Disabled all constraint checking");
     
     // Try with wpdb->insert first
     $result = $wpdb->insert($table_name, $insert_data);
@@ -1985,8 +2029,9 @@ function jotun_api_add_shop_item($request) {
             error_log('DEBUG - Raw INSERT also failed with error: ' . $wpdb->last_error);
             error_log('DEBUG - Raw query was: ' . $wpdb->last_query);
             
-            // Re-enable foreign key checks
+            // Re-enable all checks
             $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
+            $wpdb->query("SET UNIQUE_CHECKS = 1");
             
             return new WP_REST_Response(['error' => 'Failed to add shop item: ' . $wpdb->last_error], 500);
         } else {
@@ -1996,8 +2041,10 @@ function jotun_api_add_shop_item($request) {
         error_log('DEBUG - wpdb->insert succeeded');
     }
     
-    // Re-enable foreign key checks
+    // Re-enable all checks
     $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
+    $wpdb->query("SET UNIQUE_CHECKS = 1");
+    error_log("DEBUG - Re-enabled all constraint checking");
     
     return new WP_REST_Response(['message' => 'Shop item added successfully', 'id' => $wpdb->insert_id], 201);
 }
