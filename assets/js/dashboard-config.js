@@ -441,12 +441,13 @@ jQuery(document).ready(function($) {
                         }
                         
                         closeSectionModal();
-                        renderSections();
-                        populateFilters();
-                        updateItemSectionSelects();
-                        
-                        showNotification('Section updated successfully!', 'success');
+                        showNotification('Section updated successfully! Refreshing page...', 'success');
                         console.log('Section auto-saved successfully');
+                        
+                        // Refresh page to show changes
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
                     } else {
                         alert('Error updating section: ' + (response.data || 'Unknown error'));
                     }
@@ -484,10 +485,13 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         // Update local data
                         section.enabled = newEnabledState;
-                        renderSections();
-                        populateFilters();
-                        updateItemSectionSelects();
+                        showNotification('Section visibility updated! Refreshing page...', 'success');
                         console.log('Section visibility auto-saved successfully');
+                        
+                        // Refresh page to show changes
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
                     } else {
                         alert('Error updating section visibility: ' + (response.data || 'Unknown error'));
                     }
