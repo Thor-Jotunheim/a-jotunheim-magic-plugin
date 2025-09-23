@@ -99,10 +99,10 @@ class ShopManager {
                 <td>${this.escapeHtml(shop.shop_name)}</td>
                 <td><span class="shop-type-badge ${shop.shop_type}">${shop.shop_type}</span></td>
                 <td><span class="status-badge ${shop.is_active == 1 ? 'active' : 'inactive'}">${shop.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
-                <td>${this.formatDate(shop.created_date)}</td>
+                <td>${this.formatDate(shop.created_at)}</td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="shopManager.editShop(${shop.id})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShop(${shop.id}, '${this.escapeHtml(shop.shop_name)}')">Delete</button>
+                    <button class="btn btn-primary btn-sm" onclick="shopManager.editShop(${shop.shop_id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShop(${shop.shop_id}, '${this.escapeHtml(shop.shop_name)}')">Delete</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -116,7 +116,7 @@ class ShopManager {
         shops.forEach(shop => {
             if (shop.is_active == 1) { // Only show active shops
                 const option = document.createElement('option');
-                option.value = shop.id;
+                option.value = shop.shop_id;
                 option.textContent = `${shop.shop_name} (${shop.shop_type})`;
                 selector.appendChild(option);
             }
@@ -181,8 +181,8 @@ class ShopManager {
 
     async editShop(shopId) {
         try {
-            const response = await JotunAPI.getShops({ id: shopId });
-            const shop = response.data && response.data[0];
+            const response = await JotunAPI.getShops();
+            const shop = response.data && response.data.find(s => s.shop_id == shopId);
             
             if (shop) {
                 // Populate form with shop data

@@ -224,6 +224,11 @@ class JotunheimAPI {
         return this.request(`/itemlist/${id}`, 'DELETE');
     }
 
+    // Alias for backward compatibility
+    async getItemlist(params = {}) {
+        return this.getItems(params);
+    }
+
     // ============================================================================
     // LEDGER API METHODS (jotun_ledger)
     // ============================================================================
