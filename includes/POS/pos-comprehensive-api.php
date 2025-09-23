@@ -1843,8 +1843,15 @@ function jotun_api_add_shop_type($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shop_types';
     
-    if (empty($data['type_name']) || empty($data['type_key'])) {
-        return new WP_REST_Response(['error' => 'Type name and key are required'], 400);
+    // Debug logging
+    error_log('jotun_api_add_shop_type received data: ' . print_r($data, true));
+    
+    if (empty($data['type_name'])) {
+        return new WP_REST_Response(['error' => 'Type name is required'], 400);
+    }
+    
+    if (empty($data['type_key'])) {
+        return new WP_REST_Response(['error' => 'Type key is required'], 400);
     }
     
     $insert_data = [

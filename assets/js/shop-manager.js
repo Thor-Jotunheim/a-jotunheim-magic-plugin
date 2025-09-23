@@ -428,6 +428,11 @@ class ShopManager {
         // Only auto-generate if not editing an existing type
         if (this.currentEditingShopType) return;
         
+        if (!typeName || typeName.trim() === '') {
+            document.getElementById('type-key').value = '';
+            return;
+        }
+        
         const typeKey = typeName
             .toLowerCase()
             .trim()
@@ -436,7 +441,11 @@ class ShopManager {
             .replace(/_+/g, '_')  // Replace multiple underscores with single underscore
             .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
             
-        document.getElementById('type-key').value = typeKey;
+        // Ensure we have a valid key - fallback to 'custom_type' if empty
+        const finalKey = typeKey || 'custom_type';
+        document.getElementById('type-key').value = finalKey;
+        
+        console.log('Generated type key:', finalKey, 'from type name:', typeName);
     }
 
     async loadShopTypesTable() {
@@ -482,6 +491,27 @@ class ShopManager {
             description: formData.get('description') || '',
             is_active: parseInt(formData.get('is_active') || '1')
         };
+
+        console.log('Submitting shop type data:', typeData);
+
+        // Validate required fields
+        if (!typeData.type_name || !typeData.type_key) {
+            // If type key is empty, generate it now
+            if (!typeData.type_key && typeData.type_name) {
+                this.generateTypeKey(typeData.type_name);
+                typeData.type_key = document.getElementById('type-key').value;
+            }
+            
+            if (!typeData.type_name) {
+                this.showStatus('Type name is required', 'error');
+                return;
+            }
+            
+            if (!typeData.type_key) {
+                this.showStatus('Failed to generate type key', 'error');
+                return;
+            }
+        }
 
         try {
             if (this.currentEditingShopType) {
