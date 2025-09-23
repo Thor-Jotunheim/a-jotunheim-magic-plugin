@@ -133,60 +133,16 @@ class JotunheimPagePermissions {
     
     /**
      * Get all plugin pages that can have permissions
+     * Now dynamically pulls from Dashboard Manager's shortcode detection + hardcoded admin pages
      */
     private function get_plugin_pages() {
-        return [
+        $pages = [];
+        
+        // First add core admin pages (non-shortcode)
+        $admin_pages = [
             'jotunheim_magic' => [
                 'title' => 'Overview Dashboard',
                 'description' => 'Main dashboard overview page'
-            ],
-            'prefab_image_import' => [
-                'title' => 'Prefab Image Import',
-                'description' => 'Import and manage prefab images'
-            ],
-            'item_list_editor' => [
-                'title' => 'Item List Editor',
-                'description' => 'Edit and manage game items'
-            ],
-            'item_list_add_new_item' => [
-                'title' => 'Add New Item',
-                'description' => 'Add new items to the game'
-            ],
-            'event_zone_editor' => [
-                'title' => 'Event Zone Editor',
-                'description' => 'Edit and manage event zones'
-            ],
-            'add_event_zone' => [
-                'title' => 'Add Event Zone',
-                'description' => 'Create new event zones'
-            ],
-            'eventzone_field_config' => [
-                'title' => 'EventZone Field Config',
-                'description' => 'Configure event zone fields'
-            ],
-            'trade' => [
-                'title' => 'Trade Management',
-                'description' => 'Manage trading system'
-            ],
-            'barter' => [
-                'title' => 'Barter System',
-                'description' => 'Manage barter system'
-            ],
-            'pos_interface' => [
-                'title' => 'Point of Sale',
-                'description' => 'POS interface for transactions'
-            ],
-            'jotun-playerlist' => [
-                'title' => 'Player List Management',
-                'description' => 'Manage registered players'
-            ],
-            'weather_calendar_config' => [
-                'title' => 'Weather Calendar Config',
-                'description' => 'Configure weather and calendar'
-            ],
-            'universal_ui_table_config' => [
-                'title' => 'Universal UI Table Config',
-                'description' => 'Configure UI table settings'
             ],
             'dashboard_config' => [
                 'title' => 'Dashboard Configuration',
@@ -195,8 +151,175 @@ class JotunheimPagePermissions {
             'discord_auth_config' => [
                 'title' => 'Discord Auth Configuration',
                 'description' => 'Configure Discord authentication'
+            ],
+            'page_permissions_config' => [
+                'title' => 'Page Permissions Config',
+                'description' => 'Configure Discord role-based page access permissions'
+            ],
+            'universal_ui_table_config' => [
+                'title' => 'Universal UI Table Config',
+                'description' => 'Configure UI table settings'
+            ],
+            'weather_calendar_config' => [
+                'title' => 'Weather Calendar Config',
+                'description' => 'Configure weather and calendar'
+            ],
+            'eventzone_field_config' => [
+                'title' => 'EventZone Field Config',
+                'description' => 'Configure event zone fields'
             ]
         ];
+        
+        // Add admin pages
+        $pages = array_merge($pages, $admin_pages);
+        
+        // Now dynamically add all detected shortcode pages
+        // Use the same predefined shortcodes as Dashboard Manager
+        $predefined_shortcodes = [
+            'shop_manager' => [
+                'title' => 'Shop Manager',
+                'description' => 'Manage shop inventory and pricing',
+                'category' => 'commerce'
+            ],
+            'unified_teller' => [
+                'title' => 'Unified Teller',
+                'description' => 'Point of sale and transaction interface',
+                'category' => 'commerce'
+            ],
+            'itemlist_editor' => [
+                'title' => 'Item List Editor',
+                'description' => 'Edit and manage game items',
+                'category' => 'content'
+            ],
+            'item_list_editor' => [
+                'title' => 'Item List Editor (Alt)',
+                'description' => 'Alternative item list editor interface',
+                'category' => 'content'
+            ],
+            'item_list_add_new_item' => [
+                'title' => 'Add New Item',
+                'description' => 'Add new items to the game',
+                'category' => 'content'
+            ],
+            'eventzones_editor' => [
+                'title' => 'Event Zones Editor',
+                'description' => 'Edit and manage event zones',
+                'category' => 'content'
+            ],
+            'event_zone_editor' => [
+                'title' => 'Event Zone Editor (Alt)',
+                'description' => 'Alternative event zone editor interface',
+                'category' => 'content'
+            ],
+            'add_event_zone' => [
+                'title' => 'Add Event Zone',
+                'description' => 'Create new event zones',
+                'category' => 'content'
+            ],
+            'pos_interface' => [
+                'title' => 'Point of Sale Interface',
+                'description' => 'POS interface for transactions',
+                'category' => 'commerce'
+            ],
+            'jotunheim_trade_page' => [
+                'title' => 'Trade Management',
+                'description' => 'Manage trading system',
+                'category' => 'commerce'
+            ],
+            'trade' => [
+                'title' => 'Trade System (Alt)',
+                'description' => 'Alternative trade system interface',
+                'category' => 'commerce'
+            ],
+            'jotunheim_barter_page' => [
+                'title' => 'Barter System',
+                'description' => 'Manage barter and exchange system',
+                'category' => 'commerce'
+            ],
+            'barter' => [
+                'title' => 'Barter System (Alt)',
+                'description' => 'Alternative barter system interface',
+                'category' => 'commerce'
+            ],
+            'universal_editor_ui' => [
+                'title' => 'Universal Editor UI',
+                'description' => 'Universal content editing interface',
+                'category' => 'content'
+            ],
+            'eventzones_code_output' => [
+                'title' => 'Event Zones Code Output',
+                'description' => 'Event zone code generation and output',
+                'category' => 'utility'
+            ],
+            'section2_items' => [
+                'title' => 'Section 2 Items',
+                'description' => 'Manage section 2 item collections',
+                'category' => 'content'
+            ],
+            'prefabdb_image_import' => [
+                'title' => 'Prefab Database Image Import',
+                'description' => 'Import and manage prefab images',
+                'category' => 'content'
+            ],
+            'prefab_image_import' => [
+                'title' => 'Prefab Image Import (Alt)',
+                'description' => 'Alternative prefab image import interface',
+                'category' => 'content'
+            ],
+            'valheim_weather' => [
+                'title' => 'Valheim Weather System',
+                'description' => 'Weather prediction and calendar system',
+                'category' => 'utility'
+            ],
+            'jotunheim_kb' => [
+                'title' => 'Knowledge Base',
+                'description' => 'Knowledge base and documentation system',
+                'category' => 'content'
+            ],
+            'jotunheim_kb_direct' => [
+                'title' => 'Direct Knowledge Base',
+                'description' => 'Direct access knowledge base interface',
+                'category' => 'content'
+            ],
+            'popup_shop' => [
+                'title' => 'Popup Shop',
+                'description' => 'Popup shop interface for quick purchases',
+                'category' => 'commerce'
+            ],
+            'legacy_shop_teller' => [
+                'title' => 'Legacy Shop Teller',
+                'description' => 'Legacy shop and teller interface',
+                'category' => 'commerce'
+            ],
+            'playerlist_interface' => [
+                'title' => 'Player List Interface',
+                'description' => 'Manage registered players and user data',
+                'category' => 'content'
+            ],
+            'jotun-playerlist' => [
+                'title' => 'Jotun Player List',
+                'description' => 'Jotun player list management',
+                'category' => 'content'
+            ]
+        ];
+        
+        // Only add shortcodes that are actually registered
+        foreach ($predefined_shortcodes as $shortcode => $definition) {
+            if (shortcode_exists($shortcode)) {
+                $pages[$shortcode] = [
+                    'title' => $definition['title'],
+                    'description' => $definition['description'],
+                    'is_shortcode' => true,
+                    'registered' => true
+                ];
+            }
+        }
+        
+        error_log('Jotunheim Page Permissions: Detected ' . count($pages) . ' total pages for permissions');
+        error_log('Jotunheim Page Permissions: Admin pages: ' . count($admin_pages));
+        error_log('Jotunheim Page Permissions: Shortcode pages: ' . (count($pages) - count($admin_pages)));
+        
+        return $pages;
     }
     
     /**
