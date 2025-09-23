@@ -419,8 +419,6 @@ function jotun_get_accessible_shop_types() {
 
 // Register all comprehensive REST API routes
 add_action('rest_api_init', function() {
-    error_log('DEBUG: REST API init hook called - registering jotun-api routes');
-    
     // Debug endpoint to test API connectivity
     register_rest_route('jotun-api/v1', '/debug-test', [
         'methods' => 'GET',
@@ -613,8 +611,6 @@ add_action('rest_api_init', function() {
     // SHOPS API ENDPOINTS (jotun_shops)
     // ============================================================================
     
-    error_log('DEBUG: Registering shops API endpoints');
-    
     // Get all shops
     register_rest_route('jotun-api/v1', '/shops', [
         'methods' => 'GET',
@@ -650,8 +646,6 @@ add_action('rest_api_init', function() {
             return current_user_can('edit_posts');
         }
     ]);
-    
-    error_log('DEBUG: Finished registering shops API endpoints');
     
     // ============================================================================
     // SHOP TYPES API ENDPOINTS (jotun_shop_types)
@@ -1750,6 +1744,17 @@ function jotun_api_add_shop_item($request) {
     if (empty($data['shop_id'])) {
         error_log('DEBUG - Missing shop_id');
         return new WP_REST_Response(['error' => 'Shop ID is required'], 400);
+    }
+    
+    // Validate that the shop exists in jotun_shops table
+    $shop_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT shop_id FROM jotun_shops WHERE shop_id = %d",
+        (int)$data['shop_id']
+    ));
+    
+    if (!$shop_exists) {
+        error_log('DEBUG - Shop ID ' . $data['shop_id'] . ' does not exist in jotun_shops table');
+        return new WP_REST_Response(['error' => 'Shop ID ' . $data['shop_id'] . ' does not exist'], 404);
     }
     
     // Check if it's a custom item or regular item
