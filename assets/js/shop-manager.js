@@ -9,6 +9,7 @@ class ShopManager {
         this.currentEditingShopType = null;
         this.selectedShop = null;
         this.shopTypes = [];
+        this.loadedRotations = new Set(); // Track which shops have rotations loaded
         this.initializeEventListeners();
         this.loadInitialData();
     }
@@ -152,6 +153,7 @@ class ShopManager {
     renderShopsTable(shops) {
         const tbody = document.getElementById('shops-table-body');
         tbody.innerHTML = '';
+        this.loadedRotations.clear(); // Clear the set when table is recreated
 
         shops.forEach(shop => {
             const row = document.createElement('tr');
@@ -174,8 +176,11 @@ class ShopManager {
             `;
             tbody.appendChild(row);
             
-            // Load rotations for this shop
-            this.loadShopRotations(shop.shop_id, rotationDropdownId);
+            // Load rotations for this shop (only once)
+            if (!this.loadedRotations.has(shop.shop_id)) {
+                this.loadedRotations.add(shop.shop_id);
+                this.loadShopRotations(shop.shop_id, rotationDropdownId);
+            }
         });
     }
 
@@ -384,6 +389,8 @@ class ShopManager {
         if (customPrice && customPrice.trim() !== '') {
             shopItemData.custom_price = parseFloat(customPrice);
         }
+
+        console.log('DEBUG - Shop item data being sent:', shopItemData);
 
         try {
             await JotunAPI.addShopItem(shopItemData);

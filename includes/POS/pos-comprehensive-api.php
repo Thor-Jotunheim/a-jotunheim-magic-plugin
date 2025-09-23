@@ -1468,7 +1468,11 @@ function jotun_api_add_shop_item($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shop_items';
     
+    // Debug logging
+    error_log('DEBUG - Add shop item received data: ' . json_encode($data));
+    
     if (empty($data['shop_id']) || empty($data['item_id'])) {
+        error_log('DEBUG - Missing shop_id or item_id. shop_id: ' . ($data['shop_id'] ?? 'missing') . ', item_id: ' . ($data['item_id'] ?? 'missing'));
         return new WP_REST_Response(['error' => 'Shop ID and item ID are required'], 400);
     }
     
@@ -2042,7 +2046,14 @@ function jotun_api_add_shop_type($request) {
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {
-        return new WP_REST_Response(['error' => 'Failed to add shop type: ' . $wpdb->last_error], 500);
+        $error_message = $wpdb->last_error;
+        
+        // Handle duplicate key error
+        if (strpos($error_message, 'Duplicate entry') !== false && strpos($error_message, 'unique_type_key') !== false) {
+            return new WP_REST_Response(['error' => 'A shop type with this key already exists. Please choose a different name.'], 409);
+        }
+        
+        return new WP_REST_Response(['error' => 'Failed to add shop type: ' . $error_message], 500);
     }
     
     return new WP_REST_Response(['message' => 'Shop type added successfully', 'id' => $wpdb->insert_id], 201);
