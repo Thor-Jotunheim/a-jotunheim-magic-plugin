@@ -49,12 +49,6 @@ function shop_manager_interface() {
                                 </select>
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="shop-description">Description</label>
-                                <textarea id="shop-description" name="description" rows="3"></textarea>
-                            </div>
-                        </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Add Shop</button>
                             <button type="button" id="cancel-edit-shop" class="btn btn-secondary" style="display: none;">Cancel Edit</button>
@@ -79,7 +73,6 @@ function shop_manager_interface() {
                                 <tr>
                                     <th>Shop Name</th>
                                     <th>Type</th>
-                                    <th>Description</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Actions</th>
@@ -194,9 +187,6 @@ function shop_manager_interface() {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="edit-shop-description">Description</label>
-                        <textarea id="edit-shop-description" name="description" rows="3"></textarea>
-                    </div>
                     <div class="form-group">
                         <label for="edit-shop-active">Status</label>
                         <select id="edit-shop-active" name="is_active">

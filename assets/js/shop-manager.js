@@ -98,7 +98,6 @@ class ShopManager {
             row.innerHTML = `
                 <td>${this.escapeHtml(shop.shop_name)}</td>
                 <td><span class="shop-type-badge ${shop.shop_type}">${shop.shop_type}</span></td>
-                <td>${this.escapeHtml(shop.description || '')}</td>
                 <td><span class="status-badge ${shop.is_active == 1 ? 'active' : 'inactive'}">${shop.is_active == 1 ? 'Active' : 'Inactive'}</span></td>
                 <td>${this.formatDate(shop.created_date)}</td>
                 <td>
@@ -155,7 +154,6 @@ class ShopManager {
         const shopData = {
             shop_name: formData.get('shop_name'),
             shop_type: formData.get('shop_type'),
-            description: formData.get('description'),
             is_active: true
         };
 
@@ -190,7 +188,6 @@ class ShopManager {
                 // Populate form with shop data
                 document.getElementById('shop-name').value = shop.shop_name;
                 document.getElementById('shop-type').value = shop.shop_type;
-                document.getElementById('shop-description').value = shop.description || '';
                 
                 // Update form state
                 this.currentEditingShop = shopId;

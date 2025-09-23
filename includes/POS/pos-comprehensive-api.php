@@ -1146,8 +1146,21 @@ function jotun_api_add_shop($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shops';
     
+    // Debug logging
+    error_log('jotun_api_add_shop received data: ' . print_r($data, true));
+    
     if (empty($data['shop_name'])) {
         return new WP_REST_Response(['error' => 'Shop name is required'], 400);
+    }
+    
+    // Check for duplicate shop names
+    $existing_shop = $wpdb->get_var($wpdb->prepare(
+        "SELECT shop_id FROM $table_name WHERE shop_name = %s",
+        $data['shop_name']
+    ));
+    
+    if ($existing_shop) {
+        return new WP_REST_Response(['error' => 'A shop with this name already exists'], 400);
     }
     
     // Get current user info for owner_name
@@ -1161,7 +1174,12 @@ function jotun_api_add_shop($request) {
         'created_at' => current_time('mysql')
     ];
     
+    error_log('jotun_api_add_shop insert_data: ' . print_r($insert_data, true));
+    
     $result = $wpdb->insert($table_name, $insert_data);
+    
+    error_log('jotun_api_add_shop insert result: ' . var_export($result, true));
+    error_log('jotun_api_add_shop wpdb->last_error: ' . $wpdb->last_error);
     
     if ($result === false) {
         return new WP_REST_Response(['error' => 'Failed to add shop: ' . $wpdb->last_error], 500);
