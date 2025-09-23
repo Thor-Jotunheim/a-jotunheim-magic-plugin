@@ -9,6 +9,69 @@ if (!defined('ABSPATH')) {
  * Provides CRUD operations for all major database tables
  */
 
+// Ensure required tables exist
+add_action('init', 'jotun_ensure_pos_tables');
+
+function jotun_ensure_pos_tables() {
+    global $wpdb;
+    
+    $shops_table = 'jotun_shops';
+    $shop_items_table = 'jotun_shop_items';
+    
+    // Check if tables exist
+    $shops_exists = $wpdb->get_var("SHOW TABLES LIKE '$shops_table'") == $shops_table;
+    $shop_items_exists = $wpdb->get_var("SHOW TABLES LIKE '$shop_items_table'") == $shop_items_table;
+    
+    $charset_collate = $wpdb->get_charset_collate();
+    
+    // Create shops table if it doesn't exist
+    if (!$shops_exists) {
+        $shops_sql = "CREATE TABLE $shops_table (
+            shop_id int(11) NOT NULL AUTO_INCREMENT,
+            shop_name varchar(255) NOT NULL,
+            shop_type varchar(50) DEFAULT 'player',
+            owner_id int(11) DEFAULT 0,
+            description text,
+            is_active tinyint(1) DEFAULT 1,
+            created_date datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (shop_id),
+            UNIQUE KEY unique_shop_name (shop_name),
+            KEY idx_shop_type (shop_type),
+            KEY idx_is_active (is_active)
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($shops_sql);
+        
+        error_log('Jotunheim POS: Created jotun_shops table');
+    }
+    
+    // Create shop items table if it doesn't exist
+    if (!$shop_items_exists) {
+        $shop_items_sql = "CREATE TABLE $shop_items_table (
+            item_id int(11) NOT NULL AUTO_INCREMENT,
+            shop_id int(11) NOT NULL,
+            prefab_name varchar(255) NOT NULL,
+            quantity int(11) DEFAULT 1,
+            price decimal(10,2) DEFAULT 0.00,
+            is_active tinyint(1) DEFAULT 1,
+            created_date datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_date datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (item_id),
+            KEY idx_shop_id (shop_id),
+            KEY idx_prefab_name (prefab_name),
+            KEY idx_is_active (is_active),
+            FOREIGN KEY (shop_id) REFERENCES $shops_table(shop_id) ON DELETE CASCADE
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($shop_items_sql);
+        
+        error_log('Jotunheim POS: Created jotun_shop_items table');
+    }
+}
+
 // Register all comprehensive REST API routes
 add_action('rest_api_init', function() {
     

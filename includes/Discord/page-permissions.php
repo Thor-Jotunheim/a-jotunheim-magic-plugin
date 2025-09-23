@@ -30,6 +30,32 @@ class JotunheimPagePermissions {
             'ajax_url' => admin_url('admin-ajax.php')
         ]);
         
+        // Add custom CSS for larger checkboxes
+        ?>
+        <style>
+        .permission-checkbox {
+            width: 20px !important;
+            height: 20px !important;
+            transform: scale(1.5);
+            margin: 8px !important;
+            cursor: pointer;
+        }
+        
+        .wp-list-table td {
+            vertical-align: middle !important;
+        }
+        
+        .page-permissions-config .wp-list-table th {
+            text-align: center;
+            padding: 15px 8px;
+        }
+        
+        .page-permissions-config .wp-list-table td {
+            padding: 15px 8px;
+        }
+        </style>
+        <?php
+        
         // Get Discord roles
         $discord_roles = $this->get_discord_roles();
         
