@@ -120,10 +120,8 @@ Subtle and functional animations that provide immediate feedback without interfe
 - **Mobile**: Stacked forms on mobile, collapsible navigation, responsive tables with horizontal scroll
 
 ## Bugs/Problems 
-- ✅ **RESOLVED** - In Dashboard Manager search, Shop Manager[shop_manager] & Unified Teller[unified_teller] pages do not show up when searching. Enhance the add pages search to ensure any new pages made can be found. If the problem is these are short codes and no page for it currently exists, i want the search function to be able to handle those and create a page in the dashboard for them if selected. 
-  - **Solution**: Enhanced `get_available_plugin_pages()` to detect shortcode-based pages, added `add_shortcode_pages()` method, created automatic WordPress page creation for shortcodes, and updated JavaScript workflow.
-- ✅ **RESOLVED** - Overview page of the Dashboard links to pages do not work. I get an error about not having permissions.
-  - **Solution**: Fixed overview page links to use `item['slug']` instead of `item['id']` for proper WordPress admin page routing and permission checking. 
+- In Dashboard Manager search, Shop Manager[shop_manager] & Unified Teller[unified_teller] pages now show up when searching. But i sorta expected other shortcodes to show up too. I have others in my plugin. Currently these add pages to the overview page, but it's not adding it to the side dash menubar. 
+- Overview page of the Dashboard links stil does not work. I get an error about not having permissions. 
 
 ## Spark Integration
 - I started using Spark to create an app, but i realized it wasn't going to work with my website plugin well, so i decided to bring what was made over there, to here in this magic plugin. Here is the git, if you can review it, maybe we can use some of it over here to save us time and energy. https://github.com/Thor-Jotunheim/jotunheim-admin-dash.git. Alternativly, i can drag and drop all these files into this same project folder so you have access to those files. . or i can just give you the local files location. 

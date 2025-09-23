@@ -427,7 +427,8 @@ function jotunheim_magic_dashboard() {
                     foreach ($menu_items as $item) {
                         if (isset($item['quick_action']) && $item['quick_action']) {
                             $icon = 'dashicons-admin-generic'; // Default icon
-                            switch($item['id']) {
+                            $item_id = $item['id'] ?? $item['item_id'] ?? '';
+                            switch($item_id) {
                                 case 'item_list_editor':
                                     $icon = 'dashicons-products';
                                     break;
@@ -438,7 +439,7 @@ function jotunheim_magic_dashboard() {
                                     $icon = 'dashicons-calendar-alt';
                                     break;
                             }
-                            echo '<a href="' . esc_url(admin_url('admin.php?page=' . $item['id'])) . '" class="quick-action">';
+                            echo '<a href="' . esc_url(admin_url('admin.php?page=' . ($item['id'] ?? $item['item_id'] ?? ''))) . '" class="quick-action">';
                             echo '<span class="dashicons ' . $icon . '"></span>';
                             echo '<span>' . esc_html($item['item_name'] ?? $item['menu_title'] ?? $item['title'] ?? 'Unknown') . '</span>';
                             echo '</a>';
@@ -470,7 +471,7 @@ function jotunheim_magic_dashboard() {
                         <?php if (!empty($section['items'])): ?>
                             <?php foreach ($section['items'] as $item): ?>
                                 <div class="dashboard-item">
-                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . ($item['slug'] ?? $item['id'] ?? ''))); ?>" class="item-link">
+                                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . ($item['slug'] ?? $item['id'] ?? $item['item_id'] ?? ''))); ?>" class="item-link">
                                         <div class="item-content">
                                             <h4><?php echo esc_html($item['title'] ?? $item['menu_title'] ?? 'Unknown Item'); ?></h4>
                                             <p><?php echo esc_html($item['description'] ?? ''); ?></p>

@@ -473,44 +473,166 @@ class JotunheimDashboardConfig {
     private function add_shortcode_pages(&$available_pages) {
         error_log('Jotunheim Dashboard: Scanning for shortcode-based pages...');
         
-        // Define shortcode pages that should be available in the dashboard
-        $shortcode_pages = [
+        global $shortcode_tags;
+        
+        // Define known shortcodes that should be available in the dashboard
+        // This includes both manually defined ones and auto-detected patterns
+        $predefined_shortcodes = [
             'shop_manager' => [
                 'title' => 'Shop Manager',
                 'description' => 'Complete shop management interface for all Jotunheim shops',
-                'shortcode' => 'shop_manager',
                 'interface_function' => 'shop_manager_interface'
             ],
             'unified_teller' => [
                 'title' => 'Unified Teller',
                 'description' => 'Unified point of sale interface for transactions',
-                'shortcode' => 'unified_teller', 
                 'interface_function' => 'unified_teller_interface'
             ],
             'legacy_shop_teller' => [
                 'title' => 'Legacy Shop Teller',
                 'description' => 'Google Sheets replacement shop interface',
-                'shortcode' => 'legacy_shop_teller',
                 'interface_function' => 'legacy_shop_teller_interface'
+            ],
+            'pos_interface' => [
+                'title' => 'Point of Sale Interface',
+                'description' => 'Point of sale system for transaction processing',
+                'interface_function' => 'pos_interface_shortcode'
+            ],
+            'itemlist_editor' => [
+                'title' => 'Item List Editor',
+                'description' => 'Edit and manage game item database',
+                'interface_function' => 'itemlist_editor_shortcode'
+            ],
+            'eventzones_editor' => [
+                'title' => 'Event Zones Editor',
+                'description' => 'Edit and manage event zones',
+                'interface_function' => 'eventzones_editor_shortcode'
+            ],
+            'eventzones_add_new_zone' => [
+                'title' => 'Add New Event Zone',
+                'description' => 'Create new event zones',
+                'interface_function' => 'eventzones_add_new_zone_shortcode'
+            ],
+            'jotunheim_add_new_zone' => [
+                'title' => 'Add New Zone',
+                'description' => 'Add new zones to the system',
+                'interface_function' => 'jotunheim_magic_add_new_zone_interface'
+            ],
+            'jotunheim_add_new_item' => [
+                'title' => 'Add New Item',
+                'description' => 'Add new items to the game database',
+                'interface_function' => 'jotunheim_magic_add_new_item_interface'
+            ],
+            'jotunheim_trade_page' => [
+                'title' => 'Trade Page',
+                'description' => 'Trading interface for players',
+                'interface_function' => 'jotunheim_trade_page_shortcode'
+            ],
+            'jotunheim_barter_page' => [
+                'title' => 'Barter Page',
+                'description' => 'Barter system interface',
+                'interface_function' => 'jotunheim_barter_page_shortcode'
+            ],
+            'jotun_shop_creation' => [
+                'title' => 'Shop Creation UI',
+                'description' => 'Interface for creating new shops',
+                'interface_function' => 'jotun_shop_creation_shortcode'
+            ],
+            'universal_editor_ui' => [
+                'title' => 'Universal Editor UI',
+                'description' => 'Universal editing interface',
+                'interface_function' => 'jotunheim_magic_universal_editor_interface'
+            ],
+            'universal_add_ui' => [
+                'title' => 'Universal Add UI',
+                'description' => 'Universal add interface',
+                'interface_function' => 'jotunheim_magic_universal_add_interface'
+            ],
+            'eventzones_code_output' => [
+                'title' => 'Event Zones Code Output',
+                'description' => 'Generate code output for event zones',
+                'interface_function' => 'generate_eventzones_code_output'
+            ],
+            'eventzone_goto_output' => [
+                'title' => 'Event Zone Goto Output',
+                'description' => 'Generate goto commands for event zones',
+                'interface_function' => 'generate_eventzone_goto_output'
+            ],
+            'section2_items' => [
+                'title' => 'Section 2 Items',
+                'description' => 'Display section 2 items from pricelist',
+                'interface_function' => 'section2_items_shortcode'
+            ],
+            'section2and3_items' => [
+                'title' => 'Section 2 & 3 Items',
+                'description' => 'Display section 2 and 3 items from pricelist',
+                'interface_function' => 'section2and3_items_shortcode'
+            ],
+            'prefabdb_image_import' => [
+                'title' => 'Prefab Image Import',
+                'description' => 'Import prefab images into the database',
+                'interface_function' => 'prefabdb_image_import_shortcode'
             ]
         ];
         
-        foreach ($shortcode_pages as $page_id => $page_info) {
-            // Check if shortcode is registered
-            global $shortcode_tags;
-            if (isset($shortcode_tags[$page_info['shortcode']])) {
-                error_log('Jotunheim Dashboard: Found registered shortcode: ' . $page_info['shortcode']);
+        // Auto-detect additional shortcodes that match common patterns
+        foreach ($shortcode_tags as $shortcode_tag => $callback) {
+            // Skip WordPress core shortcodes and common plugin shortcodes
+            $skip_patterns = [
+                'gallery', 'audio', 'video', 'playlist', 'embed', 'wp_caption', 'caption',
+                'contact-form-7', 'cf7', 'gravityform', 'wpforms', 'elementor-template'
+            ];
+            
+            $should_skip = false;
+            foreach ($skip_patterns as $pattern) {
+                if (strpos($shortcode_tag, $pattern) !== false) {
+                    $should_skip = true;
+                    break;
+                }
+            }
+            
+            if ($should_skip) continue;
+            
+            // If not already defined, try to auto-detect based on patterns
+            if (!isset($predefined_shortcodes[$shortcode_tag])) {
+                // Look for jotunheim-related shortcodes or common interface patterns
+                if (strpos($shortcode_tag, 'jotun') !== false || 
+                    strpos($shortcode_tag, 'eventzones') !== false ||
+                    strpos($shortcode_tag, '_editor') !== false ||
+                    strpos($shortcode_tag, '_interface') !== false ||
+                    strpos($shortcode_tag, '_ui') !== false ||
+                    strpos($shortcode_tag, 'section') !== false ||
+                    strpos($shortcode_tag, 'shop') !== false ||
+                    strpos($shortcode_tag, 'trade') !== false ||
+                    strpos($shortcode_tag, 'barter') !== false) {
+                    
+                    $predefined_shortcodes[$shortcode_tag] = [
+                        'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
+                        'description' => 'Auto-detected shortcode interface',
+                        'interface_function' => is_string($callback) ? $callback : 'shortcode_' . $shortcode_tag
+                    ];
+                    
+                    error_log('Jotunheim Dashboard: Auto-detected shortcode: ' . $shortcode_tag);
+                }
+            }
+        }
+        
+        // Process all shortcodes (predefined + auto-detected)
+        foreach ($predefined_shortcodes as $shortcode_tag => $page_info) {
+            // Check if shortcode is actually registered
+            if (isset($shortcode_tags[$shortcode_tag])) {
+                error_log('Jotunheim Dashboard: Found registered shortcode: ' . $shortcode_tag);
                 
                 // Check if already exists
                 $exists = false;
                 foreach ($this->default_menu_items as $item) {
-                    if ($item['id'] === $page_id) {
+                    if ($item['id'] === $shortcode_tag) {
                         $exists = true;
                         break;
                     }
                 }
                 foreach ($available_pages as $existing) {
-                    if ($existing['id'] === $page_id) {
+                    if ($existing['id'] === $shortcode_tag) {
                         $exists = true;
                         break;
                     }
@@ -518,11 +640,11 @@ class JotunheimDashboardConfig {
                 
                 if (!$exists) {
                     $available_pages[] = [
-                        'id' => $page_id,
+                        'id' => $shortcode_tag,
                         'title' => $page_info['title'],
                         'menu_title' => $page_info['title'],
                         'callback' => 'render_shortcode_page', // Generic callback for shortcode pages
-                        'shortcode' => $page_info['shortcode'],
+                        'shortcode' => $shortcode_tag,
                         'interface_function' => $page_info['interface_function'],
                         'category' => 'shortcode',
                         'description' => $page_info['description'],
@@ -530,10 +652,10 @@ class JotunheimDashboardConfig {
                         'is_shortcode' => true,
                         'needs_page_creation' => true
                     ];
-                    error_log('Jotunheim Dashboard: Added shortcode page: ' . $page_id);
+                    error_log('Jotunheim Dashboard: Added shortcode page: ' . $shortcode_tag);
                 }
             } else {
-                error_log('Jotunheim Dashboard: Shortcode not registered: ' . $page_info['shortcode']);
+                error_log('Jotunheim Dashboard: Shortcode not registered: ' . $shortcode_tag);
             }
         }
     }
@@ -1260,7 +1382,10 @@ class JotunheimDashboardConfig {
         $result = $this->normalized_db->add_menu_item($new_page);
         
         if ($result) {
-            wp_send_json_success($new_page);
+            wp_send_json_success([
+                'page' => $new_page,
+                'message' => 'Page added successfully! Refresh the page to see it in the admin menu sidebar.'
+            ]);
         } else {
             wp_send_json_error('Failed to save configuration');
         }
