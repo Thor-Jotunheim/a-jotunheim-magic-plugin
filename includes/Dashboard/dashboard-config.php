@@ -1194,6 +1194,17 @@ class JotunheimDashboardConfig {
         error_log('Dashboard Config Save: Starting to save ' . count($config['items']) . ' items');
         error_log('Dashboard Config Save: default_menu_items contains ' . count($this->default_menu_items) . ' items');
         
+        // CRITICAL PROTECTION: Before doing anything, identify and protect shortcode pages
+        global $wpdb;
+        $items_table = $this->normalized_db->get_items_table_name();
+        $shortcode_pages_query = "SELECT * FROM {$items_table} WHERE description LIKE '%shortcode%' OR callback_function = 'render_shortcode_admin_page'";
+        $shortcode_pages = $wpdb->get_results($shortcode_pages_query);
+        
+        error_log('Dashboard Config Save: Found ' . count($shortcode_pages) . ' shortcode pages to protect');
+        foreach ($shortcode_pages as $sp) {
+            error_log('Dashboard Config Save: Protecting shortcode page: ' . $sp->item_key . ' (callback: ' . $sp->callback_function . ')');
+        }
+        
         // Get existing items from database to preserve custom/shortcode pages
         $existing_items = $this->get_menu_items();
         $existing_items_by_id = [];
@@ -1246,11 +1257,36 @@ class JotunheimDashboardConfig {
         }
         
         // CRITICAL: Preserve existing items that weren't in the frontend form (e.g., shortcode pages added via AJAX)
+        // Enhanced protection for shortcode pages - never delete them during saves
         foreach ($existing_items_by_id as $item_id => $existing_item) {
             if (!in_array($item_id, $processed_item_ids)) {
                 error_log('Dashboard Config Save: Preserving existing item not in form: ' . $item_id);
                 
-                // Re-save existing item to maintain it in the database
+                // Check if this is a shortcode page by looking for shortcode metadata
+                $is_shortcode_page = false;
+                if (!empty($existing_item['shortcode'])) {
+                    $is_shortcode_page = true;
+                    error_log('Dashboard Config Save: Detected shortcode page: ' . $item_id . ' with shortcode: ' . $existing_item['shortcode']);
+                }
+                
+                // For shortcode pages, be extra careful to preserve all data
+                if ($is_shortcode_page) {
+                    // Get the current data from the database to ensure we don't lose anything
+                    global $wpdb;
+                    $items_table = $this->normalized_db->get_items_table_name();
+                    $db_item = $wpdb->get_row($wpdb->prepare(
+                        "SELECT * FROM {$items_table} WHERE item_key = %s",
+                        $item_id
+                    ));
+                    
+                    if ($db_item) {
+                        // Preserve the exact database state for shortcode pages
+                        error_log('Dashboard Config Save: Preserving shortcode page database state for: ' . $item_id);
+                        continue; // Skip re-saving, just leave it as-is
+                    }
+                }
+                
+                // Re-save existing item to maintain it in the database (for non-shortcode items)
                 $item_data = [
                     'item_key' => $existing_item['id'],
                     'section_key' => $existing_item['section'] ?? 'system', // Default section if missing
@@ -1266,9 +1302,46 @@ class JotunheimDashboardConfig {
         }
         error_log('Dashboard Config Save: Finished saving all items');
 
+        // FINAL PROTECTION: Restore any shortcode pages that might have been lost
+        foreach ($shortcode_pages as $sp) {
+            // Check if this shortcode page still exists
+            $check_query = "SELECT COUNT(*) FROM {$items_table} WHERE item_key = %s";
+            $exists = $wpdb->get_var($wpdb->prepare($check_query, $sp->item_key));
+            
+            if (!$exists) {
+                error_log('Dashboard Config Save: CRITICAL - Shortcode page lost, restoring: ' . $sp->item_key);
+                
+                // Restore the shortcode page exactly as it was
+                $wpdb->insert(
+                    $items_table,
+                    array(
+                        'section_id' => $sp->section_id,
+                        'item_key' => $sp->item_key,
+                        'item_name' => $sp->item_name,
+                        'callback_function' => $sp->callback_function,
+                        'quick_action' => $sp->quick_action,
+                        'display_order' => $sp->display_order,
+                        'is_active' => $sp->is_active,
+                        'icon' => $sp->icon,
+                        'description' => $sp->description,
+                        'permissions' => $sp->permissions,
+                        'created_at' => $sp->created_at,
+                        'updated_at' => current_time('mysql')
+                    ),
+                    array('%d', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s')
+                );
+                
+                if ($wpdb->last_error) {
+                    error_log('Dashboard Config Save: Error restoring shortcode page: ' . $wpdb->last_error);
+                } else {
+                    error_log('Dashboard Config Save: Successfully restored shortcode page: ' . $sp->item_key);
+                }
+            } else {
+                error_log('Dashboard Config Save: Shortcode page still exists: ' . $sp->item_key);
+            }
+        }
+
         // DEBUG: Check what's actually in the database
-        global $wpdb;
-        $items_table = $this->normalized_db->get_items_table_name();
         $all_items = $wpdb->get_results("SELECT item_key, item_name, is_active, quick_action FROM {$items_table}");
         error_log('Dashboard Config Save: Items in database after save: ' . print_r($all_items, true));
         
