@@ -4,7 +4,7 @@
 /*
 Plugin Name: A Jotunheim Magic Plugin
 Description: A plugin to manage the item list and editor for Jotunheim.
-Version: 0.9.2.4.3
+Version: 0.9.2.5.0
 Author: Thor
 */
 
