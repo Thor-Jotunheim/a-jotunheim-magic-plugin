@@ -37,6 +37,7 @@ class JotunheimDashboardConfig {
         
         add_action('wp_ajax_save_dashboard_config', [$this, 'save_dashboard_config']);
         add_action('wp_ajax_reset_dashboard_config', [$this, 'reset_dashboard_config']);
+        add_action('wp_ajax_get_dashboard_config_frontend', [$this, 'ajax_get_dashboard_config_frontend']);
         add_action('wp_ajax_save_discord_roles', [$this, 'ajax_save_discord_roles']);
         add_action('wp_ajax_test_discord_connection', [$this, 'ajax_test_discord_connection']);
         add_action('wp_ajax_get_available_pages', [$this, 'ajax_get_available_pages']);
@@ -1405,6 +1406,28 @@ class JotunheimDashboardConfig {
         wp_send_json_success(['pages' => $available_pages]);
     }
     
+    /**
+     * AJAX handler to get fresh dashboard configuration for frontend refresh
+     */
+    public function ajax_get_dashboard_config_frontend() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'dashboard_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        error_log('Dashboard Config: Refreshing frontend configuration...');
+        
+        // Get the latest configuration including any newly added shortcode pages
+        $config = $this->get_config_for_frontend();
+        
+        error_log('Dashboard Config: Sending ' . count($config['sections']) . ' sections and ' . count($config['items']) . ' items to frontend');
+        
+        wp_send_json_success($config);
+    }
+
     /**
      * AJAX handler to create a shortcode page
      */
@@ -3763,10 +3786,24 @@ function render_dashboard_config_page() {
                         }, 3000);
                     }
                     
-                    // Reload page to show new menu items
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
+                    // If we're on the Dashboard Configuration page, refresh the config data instead of reloading
+                    if (window.location.href.indexOf('page=dashboard-configuration') !== -1 || 
+                        window.location.href.indexOf('admin.php?page=jotunheim-magic-dashboard-config') !== -1) {
+                        // We're on the Dashboard Configuration page - refresh the data instead of reloading
+                        if (typeof window.refreshDashboardConfig === 'function') {
+                            window.refreshDashboardConfig();
+                        } else {
+                            // Fallback: reload after a longer delay to allow user to see success message
+                            setTimeout(() => {
+                                location.reload();
+                            }, 3000);
+                        }
+                    } else {
+                        // We're not on the Dashboard Configuration page - reload to show new menu items
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
                 }
             }
         });

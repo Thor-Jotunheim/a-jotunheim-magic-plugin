@@ -11,6 +11,52 @@ jQuery(document).ready(function($) {
     // Make currentConfig globally accessible for the Add Pages modal
     window.currentConfig = currentConfig;
 
+    // Global function to refresh dashboard configuration from server
+    window.refreshDashboardConfig = function() {
+        console.log('Refreshing dashboard configuration from server...');
+        
+        // Make AJAX call to get fresh configuration
+        $.post(dashboardConfig.ajaxurl, {
+            action: 'get_dashboard_config_frontend',
+            nonce: dashboardConfig.nonce
+        })
+        .done(function(response) {
+            if (response.success && response.data) {
+                console.log('Dashboard config refresh successful, updating interface...');
+                
+                // Update the local configuration
+                currentConfig = response.data;
+                window.currentConfig = currentConfig;
+                dashboardConfig.config = response.data;
+                
+                // Re-render the interface with the new data
+                renderSections();
+                renderItems();
+                populateFilters();
+                
+                // Show success message
+                showNotification('Dashboard configuration refreshed with new pages!', 'success');
+            } else {
+                console.error('Failed to refresh dashboard config:', response);
+                showNotification('Failed to refresh configuration. Please reload the page.', 'error');
+            }
+        })
+        .fail(function() {
+            console.error('AJAX error refreshing dashboard config');
+            showNotification('Failed to refresh configuration. Please reload the page.', 'error');
+        });
+    };
+
+    // Helper function to show notifications
+    function showNotification(message, type) {
+        const noticeClass = type === 'success' ? 'notice-success' : 'notice-error';
+        const $notice = $('<div class="notice ' + noticeClass + ' is-dismissible"><p>' + message + '</p></div>');
+        $('.wrap h1').after($notice);
+        setTimeout(function() {
+            $notice.fadeOut();
+        }, 4000);
+    }
+
     // Initialize the interface
     init();
 
