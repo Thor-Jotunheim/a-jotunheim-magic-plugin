@@ -65,6 +65,8 @@ class ShopManager {
             this.loadMasterItemList();
         } else if (tabName === 'types') {
             this.loadShopTypesTable();
+            // Ensure the form is ready for new type creation
+            this.resetShopTypeForm();
         }
     }
 
@@ -424,9 +426,9 @@ class ShopManager {
     // SHOP TYPES METHODS
     // ============================================================================
 
-    generateTypeKey(typeName) {
-        // Only auto-generate if not editing an existing type
-        if (this.currentEditingShopType) return;
+    generateTypeKey(typeName, force = false) {
+        // Only auto-generate if not editing an existing type (unless forced)
+        if (!force && this.currentEditingShopType) return;
         
         if (!typeName || typeName.trim() === '') {
             document.getElementById('type-key').value = '';
@@ -446,6 +448,7 @@ class ShopManager {
         document.getElementById('type-key').value = finalKey;
         
         console.log('Generated type key:', finalKey, 'from type name:', typeName);
+        return finalKey;
     }
 
     async loadShopTypesTable() {
@@ -494,23 +497,23 @@ class ShopManager {
 
         console.log('Submitting shop type data:', typeData);
 
-        // Validate required fields
-        if (!typeData.type_name || !typeData.type_key) {
-            // If type key is empty, generate it now
-            if (!typeData.type_key && typeData.type_name) {
-                this.generateTypeKey(typeData.type_name);
-                typeData.type_key = document.getElementById('type-key').value;
-            }
-            
-            if (!typeData.type_name) {
-                this.showStatus('Type name is required', 'error');
-                return;
-            }
-            
-            if (!typeData.type_key) {
-                this.showStatus('Failed to generate type key', 'error');
-                return;
-            }
+        // Ensure we have a type name
+        if (!typeData.type_name || typeData.type_name.trim() === '') {
+            this.showStatus('Type name is required', 'error');
+            return;
+        }
+
+        // Ensure we have a type key - generate if missing
+        if (!typeData.type_key || typeData.type_key.trim() === '') {
+            console.log('Type key is empty, generating from type name:', typeData.type_name);
+            typeData.type_key = this.generateTypeKey(typeData.type_name, true); // Force generation
+            console.log('Generated type key:', typeData.type_key);
+        }
+
+        // Final validation
+        if (!typeData.type_key || typeData.type_key.trim() === '') {
+            this.showStatus('Failed to generate valid type key', 'error');
+            return;
         }
 
         try {
@@ -561,12 +564,21 @@ class ShopManager {
 
     cancelShopTypeEdit() {
         this.currentEditingShopType = null;
-        document.getElementById('add-shop-type-form').reset();
+        this.resetShopTypeForm();
         document.querySelector('#add-shop-type-form button[type="submit"]').textContent = 'Add Shop Type';
         document.getElementById('cancel-edit-type').style.display = 'none';
-        
-        // Clear the type key field so auto-generation works again
+    }
+
+    resetShopTypeForm() {
+        document.getElementById('add-shop-type-form').reset();
         document.getElementById('type-key').value = '';
+        this.currentEditingShopType = null;
+        
+        // Trigger type key generation if there's already text in the name field
+        const typeNameField = document.getElementById('type-name');
+        if (typeNameField && typeNameField.value.trim()) {
+            this.generateTypeKey(typeNameField.value);
+        }
     }
 
     async deleteShopType(typeId, typeName) {
