@@ -299,7 +299,7 @@ jQuery(document).ready(function($) {
         
         // Auto-save section order
         $.ajax({
-            url: ajaxurl,
+            url: dashboardConfig.ajaxurl,
             type: 'POST',
             data: {
                 action: 'update_section_order',
@@ -332,7 +332,7 @@ jQuery(document).ready(function($) {
         
         // Auto-save item order
         $.ajax({
-            url: ajaxurl,
+            url: dashboardConfig.ajaxurl,
             type: 'POST',
             data: {
                 action: 'update_item_order',
@@ -419,7 +419,7 @@ jQuery(document).ready(function($) {
         } else {
             // For existing sections, auto-save immediately via AJAX
             $.ajax({
-                url: ajaxurl,
+                url: dashboardConfig.ajaxurl,
                 type: 'POST',
                 data: {
                     action: 'edit_dashboard_section',
@@ -471,7 +471,7 @@ jQuery(document).ready(function($) {
             
             // Auto-save section toggle immediately
             $.ajax({
-                url: ajaxurl,
+                url: dashboardConfig.ajaxurl,
                 type: 'POST',
                 data: {
                     action: 'edit_dashboard_section',
@@ -549,7 +549,7 @@ jQuery(document).ready(function($) {
         
         // Save immediately to database like rename and quick action functions do
         $.ajax({
-            url: ajaxurl,
+            url: dashboardConfig.ajaxurl,
             type: 'POST',
             data: {
                 action: 'edit_dashboard_page',
@@ -608,7 +608,7 @@ jQuery(document).ready(function($) {
         
         // Save immediately to database like rename function does
         $.ajax({
-            url: ajaxurl,
+            url: dashboardConfig.ajaxurl,
             type: 'POST',
             data: {
                 action: 'edit_dashboard_page',
@@ -661,7 +661,7 @@ jQuery(document).ready(function($) {
         if (newTitle && newTitle !== itemTitle) {
             // Send AJAX request to update the page
             $.ajax({
-                url: ajaxurl,
+                url: dashboardConfig.ajaxurl,
                 type: 'POST',
                 data: {
                     action: 'edit_dashboard_page',
@@ -705,7 +705,7 @@ jQuery(document).ready(function($) {
         
         if (confirm('Are you sure you want to delete "' + itemTitle + '" from the dashboard?')) {
             $.ajax({
-                url: ajaxurl,
+                url: dashboardConfig.ajaxurl,
                 type: 'POST',
                 data: {
                     action: 'delete_dashboard_page',
