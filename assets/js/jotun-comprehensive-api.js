@@ -162,6 +162,26 @@ class JotunheimAPI {
     }
 
     // ============================================================================
+    // SHOP TYPES API METHODS (jotun_shop_types)
+    // ============================================================================
+
+    async getShopTypes() {
+        return this.request('/shop-types');
+    }
+
+    async addShopType(typeData) {
+        return this.request('/shop-types', 'POST', typeData);
+    }
+
+    async updateShopType(id, typeData) {
+        return this.request(`/shop-types/${id}`, 'PUT', typeData);
+    }
+
+    async deleteShopType(id) {
+        return this.request(`/shop-types/${id}`, 'DELETE');
+    }
+
+    // ============================================================================
     // SHOP ITEMS API METHODS (jotun_shop_items)
     // ============================================================================
 

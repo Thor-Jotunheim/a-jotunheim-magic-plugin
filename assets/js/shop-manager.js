@@ -7,17 +7,14 @@ class ShopManager {
     constructor() {
         this.currentEditingShop = null;
         this.selectedShop = null;
+        this.shopTypes = [];
         this.initializeEventListeners();
         this.loadInitialData();
     }
 
-    getShopTypeLabel(shopType) {
-        const labels = {
-            'general': 'General Shop',
-            'staff-only': 'Staff Only',
-            'admin-only': 'Admin Only'
-        };
-        return labels[shopType] || shopType;
+    getShopTypeLabel(shopTypeKey) {
+        const shopType = this.shopTypes.find(type => type.type_key === shopTypeKey);
+        return shopType ? shopType.type_name : shopTypeKey;
     }
 
     initializeEventListeners() {
@@ -62,9 +59,51 @@ class ShopManager {
     }
 
     async loadInitialData() {
+        await this.loadShopTypes();
         await this.loadShops();
         await this.loadShopsForSelector();
         await this.loadMasterItemList();
+    }
+
+    async loadShopTypes() {
+        try {
+            const response = await JotunAPI.getShopTypes();
+            this.shopTypes = response.data || [];
+            this.populateShopTypeSelectors();
+        } catch (error) {
+            console.error('Error loading shop types:', error);
+            this.showStatus('Failed to load shop types', 'error');
+        }
+    }
+
+    populateShopTypeSelectors() {
+        // Populate the add/edit form shop type selector
+        const shopTypeSelect = document.getElementById('shop-type');
+        if (shopTypeSelect) {
+            shopTypeSelect.innerHTML = '';
+            this.shopTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.type_key;
+                option.textContent = type.type_name;
+                shopTypeSelect.appendChild(option);
+            });
+        }
+
+        // Populate the filter dropdown
+        const filterSelect = document.getElementById('shop-type-filter');
+        if (filterSelect) {
+            // Keep the "All Shop Types" option
+            const allOption = filterSelect.querySelector('option[value=""]');
+            filterSelect.innerHTML = '';
+            if (allOption) filterSelect.appendChild(allOption);
+            
+            this.shopTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.type_key;
+                option.textContent = type.type_name;
+                filterSelect.appendChild(option);
+            });
+        }
     }
 
     async loadShops() {

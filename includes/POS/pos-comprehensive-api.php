@@ -89,6 +89,13 @@ function jotun_ensure_shops_table() {
         $wpdb->query("ALTER TABLE $shops_table ADD COLUMN is_active tinyint(1) DEFAULT 1 AFTER owner_name");
         error_log('Jotunheim POS: Added is_active column to jotun_shops table');
     }
+    
+    // Migration: Change shop_type from ENUM to VARCHAR to support dynamic types
+    $shop_type_column = $wpdb->get_row("SHOW COLUMNS FROM $shops_table LIKE 'shop_type'");
+    if ($shop_type_column && strpos($shop_type_column->Type, 'enum') !== false) {
+        $wpdb->query("ALTER TABLE $shops_table MODIFY COLUMN shop_type varchar(50) NOT NULL DEFAULT 'general'");
+        error_log('Jotunheim POS: Changed shop_type column from ENUM to VARCHAR for dynamic types');
+    }
 }
 
 function jotun_insert_default_shop_types() {
@@ -371,6 +378,40 @@ add_action('rest_api_init', function() {
     // ============================================================================
     
     // Get all shop types
+    register_rest_route('jotun-api/v1', '/shop-types', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_shop_types',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Add new shop type
+    register_rest_route('jotun-api/v1', '/shop-types', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_add_shop_type',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Update shop type
+    register_rest_route('jotun-api/v1', '/shop-types/(?P<id>\d+)', [
+        'methods' => 'PUT',
+        'callback' => 'jotun_api_update_shop_type',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Delete shop type
+    register_rest_route('jotun-api/v1', '/shop-types/(?P<id>\d+)', [
+        'methods' => 'DELETE',
+        'callback' => 'jotun_api_delete_shop_type',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
     register_rest_route('jotun-api/v1', '/shop-types', [
         'methods' => 'GET',
         'callback' => 'jotun_api_get_shop_types',
