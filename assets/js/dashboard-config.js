@@ -408,6 +408,8 @@ jQuery(document).ready(function($) {
         }
         
         if (isNew) {
+            // Calculate next order for new sections
+            sectionData.order = currentConfig.sections.length + 1;
             // For new sections, use the create endpoint
             $.ajax({
                 url: dashboardConfig.ajaxurl,

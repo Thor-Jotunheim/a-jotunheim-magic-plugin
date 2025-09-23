@@ -1556,6 +1556,9 @@ class JotunheimDashboardConfig {
         
         $section_data = $_POST['section_data'];
         
+        // Debug logging
+        error_log('CREATE SECTION: section_data = ' . print_r($section_data, true));
+        
         if (empty($section_data['id']) || empty($section_data['title'])) {
             wp_send_json_error('Section ID and title are required');
             return;
@@ -1566,6 +1569,9 @@ class JotunheimDashboardConfig {
         $description = isset($section_data['description']) ? sanitize_text_field($section_data['description']) : '';
         $icon = isset($section_data['icon']) ? sanitize_text_field($section_data['icon']) : '';
         $display_order = isset($section_data['order']) ? (int)$section_data['order'] : 0;
+        
+        // Debug what we're about to save
+        error_log('CREATE SECTION: section_key=' . $section_key . ', section_name=' . $section_name . ', display_order=' . $display_order);
         
         // Handle enabled boolean properly
         $enabled = 1; // Default to enabled
