@@ -19,6 +19,12 @@ function shop_manager_scripts_shortcode($atts) {
         true
     );
 
+    // Localize the comprehensive API script with necessary data
+    wp_localize_script('jotun-comprehensive-api', 'jotun_api_vars', [
+        'nonce' => wp_create_nonce('wp_rest'),
+        'rest_url' => rest_url('jotun-api/v1/')
+    ]);
+
     wp_enqueue_script(
         'shop-manager-js',
         plugin_dir_url(__FILE__) . '../../assets/js/shop-manager.js',

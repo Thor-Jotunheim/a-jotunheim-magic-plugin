@@ -463,6 +463,9 @@ window.ItemManager = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Jotunheim Comprehensive API loaded');
     
+    // Create global instance of the API
+    window.JotunAPI = new JotunheimAPI();
+    
     // Set up global error handling for unhandled promise rejections
     window.addEventListener('unhandledrejection', function(event) {
         console.error('Unhandled promise rejection:', event.reason);
