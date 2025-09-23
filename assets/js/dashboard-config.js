@@ -8,6 +8,9 @@ jQuery(document).ready(function($) {
     let menuItems = dashboardConfig.menuItems;
     let isDirty = false;
 
+    // Make currentConfig globally accessible for the Add Pages modal
+    window.currentConfig = currentConfig;
+
     // Initialize the interface
     init();
 

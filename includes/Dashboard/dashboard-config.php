@@ -3707,6 +3707,35 @@ function render_dashboard_config_page() {
                                 $(this).remove();
                                 updateSelectionCount();
                             });
+                            
+                            // CRITICAL: Add the new page to currentConfig so it doesn't disappear on save
+                            const newItem = {
+                                id: pageId,
+                                title: pageTitle,
+                                menu_title: pageTitle,
+                                section: section,
+                                order: 999, // Put at end
+                                enabled: true,
+                                quick_action: false,
+                                callback: callback,
+                                shortcode: shortcode,
+                                description: pageDescription
+                            };
+                            
+                            // Add to dashboardConfig.config.items if it exists (for the modal context)
+                            if (typeof dashboardConfig !== 'undefined' && dashboardConfig.config && dashboardConfig.config.items) {
+                                dashboardConfig.config.items.push(newItem);
+                            }
+                            
+                            // Add to currentConfig.items if it exists (for the dashboard-config.js save function)
+                            if (typeof window.currentConfig !== 'undefined' && window.currentConfig && window.currentConfig.items) {
+                                window.currentConfig.items.push(newItem);
+                            }
+                            
+                            // Also try to add to global currentConfig (different scope possibilities)
+                            if (typeof currentConfig !== 'undefined' && currentConfig && currentConfig.items) {
+                                currentConfig.items.push(newItem);
+                            }
                         } else {
                             errors.push('Error adding page "' + pageTitle + '": ' + (response.data || 'Unknown error'));
                         }
