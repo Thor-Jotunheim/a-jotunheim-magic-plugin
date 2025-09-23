@@ -2696,6 +2696,60 @@ function render_dashboard_config_page() {
             background-color: #f8f9fa;
         }
         
+        .page-checkbox {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .page-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+        
+        .page-checkbox label {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .bulk-actions-header {
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .bulk-selection-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .bulk-add-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .selection-counter {
+            padding: 5px 10px;
+            background-color: #2271b1;
+            color: white;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        #add-selected-pages:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .page-info h4 {
             margin: 0 0 5px 0;
             color: #2c3e50;
@@ -2937,21 +2991,33 @@ function render_dashboard_config_page() {
                         const pages = response.data.pages;
                         let html = '';
                         
-                        if (pages.length === 0) {
-                            html = '<div class="no-pages-found">No additional pages found to add.</div>';
-                        } else {
-                            // Separate pages by category
-                            const defaultPages = pages.filter(page => page.is_default);
-                            const discoveredPages = pages.filter(page => !page.is_default && page.category !== 'shortcode');
-                            const shortcodePages = pages.filter(page => page.category === 'shortcode');
-                            
-                            if (defaultPages.length > 0) {
+                            if (pages.length === 0) {
+                                html = '<div class="no-pages-found">No additional pages found to add.</div>';
+                            } else {
+                                // Add bulk action controls
+                                html += '<div class="bulk-actions-header">';
+                                html += '<div class="bulk-selection-controls">';
+                                html += '<button type="button" id="select-all-pages" class="button">Select All</button>';
+                                html += '<button type="button" id="deselect-all-pages" class="button">Deselect All</button>';
+                                html += '<button type="button" id="add-selected-pages" class="button button-primary" disabled>Add Selected Pages</button>';
+                                html += '<span id="selection-count" class="selection-count">0 pages selected</span>';
+                                html += '</div>';
+                                html += '</div>';
+                                
+                                // Separate pages by category
+                                const defaultPages = pages.filter(page => page.is_default);
+                                const discoveredPages = pages.filter(page => !page.is_default && page.category !== 'shortcode');
+                                const shortcodePages = pages.filter(page => page.category === 'shortcode');                            if (defaultPages.length > 0) {
                                 html += '<div class="page-category">';
                                 html += '<h3><span class="dashicons dashicons-admin-tools"></span> Default Plugin Pages</h3>';
                                 html += '<p class="category-description">These are the main plugin pages that are available by default.</p>';
                                 
                                 defaultPages.forEach(function(page) {
                                     html += '<div class="available-page-item default-page" data-page-id="' + page.id + '">';
+                                    html += '<div class="page-checkbox">';
+                                    html += '<input type="checkbox" class="page-select-checkbox" id="page-' + page.id + '" data-page-id="' + page.id + '">';
+                                    html += '<label for="page-' + page.id + '"></label>';
+                                    html += '</div>';
                                     html += '<div class="page-info">';
                                     html += '<h4 class="page-title">' + page.title + '</h4>';
                                     html += '<div class="page-meta">ID: ' + page.id + ' | Function: ' + page.callback + '</div>';
@@ -2984,6 +3050,10 @@ function render_dashboard_config_page() {
                                 
                                 shortcodePages.forEach(function(page) {
                                     html += '<div class="available-page-item shortcode-page" data-page-id="' + page.id + '" data-shortcode="' + (page.shortcode || '') + '">';
+                                    html += '<div class="page-checkbox">';
+                                    html += '<input type="checkbox" class="page-select-checkbox" id="page-' + page.id + '" data-page-id="' + page.id + '">';
+                                    html += '<label for="page-' + page.id + '"></label>';
+                                    html += '</div>';
                                     html += '<div class="page-info">';
                                     html += '<h4 class="page-title">' + page.title + '</h4>';
                                     html += '<div class="page-meta">ID: ' + page.id + ' | Shortcode: [' + (page.shortcode || page.id) + ']</div>';
@@ -3019,6 +3089,10 @@ function render_dashboard_config_page() {
                                 
                                 discoveredPages.forEach(function(page) {
                                     html += '<div class="available-page-item discovered-page" data-page-id="' + page.id + '">';
+                                    html += '<div class="page-checkbox">';
+                                    html += '<input type="checkbox" class="page-select-checkbox" id="page-' + page.id + '" data-page-id="' + page.id + '">';
+                                    html += '<label for="page-' + page.id + '"></label>';
+                                    html += '</div>';
                                     html += '<div class="page-info">';
                                     html += '<h4 class="page-title">' + page.title + '</h4>';
                                     html += '<div class="page-meta">ID: ' + page.id + ' | Function: ' + page.callback + '</div>';
@@ -3499,6 +3573,158 @@ function render_dashboard_config_page() {
                     $button.prop('disabled', false).text('Save Changes');
                 }
             });
+        });
+        
+        // Bulk selection functionality for Add Pages modal
+        $(document).on('click', '#select-all-pages', function() {
+            $('.page-select-checkbox').prop('checked', true);
+            updateSelectionCount();
+        });
+        
+        $(document).on('click', '#deselect-all-pages', function() {
+            $('.page-select-checkbox').prop('checked', false);
+            updateSelectionCount();
+        });
+        
+        $(document).on('change', '.page-select-checkbox', function() {
+            updateSelectionCount();
+        });
+        
+        function updateSelectionCount() {
+            const selectedCount = $('.page-select-checkbox:checked').length;
+            $('#selection-count').text(selectedCount);
+            $('#add-selected-pages').prop('disabled', selectedCount === 0);
+        }
+        
+        $(document).on('click', '#add-selected-pages', function() {
+            const selectedItems = $('.page-select-checkbox:checked').closest('.available-page-item');
+            const $button = $(this);
+            
+            if (selectedItems.length === 0) {
+                alert('Please select at least one page to add.');
+                return;
+            }
+            
+            $button.prop('disabled', true).text('Adding ' + selectedItems.length + ' pages...');
+            
+            let completedRequests = 0;
+            let errors = [];
+            
+            selectedItems.each(function() {
+                const $item = $(this);
+                const pageId = $item.data('page-id');
+                const section = $item.find('.page-section-select').val();
+                const pageTitle = $item.find('.page-title').text().trim();
+                const pageMeta = $item.find('.page-meta').text().trim();
+                const pageDescription = $item.find('.page-description').text().trim() || 'Auto-detected plugin page';
+                
+                // Check if this is a shortcode page that needs page creation
+                const isShortcodePage = $item.hasClass('shortcode-page');
+                const shortcode = $item.data('shortcode');
+                
+                let callback;
+                if (isShortcodePage && shortcode) {
+                    callback = 'redirect_to_shortcode_page_' + pageId;
+                } else {
+                    const callbackMatch = pageMeta.match(/Function:\s*(.+)/);
+                    callback = callbackMatch ? callbackMatch[1] : 'render_' + pageId + '_page';
+                }
+                
+                if (isShortcodePage && shortcode) {
+                    // Create shortcode page first
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'create_shortcode_page',
+                            nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                            page_data: {
+                                id: pageId,
+                                title: pageTitle,
+                                shortcode: shortcode,
+                                description: pageDescription
+                            }
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Page created, now add to dashboard
+                                addBulkPageToDashboard($item, pageId, pageTitle, pageDescription, section, 'render_shortcode_admin_page', shortcode);
+                            } else {
+                                errors.push('Error creating page "' + pageTitle + '": ' + (response.data || 'Unknown error'));
+                                handleBulkComplete();
+                            }
+                        },
+                        error: function() {
+                            errors.push('Failed to create page "' + pageTitle + '"');
+                            handleBulkComplete();
+                        }
+                    });
+                } else {
+                    // Regular page, add directly
+                    addBulkPageToDashboard($item, pageId, pageTitle, pageDescription, section, callback);
+                }
+            });
+            
+            function addBulkPageToDashboard($item, pageId, pageTitle, pageDescription, section, callback, shortcode = null) {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'add_custom_page',
+                        nonce: '<?php echo wp_create_nonce("dashboard_config_nonce"); ?>',
+                        page_data: {
+                            id: pageId,
+                            title: pageTitle,
+                            menu_title: pageTitle,
+                            callback: callback,
+                            shortcode: shortcode,
+                            category: shortcode ? 'shortcode' : 'auto-detected',
+                            description: pageDescription,
+                            section: section,
+                            enabled: true,
+                            quick_action: false
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove from available list
+                            $item.fadeOut(300, function() {
+                                $(this).remove();
+                                updateSelectionCount();
+                            });
+                        } else {
+                            errors.push('Error adding page "' + pageTitle + '": ' + (response.data || 'Unknown error'));
+                        }
+                        handleBulkComplete();
+                    },
+                    error: function() {
+                        errors.push('Failed to add page "' + pageTitle + '"');
+                        handleBulkComplete();
+                    }
+                });
+            }
+            
+            function handleBulkComplete() {
+                completedRequests++;
+                if (completedRequests >= selectedItems.length) {
+                    $button.prop('disabled', false).text('Add Selected Pages');
+                    
+                    if (errors.length > 0) {
+                        alert('Some pages could not be added:\n\n' + errors.join('\n'));
+                    } else {
+                        const $successMsg = $('<div class="notice notice-success"><p>' + selectedItems.length + ' pages added successfully!</p></div>');
+                        $('.config-pages').before($successMsg);
+                        setTimeout(function() {
+                            $successMsg.fadeOut();
+                        }, 3000);
+                    }
+                    
+                    // Reload page to show new menu items
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            }
         });
         
         // Handle cancel page edit
