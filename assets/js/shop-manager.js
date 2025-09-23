@@ -326,8 +326,14 @@ class ShopManager {
         
         // Always show both formats when price is 120+ coins (1+ Ymir)
         if (numPrice >= 120) {
-            const ymirAmount = (numPrice / 120).toFixed(2);
-            return `${numPrice} Coins (${ymirAmount} Ymir)`;
+            const ymirWholeAmount = Math.floor(numPrice / 120);
+            const remainingCoins = numPrice % 120;
+            
+            if (remainingCoins === 0) {
+                return `${ymirWholeAmount} Ymir`;
+            } else {
+                return `${ymirWholeAmount} Ymir ${remainingCoins} Coins`;
+            }
         }
         
         // For small amounts, just show coins
@@ -504,21 +510,31 @@ class ShopManager {
     }
 
     toggleFieldsForShopType(isTurnInOnly) {
-        // Elements to hide for turn-in shops
-        const regularShopFields = document.querySelectorAll('.form-group:has(#custom-price), .form-group:has(#price-currency), .form-group:has(#stock-quantity)');
+        // Get form sections
         const priceRow = document.querySelector('.form-row:has(#custom-price)');
         const stockRow = document.querySelector('.form-row:has(#stock-quantity)');
-        
-        // Turn-in specific fields
         const turnInFields = document.querySelectorAll('.turn-in-fields');
         const turnInRequirementField = document.getElementById('turn-in-requirement');
+        const addItemSection = document.getElementById('add-item-section');
+        const addItemTitle = addItemSection.querySelector('h3');
+        const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
         
         if (isTurnInOnly) {
+            // Update the interface for Turn-In Only shops
+            if (addItemTitle) {
+                addItemTitle.textContent = 'Add Turn-In Event Items';
+            }
+            if (submitButton) {
+                submitButton.textContent = 'Add Turn-In Event';
+            }
+            
             // Hide price and stock fields for turn-in shops
             if (priceRow) priceRow.style.display = 'none';
             if (stockRow) stockRow.style.display = 'none';
+            
             // Show turn-in fields
             turnInFields.forEach(field => field.style.display = 'flex');
+            
             // Set min=1 for turn-in requirement when visible
             if (turnInRequirementField) {
                 turnInRequirementField.setAttribute('min', '1');
@@ -526,16 +542,56 @@ class ShopManager {
                     turnInRequirementField.value = '1';
                 }
             }
+            
+            // Update field labels for turn-in context
+            const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
+            if (itemSelectorLabel) {
+                itemSelectorLabel.textContent = 'Select Turn-In Item';
+            }
+            
+            const customItemLabel = document.querySelector('label[for="custom-item-name"]');
+            if (customItemLabel) {
+                customItemLabel.textContent = 'Custom Turn-In Event Name';
+                const customItemInput = document.getElementById('custom-item-name');
+                if (customItemInput) {
+                    customItemInput.placeholder = 'e.g., "Dragon Egg Collection Event"';
+                }
+            }
         } else {
+            // Regular shop interface
+            if (addItemTitle) {
+                addItemTitle.textContent = 'Add Items to Shop';
+            }
+            if (submitButton) {
+                submitButton.textContent = 'Add Item to Shop';
+            }
+            
             // Show price and stock fields for regular shops
             if (priceRow) priceRow.style.display = 'flex';
             if (stockRow) stockRow.style.display = 'flex';
+            
             // Hide turn-in fields
             turnInFields.forEach(field => field.style.display = 'none');
+            
             // Remove min constraint when hidden to prevent validation errors
             if (turnInRequirementField) {
                 turnInRequirementField.setAttribute('min', '0');
                 turnInRequirementField.value = '0';
+            }
+            
+            // Restore original field labels
+            const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
+            if (itemSelectorLabel) {
+                itemSelectorLabel.textContent = 'Select Item from Master List';
+            }
+            
+            const customItemLabel = document.querySelector('label[for="custom-item-name"]');
+            if (customItemLabel) {
+                customItemLabel.textContent = 'Custom Item Name (for Aesir Spells)';
+                const customItemInput = document.getElementById('custom-item-name');
+                if (customItemInput) {
+                    customItemInput.placeholder = 'Enter custom item name for spells/special items';
+                }
             }
         }
     }
