@@ -150,13 +150,15 @@ function jotunheim_magic_handle_discord_oauth2_callback() {
                     case 8: // Norn - Highest administrative role
                         $wp_role = 'administrator';
                         break;
-                    case 7: // Aesir - Senior administrative role
+                    case 7: // Aesir - Senior administrative role  
+                    case 5: // Admin (combination of Norn/Aesir)
+                        $wp_role = 'editor';
+                        break;
                     case 6: // All Staff - General staff access role
-                    case 5: // Admin
                     case 4: // Staff
                     case 3: // Valkyrie
                     case 2: // Vithar
-                        $wp_role = 'editor';
+                        $wp_role = 'contributor';
                         break;
                     case 1: // Chosen - Basic/Member
                     default:
