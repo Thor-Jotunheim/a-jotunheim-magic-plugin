@@ -14,25 +14,50 @@ function shop_manager_interface() {
         ?>
         <style>
         .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 10px;
-            margin-top: 5px;
+            margin-top: 8px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
         }
         .checkbox-label {
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin-right: 15px;
+            gap: 6px;
             font-weight: normal;
             cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        .checkbox-label:hover {
+            background-color: #e9e9e9;
         }
         .checkbox-label input[type="checkbox"] {
             margin: 0;
+            width: 16px;
+            height: 16px;
+        }
+        .checkbox-label span {
+            font-size: 14px;
+            color: #333;
         }
         .no-roles-message {
             font-style: italic;
             color: #666;
+            padding: 15px;
+            text-align: center;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .permissions-list {
+            font-size: 12px;
+            color: #555;
+            max-width: 200px;
+            word-wrap: break-word;
         }
         </style>
     }

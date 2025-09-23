@@ -191,6 +191,92 @@ function jotun_insert_default_shop_types() {
     }
 }
 
+/**
+ * Check if current user has access to a specific shop type based on Discord roles
+ */
+function jotun_user_can_access_shop_type($shop_type_key) {
+    global $wpdb;
+    
+    // Admin users always have access
+    if (current_user_can('administrator')) {
+        return true;
+    }
+    
+    // Get shop type permissions
+    $shop_type = $wpdb->get_row($wpdb->prepare(
+        "SELECT default_permissions FROM jotun_shop_types WHERE type_key = %s AND is_active = 1",
+        $shop_type_key
+    ));
+    
+    if (!$shop_type) {
+        return false; // Shop type doesn't exist or is inactive
+    }
+    
+    // Parse permissions
+    $required_permissions = [];
+    if (!empty($shop_type->default_permissions)) {
+        $required_permissions = json_decode($shop_type->default_permissions, true);
+        if (!is_array($required_permissions)) {
+            $required_permissions = [];
+        }
+    }
+    
+    // If no permissions required, allow access
+    if (empty($required_permissions)) {
+        return true;
+    }
+    
+    // Check if user has Discord authentication
+    $current_user = wp_get_current_user();
+    if (!$current_user->ID) {
+        return false; // User not logged in
+    }
+    
+    // Get user's Discord roles
+    $user_discord_roles = get_user_meta($current_user->ID, 'discord_roles', true);
+    if (!is_array($user_discord_roles)) {
+        $user_discord_roles = [];
+    }
+    
+    // Check if user has any of the required roles using hierarchy
+    if (function_exists('user_has_access')) {
+        foreach ($required_permissions as $required_role) {
+            if (user_has_access($user_discord_roles, $required_role)) {
+                return true;
+            }
+        }
+    } else {
+        // Fallback: direct role matching if hierarchy function not available
+        foreach ($required_permissions as $required_role) {
+            if (in_array($required_role, $user_discord_roles)) {
+                return true;
+            }
+        }
+    }
+    
+    return false; // User doesn't have required permissions
+}
+
+/**
+ * Get all shop types that the current user can access
+ */
+function jotun_get_accessible_shop_types() {
+    global $wpdb;
+    
+    $all_shop_types = $wpdb->get_results(
+        "SELECT * FROM jotun_shop_types WHERE is_active = 1 ORDER BY type_name ASC"
+    );
+    
+    $accessible_types = [];
+    foreach ($all_shop_types as $shop_type) {
+        if (jotun_user_can_access_shop_type($shop_type->type_key)) {
+            $accessible_types[] = $shop_type;
+        }
+    }
+    
+    return $accessible_types;
+}
+
 // Register all comprehensive REST API routes
 add_action('rest_api_init', function() {
     error_log('DEBUG: REST API init hook called - registering jotun-api routes');
@@ -498,6 +584,15 @@ add_action('rest_api_init', function() {
         'callback' => 'jotun_api_delete_shop_type',
         'permission_callback' => function() {
             return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Get accessible shop types for current user (based on Discord roles)
+    register_rest_route('jotun-api/v1', '/shop-types/accessible', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_accessible_shop_types',
+        'permission_callback' => function() {
+            return is_user_logged_in();
         }
     ]);
     
@@ -2032,6 +2127,11 @@ function jotun_api_get_shop_types($request) {
     }
     
     return new WP_REST_Response(['data' => $results], 200);
+}
+
+function jotun_api_get_accessible_shop_types($request) {
+    $accessible_types = jotun_get_accessible_shop_types();
+    return new WP_REST_Response(['data' => $accessible_types], 200);
 }
 
 function jotun_api_add_shop_type($request) {

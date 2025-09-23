@@ -182,6 +182,10 @@ class JotunheimAPI {
         return this.request(`/shop-types/${id}`, 'DELETE');
     }
 
+    async getAccessibleShopTypes() {
+        return this.request('/shop-types/accessible');
+    }
+
     // ============================================================================
     // SHOP ITEMS API METHODS (jotun_shop_items)
     // ============================================================================
