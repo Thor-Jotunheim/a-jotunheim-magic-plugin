@@ -154,7 +154,7 @@ class ShopManager {
         const shopData = {
             shop_name: formData.get('shop_name'),
             shop_type: formData.get('shop_type'),
-            is_active: formData.get('is_active') || '1'
+            is_active: parseInt(formData.get('is_active') || '1')
         };
 
         try {

@@ -1151,8 +1151,12 @@ function jotun_api_add_shop($request) {
     $data = $request->get_json_params();
     $table_name = 'jotun_shops';
     
+    error_log('jotun_api_add_shop using table: ' . $table_name);
+    
     // Debug logging
     error_log('jotun_api_add_shop received data: ' . print_r($data, true));
+    error_log('jotun_api_add_shop shop_type value: ' . var_export($data['shop_type'] ?? 'NOT_SET', true));
+    error_log('jotun_api_add_shop is_active value: ' . var_export($data['is_active'] ?? 'NOT_SET', true));
     
     if (empty($data['shop_name'])) {
         return new WP_REST_Response(['error' => 'Shop name is required'], 400);
@@ -1182,12 +1186,19 @@ function jotun_api_add_shop($request) {
     
     error_log('jotun_api_add_shop insert_data: ' . print_r($insert_data, true));
     
+    // Debug: Check table structure
+    $table_structure = $wpdb->get_results("DESCRIBE $table_name");
+    error_log('jotun_api_add_shop table structure: ' . print_r($table_structure, true));
+    
     $result = $wpdb->insert($table_name, $insert_data);
     
     error_log('jotun_api_add_shop insert result: ' . var_export($result, true));
     error_log('jotun_api_add_shop wpdb->last_error: ' . $wpdb->last_error);
     
     if ($result === false) {
+        $error_msg = 'Failed to add shop. Database error: ' . $wpdb->last_error;
+        $error_msg .= '. Insert data was: ' . print_r($insert_data, true);
+        error_log('jotun_api_add_shop ERROR: ' . $error_msg);
         return new WP_REST_Response(['error' => 'Failed to add shop: ' . $wpdb->last_error], 500);
     }
     
