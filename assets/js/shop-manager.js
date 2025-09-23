@@ -556,10 +556,16 @@ class ShopManager {
                 }
             }
             
-            // Update field labels for turn-in context
+            // Ensure item selector row is visible for turn-in shops
+            const itemSelectorRow = document.getElementById('item-selector')?.closest('.form-row');
+            if (itemSelectorRow) {
+                itemSelectorRow.style.display = 'flex';
+            }
+            
+            // Update field labels for turn-in context  
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
             if (itemSelectorLabel) {
-                itemSelectorLabel.textContent = 'Select Turn-In Item';
+                itemSelectorLabel.textContent = 'Select Turn-In Item from Master List';
             }
             
             const customItemLabel = document.querySelector('label[for="custom-item-name"]');

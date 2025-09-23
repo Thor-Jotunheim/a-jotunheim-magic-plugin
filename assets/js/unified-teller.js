@@ -46,7 +46,126 @@ class UnifiedTeller {
 
     async loadInitialData() {
         await this.loadShopsForSelector();
+        await this.loadPlayerList();
         await this.loadTransactionHistory();
+        this.setupPlayerAutocomplete();
+    }
+    
+    async loadPlayerList() {
+        try {
+            const response = await JotunAPI.getPlayers();
+            this.playerList = response.data || [];
+            console.log('DEBUG - Loaded player list:', this.playerList);
+        } catch (error) {
+            console.error('Error loading player list:', error);
+            this.playerList = [];
+        }
+    }
+    
+    setupPlayerAutocomplete() {
+        const customerNameInput = document.getElementById('customer-name');
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'player-suggestions';
+        suggestionsContainer.className = 'player-suggestions';
+        suggestionsContainer.style.display = 'none';
+        
+        // Insert suggestions container after the input
+        customerNameInput.parentNode.insertBefore(suggestionsContainer, customerNameInput.nextSibling);
+        
+        let currentSuggestionIndex = -1;
+        
+        // Show all players when input is focused and empty
+        customerNameInput.addEventListener('focus', (e) => {
+            if (e.target.value.trim() === '' && this.playerList.length > 0) {
+                this.displayPlayerSuggestions(this.playerList.slice(0, 10), suggestionsContainer, customerNameInput);
+            }
+        });
+        
+        customerNameInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (query.length === 0) {
+                // Show all players when empty
+                this.displayPlayerSuggestions(this.playerList.slice(0, 10), suggestionsContainer, customerNameInput);
+                return;
+            }
+            
+            if (query.length < 1) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            const filteredPlayers = this.playerList.filter(player => 
+                player.player_name.toLowerCase().includes(query)
+            ).slice(0, 10); // Show max 10 suggestions
+            
+            this.displayPlayerSuggestions(filteredPlayers, suggestionsContainer, customerNameInput);
+        });
+        
+        customerNameInput.addEventListener('keydown', (e) => {
+            const suggestions = suggestionsContainer.querySelectorAll('.player-suggestion-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+                this.highlightPlayerSuggestion(suggestions, currentSuggestionIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+                this.highlightPlayerSuggestion(suggestions, currentSuggestionIndex);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
+                    suggestions[currentSuggestionIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                suggestionsContainer.style.display = 'none';
+                currentSuggestionIndex = -1;
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!customerNameInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+    }
+    
+    displayPlayerSuggestions(players, container, input) {
+        if (players.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        players.forEach(player => {
+            const div = document.createElement('div');
+            div.className = 'player-suggestion-item';
+            div.innerHTML = `
+                <div class="player-name">${player.player_name}</div>
+                <div class="player-status ${player.is_active ? 'active' : 'inactive'}">${player.is_active ? 'Active' : 'Inactive'}</div>
+            `;
+            
+            div.addEventListener('click', () => {
+                input.value = player.player_name;
+                container.style.display = 'none';
+                
+                // Automatically validate the selected customer
+                this.validateCustomer();
+            });
+            
+            container.appendChild(div);
+        });
+        
+        container.style.display = 'block';
+    }
+    
+    highlightPlayerSuggestion(suggestions, index) {
+        suggestions.forEach((s, i) => {
+            s.classList.toggle('highlighted', i === index);
+        });
     }
 
     async loadShopsForSelector() {
@@ -61,19 +180,26 @@ class UnifiedTeller {
     }
 
     populateShopSelector(shops) {
+        console.log('DEBUG - Populating unified teller shop selector with:', shops);
         const selector = document.getElementById('teller-shop-selector');
         selector.innerHTML = '<option value="">Select a shop to begin...</option>';
 
         shops.forEach(shop => {
+            console.log('DEBUG - Processing shop:', shop);
             if (shop.is_active == 1) {
                 const option = document.createElement('option');
-                option.value = shop.id;
+                option.value = shop.shop_id; // Fixed: was shop.id, should be shop.shop_id
                 option.textContent = `${shop.shop_name} (${shop.shop_type})`;
                 option.dataset.shopName = shop.shop_name;
                 option.dataset.shopType = shop.shop_type;
                 selector.appendChild(option);
+                console.log('DEBUG - Added shop option:', option.textContent);
+            } else {
+                console.log('DEBUG - Skipping inactive shop:', shop.shop_name);
             }
         });
+        
+        console.log('DEBUG - Shop selector populated with', selector.options.length - 1, 'active shops');
     }
 
     async selectShop(shopId) {
@@ -542,5 +668,69 @@ function confirmTransaction() {
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('unified-teller-interface')) {
         window.unifiedTeller = new UnifiedTeller();
+        
+        // Add CSS for player suggestions
+        const style = document.createElement('style');
+        style.textContent = `
+            .player-suggestions {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                max-height: 200px;
+                overflow-y: auto;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .player-suggestion-item {
+                padding: 8px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .player-suggestion-item:last-child {
+                border-bottom: none;
+            }
+            
+            .player-suggestion-item:hover,
+            .player-suggestion-item.highlighted {
+                background-color: #f5f5f5;
+            }
+            
+            .player-name {
+                font-weight: 500;
+                color: #333;
+            }
+            
+            .player-status {
+                font-size: 12px;
+                padding: 2px 6px;
+                border-radius: 10px;
+                text-transform: uppercase;
+                font-weight: 500;
+            }
+            
+            .player-status.active {
+                background: #e8f5e8;
+                color: #2e7d32;
+            }
+            
+            .player-status.inactive {
+                background: #ffebee;
+                color: #c62828;
+            }
+            
+            #customer-name {
+                position: relative;
+            }
+        `;
+        document.head.appendChild(style);
     }
 });
