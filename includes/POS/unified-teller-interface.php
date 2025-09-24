@@ -140,44 +140,6 @@ function unified_teller_interface() {
                 </div>
             </div>
 
-            <!-- Payment Tracking -->
-            <div class="teller-card payment-card">
-                <div class="card-header">
-                    <h2 class="card-title">Payment Tracking</h2>
-                    <p class="card-description">Track customer payment and transaction balance</p>
-                </div>
-                <div class="card-content">
-                    <div class="payment-grid">
-                        <div class="form-field">
-                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh Total</label>
-                            <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
-                        </div>
-                        <div class="form-field">
-                            <label for="gold-total" class="field-label">Gold Total</label>
-                            <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
-                        </div>
-                    </div>
-                    <div class="payment-summary">
-                        <div class="summary-row">
-                            <span class="summary-label">Total Cost:</span>
-                            <span id="item-total-cost" class="summary-value">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Amount Paid:</span>
-                            <span id="amount-paid-display" class="summary-value">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Change Due:</span>
-                            <span id="change-due" class="summary-value change-amount">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Payment Status:</span>
-                            <span id="payment-balance" class="summary-status">Pending</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Shop Items -->
             <div class="teller-card items-card">
                 <div class="card-header">
@@ -248,12 +210,110 @@ function unified_teller_interface() {
                             rows="3"
                         ></textarea>
                     </div>
+                </div>
+            </div>
+
+            <!-- Payment Tracking -->
+            <div class="teller-card payment-card">
+                <div class="card-header">
+                    <h2 class="card-title">Payment Tracking</h2>
+                    <p class="card-description">Track customer payment and balance status</p>
+                </div>
+                <div class="card-content">
+                    <div class="payment-grid">
+                        <div class="form-field">
+                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh Received</label>
+                            <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
+                        </div>
+                        <div class="form-field">
+                            <label for="gold-total" class="field-label">Gold Received</label>
+                            <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
+                        </div>
+                    </div>
                     
-                    <div class="card-actions">
-                        <button id="clear-transaction-btn" class="btn btn-outline">
+                    <div class="payment-summary">
+                        <div class="summary-row">
+                            <span class="summary-label">Total Cost:</span>
+                            <span id="item-total-cost" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Amount Paid:</span>
+                            <span id="amount-paid-display" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Difference:</span>
+                            <span id="payment-difference" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Payment Status:</span>
+                            <span id="payment-status" class="payment-status pending">Pending</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status Warnings and Change Due -->
+                    <div id="payment-warnings" class="payment-warnings" style="display: none;">
+                        <div id="overpaid-warning" class="payment-warning overpaid" style="display: none;">
+                            <div class="warning-icon">⚠️</div>
+                            <div class="warning-content">
+                                <div class="warning-title">Customer Overpaid</div>
+                                <div class="warning-message">Change due to customer</div>
+                            </div>
+                        </div>
+                        
+                        <div id="underpaid-warning" class="payment-warning underpaid" style="display: none;">
+                            <div class="warning-icon">❌</div>
+                            <div class="warning-content">
+                                <div class="warning-title">Customer Underpaid</div>
+                                <div class="warning-message">Additional payment required</div>
+                            </div>
+                        </div>
+                        
+                        <div id="balanced-confirmation" class="payment-warning balanced" style="display: none;">
+                            <div class="warning-icon">✅</div>
+                            <div class="warning-content">
+                                <div class="warning-title">Payment Balanced</div>
+                                <div class="warning-message">Transaction ready to record</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Due Section (only shows when overpaid) -->
+                    <div id="change-due-section" class="change-due-section" style="display: none;">
+                        <div class="change-due-header">
+                            <h4>Change Due to Customer</h4>
+                        </div>
+                        <div class="change-due-grid">
+                            <div class="form-field">
+                                <label for="change-ymir-flesh" class="field-label">Ymir Flesh Given</label>
+                                <input type="number" id="change-ymir-flesh" class="field-input" min="0" step="1" placeholder="0">
+                            </div>
+                            <div class="form-field">
+                                <label for="change-gold" class="field-label">Gold Given</label>
+                                <input type="number" id="change-gold" class="field-input" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="change-summary">
+                            <div class="summary-row">
+                                <span class="summary-label">Total Change Given:</span>
+                                <span id="total-change-given" class="summary-value">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Remaining Change Due:</span>
+                                <span id="remaining-change-due" class="summary-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Actions -->
+            <div class="teller-card actions-card">
+                <div class="card-content">
+                    <div class="transaction-actions">
+                        <button id="clear-transaction-btn" class="btn btn-outline btn-lg">
                             Clear Transaction
                         </button>
-                        <button id="record-transaction-btn" class="btn btn-primary" disabled>
+                        <button id="record-transaction-btn" class="btn btn-primary btn-lg" disabled>
                             Record Transaction
                         </button>
                     </div>
