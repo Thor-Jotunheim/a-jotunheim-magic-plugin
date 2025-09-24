@@ -21,16 +21,12 @@ function fetch_all_items_rest() {
     ob_clean();
 
     global $wpdb;
-    $table_name = $wpdb->prefix . 'jotun_itemlist';
+    $table_name = 'jotun_itemlist'; // Custom table without wp_ prefix
+    
+    error_log('fetch_all_items_rest: Querying table: ' . $table_name);
 
-    // Check if table exists
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-        error_log('fetch_all_items_rest: Table ' . $table_name . ' does not exist');
-        return new WP_Error('table_not_found', 'Items table not found', array('status' => 404));
-    }
-
-    // Fetch all items from database
-    $items = $wpdb->get_results("SELECT * FROM $table_name ORDER BY item_name ASC", ARRAY_A);
+    // Fetch all items from database - try directly without table check
+    $items = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY item_name ASC", ARRAY_A);
 
     if ($wpdb->last_error) {
         error_log('fetch_all_items_rest: Database error - ' . $wpdb->last_error);

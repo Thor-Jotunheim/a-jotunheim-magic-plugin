@@ -1064,7 +1064,7 @@ function jotun_api_get_playerlist($request) {
     global $wpdb;
     
     $table_name = 'jotun_playerlist';
-    $limit = $request->get_param('limit') ?: 100;
+    $limit = $request->get_param('limit') ?: 1000; // Increased from 100 to show more results
     $offset = $request->get_param('offset') ?: 0;
     $search = $request->get_param('search');
     

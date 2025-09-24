@@ -479,22 +479,22 @@
     box-shadow: 0 0 0 3px oklch(0.65 0.15 140 / 0.1);
 }
 
-/* Item Cards - Inspired by Barter Page Design */
+/* Item Cards - Barter Page Style */
 .item-card {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-start;
     position: relative;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    border: 2px solid #e0e6ed;
-    border-radius: 12px;
-    padding: 12px;
-    margin: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    width: 280px;
-    min-height: 360px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 4px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    min-height: 80px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
@@ -510,116 +510,110 @@
 }
 
 .item-image-container {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 8px;
+    width: 64px;
+    height: 64px;
+    margin-right: 12px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .item-image {
-    max-width: 70px;
-    max-height: 70px;
+    max-width: 56px;
+    max-height: 56px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .item-name {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
-    color: var(--primary-blue-dark);
-    text-align: center;
-    margin-bottom: 8px;
-    line-height: 1.2;
-    min-height: 34px;
-    display: flex;
-    align-items: center;
+    color: #333;
+    margin-bottom: 4px;
+    line-height: 1.3;
 }
 
 .item-details {
-    width: 100%;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .item-pricing {
-    background: rgba(var(--accent-amber), 0.1);
-    padding: 8px;
-    border-radius: 6px;
-    text-align: center;
+    background: #f0f8ff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
 }
 
 .unit-price, .stack-price {
-    font-size: 12px;
-    margin: 2px 0;
-    color: var(--primary-blue-dark);
+    font-size: 13px;
+    margin: 1px 0;
+    color: #555;
 }
 
 .unit-price strong, .stack-price strong {
-    color: var(--primary-blue);
-    font-weight: 700;
+    color: #2c5aa0;
+    font-weight: 600;
 }
 
 .item-meta {
     font-size: 11px;
-    color: #666;
-    text-align: center;
+    color: #777;
+    margin-bottom: 6px;
 }
 
 .tech-info {
-    margin-bottom: 4px;
-    font-style: italic;
+    margin-bottom: 2px;
 }
 
 .stock-info {
     font-weight: 500;
-    color: var(--success-green);
+    color: #28a745;
 }
 
 .item-actions {
-    width: 100%;
+    margin-left: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: auto;
+    gap: 4px;
+    min-width: 180px;
 }
 
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
+    gap: 4px;
+    font-size: 12px;
 }
 
 .quantity-controls label {
-    flex: 1;
+    min-width: 60px;
     font-weight: 500;
-    color: var(--primary-blue-dark);
-    text-align: left;
+    color: #555;
+    font-size: 11px;
 }
 
 .quantity-input, .stack-input {
-    width: 50px;
-    padding: 4px 6px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    width: 40px;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
     text-align: center;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .quantity-controls .btn {
-    padding: 6px 12px;
+    padding: 4px 8px;
     font-size: 11px;
-    font-weight: 600;
-    border-radius: 6px;
-    min-width: 50px;
+    font-weight: 500;
+    border-radius: 4px;
+    min-width: 40px;
 }
 
 .item-card .btn-primary {
@@ -632,12 +626,10 @@
 
 /* Item grid container */
 .shop-items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-    padding: 16px;
-    max-width: 1200px;
-    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
 }
 
 /* Mobile responsive */

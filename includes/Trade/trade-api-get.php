@@ -20,9 +20,9 @@ if (!function_exists('validate_trade_api_key')) {
     }
 }
 
-// Fetch all items
-if (!function_exists('fetch_all_items_rest')) {
-    function fetch_all_items_rest($request) {
+// Fetch all items for trade
+if (!function_exists('fetch_all_trade_items_rest')) {
+    function fetch_all_trade_items_rest($request) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'jotun_itemlist';
 
@@ -98,7 +98,7 @@ add_action('rest_api_init', function () {
     // Public endpoint to fetch all items from database (renamed to avoid conflict)
     register_rest_route('jotunheim-magic/v1', '/trade-items', array(
         'methods' => 'GET',
-        'callback' => 'fetch_all_items_rest',
+        'callback' => 'fetch_all_trade_items_rest',
         'permission_callback' => '__return_true', // No authentication required
     ));
 
