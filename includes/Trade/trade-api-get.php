@@ -20,19 +20,22 @@ if (!function_exists('validate_trade_api_key')) {
     }
 }
 
-// Fetch all items for trade
+// DISABLED - Fetch all items for trade (conflicts with itemlist API)
+/*
 if (!function_exists('fetch_all_trade_items_rest')) {
     function fetch_all_trade_items_rest($request) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'jotun_itemlist';
+        $table_name = 'jotun_itemlist'; // Custom table without wp_ prefix
 
         $search = $request->get_param('search');
-        $query = "SELECT * FROM $table_name";
+        $query = "SELECT * FROM `$table_name`";
 
         // Add search filtering if provided
         if (!empty($search)) {
             $query .= $wpdb->prepare(" WHERE item_name LIKE %s", '%' . $wpdb->esc_like($search) . '%');
         }
+
+        $query .= " ORDER BY item_name ASC";
 
         $items = $wpdb->get_results($query, ARRAY_A);
 
@@ -40,14 +43,10 @@ if (!function_exists('fetch_all_trade_items_rest')) {
             return new WP_Error('db_error', $wpdb->last_error, array('status' => 500));
         }
 
-        if (empty($items)) {
-            return new WP_Error('no_items', 'No items found', array('status' => 404));
-        }
-
-        ob_clean(); // Clear any previous output
-        wp_send_json_success($items); // Send clean JSON response
+        return rest_ensure_response($items); // Return items directly, even if empty
     }
 }
+*/
 
 // Fetch single item by ID
 if (!function_exists('fetch_single_item_rest')) {

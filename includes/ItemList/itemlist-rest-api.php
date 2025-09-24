@@ -8,37 +8,38 @@ if (!defined('ABSPATH')) exit;
 add_action('rest_api_init', function () {
     register_rest_route('jotunheim-magic/v1', '/items', array(
         'methods' => 'GET',
-        'callback' => 'fetch_all_items_rest',
+        'callback' => 'fetch_all_itemlist_items_rest',
         'permission_callback' => '__return_true', // No authentication required
     ));
 });
 
 // Function to fetch all items from jotun_itemlist database table
-function fetch_all_items_rest() {
-    error_log('fetch_all_items_rest called - Database integration active');
+function fetch_all_itemlist_items_rest() {
+    error_log('fetch_all_itemlist_items_rest called - ITEMLIST VERSION 2024 - Database integration active');
     
-    // Clear any previously sent output
-    ob_clean();
-
     global $wpdb;
-    $table_name = 'jotun_itemlist'; // Custom table without wp_ prefix
+    $table_name = 'jotun_itemlist';
     
-    error_log('fetch_all_items_rest: Querying table: ' . $table_name);
-
-    // Fetch all items from database - try directly without table check
-    $items = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY item_name ASC", ARRAY_A);
-
-    if ($wpdb->last_error) {
-        error_log('fetch_all_items_rest: Database error - ' . $wpdb->last_error);
-        return new WP_Error('db_error', $wpdb->last_error, array('status' => 500));
+    try {
+        // Try to query the table directly
+        $items = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY item_name ASC LIMIT 10", ARRAY_A);
+        
+        if ($wpdb->last_error) {
+            error_log('fetch_all_itemlist_items_rest: Database error - ' . $wpdb->last_error);
+            return new WP_Error('db_error', 'Database error: ' . $wpdb->last_error, array('status' => 500));
+        }
+        
+        if (empty($items)) {
+            error_log('fetch_all_itemlist_items_rest: No items found in table');
+            return new WP_Error('no_items', 'No items found in table', array('status' => 404));
+        }
+        
+        error_log('fetch_all_itemlist_items_rest: Successfully retrieved ' . count($items) . ' items');
+        return rest_ensure_response($items);
+        
+    } catch (Exception $e) {
+        error_log('fetch_all_itemlist_items_rest: Exception - ' . $e->getMessage());
+        return new WP_Error('exception', 'Exception: ' . $e->getMessage(), array('status' => 500));
     }
-
-    if (empty($items)) {
-        error_log('fetch_all_items_rest: No items found in database');
-        return new WP_Error('no_items', 'No items found', array('status' => 404));
-    }
-
-    error_log('fetch_all_items_rest: Returning ' . count($items) . ' items from database');
-    return rest_ensure_response($items);
 }
 ?>
