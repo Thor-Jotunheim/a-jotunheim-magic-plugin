@@ -9,10 +9,23 @@ if (!defined('ABSPATH')) {
  * Provides CRUD operations for all major database tables
  */
 
-// Ensure shop types table exists
-add_action('init', 'jotun_ensure_shop_types_table');
-add_action('init', 'jotun_ensure_shops_table');
-add_action('init', 'jotun_ensure_shop_items_table');
+// Database migration system
+add_action('plugins_loaded', 'jotun_shop_migration_check');
+
+function jotun_shop_migration_check() {
+    $current_version = '1.2.3'; // Update this when making schema changes
+    $db_version = get_option('jotun_shop_db_version', '0.0.0');
+    
+    if (version_compare($db_version, $current_version, '<')) {
+        jotun_ensure_shop_types_table();
+        jotun_ensure_shops_table();
+        jotun_ensure_shop_items_table();
+        
+        // Update the version to prevent future migrations
+        update_option('jotun_shop_db_version', $current_version);
+        error_log('Jotunheim POS: Database migration completed to version ' . $current_version);
+    }
+}
 
 function jotun_ensure_shop_types_table() {
     global $wpdb;
@@ -885,22 +898,22 @@ add_action('rest_api_init', function() {
         }
     ]);
     
-    // Update shop item
+    // Update and delete shop item
     register_rest_route('jotun-api/v1', '/shop-items/(?P<id>\d+)', [
-        'methods' => 'PUT',
-        'callback' => 'jotun_api_update_shop_item',
-        'permission_callback' => function() {
-            return current_user_can('edit_posts');
-        }
-    ]);
-    
-    // Delete shop item
-    register_rest_route('jotun-api/v1', '/shop-items/(?P<id>\d+)', [
-        'methods' => 'DELETE',
-        'callback' => 'jotun_api_delete_shop_item',
-        'permission_callback' => function() {
-            return current_user_can('edit_posts');
-        }
+        [
+            'methods' => 'PUT',
+            'callback' => 'jotun_api_update_shop_item',
+            'permission_callback' => function() {
+                return current_user_can('edit_posts');
+            }
+        ],
+        [
+            'methods' => 'DELETE',
+            'callback' => 'jotun_api_delete_shop_item',
+            'permission_callback' => function() {
+                return current_user_can('edit_posts');
+            }
+        ]
     ]);
     
     // ============================================================================

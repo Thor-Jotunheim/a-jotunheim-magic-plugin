@@ -800,6 +800,8 @@ class ShopManager {
                 
                 // Reset form state and UI after successful update
                 this.cancelShopItemEdit();
+                
+                // Reload shop items to show the updates
                 await this.loadShopItems(this.selectedShop);
             } else {
                 // Add new item
@@ -811,6 +813,22 @@ class ShopManager {
                 document.getElementById('item-rotation').value = '1'; // Reset rotation to 1
                 document.getElementById('item-selector').value = ''; // Clear search field
                 document.getElementById('item-selector-hidden').value = ''; // Clear hidden field
+                
+                // Clear the price placeholder
+                const customPriceInput = document.getElementById('custom-price');
+                if (customPriceInput) {
+                    customPriceInput.placeholder = 'Enter custom price';
+                }
+                
+                // Reset checkboxes to defaults for new items
+                const sellCheckbox = document.getElementById('sell-checkbox');
+                const buyCheckbox = document.getElementById('buy-checkbox');
+                const turnInCheckbox = document.getElementById('turn-in-checkbox');
+                
+                if (sellCheckbox) sellCheckbox.checked = true; // Default to sellable
+                if (buyCheckbox) buyCheckbox.checked = false;  // Default not buyable  
+                if (turnInCheckbox) turnInCheckbox.checked = false; // Default not turn-in
+                
                 await this.loadShopItems(this.selectedShop);
             }
         } catch (error) {
@@ -921,12 +939,34 @@ class ShopManager {
 
     cancelShopItemEdit() {
         this.currentEditingShopItem = null;
-        document.getElementById('add-shop-item-form').reset();
-        document.getElementById('item-rotation').value = '1'; // Reset to default
         
-        // Clear item selector fields
+        // Reset the entire form
+        const form = document.getElementById('add-shop-item-form');
+        form.reset();
+        
+        // Clear specific fields that might not be handled by reset()
+        document.getElementById('item-rotation').value = '1'; // Reset to default
         document.getElementById('item-selector').value = '';
         document.getElementById('item-selector-hidden').value = '';
+        document.getElementById('custom-item-name').value = '';
+        document.getElementById('custom-price').value = '';
+        
+        // Clear price placeholder
+        const customPriceInput = document.getElementById('custom-price');
+        if (customPriceInput) {
+            customPriceInput.placeholder = 'Enter custom price';
+        }
+        
+        // Reset unlimited stock checkbox and enable stock input
+        const unlimitedCheckbox = document.getElementById('unlimited-stock');
+        const stockInput = document.getElementById('stock-quantity');
+        if (unlimitedCheckbox) {
+            unlimitedCheckbox.checked = false;
+        }
+        if (stockInput) {
+            stockInput.disabled = false;
+            stockInput.value = '0';
+        }
         
         // Reset checkboxes to their default states
         const sellCheckbox = document.getElementById('sell-checkbox');
@@ -937,14 +977,22 @@ class ShopManager {
         if (buyCheckbox) buyCheckbox.checked = false;  // Default not buyable  
         if (turnInCheckbox) turnInCheckbox.checked = false; // Default not turn-in
         
-        // Reset form button text
+        // Reset form button text and state
         const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
-        submitButton.textContent = 'Add Item to Shop';
+        if (submitButton) {
+            submitButton.textContent = 'Add Item to Shop';
+        }
         
         // Hide cancel button
         const cancelButton = document.getElementById('cancel-edit-item');
         if (cancelButton) {
             cancelButton.style.display = 'none';
+        }
+        
+        // Clear any item suggestions
+        const suggestionsDiv = document.getElementById('item-suggestions');
+        if (suggestionsDiv) {
+            suggestionsDiv.style.display = 'none';
         }
     }
 
