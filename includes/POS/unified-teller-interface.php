@@ -65,23 +65,33 @@ function unified_teller_interface() {
                             <input 
                                 type="text" 
                                 id="teller-name" 
-                                class="field-input" 
-                                placeholder="Enter teller name (e.g., Huginn, Muninn)" 
-                                value="<?php echo esc_attr(wp_get_current_user()->display_name); ?>"
+                                class="field-input field-readonly" 
+                                value="<?php 
+                                    // Try to get Discord name first, fallback to display name
+                                    $discord_name = get_user_meta(get_current_user_id(), 'discord_username', true);
+                                    echo esc_attr($discord_name ?: wp_get_current_user()->display_name); 
+                                ?>"
+                                readonly
                             >
                         </div>
                         <div class="form-field">
                             <label for="customer-name" class="field-label">Customer Name</label>
-                            <div class="input-group">
-                                <input 
-                                    type="text" 
-                                    id="customer-name" 
-                                    class="field-input" 
-                                    placeholder="Enter player name (e.g., Sephrm)"
-                                >
-                                <button id="validate-customer-btn" type="button" class="btn btn-secondary">
-                                    Validate
-                                </button>
+                            <div class="customer-search-container">
+                                <div class="input-group">
+                                    <input 
+                                        type="text" 
+                                        id="customer-name" 
+                                        class="field-input" 
+                                        placeholder="Start typing player name..."
+                                        autocomplete="off"
+                                    >
+                                    <button id="validate-customer-btn" type="button" class="btn btn-secondary">
+                                        Validate
+                                    </button>
+                                </div>
+                                <div id="customer-suggestions" class="customer-suggestions" style="display: none;">
+                                    <!-- Player suggestions will appear here -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -131,6 +141,14 @@ function unified_teller_interface() {
                         <div class="summary-row">
                             <span class="summary-label">Total Cost</span>
                             <span id="item-total-cost" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Amount Paid</span>
+                            <span id="amount-paid-display" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Change Due</span>
+                            <span id="change-due" class="summary-value change-amount">0</span>
                         </div>
                         <div class="summary-row balance-row">
                             <span class="summary-label">Status</span>
@@ -217,6 +235,135 @@ function unified_teller_interface() {
                         </button>
                         <button id="record-transaction-btn" class="btn btn-primary" disabled>
                             Record Transaction
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Turn-in Only Shop Interface (hidden until turn-in shop is selected) -->
+        <div id="teller-turnin-interface" class="teller-main" style="display: none;">
+            
+            <!-- Turn-in Transaction Form -->
+            <div class="teller-card transaction-form-card">
+                <div class="card-header">
+                    <h2 class="card-title">Turn-in Transaction</h2>
+                    <p class="card-description">Process item turn-ins for event collection</p>
+                </div>
+                <div class="card-content">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="turnin-teller-name" class="field-label">Teller/Shopkeeper</label>
+                            <input 
+                                type="text" 
+                                id="turnin-teller-name" 
+                                class="field-input field-readonly" 
+                                value="<?php 
+                                    $discord_name = get_user_meta(get_current_user_id(), 'discord_username', true);
+                                    echo esc_attr($discord_name ?: wp_get_current_user()->display_name); 
+                                ?>"
+                                readonly
+                            >
+                        </div>
+                        <div class="form-field">
+                            <label for="turnin-customer-name" class="field-label">Customer Name</label>
+                            <div class="customer-search-container">
+                                <div class="input-group">
+                                    <input 
+                                        type="text" 
+                                        id="turnin-customer-name" 
+                                        class="field-input" 
+                                        placeholder="Start typing player name..."
+                                        autocomplete="off"
+                                    >
+                                    <button id="turnin-validate-customer-btn" type="button" class="btn btn-secondary">
+                                        Validate
+                                    </button>
+                                </div>
+                                <div id="turnin-customer-suggestions" class="customer-suggestions" style="display: none;">
+                                    <!-- Player suggestions will appear here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="turnin-customer-status" class="status-message"></div>
+                    
+                    <div id="turnin-customer-info" class="customer-info-card" style="display: none;">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Player</span>
+                                <span id="turnin-customer-display-name" class="info-value"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status</span>
+                                <span id="turnin-customer-active-status" class="info-value"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Registered</span>
+                                <span id="turnin-customer-registration" class="info-value"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Turn-in Items -->
+            <div class="teller-card items-card">
+                <div class="card-header">
+                    <h2 class="card-title">Turn-in Items</h2>
+                    <p class="card-description">Select items to turn in for event collection</p>
+                </div>
+                <div class="card-content">
+                    <div class="items-controls">
+                        <div class="search-field">
+                            <input type="text" id="turnin-item-search" class="field-input" placeholder="Search turn-in items...">
+                        </div>
+                    </div>
+                    
+                    <div id="turnin-shop-items" class="items-container">
+                        <div class="items-grid" id="turnin-items-grid">
+                            <!-- Turn-in items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Turn-in Summary -->
+            <div class="teller-card summary-card">
+                <div class="card-header">
+                    <h2 class="card-title">Turn-in Summary</h2>
+                    <p class="card-description">Review items being turned in</p>
+                </div>
+                <div class="card-content">
+                    <div id="turnin-items-list" class="transaction-list">
+                        <div class="transaction-header">
+                            <span class="header-item">Item</span>
+                            <span class="header-qty">Quantity</span>
+                            <span class="header-points">Event Points</span>
+                            <span class="header-actions">Actions</span>
+                        </div>
+                        <div id="turnin-selected-items" class="transaction-items-list">
+                            <!-- Selected turn-in items will appear here -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="turnin-notes" class="field-label">Turn-in Notes</label>
+                        <textarea 
+                            id="turnin-notes" 
+                            class="field-textarea" 
+                            placeholder="Optional notes about this turn-in..." 
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button id="clear-turnin-btn" class="btn btn-outline">
+                            Clear Turn-in
+                        </button>
+                        <button id="record-turnin-btn" class="btn btn-primary" disabled>
+                            Record Turn-in
                         </button>
                     </div>
                 </div>

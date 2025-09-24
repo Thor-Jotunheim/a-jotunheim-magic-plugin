@@ -210,6 +210,12 @@
     margin-bottom: var(--space-4);
 }
 
+.field-readonly {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    cursor: not-allowed;
+}
+
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -258,6 +264,63 @@
 
 .input-group .field-input {
     flex: 1;
+}
+
+/* Customer Search */
+.customer-search-container {
+    position: relative;
+}
+
+.customer-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-2) var(--radius-2);
+    box-shadow: var(--shadow-3);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.customer-suggestion {
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.customer-suggestion:last-child {
+    border-bottom: none;
+}
+
+.customer-suggestion:hover,
+.customer-suggestion.highlighted {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.customer-suggestion-name {
+    font-weight: 500;
+}
+
+.customer-suggestion-status {
+    font-size: var(--font-size-1);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-1);
+    background: var(--green-3);
+    color: var(--green-11);
+}
+
+.customer-suggestion-status.inactive {
+    background: var(--red-3);
+    color: var(--red-11);
 }
 
 /* Button Components */
@@ -438,6 +501,15 @@
 
 .summary-status.underpaid {
     background: var(--red-3);
+    color: var(--red-11);
+}
+
+.change-amount {
+    font-weight: 600;
+    color: var(--green-11);
+}
+
+.change-amount.negative {
     color: var(--red-11);
 }
 

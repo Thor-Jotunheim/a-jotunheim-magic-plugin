@@ -30,8 +30,20 @@ class UnifiedTeller {
         
         const customerNameInput = document.getElementById('customer-name');
         if (customerNameInput) {
-            customerNameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.validateCustomer();
+            customerNameInput.addEventListener('input', (e) => this.handleCustomerSearch(e.target.value));
+            customerNameInput.addEventListener('keydown', (e) => this.handleCustomerKeydown(e));
+            customerNameInput.addEventListener('blur', () => {
+                // Delay hiding suggestions to allow clicks
+                setTimeout(() => this.hideCustomerSuggestions(), 200);
+            });
+        }
+
+        const turninCustomerNameInput = document.getElementById('turnin-customer-name');
+        if (turninCustomerNameInput) {
+            turninCustomerNameInput.addEventListener('input', (e) => this.handleTurninCustomerSearch(e.target.value));
+            turninCustomerNameInput.addEventListener('keydown', (e) => this.handleTurninCustomerKeydown(e));
+            turninCustomerNameInput.addEventListener('blur', () => {
+                setTimeout(() => this.hideTurninCustomerSuggestions(), 200);
             });
         }
 
@@ -78,6 +90,33 @@ class UnifiedTeller {
         const refreshHistoryBtn = document.getElementById('refresh-history-btn');
         if (refreshHistoryBtn) {
             refreshHistoryBtn.addEventListener('click', () => this.loadTransactionHistory());
+        }
+
+        // Payment tracking
+        const ymirFleshInput = document.getElementById('ymir-flesh-total');
+        if (ymirFleshInput) {
+            ymirFleshInput.addEventListener('input', () => this.updatePaymentCalculations());
+        }
+
+        const goldInput = document.getElementById('gold-total');
+        if (goldInput) {
+            goldInput.addEventListener('input', () => this.updatePaymentCalculations());
+        }
+
+        // Turn-in specific event listeners
+        const turninValidateBtn = document.getElementById('turnin-validate-customer-btn');
+        if (turninValidateBtn) {
+            turninValidateBtn.addEventListener('click', () => this.validateTurninCustomer());
+        }
+
+        const clearTurninBtn = document.getElementById('clear-turnin-btn');
+        if (clearTurninBtn) {
+            clearTurninBtn.addEventListener('click', () => this.clearTurnin());
+        }
+
+        const recordTurninBtn = document.getElementById('record-turnin-btn');
+        if (recordTurninBtn) {
+            recordTurninBtn.addEventListener('click', () => this.recordTurnin());
         }
     }
 
@@ -299,23 +338,34 @@ class UnifiedTeller {
             document.getElementById('shop-type-display').className = `shop-type-badge ${selectedOption.dataset.shopType}`;
             document.getElementById('shop-info').style.display = 'flex';
 
-            // Show main interface
-            document.getElementById('teller-main-interface').style.display = 'block';
-
-            // Load shop items
-            await this.loadShopItems(shopId);
+            // Check if this is a turn-in only shop
+            const shopType = selectedOption.dataset.shopType;
+            if (shopType === 'turn-in-only') {
+                // Show turn-in interface
+                document.getElementById('teller-turnin-interface').style.display = 'block';
+                document.getElementById('teller-main-interface').style.display = 'none';
+                await this.loadTurninItems(shopId);
+            } else {
+                // Show regular shop interface
+                document.getElementById('teller-main-interface').style.display = 'block';
+                document.getElementById('teller-turnin-interface').style.display = 'none';
+                await this.loadShopItems(shopId);
+            }
         } else {
-            // Hide interface
+            // Hide all interfaces
             document.getElementById('shop-info').style.display = 'none';
             document.getElementById('teller-main-interface').style.display = 'none';
+            document.getElementById('teller-turnin-interface').style.display = 'none';
             this.clearCart();
         }
     }
 
     async loadShopItems(shopId) {
         try {
-            // Load shop items with joined item data
+            console.log('Loading shop items for shop ID:', shopId);
+            // Load shop items from jotun_shop_items table
             const response = await JotunAPI.getShopItems({ shop_id: shopId });
+            console.log('Shop items response:', response);
             this.shopItems = response.data || [];
             
             // Also load master item list for reference
@@ -334,11 +384,41 @@ class UnifiedTeller {
                 };
             });
 
-            this.renderShopItems();
-            this.populateItemCategories();
+            this.displayShopItems();
         } catch (error) {
             console.error('Error loading shop items:', error);
             this.showStatus('Failed to load shop items', 'error');
+        }
+    }
+
+    async loadTurninItems(shopId) {
+        try {
+            console.log('Loading turn-in items for shop ID:', shopId);
+            // Load turn-in items from jotun_shop_items table
+            const response = await JotunAPI.getShopItems({ shop_id: shopId });
+            console.log('Turn-in items response:', response);
+            this.turninItems = response.data || [];
+            
+            // Also load master item list for reference
+            const itemsResponse = await JotunAPI.getItemlist();
+            const masterItems = itemsResponse.data || [];
+            
+            // Enrich turn-in items with master item data
+            this.turninItems = this.turninItems.map(shopItem => {
+                const masterItem = masterItems.find(item => item.id == shopItem.item_id);
+                return {
+                    ...shopItem,
+                    item_name: masterItem?.item_name || shopItem.item_name || 'Unknown Item',
+                    event_points: shopItem.event_points || 0,
+                    category: masterItem?.category || 'Uncategorized',
+                    description: masterItem?.description || ''
+                };
+            });
+
+            this.displayTurninItems();
+        } catch (error) {
+            console.error('Error loading turn-in items:', error);
+            this.showStatus('Failed to load turn-in items', 'error');
         }
     }
 
@@ -766,6 +846,348 @@ class UnifiedTeller {
         if (!dateString) return '';
         const date = new Date(dateString);
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+
+    // Customer search functionality
+    async handleCustomerSearch(searchTerm) {
+        if (searchTerm.length < 2) {
+            this.hideCustomerSuggestions();
+            return;
+        }
+
+        try {
+            const response = await JotunAPI.getPlayers();
+            const players = response.data || [];
+            
+            const filteredPlayers = players.filter(player => 
+                player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
+        } catch (error) {
+            console.error('Error searching customers:', error);
+        }
+    }
+
+    async handleTurninCustomerSearch(searchTerm) {
+        if (searchTerm.length < 2) {
+            this.hideTurninCustomerSuggestions();
+            return;
+        }
+
+        try {
+            const response = await JotunAPI.getPlayers();
+            const players = response.data || [];
+            
+            const filteredPlayers = players.filter(player => 
+                player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            this.showCustomerSuggestions(filteredPlayers, 'turnin-customer-suggestions');
+        } catch (error) {
+            console.error('Error searching turnin customers:', error);
+        }
+    }
+
+    showCustomerSuggestions(players, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (players.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = '';
+        players.slice(0, 10).forEach((player, index) => {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'customer-suggestion';
+            suggestion.innerHTML = `
+                <span class="customer-suggestion-name">${player.player_name}</span>
+                <span class="customer-suggestion-status ${player.is_active ? 'active' : 'inactive'}">
+                    ${player.is_active ? 'Active' : 'Inactive'}
+                </span>
+            `;
+            suggestion.addEventListener('click', () => {
+                if (containerId === 'customer-suggestions') {
+                    this.selectCustomer(player);
+                } else {
+                    this.selectTurninCustomer(player);
+                }
+            });
+            container.appendChild(suggestion);
+        });
+
+        container.style.display = 'block';
+    }
+
+    selectCustomer(player) {
+        document.getElementById('customer-name').value = player.player_name;
+        this.currentCustomer = player;
+        this.hideCustomerSuggestions();
+        this.displayCustomerInfo(player, 'customer');
+    }
+
+    selectTurninCustomer(player) {
+        document.getElementById('turnin-customer-name').value = player.player_name;
+        this.currentTurninCustomer = player;
+        this.hideTurninCustomerSuggestions();
+        this.displayCustomerInfo(player, 'turnin');
+    }
+
+    displayCustomerInfo(player, type) {
+        const prefix = type === 'turnin' ? 'turnin-' : '';
+        
+        document.getElementById(`${prefix}customer-display-name`).textContent = player.player_name;
+        document.getElementById(`${prefix}customer-active-status`).textContent = player.is_active ? 'Active' : 'Inactive';
+        document.getElementById(`${prefix}customer-registration`).textContent = this.formatDate(player.created_at);
+        document.getElementById(`${prefix}customer-info`).style.display = 'block';
+        document.getElementById(`${prefix}customer-status`).style.display = 'none';
+    }
+
+    hideCustomerSuggestions() {
+        const container = document.getElementById('customer-suggestions');
+        if (container) container.style.display = 'none';
+    }
+
+    hideTurninCustomerSuggestions() {
+        const container = document.getElementById('turnin-customer-suggestions');
+        if (container) container.style.display = 'none';
+    }
+
+    handleCustomerKeydown(e) {
+        // Handle arrow keys and enter for suggestion navigation
+        const suggestions = document.querySelectorAll('#customer-suggestions .customer-suggestion');
+        // Implementation for keyboard navigation would go here
+    }
+
+    handleTurninCustomerKeydown(e) {
+        // Handle arrow keys and enter for suggestion navigation
+        const suggestions = document.querySelectorAll('#turnin-customer-suggestions .customer-suggestion');
+        // Implementation for keyboard navigation would go here
+    }
+
+    // Payment calculations
+    updatePaymentCalculations() {
+        const ymirFlesh = parseFloat(document.getElementById('ymir-flesh-total')?.value || 0);
+        const gold = parseFloat(document.getElementById('gold-total')?.value || 0);
+        const totalCost = parseFloat(document.getElementById('item-total-cost')?.textContent || 0);
+
+        // Calculate total amount paid (assuming some conversion rate if needed)
+        const amountPaid = ymirFlesh + gold; // Simplistic calculation
+        const changeDue = amountPaid - totalCost;
+
+        // Update display
+        document.getElementById('amount-paid-display').textContent = amountPaid.toFixed(0);
+        const changeDueElement = document.getElementById('change-due');
+        changeDueElement.textContent = changeDue.toFixed(0);
+        changeDueElement.className = `summary-value change-amount ${changeDue < 0 ? 'negative' : ''}`;
+
+        // Update status
+        const statusElement = document.getElementById('payment-balance');
+        if (changeDue === 0) {
+            statusElement.textContent = 'Balanced';
+            statusElement.className = 'summary-status balanced';
+        } else if (changeDue > 0) {
+            statusElement.textContent = 'Overpaid';
+            statusElement.className = 'summary-status overpaid';
+        } else {
+            statusElement.textContent = 'Underpaid';
+            statusElement.className = 'summary-status underpaid';
+        }
+    }
+
+    // Turn-in shop methods
+    displayTurninItems() {
+        const container = document.getElementById('turnin-items-grid');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (this.turninItems.length === 0) {
+            container.innerHTML = '<div class="no-items">No turn-in items available for this shop.</div>';
+            return;
+        }
+
+        this.turninItems.forEach(item => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+            itemCard.innerHTML = `
+                <div class="item-name">${item.item_name}</div>
+                <div class="item-points">Points: ${item.event_points || 0}</div>
+                <div class="item-actions">
+                    <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addTurninItem(${item.shop_item_id})">
+                        Turn In
+                    </button>
+                </div>
+            `;
+            container.appendChild(itemCard);
+        });
+    }
+
+    addTurninItem(shopItemId) {
+        const item = this.turninItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) return;
+
+        // Add to turn-in list (simplified - would need quantity handling)
+        if (!this.turninList) this.turninList = [];
+        
+        const existingItem = this.turninList.find(i => i.shop_item_id == shopItemId);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            this.turninList.push({
+                ...item,
+                quantity: 1
+            });
+        }
+
+        this.updateTurninDisplay();
+    }
+
+    updateTurninDisplay() {
+        const container = document.getElementById('turnin-selected-items');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (!this.turninList || this.turninList.length === 0) {
+            container.innerHTML = '<div class="no-items">No items selected for turn-in.</div>';
+            document.getElementById('record-turnin-btn').disabled = true;
+            return;
+        }
+
+        this.turninList.forEach(item => {
+            const itemRow = document.createElement('div');
+            itemRow.className = 'transaction-item';
+            itemRow.innerHTML = `
+                <span>${item.item_name}</span>
+                <span>${item.quantity}</span>
+                <span>${item.event_points * item.quantity}</span>
+                <button class="btn btn-outline btn-sm" onclick="window.unifiedTeller.removeTurninItem(${item.shop_item_id})">
+                    Remove
+                </button>
+            `;
+            container.appendChild(itemRow);
+        });
+
+        document.getElementById('record-turnin-btn').disabled = false;
+    }
+
+    removeTurninItem(shopItemId) {
+        if (!this.turninList) return;
+        this.turninList = this.turninList.filter(item => item.shop_item_id != shopItemId);
+        this.updateTurninDisplay();
+    }
+
+    clearTurnin() {
+        this.turninList = [];
+        this.updateTurninDisplay();
+        document.getElementById('turnin-notes').value = '';
+    }
+
+    validateTurninCustomer() {
+        const customerName = document.getElementById('turnin-customer-name').value.trim();
+        if (!customerName) {
+            this.showStatus('Please enter a customer name', 'error');
+            return;
+        }
+        // Would validate against player list
+        this.showStatus('Turn-in customer validation to be implemented', 'info');
+    }
+
+    async recordTurnin() {
+        if (!this.currentTurninCustomer) {
+            this.showStatus('Please validate a customer first', 'error');
+            return;
+        }
+
+        if (!this.turninList || this.turninList.length === 0) {
+            this.showStatus('Please add items to turn in', 'error');
+            return;
+        }
+
+        // Would record the turn-in transaction
+        this.showStatus('Turn-in recording functionality to be implemented', 'info');
+        console.log('Recording turn-in:', {
+            customer: this.currentTurninCustomer,
+            items: this.turninList,
+            notes: document.getElementById('turnin-notes').value
+        });
+    }
+
+    displayShopItems() {
+        // Update the existing method to use the new structure
+        const gridContainer = document.getElementById('items-grid-view');
+        const tableContainer = document.getElementById('items-table-view');
+        
+        if (gridContainer) {
+            this.renderItemsGrid(gridContainer);
+        }
+        
+        if (tableContainer) {
+            this.renderItemsTable(tableContainer);
+        }
+    }
+
+    renderItemsGrid(container) {
+        container.innerHTML = '';
+
+        if (this.shopItems.length === 0) {
+            container.innerHTML = '<div class="no-items">No items available for this shop.</div>';
+            return;
+        }
+
+        this.shopItems.forEach(item => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+            itemCard.innerHTML = `
+                <div class="item-name">${item.item_name}</div>
+                <div class="item-price">Price: ${item.default_price || 0}</div>
+                <div class="item-actions">
+                    <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy')">
+                        Buy
+                    </button>
+                    <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell')">
+                        Sell
+                    </button>
+                </div>
+            `;
+            container.appendChild(itemCard);
+        });
+    }
+
+    renderItemsTable(container) {
+        const tableBody = container.querySelector('#items-table-body');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+
+        if (this.shopItems.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8">No items available for this shop.</td></tr>';
+            return;
+        }
+
+        // Render items in pairs for two-column layout
+        for (let i = 0; i < this.shopItems.length; i += 2) {
+            const item1 = this.shopItems[i];
+            const item2 = this.shopItems[i + 1];
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item1.item_name}</td>
+                <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'buy')">Buy</button></td>
+                <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'sell')">Sell</button></td>
+                <td>${item1.default_price || 0}</td>
+                ${item2 ? `
+                    <td>${item2.item_name}</td>
+                    <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'buy')">Buy</button></td>
+                    <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'sell')">Sell</button></td>
+                    <td>${item2.default_price || 0}</td>
+                ` : '<td colspan="4"></td>'}
+            `;
+            tableBody.appendChild(row);
+        }
     }
     
     // Debug method to create test shops
