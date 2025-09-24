@@ -412,8 +412,6 @@ class UnifiedTeller {
             
             // Load shop items from jotun_shop_items table
             const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId });
-            console.log('Shop items response:', shopItemsResponse);
-            console.log('First shop item:', shopItemsResponse.data?.[0]);
             const shopItems = shopItemsResponse.data || [];
             
             // Load master item list from jotun_item_list table for pricing and details
@@ -555,24 +553,17 @@ class UnifiedTeller {
     }
 
     generateItemActionButtons(item) {
-        console.log('Generating buttons for item:', item.item_name, {
-            sell: item.sell, 
-            buy: item.buy, 
-            turn_in: item.turn_in, 
-            stack_size: item.stack_size, 
-            is_custom_item: item.is_custom_item,
-            isStackable: (item.stack_size > 1 && !item.is_custom_item)
-        });
+
         
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
-        const stackSize = item.stack_size || 1;
+        const stackSize = parseInt(item.stack_size) || 1;
         const stackPrice = item.stack_price || (unitPrice * stackSize);
         const isStackable = stackSize > 1 && !item.is_custom_item;
         
         let buttonsHTML = '';
         
-        // Generate Buy button and individual controls
-        if (item.sell == 1) {
+        // Generate Buy button and individual controls (sell=1 means customers can buy from shop)
+        if (item.sell == 1 || item.sell === true) {
             buttonsHTML += `
                 <div class="quantity-controls buy-section">
                     <label>Individual:</label>
@@ -591,8 +582,8 @@ class UnifiedTeller {
             }
         }
         
-        // Generate Sell button (player selling to shop)
-        if (item.buy == 1) {
+        // Generate Sell button (buy=1 means shop will buy from customers)
+        if (item.buy == 1 || item.buy === true) {
             buttonsHTML += `
                 <div class="quantity-controls sell-section">
                     <label>Sell to Shop:</label>
@@ -602,7 +593,7 @@ class UnifiedTeller {
         }
         
         // Generate Turn-in button
-        if (item.turn_in == 1) {
+        if (item.turn_in == 1 || item.turn_in === true) {
             buttonsHTML += `
                 <div class="quantity-controls turn-in-section">
                     <label>Turn In:</label>
