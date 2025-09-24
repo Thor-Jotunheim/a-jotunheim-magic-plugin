@@ -170,12 +170,22 @@ class UnifiedTeller {
 
     async loadShopsForSelector() {
         try {
+            console.log('Loading shops for selector...');
+            if (typeof JotunAPI === 'undefined') {
+                throw new Error('JotunAPI is not available');
+            }
+            
             const response = await JotunAPI.getShops();
+            console.log('Shop API response:', response);
             const shops = response.data || [];
             this.populateShopSelector(shops);
         } catch (error) {
             console.error('Error loading shops:', error);
-            this.showStatus('Failed to load shops', 'error');
+            this.showStatus('Failed to load shops: ' + error.message, 'error');
+            
+            // Show error in dropdown
+            const selector = document.getElementById('teller-shop-selector');
+            selector.innerHTML = '<option value="">Error loading shops - check console</option>';
         }
     }
 
@@ -667,7 +677,17 @@ function confirmTransaction() {
 // Initialize unified teller when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('unified-teller-interface')) {
-        window.unifiedTeller = new UnifiedTeller();
+        // Wait for JotunAPI to be available
+        const checkAPI = () => {
+            if (typeof JotunAPI !== 'undefined' && JotunAPI) {
+                console.log('JotunAPI is available, initializing UnifiedTeller');
+                window.unifiedTeller = new UnifiedTeller();
+            } else {
+                console.log('JotunAPI not ready, waiting...');
+                setTimeout(checkAPI, 100);
+            }
+        };
+        checkAPI();
         
         // Add CSS for player suggestions
         const style = document.createElement('style');
