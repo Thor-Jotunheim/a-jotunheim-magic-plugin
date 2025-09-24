@@ -538,26 +538,22 @@ class UnifiedTeller {
         
         card.innerHTML = `
             <div class="item-header">
-                <div class="item-image-container">
+                <div class="item-icon">
                     <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
                          onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
                 </div>
-                <div class="item-info">
-                    <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-                    <div class="item-type">${item.item_type || 'Unknown'}</div>
-                </div>
+                <div class="item-name">${this.escapeHtml(item.item_name)}</div>
+                <div class="item-type">${item.item_type || 'Trophies'}</div>
             </div>
             <div class="item-pricing">
                 <div class="price-row">
                     <span class="price-label">Unit:</span>
                     <span class="price-value">${unitPrice}</span>
                 </div>
-                ${(item.stack_size > 1 && !item.is_custom_item) ? 
-                    `<div class="price-row">
-                        <span class="price-label">Stack (${item.stack_size}):</span>
-                        <span class="price-value">${stackPrice}</span>
-                    </div>` : 
-                    ''}
+                <div class="price-row">
+                    <span class="price-label">Stack (${item.stack_size || 1}):</span>
+                    <span class="price-value">${stackPrice}</span>
+                </div>
                 <div class="item-tech">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
             </div>
             <div class="item-actions">
