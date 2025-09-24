@@ -413,6 +413,7 @@ class UnifiedTeller {
             // Load shop items from jotun_shop_items table
             const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId });
             console.log('Shop items response:', shopItemsResponse);
+            console.log('First shop item:', shopItemsResponse.data?.[0]);
             const shopItems = shopItemsResponse.data || [];
             
             // Load master item list from jotun_item_list table for pricing and details
@@ -554,6 +555,15 @@ class UnifiedTeller {
     }
 
     generateItemActionButtons(item) {
+        console.log('Generating buttons for item:', item.item_name, {
+            sell: item.sell, 
+            buy: item.buy, 
+            turn_in: item.turn_in, 
+            stack_size: item.stack_size, 
+            is_custom_item: item.is_custom_item,
+            isStackable: (item.stack_size > 1 && !item.is_custom_item)
+        });
+        
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
         const stackSize = item.stack_size || 1;
         const stackPrice = item.stack_price || (unitPrice * stackSize);
