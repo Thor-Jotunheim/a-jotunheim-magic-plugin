@@ -413,6 +413,7 @@ class UnifiedTeller {
             // Load shop items from jotun_shop_items table
             const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId });
             const shopItems = shopItemsResponse.data || [];
+            console.log('Raw shop items from API:', shopItems);
             
             // Load master item list from jotun_item_list table for pricing and details
             const itemListResponse = await JotunAPI.getItemlist();
@@ -439,7 +440,13 @@ class UnifiedTeller {
                         item_type: masterItem.item_type || 'Unknown',
                         prefab_name: masterItem.prefab_name || shopItem.prefab_name,
                         undercut: masterItem.undercut || false,
-                        description: masterItem.description || ''
+                        description: masterItem.description || '',
+                        // Preserve the icon_image from the API response (it comes from LEFT JOIN with jotun_itemlist)
+                        icon_image: shopItem.icon_image || masterItem.icon_image,
+                        // Ensure we preserve the database flags for conditional buttons
+                        sell: shopItem.sell,
+                        buy: shopItem.buy,
+                        turn_in: shopItem.turn_in
                     };
                 } else {
                     console.warn('No master item found for shop item:', shopItem);
@@ -453,7 +460,12 @@ class UnifiedTeller {
                         tech_name: 'N/A',
                         item_type: 'Unknown',
                         undercut: false,
-                        description: ''
+                        description: '',
+                        // Preserve the icon_image and button flags from the database
+                        icon_image: shopItem.icon_image,
+                        sell: shopItem.sell,
+                        buy: shopItem.buy,
+                        turn_in: shopItem.turn_in
                     };
                 }
             });
@@ -553,7 +565,7 @@ class UnifiedTeller {
     }
 
     generateItemActionButtons(item) {
-
+        console.log('Generating buttons for item:', item.item_name, 'sell:', item.sell, 'buy:', item.buy, 'turn_in:', item.turn_in);
         
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
         const stackSize = parseInt(item.stack_size) || 1;
