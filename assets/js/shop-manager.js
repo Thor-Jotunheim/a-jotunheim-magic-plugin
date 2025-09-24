@@ -724,8 +724,8 @@ class ShopManager {
                 <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.id})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShopItem(${item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}')">Remove</button>
+                    <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.shop_item_id || item.id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}')">Remove</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -734,6 +734,9 @@ class ShopManager {
 
     async handleAddShopItem(e) {
         e.preventDefault();
+        
+        console.log('DEBUG - handleAddShopItem called, currentEditingShopItem:', this.currentEditingShopItem);
+        console.log('DEBUG - Form button text:', document.querySelector('#add-shop-item-form button[type="submit"]')?.textContent);
         
         if (!this.selectedShop) {
             this.showStatus('Please select a shop first', 'error');
@@ -794,6 +797,7 @@ class ShopManager {
 
         try {
             if (this.currentEditingShopItem) {
+                console.log('DEBUG - Updating item with ID:', this.currentEditingShopItem);
                 // Update existing item
                 await JotunAPI.updateShopItem(this.currentEditingShopItem, shopItemData);
                 this.showStatus('Item updated successfully', 'success');
@@ -855,7 +859,7 @@ class ShopManager {
             // Get the current shop items and find the one being edited
             const response = await JotunAPI.getShopItems({ shop_id: this.selectedShop });
             const shopItems = response.data || [];
-            const item = shopItems.find(item => item.id == shopItemId);
+            const item = shopItems.find(item => (item.shop_item_id || item.id) == shopItemId);
             
             if (!item) {
                 this.showStatus('Shop item not found', 'error');
@@ -864,6 +868,7 @@ class ShopManager {
 
             // Populate the form with current item data
             this.currentEditingShopItem = shopItemId;
+            console.log('DEBUG - Set currentEditingShopItem to:', this.currentEditingShopItem);
             
             // Clear form first
             document.getElementById('add-shop-item-form').reset();
@@ -938,6 +943,7 @@ class ShopManager {
     }
 
     cancelShopItemEdit() {
+        console.log('DEBUG - cancelShopItemEdit called, resetting currentEditingShopItem from:', this.currentEditingShopItem, 'to null');
         this.currentEditingShopItem = null;
         
         // Reset the entire form

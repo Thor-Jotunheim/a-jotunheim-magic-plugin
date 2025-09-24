@@ -2156,7 +2156,7 @@ function jotun_api_update_shop_item($request) {
         return new WP_REST_Response(['error' => 'No valid fields to update'], 400);
     }
     
-    $result = $wpdb->update($table_name, $update_data, ['id' => $id]);
+    $result = $wpdb->update($table_name, $update_data, ['shop_item_id' => $id]);
     
     if ($result === false) {
         return new WP_REST_Response(['error' => 'Failed to update shop item: ' . $wpdb->last_error], 500);
@@ -2171,7 +2171,7 @@ function jotun_api_delete_shop_item($request) {
     $id = (int) $request['id'];
     $table_name = 'jotun_shop_items';
     
-    $result = $wpdb->delete($table_name, ['id' => $id]);
+    $result = $wpdb->delete($table_name, ['shop_item_id' => $id]);
     
     if ($result === false) {
         return new WP_REST_Response(['error' => 'Failed to delete shop item: ' . $wpdb->last_error], 500);
