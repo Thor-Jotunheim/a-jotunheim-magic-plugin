@@ -519,10 +519,10 @@ class UnifiedTeller {
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
         const stackPrice = item.stack_price || (unitPrice * (item.stack_size || 1));
         
-        // Generate item image URL (using same logic as barter page)
-        const itemImageUrl = item.prefab_name ? 
-            `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name.toLowerCase()}.png` : 
-            '/wp-content/uploads/Jotunheim-magic/icons/default-item.png';
+        // Generate item image URL - prioritize database icon_image, then prefab-based path
+        const itemImageUrl = item.icon_image || 
+            (item.prefab_name ? `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name.toLowerCase()}.png` : 
+            '/wp-content/uploads/Jotunheim-magic/icons/default-item.png');
         
         card.innerHTML = `
             <div class="item-image-container">
@@ -533,7 +533,9 @@ class UnifiedTeller {
             <div class="item-details">
                 <div class="item-pricing">
                     <div class="unit-price">Unit: <strong>${unitPrice}</strong> YF</div>
-                    <div class="stack-price">Stack (${item.stack_size || 1}): <strong>${stackPrice}</strong> YF</div>
+                    ${(item.stack_size > 1 && !item.is_custom_item) ? 
+                        `<div class="stack-price">Stack (${item.stack_size}): <strong>${stackPrice}</strong> YF</div>` : 
+                        ''}
                 </div>
                 <div class="item-meta">
                     <div class="tech-info">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
@@ -541,46 +543,136 @@ class UnifiedTeller {
                 </div>
             </div>
             <div class="item-actions">
-                <div class="quantity-controls">
-                    <label>Individual:</label>
-                    <input type="number" class="quantity-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
-                    <button class="btn btn-primary individual-buy" data-type="individual">Buy</button>
-                </div>
-                <div class="quantity-controls">
-                    <label>Stack (${item.stack_size || 1}):</label>
-                    <input type="number" class="stack-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / (item.stack_size || 1))}">
-                    <button class="btn btn-secondary stack-buy" data-type="stack">Buy</button>
-                </div>
+                ${this.generateItemActionButtons(item)}
             </div>
         `;
 
-        // Add event listeners for individual and stack purchases
-        const individualBtn = card.querySelector('.individual-buy');
-        const stackBtn = card.querySelector('.stack-buy');
-        const quantityInput = card.querySelector('.quantity-input');
-        const stackInput = card.querySelector('.stack-input');
-        
-        if (item.stock_quantity !== 0) {
-            individualBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const quantity = parseInt(quantityInput.value) || 1;
-                this.addToCart(item, quantity, unitPrice * quantity);
-            });
-            
-            stackBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const stackCount = parseInt(stackInput.value) || 1;
-                const totalQuantity = stackCount * (item.stack_size || 1);
-                this.addToCart(item, totalQuantity, stackPrice * stackCount);
-            });
-        } else {
-            individualBtn.disabled = true;
-            stackBtn.disabled = true;
-            quantityInput.disabled = true;
-            stackInput.disabled = true;
-        }
+        // Add event listeners for all button types
+        this.addItemCardEventListeners(card, item, unitPrice, stackPrice);
 
         return card;
+    }
+
+    generateItemActionButtons(item) {
+        const unitPrice = item.unit_price || item.price || item.default_price || 0;
+        const stackSize = item.stack_size || 1;
+        const stackPrice = item.stack_price || (unitPrice * stackSize);
+        const isStackable = stackSize > 1 && !item.is_custom_item;
+        
+        let buttonsHTML = '';
+        
+        // Generate Buy button and individual controls
+        if (item.sell == 1) {
+            buttonsHTML += `
+                <div class="quantity-controls buy-section">
+                    <label>Individual:</label>
+                    <input type="number" class="quantity-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
+                    <button class="btn btn-primary individual-buy" data-type="individual">Buy</button>
+                </div>`;
+            
+            // Add stack controls only if item is stackable
+            if (isStackable) {
+                buttonsHTML += `
+                    <div class="quantity-controls buy-section">
+                        <label>Stack (${stackSize}):</label>
+                        <input type="number" class="stack-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
+                        <button class="btn btn-secondary stack-buy" data-type="stack">Buy</button>
+                    </div>`;
+            }
+        }
+        
+        // Generate Sell button (player selling to shop)
+        if (item.buy == 1) {
+            buttonsHTML += `
+                <div class="quantity-controls sell-section">
+                    <label>Sell to Shop:</label>
+                    <input type="number" class="sell-quantity-input" value="1" min="1" max="999">
+                    <button class="btn btn-warning sell-to-shop" data-type="sell">Sell</button>
+                </div>`;
+        }
+        
+        // Generate Turn-in button
+        if (item.turn_in == 1) {
+            buttonsHTML += `
+                <div class="quantity-controls turn-in-section">
+                    <label>Turn In:</label>
+                    <input type="number" class="turn-in-quantity-input" value="1" min="1" max="999">
+                    <button class="btn btn-success turn-in-item" data-type="turn-in">Turn In</button>
+                </div>`;
+        }
+        
+        return buttonsHTML;
+    }
+
+    addItemCardEventListeners(card, item, unitPrice, stackPrice) {
+        const stackSize = item.stack_size || 1;
+        
+        // Buy button (individual)
+        const individualBtn = card.querySelector('.individual-buy');
+        const quantityInput = card.querySelector('.quantity-input');
+        if (individualBtn && quantityInput) {
+            if (item.stock_quantity !== 0) {
+                individualBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const quantity = parseInt(quantityInput.value) || 1;
+                    this.addToCart(item, quantity, unitPrice * quantity);
+                });
+            } else {
+                individualBtn.disabled = true;
+                quantityInput.disabled = true;
+            }
+        }
+
+        // Buy button (stack)
+        const stackBtn = card.querySelector('.stack-buy');
+        const stackInput = card.querySelector('.stack-input');
+        if (stackBtn && stackInput) {
+            if (item.stock_quantity !== 0) {
+                stackBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const stackCount = parseInt(stackInput.value) || 1;
+                    const totalQuantity = stackCount * stackSize;
+                    this.addToCart(item, totalQuantity, stackPrice * stackCount);
+                });
+            } else {
+                stackBtn.disabled = true;
+                stackInput.disabled = true;
+            }
+        }
+
+        // Sell button (player selling to shop)
+        const sellBtn = card.querySelector('.sell-to-shop');
+        const sellInput = card.querySelector('.sell-quantity-input');
+        if (sellBtn && sellInput) {
+            sellBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const quantity = parseInt(sellInput.value) || 1;
+                this.sellToShop(item, quantity);
+            });
+        }
+
+        // Turn-in button
+        const turnInBtn = card.querySelector('.turn-in-item');
+        const turnInInput = card.querySelector('.turn-in-quantity-input');
+        if (turnInBtn && turnInInput) {
+            turnInBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const quantity = parseInt(turnInInput.value) || 1;
+                this.turnInItem(item, quantity);
+            });
+        }
+    }
+
+    sellToShop(item, quantity) {
+        // Placeholder for sell functionality
+        console.log('Sell to shop:', item.item_name, 'quantity:', quantity);
+        this.showStatus(`Selling ${quantity} ${item.item_name} to shop - functionality coming soon!`, 'info');
+    }
+
+    turnInItem(item, quantity) {
+        // Placeholder for turn-in functionality
+        console.log('Turn in item:', item.item_name, 'quantity:', quantity);
+        this.showStatus(`Turning in ${quantity} ${item.item_name} - functionality coming soon!`, 'info');
     }
 
     populateItemCategories() {
