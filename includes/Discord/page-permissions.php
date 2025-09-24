@@ -548,6 +548,27 @@ function jotunheim_user_can_access_page($page_slug, $user_id = null) {
     return JotunheimPagePermissions::user_can_access_page($page_slug, $user_id);
 }
 
+/**
+ * Universal shortcode permission check
+ * Use this in all shortcodes to enforce Discord-based permissions
+ */
+function jotunheim_check_shortcode_permission($shortcode_name, $return_login_button = true) {
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        if ($return_login_button) {
+            return do_shortcode('[discord_login_button]');
+        }
+        return '<div class="jotunheim-error">Please log in to access this feature.</div>';
+    }
+    
+    // Check Discord permissions using the page permissions system
+    if (!jotunheim_user_can_access_page($shortcode_name)) {
+        return '<div class="jotunheim-error">You do not have permission to access this feature. Please contact an administrator if you believe this is an error.</div>';
+    }
+    
+    return null; // Permission granted
+}
+
 // Function to render the page permissions config page
 function render_page_permissions_config_page() {
     $page_permissions = new JotunheimPagePermissions();

@@ -4,7 +4,7 @@
 /*
 Plugin Name: A Jotunheim Magic Plugin
 Description: A plugin to manage the item list and editor for Jotunheim.
-Version: 0.9.4.7
+Version: 0.9.4.8
 Author: Thor
 */
 
@@ -256,7 +256,9 @@ function jotunheim_magic_assign_capabilities() {
 register_activation_hook(__FILE__, 'jotunheim_magic_assign_capabilities');
 add_action('admin_init', 'jotunheim_magic_assign_capabilities');
 
-// Temporarily elevate editor capabilities on specific editor pages
+// DISABLED: Temporarily elevate editor capabilities on specific editor pages
+// This system is now replaced by Discord-based page permissions
+/*
 function jotunheim_magic_temp_elevate_editor_capabilities() {
     if (!is_admin()) {
         // Get the current page slug
@@ -278,9 +280,12 @@ function jotunheim_magic_temp_elevate_editor_capabilities() {
         }
     }
 }
-add_action('wp', 'jotunheim_magic_temp_elevate_editor_capabilities');
+*/
+// DISABLED: add_action('wp', 'jotunheim_magic_temp_elevate_editor_capabilities');
 
-// Restore editor capabilities when leaving specific editor pages
+// DISABLED: Restore editor capabilities when leaving specific editor pages
+// This system is now replaced by Discord-based page permissions
+/*
 function jotunheim_magic_restore_editor_capabilities() {
     if (!is_admin() && !(is_page('item-list-editor') || is_page('event-zone-editor')) && current_user_can('editor')) {
         $editor = get_role('editor');
@@ -295,7 +300,8 @@ function jotunheim_magic_restore_editor_capabilities() {
         error_log('Editor administrator capabilities removed after leaving specific editor pages.');
     }
 }
-add_action('wp', 'jotunheim_magic_restore_editor_capabilities');
+*/
+// DISABLED: add_action('wp', 'jotunheim_magic_restore_editor_capabilities');
 
 function is_user_logged_in_ajax() {
     if (is_user_logged_in()) {

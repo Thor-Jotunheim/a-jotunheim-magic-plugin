@@ -10,6 +10,12 @@ require_once plugin_dir_path(__FILE__) . 'itemlist-editor-ajax.php';
 // Register shortcode for ItemList Editor
 if (!function_exists('itemlist_editor_shortcode')) {
     function itemlist_editor_shortcode() {
+        // Check permissions using Discord system
+        $permission_check = jotunheim_check_shortcode_permission('itemlist_editor');
+        if ($permission_check !== null) {
+            return $permission_check;
+        }
+        
         ob_start();
         itemlist_editor_interface();
         return ob_get_clean();

@@ -12,7 +12,8 @@ function unified_teller_interface() {
         return do_shortcode('[discord_login_button]');
     }
 
-    if (!current_user_can('edit_posts')) {
+    // Check Discord permissions
+    if (!jotunheim_user_can_access_page('unified_teller')) {
         return '<div class="teller-error">You do not have permission to access the Teller system.</div>';
     }
 

@@ -10,7 +10,12 @@ if (!defined('ABSPATH')) {
 function shop_manager_interface() {
     if (!is_user_logged_in()) {
         return do_shortcode('[discord_login_button]');
-        }
+    }
+    
+    // Check Discord permissions
+    if (!jotunheim_user_can_access_page('shop_manager')) {
+        return '<div class="shop-error">You do not have permission to access the Shop Manager system.</div>';
+    }
         ?>
         <style>
         .checkbox-group {

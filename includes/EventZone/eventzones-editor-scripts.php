@@ -7,6 +7,12 @@ require_once plugin_dir_path(__FILE__) . 'eventzones-editor-interface.php';
 
 if (!function_exists('eventzones_editor_shortcode')) {
     function eventzones_editor_shortcode() {
+        // Check permissions using Discord system
+        $permission_check = jotunheim_check_shortcode_permission('eventzones_editor');
+        if ($permission_check !== null) {
+            return $permission_check;
+        }
+        
         ob_start();
         eventzones_editor_interface();
         return ob_get_clean();

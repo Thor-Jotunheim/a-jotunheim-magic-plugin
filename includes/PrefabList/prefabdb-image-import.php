@@ -131,6 +131,12 @@ function run_prefab_image_import($batch_size = 100) {
 
 //Shortcode to trigger the image import process.
 function prefabdb_image_import_shortcode() {
+    // Check permissions using Discord system
+    $permission_check = jotunheim_check_shortcode_permission('prefabdb_image_import');
+    if ($permission_check !== null) {
+        return $permission_check;
+    }
+    
     run_prefab_image_import();
 }
 

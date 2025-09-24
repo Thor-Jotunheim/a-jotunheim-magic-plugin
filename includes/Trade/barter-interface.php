@@ -3,11 +3,23 @@ if (!defined('ABSPATH')) exit;
 
 // Shortcode function to output Barter Page HTML
 function jotunheim_barter_page_shortcode() {
+    // Check permissions using Discord system
+    $permission_check = jotunheim_check_shortcode_permission('jotunheim_barter_page');
+    if ($permission_check !== null) {
+        return $permission_check;
+    }
+    
     ob_start();
     include plugin_dir_path(__FILE__) . 'barter-page.html';
     return ob_get_clean();
 }
 add_shortcode('jotunheim_barter_page', 'jotunheim_barter_page_shortcode');
+
+// Add alternative shortcode name for dashboard menu compatibility
+function jotunheim_barter_shortcode() {
+    return jotunheim_barter_page_shortcode();
+}
+add_shortcode('barter', 'jotunheim_barter_shortcode');
 
 // Conditionally enqueue the Barter Page scripts
 function jotunheim_enqueue_barter_scripts() {
