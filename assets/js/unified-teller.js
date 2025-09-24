@@ -474,7 +474,8 @@ class UnifiedTeller {
             this.displayShopItems();
         } catch (error) {
             console.error('Error loading shop items:', error);
-            this.showStatus('Failed to load shop items', 'error');
+            console.error('Error stack:', error.stack);
+            this.showStatus('Failed to load shop items: ' + error.message, 'error');
         }
     }
 
@@ -1430,79 +1431,10 @@ class UnifiedTeller {
         }
 
         this.shopItems.forEach(item => {
-            const itemCard = document.createElement('div');
-            itemCard.className = 'item-card';
+            console.log('Rendering item in grid:', item.item_name, 'sell:', item.sell, 'buy:', item.buy, 'turn_in:', item.turn_in, 'icon_image:', item.icon_image);
             
-            // Check if this is a turn-in only shop
-            const isTurninShop = this.selectedShopData && this.selectedShopData.shop_type === 'turnin_only';
-            
-            if (isTurninShop) {
-                itemCard.innerHTML = `
-                    <div class="item-header">
-                        <div class="item-name">${item.item_name}</div>
-                        <div class="item-type">${item.item_type}</div>
-                    </div>
-                    <div class="item-details">
-                        <div class="item-points">Event Points: ${item.event_points || 0}</div>
-                        <div class="item-tech">Tech: ${item.tech_name} (Tier ${item.tech_tier})</div>
-                    </div>
-                    <div class="item-actions">
-                        <div class="quantity-controls">
-                            <input type="number" class="quantity-input" id="qty-${item.shop_item_id}" min="1" value="1" placeholder="Qty">
-                        </div>
-                        <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addToTurnin(${item.shop_item_id})">
-                            Turn In
-                        </button>
-                    </div>
-                `;
-            } else {
-                itemCard.innerHTML = `
-                    <div class="item-header">
-                        <div class="item-name">${item.item_name}</div>
-                        <div class="item-type">${item.item_type}</div>
-                    </div>
-                    <div class="item-pricing">
-                        <div class="price-row">
-                            <span class="price-label">Unit:</span>
-                            <span class="price-value">${item.unit_price || 0}</span>
-                        </div>
-                        <div class="price-row">
-                            <span class="price-label">Stack (${item.stack_size || 1}):</span>
-                            <span class="price-value">${item.stack_price || 0}</span>
-                        </div>
-                        <div class="item-tech">Tech: ${item.tech_name} (Tier ${item.tech_tier})</div>
-                    </div>
-                    <div class="item-actions">
-                        <div class="quantity-section">
-                            <div class="quantity-row">
-                                <label class="qty-label">Individual:</label>
-                                <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" min="1" value="1" placeholder="1">
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')">
-                                        Buy
-                                    </button>
-                                    <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')">
-                                        Sell
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="quantity-row">
-                                <label class="qty-label">Stack (${item.stack_size || 1}):</label>
-                                <input type="number" class="quantity-input" id="qty-stack-${item.shop_item_id}" min="1" value="1" placeholder="1">
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'stack')">
-                                        Buy
-                                    </button>
-                                    <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'stack')">
-                                        Sell
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
+            // Use the existing createItemCard method which has proper conditional buttons and icons
+            const itemCard = this.createItemCard(item);
             container.appendChild(itemCard);
         });
     }

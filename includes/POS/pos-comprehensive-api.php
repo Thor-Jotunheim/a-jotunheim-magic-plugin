@@ -1872,6 +1872,11 @@ function jotun_api_get_shop_items($request) {
         error_log('jotun_api_get_shop_items: Database error: ' . $wpdb->last_error);
     }
     
+    // Log detailed results for debugging
+    foreach ($results as $index => $item) {
+        error_log("jotun_api_get_shop_items: Item $index - name: {$item->item_name}, sell: {$item->sell}, buy: {$item->buy}, turn_in: {$item->turn_in}, icon_image: {$item->icon_image}");
+    }
+    
     if ($wpdb->last_error) {
         return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);
     }
