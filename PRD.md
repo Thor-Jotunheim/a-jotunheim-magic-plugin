@@ -92,6 +92,10 @@ Create a comprehensive shop management system for the Jotunheim gaming community
 - Purpose: Streamline transaction processing for staff and reduce interface switching
 - Features: Multi-shop view, bulk operations, transaction batching, real-time updates
 - Multi-User: Multiple staff can operate simultaneously on same interface
+- Needs: 
+   - Drop down menu to select shop
+   - Access to drop downs should be determined by discord role permissions already set in shop manager. 
+   
 
 **Transaction Recording (Multi-Shop)**
 - Functionality: Record purchases/sales across Admin, Popup, Haldore, and Beehive shops
