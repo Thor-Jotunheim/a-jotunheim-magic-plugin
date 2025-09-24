@@ -115,7 +115,6 @@ function jotunheim_allow_editor_page_access() {
 }
 
 // Hook to run early on page load
-}
 // DISABLED: add_action('wp', 'jotunheim_allow_editor_page_access', 1);
 
 /**
