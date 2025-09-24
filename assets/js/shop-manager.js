@@ -289,8 +289,13 @@ class ShopManager {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
             div.innerHTML = `
-                <div class="item-name">${item.item_name}</div>
-                <div class="item-price">${this.formatPrice(item.unit_price || 0)}</div>
+                <div class="item-suggestion-content">
+                    ${item.icon_image ? `<img src="${this.escapeHtml(item.icon_image)}" alt="${this.escapeHtml(item.item_name)}" class="suggestion-icon">` : '<div class="suggestion-icon-placeholder"></div>'}
+                    <div class="item-details">
+                        <div class="item-name">${item.item_name}</div>
+                        <div class="item-price">${this.formatPrice(item.unit_price || 0)}</div>
+                    </div>
+                </div>
             `;
             
             div.addEventListener('click', () => {
@@ -712,6 +717,7 @@ class ShopManager {
             
             row.innerHTML = `
                 <td>
+                    ${item.icon_image ? `<img src="${this.escapeHtml(item.icon_image)}" alt="${this.escapeHtml(item.master_item_name || item.item_name)}" class="item-icon">` : ''}
                     ${this.escapeHtml(item.master_item_name || item.item_name)}
                     ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
                 </td>
@@ -1405,6 +1411,62 @@ const additionalCSS = `
     .rotation-selector:disabled {
         background: #f5f5f5;
         color: #999;
+    }
+
+    .item-icon {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        padding: 2px;
+    }
+
+    .item-suggestion-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .suggestion-icon {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        padding: 1px;
+        flex-shrink: 0;
+    }
+
+    .suggestion-icon-placeholder {
+        width: 20px;
+        height: 20px;
+        background: #f0f0f0;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .item-name {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-price {
+        font-size: 0.9em;
+        color: #666;
     }
 `;
 

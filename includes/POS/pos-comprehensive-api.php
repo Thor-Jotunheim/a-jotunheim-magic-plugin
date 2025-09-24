@@ -1838,7 +1838,7 @@ function jotun_api_get_shop_items($request) {
     
     error_log('jotun_api_get_shop_items: Called with shop_id=' . $shop_id . ', rotation=' . $rotation);
     
-    $sql = "SELECT si.*, il.item_name as master_item_name, il.unit_price as default_price 
+    $sql = "SELECT si.*, il.item_name as master_item_name, il.unit_price as default_price, il.icon_image 
             FROM $table_name si 
             LEFT JOIN jotun_itemlist il ON si.item_id = il.id";
     $params = [];
