@@ -797,19 +797,22 @@ class ShopManager {
                 // Update existing item
                 await JotunAPI.updateShopItem(this.currentEditingShopItem, shopItemData);
                 this.showStatus('Item updated successfully', 'success');
+                
+                // Reset form state and UI after successful update
                 this.cancelShopItemEdit();
+                await this.loadShopItems(this.selectedShop);
             } else {
                 // Add new item
                 await JotunAPI.addShopItem(shopItemData);
                 this.showStatus('Item added to shop successfully', 'success');
+                
+                // Reset form and reload shop items for new additions
+                e.target.reset();
+                document.getElementById('item-rotation').value = '1'; // Reset rotation to 1
+                document.getElementById('item-selector').value = ''; // Clear search field
+                document.getElementById('item-selector-hidden').value = ''; // Clear hidden field
+                await this.loadShopItems(this.selectedShop);
             }
-            
-            // Reset form and reload shop items
-            e.target.reset();
-            document.getElementById('item-rotation').value = '1'; // Reset rotation to 1
-            document.getElementById('item-selector').value = ''; // Clear search field
-            document.getElementById('item-selector-hidden').value = ''; // Clear hidden field
-            await this.loadShopItems(this.selectedShop);
         } catch (error) {
             console.error('Error saving item to shop:', error);
             this.showStatus(this.currentEditingShopItem ? 'Failed to update item' : 'Failed to add item to shop', 'error');
@@ -920,6 +923,19 @@ class ShopManager {
         this.currentEditingShopItem = null;
         document.getElementById('add-shop-item-form').reset();
         document.getElementById('item-rotation').value = '1'; // Reset to default
+        
+        // Clear item selector fields
+        document.getElementById('item-selector').value = '';
+        document.getElementById('item-selector-hidden').value = '';
+        
+        // Reset checkboxes to their default states
+        const sellCheckbox = document.getElementById('sell-checkbox');
+        const buyCheckbox = document.getElementById('buy-checkbox');
+        const turnInCheckbox = document.getElementById('turn-in-checkbox');
+        
+        if (sellCheckbox) sellCheckbox.checked = true; // Default to sellable
+        if (buyCheckbox) buyCheckbox.checked = false;  // Default not buyable  
+        if (turnInCheckbox) turnInCheckbox.checked = false; // Default not turn-in
         
         // Reset form button text
         const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
