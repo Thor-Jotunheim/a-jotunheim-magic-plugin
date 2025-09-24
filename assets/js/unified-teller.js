@@ -538,14 +538,15 @@ class UnifiedTeller {
         
         card.innerHTML = `
             <div class="item-header">
-                <div class="item-icon">
-                    <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                         onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
-                </div>
                 <div class="item-name">${this.escapeHtml(item.item_name)}</div>
                 <div class="item-type">${item.item_type || 'Trophies'}</div>
             </div>
-            <div class="item-pricing">
+            <div class="item-pricing" style="position: relative;">
+                <div class="item-icon" style="position: absolute; left: 0; top: 0; z-index: 10; width: 40px; height: 40px;">
+                    <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
+                </div>
                 <div class="price-row">
                     <span class="price-label">Unit:</span>
                     <span class="price-value">${unitPrice}</span>
