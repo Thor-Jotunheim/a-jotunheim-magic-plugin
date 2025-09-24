@@ -537,22 +537,28 @@ class UnifiedTeller {
             '/wp-content/uploads/Jotunheim-magic/icons/default-item.png');
         
         card.innerHTML = `
-            <div class="item-image-container">
-                <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                     onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
+            <div class="item-header">
+                <div class="item-image-container">
+                    <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                         onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
+                </div>
+                <div class="item-info">
+                    <div class="item-name">${this.escapeHtml(item.item_name)}</div>
+                    <div class="item-type">${item.item_type || 'Unknown'}</div>
+                </div>
             </div>
-            <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-            <div class="item-details">
-                <div class="item-pricing">
-                    <div class="unit-price">Unit: <strong>${unitPrice}</strong> YF</div>
-                    ${(item.stack_size > 1 && !item.is_custom_item) ? 
-                        `<div class="stack-price">Stack (${item.stack_size}): <strong>${stackPrice}</strong> YF</div>` : 
-                        ''}
+            <div class="item-pricing">
+                <div class="price-row">
+                    <span class="price-label">Unit:</span>
+                    <span class="price-value">${unitPrice}</span>
                 </div>
-                <div class="item-meta">
-                    <div class="tech-info">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
-                    <div class="stock-info">Stock: ${item.stock_quantity === -1 ? '∞' : (item.stock_quantity || 0)}</div>
-                </div>
+                ${(item.stack_size > 1 && !item.is_custom_item) ? 
+                    `<div class="price-row">
+                        <span class="price-label">Stack (${item.stack_size}):</span>
+                        <span class="price-value">${stackPrice}</span>
+                    </div>` : 
+                    ''}
+                <div class="item-tech">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
             </div>
             <div class="item-actions">
                 ${this.generateItemActionButtons(item)}
