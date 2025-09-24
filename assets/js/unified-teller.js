@@ -925,22 +925,33 @@ class UnifiedTeller {
 
     // Customer search functionality
     async handleCustomerSearch(searchTerm) {
+        console.log('handleCustomerSearch called with:', searchTerm);
+        
         if (searchTerm.length < 2) {
             this.hideCustomerSuggestions();
             return;
         }
 
         try {
-            const response = await JotunAPI.getPlayers();
-            const players = response.data || [];
+            // Use cached player list if available, otherwise fetch
+            let players = this.playerList;
+            if (!players || players.length === 0) {
+                console.log('Fetching players for search...');
+                const response = await JotunAPI.getPlayers();
+                players = response.data || [];
+                this.playerList = players; // Cache for future use
+                console.log('Fetched players:', players);
+            }
             
             const filteredPlayers = players.filter(player => 
-                player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+                player.player_name && player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
+            console.log('Filtered players:', filteredPlayers);
             this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
         } catch (error) {
             console.error('Error searching customers:', error);
+            this.showStatus('Error searching for customers', 'error');
         }
     }
 
@@ -1257,19 +1268,31 @@ class UnifiedTeller {
                         <div class="item-tech">Tech: ${item.tech_name} (Tier ${item.tech_tier})</div>
                     </div>
                     <div class="item-actions">
-                        <div class="quantity-controls">
-                            <input type="number" class="quantity-input" id="qty-${item.shop_item_id}" min="1" value="1" placeholder="Qty">
-                            <button class="btn btn-sm btn-outline qty-btn" onclick="window.unifiedTeller.setStackQuantity(${item.shop_item_id})">
-                                Stack
-                            </button>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy')">
-                                Buy
-                            </button>
-                            <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell')">
-                                Sell
-                            </button>
+                        <div class="quantity-section">
+                            <div class="quantity-row">
+                                <label class="qty-label">Individual:</label>
+                                <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" min="1" value="1" placeholder="1">
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')">
+                                        Buy
+                                    </button>
+                                    <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')">
+                                        Sell
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="quantity-row">
+                                <label class="qty-label">Stack (${item.stack_size || 1}):</label>
+                                <input type="number" class="quantity-input" id="qty-stack-${item.shop_item_id}" min="1" value="1" placeholder="1">
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'stack')">
+                                        Buy
+                                    </button>
+                                    <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'stack')">
+                                        Sell
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1367,24 +1390,33 @@ class UnifiedTeller {
         }
     }
 
-    addToCart(shopItemId, action = 'buy') {
+    addToCart(shopItemId, action = 'buy', quantityType = 'individual') {
         const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
         if (!item) {
             this.showStatus('Item not found', 'error');
             return;
         }
 
-        // Get quantity from input
-        const qtyInput = document.getElementById(`qty-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
-        const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+        // Get quantity from appropriate input
+        let qtyInput, quantity, unitPrice;
+        
+        if (quantityType === 'stack') {
+            qtyInput = document.getElementById(`qty-stack-${shopItemId}`);
+            const stackQuantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+            quantity = stackQuantity * (item.stack_size || 1); // Total items
+            unitPrice = item.unit_price || 0; // Still price per individual item
+        } else {
+            qtyInput = document.getElementById(`qty-individual-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
+            quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+            unitPrice = item.unit_price || 0;
+        }
 
         if (quantity <= 0) {
             this.showStatus('Invalid quantity', 'error');
             return;
         }
 
-        // Calculate price based on quantity and unit price
-        const unitPrice = item.unit_price || 0;
+        // Calculate total price
         const totalPrice = unitPrice * quantity;
 
         // Add to cart or update existing cart item
@@ -1403,13 +1435,18 @@ class UnifiedTeller {
                 quantity: quantity,
                 unit_price: unitPrice,
                 total_price: totalPrice,
-                stack_size: item.stack_size || 1
+                stack_size: item.stack_size || 1,
+                quantity_type: quantityType
             });
         }
 
         this.updateCartDisplay();
         this.updatePaymentCalculations();
-        this.showStatus(`Added ${quantity} ${item.item_name} to cart (${action})`, 'success');
+        
+        const quantityDesc = quantityType === 'stack' ? 
+            `${qtyInput.value} stack(s) (${quantity} items)` : 
+            `${quantity} item(s)`;
+        this.showStatus(`Added ${quantityDesc} of ${item.item_name} to cart (${action})`, 'success');
 
         // Reset quantity input
         if (qtyInput) {

@@ -20,60 +20,44 @@ function unified_teller_interface() {
     ob_start();
     ?>
     <div id="unified-teller-interface" class="teller-app">
-        <!-- Header -->
+        <!-- Header with Teller Info -->
         <div class="teller-header">
-            <h1 class="teller-title">Transaction Manager</h1>
-            <p class="teller-subtitle">Process player transactions and manage shop operations</p>
+            <div class="header-main">
+                <h1 class="teller-title">Transaction Manager</h1>
+                <p class="teller-subtitle">Process player transactions and manage shop operations</p>
+            </div>
+            <div class="header-teller">
+                <div class="teller-info">
+                    <span class="teller-label">Teller:</span>
+                    <span id="header-teller-name" class="teller-name"><?php 
+                        // Try to get Discord name first, fallback to display name
+                        $discord_name = get_user_meta(get_current_user_id(), 'discord_username', true);
+                        echo esc_attr($discord_name ?: wp_get_current_user()->display_name); 
+                    ?></span>
+                </div>
+            </div>
         </div>
         
-        <!-- Shop Selection Card -->
-        <div class="teller-card shop-selection-card">
-            <div class="card-header">
-                <h2 class="card-title">Shop Configuration</h2>
-                <p class="card-description">Select an active shop to begin processing transactions</p>
-            </div>
+        <!-- Compact Shop and Customer Selection -->
+        <div class="teller-card compact-config-card">
             <div class="card-content">
-                <div class="form-field">
-                    <label for="teller-shop-selector" class="field-label">Active Shop</label>
-                    <select id="teller-shop-selector" class="field-select">
-                        <option value="">Select a shop to begin...</option>
-                        <!-- Shops will be loaded here -->
-                    </select>
-                </div>
-                <div id="shop-info" class="shop-info-display" style="display: none;">
-                    <div class="info-badge">
-                        <span id="shop-name-display" class="shop-name"></span>
-                        <span id="shop-type-display" class="shop-type-badge"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Transaction Interface (hidden until shop is selected) -->
-        <div id="teller-main-interface" class="teller-main" style="display: none;">
-            
-            <!-- Transaction Form -->
-            <div class="teller-card transaction-form-card">
-                <div class="card-header">
-                    <h2 class="card-title">Transaction Details</h2>
-                    <p class="card-description">Enter teller and customer information</p>
-                </div>
-                <div class="card-content">
-                    <div class="form-grid">
+                <div class="compact-config-grid">
+                    <div class="config-section">
                         <div class="form-field">
-                            <label for="teller-name" class="field-label">Teller/Shopkeeper</label>
-                            <input 
-                                type="text" 
-                                id="teller-name" 
-                                class="field-input field-readonly" 
-                                value="<?php 
-                                    // Try to get Discord name first, fallback to display name
-                                    $discord_name = get_user_meta(get_current_user_id(), 'discord_username', true);
-                                    echo esc_attr($discord_name ?: wp_get_current_user()->display_name); 
-                                ?>"
-                                readonly
-                            >
+                            <label for="teller-shop-selector" class="field-label">Active Shop</label>
+                            <select id="teller-shop-selector" class="field-select">
+                                <option value="">Select a shop to begin...</option>
+                                <!-- Shops will be loaded here -->
+                            </select>
                         </div>
+                        <div id="shop-info" class="shop-info-display" style="display: none;">
+                            <div class="info-badge">
+                                <span id="shop-name-display" class="shop-name"></span>
+                                <span id="shop-type-display" class="shop-type-badge"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="config-section">
                         <div class="form-field">
                             <label for="customer-name" class="field-label">Customer Name</label>
                             <div class="customer-search-container">
@@ -85,43 +69,38 @@ function unified_teller_interface() {
                                         placeholder="Start typing player name..."
                                         autocomplete="off"
                                     >
-                                    <button id="validate-customer-btn" type="button" class="btn btn-secondary">
-                                        Validate
-                                    </button>
+                                    <button id="validate-customer-btn" class="btn btn-secondary">Validate</button>
                                 </div>
-                                <div id="customer-suggestions" class="customer-suggestions" style="display: none;">
-                                    <!-- Player suggestions will appear here -->
-                                </div>
+                                <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div id="customer-status" class="status-message"></div>
-                    
-                    <div id="customer-info" class="customer-info-card" style="display: none;">
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Player</span>
-                                <span id="customer-display-name" class="info-value"></span>
+                        <div id="customer-status" class="status-message"></div>
+                        <div id="customer-info" class="customer-info-card" style="display: none;">
+                            <div class="customer-details">
+                                <div class="customer-detail">
+                                    <span class="detail-label">Player:</span>
+                                    <span id="customer-display-name" class="detail-value"></span>
+                                </div>
+                                <div class="customer-detail">
+                                    <span class="detail-label">Status:</span>
+                                    <span id="customer-active-status" class="detail-value"></span>
+                                </div>
+                                <div class="customer-detail">
+                                    <span class="detail-label">Registered:</span>
+                                    <span id="customer-registration" class="detail-value"></span>
+                                </div>
                             </div>
-                            <div class="info-item">
-                                <span class="info-label">Status</span>
-                                <span id="customer-active-status" class="info-value"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Registered</span>
-                                <span id="customer-registration" class="info-value"></span>
-                            </div>
+                            <button id="register-new-player-btn" class="btn btn-outline btn-sm">Register New Player</button>
                         </div>
-                        <button id="register-new-player-btn" type="button" class="btn btn-outline" style="display: none;">
-                            Register New Player
-                        </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Payment Tracking -->
-                        <!-- Shop Items -->
+        <!-- Main Transaction Interface (hidden until shop is selected) -->
+        <div id="teller-main-interface" class="teller-main" style="display: none;">
+
+            <!-- Shop Items -->
             <div class="teller-card items-card">
                 <div class="card-header">
                     <h2 class="card-title">Shop Inventory</h2>

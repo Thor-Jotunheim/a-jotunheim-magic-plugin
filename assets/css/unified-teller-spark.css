@@ -1010,3 +1010,147 @@
     text-align: left;
     font-weight: 500;
 }
+
+/* Compact Header Layout */
+.teller-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+    padding: var(--space-4);
+    background: var(--gray-1);
+    border-radius: 12px;
+    border: 1px solid var(--gray-6);
+}
+
+.header-main {
+    flex: 1;
+}
+
+.header-teller {
+    flex-shrink: 0;
+}
+
+.teller-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: var(--space-2) var(--space-3);
+    background: var(--blue-2);
+    border-radius: 8px;
+    border: 1px solid var(--blue-6);
+}
+
+.teller-label {
+    font-size: 11px;
+    color: var(--gray-9);
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-bottom: var(--space-1);
+}
+
+.teller-name {
+    font-size: 14px;
+    color: var(--blue-11);
+    font-weight: 600;
+}
+
+/* Compact Config Layout */
+.compact-config-card {
+    margin-bottom: var(--space-4);
+}
+
+.compact-config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.config-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+/* Enhanced Quantity Controls */
+.quantity-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.quantity-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--gray-2);
+    border-radius: 6px;
+}
+
+.qty-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-11);
+    min-width: 80px;
+}
+
+.quantity-input {
+    width: 60px;
+    flex-shrink: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--space-1);
+    margin-left: auto;
+}
+
+.item-btn {
+    padding: 4px 12px;
+    font-size: 12px;
+    min-height: auto;
+    flex-shrink: 0;
+}
+
+/* Fix primary button styling */
+.btn-primary {
+    background: var(--blue-9);
+    color: white;
+    border: 1px solid var(--blue-9);
+}
+
+.btn-primary:hover {
+    background: var(--blue-10);
+    border-color: var(--blue-10);
+}
+
+.btn-primary:focus {
+    background: var(--blue-10);
+    border-color: var(--blue-10);
+    box-shadow: 0 0 0 2px var(--blue-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .compact-config-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .teller-header {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    
+    .header-teller {
+        width: 100%;
+    }
+    
+    .teller-info {
+        align-items: flex-start;
+    }
+    
+    .quantity-row {
+        flex-wrap: wrap;
+    }
+}
