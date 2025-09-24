@@ -10,12 +10,12 @@ if (!defined('ABSPATH')) {
 
 // Register the shortcode handler
 function unified_teller_scripts_shortcode($atts) {
-    // Enqueue styles for unified teller
+    // Enqueue styles for unified teller - Spark Design System
     wp_enqueue_style(
         'unified-teller-css',
-        plugin_dir_url(__FILE__) . '../../assets/css/unified-teller.css',
+        plugin_dir_url(__FILE__) . '../../assets/css/unified-teller-spark.css',
         [],
-        '1.0.0'
+        '1.1.0'
     );
 
     // Enqueue scripts and styles only when shortcode is used

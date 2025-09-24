@@ -45,6 +45,23 @@ class UnifiedTeller {
     }
 
     async loadInitialData() {
+        console.log('UnifiedTeller: Starting to load initial data...');
+        
+        // Wait for JotunAPI to be available
+        let attempts = 0;
+        while (typeof JotunAPI === 'undefined' && attempts < 10) {
+            console.log('Waiting for JotunAPI to be available...');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (typeof JotunAPI === 'undefined') {
+            console.error('JotunAPI is still not available after waiting');
+            this.showStatus('API initialization failed. Please refresh the page.', 'error');
+            return;
+        }
+        
+        console.log('JotunAPI is available, loading data...');
         await this.loadShopsForSelector();
         await this.loadPlayerList();
         await this.loadTransactionHistory();
@@ -171,21 +188,43 @@ class UnifiedTeller {
     async loadShopsForSelector() {
         try {
             console.log('Loading shops for selector...');
+            console.log('JotunAPI status:', typeof JotunAPI);
+            console.log('jotun_api_vars:', typeof jotun_api_vars !== 'undefined' ? jotun_api_vars : 'undefined');
+            
             if (typeof JotunAPI === 'undefined') {
                 throw new Error('JotunAPI is not available');
             }
             
+            // Test the API endpoint directly first
+            const testUrl = '/wp-json/jotun-api/v1/shops';
+            console.log('Testing direct API call to:', testUrl);
+            
             const response = await JotunAPI.getShops();
             console.log('Shop API response:', response);
-            const shops = response.data || [];
-            this.populateShopSelector(shops);
+            
+            if (response && response.data) {
+                console.log('Shops data received:', response.data);
+                const shops = response.data;
+                this.populateShopSelector(shops);
+                
+                if (shops.length === 0) {
+                    this.showStatus('No shops found in database. Contact admin to add shops.', 'info');
+                }
+            } else {
+                console.error('Unexpected API response format:', response);
+                throw new Error('API returned unexpected format');
+            }
         } catch (error) {
             console.error('Error loading shops:', error);
             this.showStatus('Failed to load shops: ' + error.message, 'error');
             
             // Show error in dropdown
             const selector = document.getElementById('teller-shop-selector');
-            selector.innerHTML = '<option value="">Error loading shops - check console</option>';
+            if (selector) {
+                selector.innerHTML = '<option value="">Error loading shops - check console</option>';
+            } else {
+                console.error('Shop selector element not found!');
+            }
         }
     }
 
@@ -658,6 +697,79 @@ class UnifiedTeller {
         if (!dateString) return '';
         const date = new Date(dateString);
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+    
+    // Debug method to create test shops
+    async debugCreateTestShops() {
+        console.log('Creating test shops...');
+        
+        const testShops = [
+            {
+                shop_name: 'Haldore Trading Post',
+                description: 'General trading post',
+                shop_type: 'player',
+                staff_only: 0,
+                auto_archive: 0,
+                ledger_name: 'Haldore Ledger',
+                owner_name: 'Haldore',
+                is_active: 1
+            },
+            {
+                shop_name: 'Beehive Marketplace',
+                description: 'Community marketplace',
+                shop_type: 'player',
+                staff_only: 0,
+                auto_archive: 0,
+                ledger_name: 'Beehive Ledger',
+                owner_name: 'Community',
+                is_active: 1
+            },
+            {
+                shop_name: 'Staff Admin Shop',
+                description: 'Administrative transactions',
+                shop_type: 'staff',
+                staff_only: 1,
+                auto_archive: 0,
+                ledger_name: 'Admin Ledger',
+                owner_name: 'Admin',
+                is_active: 1
+            }
+        ];
+        
+        for (const shopData of testShops) {
+            try {
+                console.log('Creating shop:', shopData.shop_name);
+                const result = await JotunAPI.addShop(shopData);
+                console.log('Shop created:', result);
+            } catch (error) {
+                console.error('Error creating shop:', shopData.shop_name, error);
+            }
+        }
+        
+        console.log('Test shops creation complete. Reloading shops...');
+        await this.loadShopsForSelector();
+    }
+    
+    // Debug method to test API endpoints
+    async debugTestAPI() {
+        console.log('Testing API endpoints...');
+        
+        try {
+            console.log('Testing getShops...');
+            const shopsResult = await JotunAPI.getShops();
+            console.log('Shops result:', shopsResult);
+            
+            console.log('Testing getPlayers...');
+            const playersResult = await JotunAPI.getPlayers();
+            console.log('Players result:', playersResult);
+            
+            console.log('Testing getTransactions...');
+            const transactionsResult = await JotunAPI.getTransactions();
+            console.log('Transactions result:', transactionsResult);
+            
+        } catch (error) {
+            console.error('API test error:', error);
+        }
     }
 }
 

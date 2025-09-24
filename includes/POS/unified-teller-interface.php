@@ -19,165 +19,241 @@ function unified_teller_interface() {
 
     ob_start();
     ?>
-    <div id="unified-teller-interface" class="teller-container">
-        <h1>Unified Teller System</h1>
+    <div id="unified-teller-interface" class="teller-app">
+        <!-- Header -->
+        <div class="teller-header">
+            <h1 class="teller-title">Transaction Manager</h1>
+            <p class="teller-subtitle">Process player transactions and manage shop operations</p>
+        </div>
         
-        <!-- Shop Selection -->
-        <div class="shop-selection-section">
-            <h2>Select Shop</h2>
-            <div class="shop-selector-row">
-                <div class="form-group">
-                    <label for="teller-shop-selector">Active Shop:</label>
-                    <select id="teller-shop-selector">
+        <!-- Shop Selection Card -->
+        <div class="teller-card shop-selection-card">
+            <div class="card-header">
+                <h2 class="card-title">Shop Configuration</h2>
+                <p class="card-description">Select an active shop to begin processing transactions</p>
+            </div>
+            <div class="card-content">
+                <div class="form-field">
+                    <label for="teller-shop-selector" class="field-label">Active Shop</label>
+                    <select id="teller-shop-selector" class="field-select">
                         <option value="">Select a shop to begin...</option>
                         <!-- Shops will be loaded here -->
                     </select>
                 </div>
-                <div class="shop-info" id="shop-info" style="display: none;">
-                    <span id="shop-name-display"></span>
-                    <span id="shop-type-display" class="shop-type-badge"></span>
+                <div id="shop-info" class="shop-info-display" style="display: none;">
+                    <div class="info-badge">
+                        <span id="shop-name-display" class="shop-name"></span>
+                        <span id="shop-type-display" class="shop-type-badge"></span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Teller Interface (hidden until shop is selected) -->
-        <div id="teller-main-interface" style="display: none;">
+        <!-- Main Transaction Interface (hidden until shop is selected) -->
+        <div id="teller-main-interface" class="teller-main" style="display: none;">
             
-            <!-- Teller Information -->
-            <div class="teller-info-section">
-                <h3>Teller Information</h3>
-                <div class="teller-form">
-                    <div class="form-group">
-                        <label for="teller-name">Shopkeeper/Teller:</label>
-                        <input type="text" id="teller-name" placeholder="Enter teller name (e.g., Huginn, Muninn)" value="<?php echo esc_attr(wp_get_current_user()->display_name); ?>">
-                    </div>
+            <!-- Transaction Form -->
+            <div class="teller-card transaction-form-card">
+                <div class="card-header">
+                    <h2 class="card-title">Transaction Details</h2>
+                    <p class="card-description">Enter teller and customer information</p>
                 </div>
-            </div>
-
-            <!-- Player Information -->
-            <div class="player-section">
-                <h3>Player</h3>
-                <div class="player-form">
-                    <div class="form-group">
-                        <label for="customer-name">Player Name:</label>
-                        <input type="text" id="customer-name" placeholder="Enter player name (e.g., Sephrm)">
-                        <button id="validate-customer-btn" type="button">Validate Player</button>
+                <div class="card-content">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="teller-name" class="field-label">Teller/Shopkeeper</label>
+                            <input 
+                                type="text" 
+                                id="teller-name" 
+                                class="field-input" 
+                                placeholder="Enter teller name (e.g., Huginn, Muninn)" 
+                                value="<?php echo esc_attr(wp_get_current_user()->display_name); ?>"
+                            >
+                        </div>
+                        <div class="form-field">
+                            <label for="customer-name" class="field-label">Customer Name</label>
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    id="customer-name" 
+                                    class="field-input" 
+                                    placeholder="Enter player name (e.g., Sephrm)"
+                                >
+                                <button id="validate-customer-btn" type="button" class="btn btn-secondary">
+                                    Validate
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <button id="register-new-player-btn" type="button" class="register-btn" style="display: none;">
+                    
+                    <div id="customer-status" class="status-message"></div>
+                    
+                    <div id="customer-info" class="customer-info-card" style="display: none;">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Player</span>
+                                <span id="customer-display-name" class="info-value"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status</span>
+                                <span id="customer-active-status" class="info-value"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Registered</span>
+                                <span id="customer-registration" class="info-value"></span>
+                            </div>
+                        </div>
+                        <button id="register-new-player-btn" type="button" class="btn btn-outline" style="display: none;">
                             Register New Player
                         </button>
                     </div>
-                    <div id="customer-status" class="customer-status"></div>
-                    <div id="customer-info" class="customer-info" style="display: none;">
-                        <div class="player-info-card">
-                            <p><strong>Player:</strong> <span id="customer-display-name"></span></p>
-                            <p><strong>Status:</strong> <span id="customer-active-status"></span></p>
-                            <p><strong>Registered:</strong> <span id="customer-registration"></span></p>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- Player Payment Tracking -->
-            <div class="player-payment-section">
-                <h3>Player Payment</h3>
-                <div class="payment-grid">
-                    <div class="payment-item">
-                        <label for="ymir-flesh-total">Ymir Flesh</label>
-                        <input type="number" id="ymir-flesh-total" value="0" min="0">
-                    </div>
-                    <div class="payment-item">
-                        <label for="gold-total">Gold</label>
-                        <input type="number" id="gold-total" value="0" min="0">
+            <!-- Payment Tracking -->
+            <div class="teller-card payment-card">
+                <div class="card-header">
+                    <h2 class="card-title">Payment Tracking</h2>
+                    <p class="card-description">Track customer payment and transaction balance</p>
+                </div>
+                <div class="card-content">
+                    <div class="payment-grid">
+                        <div class="form-field">
+                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh</label>
+                            <input type="number" id="ymir-flesh-total" class="field-input" value="0" min="0">
+                        </div>
+                        <div class="form-field">
+                            <label for="gold-total" class="field-label">Gold</label>
+                            <input type="number" id="gold-total" class="field-input" value="0" min="0">
+                        </div>
                     </div>
                     <div class="payment-summary">
-                        <div class="total-cost">
-                            <strong>Item Total Cost: <span id="item-total-cost">0</span></strong>
+                        <div class="summary-row">
+                            <span class="summary-label">Total Cost</span>
+                            <span id="item-total-cost" class="summary-value">0</span>
                         </div>
-                        <div class="payment-status">
-                            <span id="payment-balance">Balanced</span>
+                        <div class="summary-row balance-row">
+                            <span class="summary-label">Status</span>
+                            <span id="payment-balance" class="summary-status balanced">Balanced</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Shop Items Grid -->
-            <div class="shop-items-section">
-                <div class="items-controls">
-                    <input type="text" id="item-search" placeholder="Search items..." class="item-search">
-                    <button id="toggle-view-btn" class="btn btn-secondary">Toggle View</button>
+            <!-- Shop Items -->
+            <div class="teller-card items-card">
+                <div class="card-header">
+                    <h2 class="card-title">Shop Inventory</h2>
+                    <p class="card-description">Browse and select items for transaction</p>
                 </div>
-                
-                <div id="shop-items-table" class="items-table-container">
-                    <table class="shop-items-table">
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Buy</th>
-                                <th>Claim</th>
-                                <th>Value</th>
-                                <th>Item Name</th>
-                                <th>Buy</th>
-                                <th>Claim</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody id="items-table-body">
-                            <!-- Items will be loaded here in two-column layout -->
-                        </tbody>
-                    </table>
+                <div class="card-content">
+                    <div class="items-controls">
+                        <div class="search-field">
+                            <input type="text" id="item-search" class="field-input" placeholder="Search items...">
+                        </div>
+                        <button id="toggle-view-btn" class="btn btn-outline">Toggle View</button>
+                    </div>
+                    
+                    <div id="shop-items-table" class="items-container">
+                        <div class="items-grid" id="items-grid-view">
+                            <!-- Items will be loaded here as cards -->
+                        </div>
+                        <div class="items-table-wrapper" id="items-table-view" style="display: none;">
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Buy</th>
+                                        <th>Claim</th>
+                                        <th>Value</th>
+                                        <th>Item Name</th>
+                                        <th>Buy</th>
+                                        <th>Claim</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="items-table-body">
+                                    <!-- Items will be loaded here in table format -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Transaction Summary -->
-            <div class="transaction-summary-section">
-                <h3>Transaction Summary</h3>
-                <div id="transaction-items" class="transaction-items">
-                    <div class="transaction-header">
-                        <span>Item</span>
-                        <span>Type</span>
-                        <span>Quantity</span>
-                        <span>Value</span>
-                        <span>Actions</span>
+            <div class="teller-card summary-card">
+                <div class="card-header">
+                    <h2 class="card-title">Transaction Summary</h2>
+                    <p class="card-description">Review selected items and complete transaction</p>
+                </div>
+                <div class="card-content">
+                    <div id="transaction-items" class="transaction-list">
+                        <div class="transaction-header">
+                            <span class="header-item">Item</span>
+                            <span class="header-type">Type</span>
+                            <span class="header-qty">Qty</span>
+                            <span class="header-value">Value</span>
+                            <span class="header-actions">Actions</span>
+                        </div>
+                        <div id="transaction-items-list" class="transaction-items-list">
+                            <!-- Selected items will appear here -->
+                        </div>
                     </div>
-                    <div id="transaction-items-list" class="transaction-items-list">
-                        <!-- Selected items will appear here -->
+                    
+                    <div class="form-field">
+                        <label for="transaction-notes" class="field-label">Transaction Notes</label>
+                        <textarea 
+                            id="transaction-notes" 
+                            class="field-textarea" 
+                            placeholder="Optional notes about this transaction..." 
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button id="clear-transaction-btn" class="btn btn-outline">
+                            Clear Transaction
+                        </button>
+                        <button id="record-transaction-btn" class="btn btn-primary" disabled>
+                            Record Transaction
+                        </button>
                     </div>
                 </div>
-                
-                <div class="transaction-actions">
-                    <button id="clear-transaction-btn" class="btn btn-secondary">
-                        Clear Transaction
-                    </button>
-                    <button id="record-transaction-btn" class="btn btn-primary" disabled>
-                        Clear & Record Transaction
-                    </button>
-                </div>
-            </div>
-
-            <!-- Transaction Notes -->
-            <div class="transaction-notes-section">
-                <h3>Transaction Notes</h3>
-                <textarea id="transaction-notes" placeholder="Optional notes about this transaction..." rows="3"></textarea>
             </div>
         </div>
 
-        <!-- Transaction History (always visible) -->
-        <div class="transaction-history-section">
-            <h2>Recent Transactions</h2>
-            <div class="history-controls">
-                <select id="history-filter">
-                    <option value="">All Transactions</option>
-                    <option value="buy">Purchases</option>
-                    <option value="sell">Sales</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <input type="date" id="history-date-filter">
-                <button id="refresh-history-btn" class="btn btn-secondary">Refresh</button>
+        <!-- Transaction History -->
+        <div class="teller-card history-card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Transactions</h2>
+                <p class="card-description">View and filter transaction history</p>
             </div>
-            <div id="transaction-history" class="transaction-history">
-                <!-- Transaction history will be loaded here -->
+            <div class="card-content">
+                <div class="history-controls">
+                    <div class="filters-grid">
+                        <div class="form-field">
+                            <label for="history-filter" class="field-label">Filter by Type</label>
+                            <select id="history-filter" class="field-select">
+                                <option value="">All Transactions</option>
+                                <option value="buy">Purchases</option>
+                                <option value="sell">Sales</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="history-date-filter" class="field-label">Filter by Date</label>
+                            <input type="date" id="history-date-filter" class="field-input">
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">&nbsp;</label>
+                            <button id="refresh-history-btn" class="btn btn-secondary">Refresh</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="transaction-history" class="history-list">
+                    <!-- Transaction history will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
