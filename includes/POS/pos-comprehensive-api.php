@@ -241,6 +241,27 @@ function jotun_ensure_shop_items_table() {
             error_log('Jotunheim POS: Added updated_at column to jotun_shop_items table');
         }
 
+        // Migration: Add sell checkbox column if it doesn't exist
+        $sell_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'sell'");
+        if (empty($sell_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN sell tinyint(1) DEFAULT 1 COMMENT 'Whether item can be sold to customers'");
+            error_log('Jotunheim POS: Added sell column to jotun_shop_items table');
+        }
+
+        // Migration: Add buy checkbox column if it doesn't exist  
+        $buy_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'buy'");
+        if (empty($buy_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN buy tinyint(1) DEFAULT 0 COMMENT 'Whether item can be bought from customers'");
+            error_log('Jotunheim POS: Added buy column to jotun_shop_items table');
+        }
+
+        // Migration: Add turn_in checkbox column if it doesn't exist
+        $turn_in_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'turn_in'");
+        if (empty($turn_in_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN turn_in tinyint(1) DEFAULT 0 COMMENT 'Whether item can be turned in for rewards'");
+            error_log('Jotunheim POS: Added turn_in column to jotun_shop_items table');
+        }
+
         // Migration: Remove ALL problematic constraints if they exist
         // The constraint seems to be causing issues even when shop exists
         
@@ -1943,6 +1964,22 @@ function jotun_api_add_shop_item($request) {
     if (!empty($is_custom_item_exists) && $is_custom_item) {
         $insert_data['is_custom_item'] = 1;
     }
+
+    // Add new checkbox fields if columns exist
+    $sell_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'sell'");
+    if (!empty($sell_exists)) {
+        $insert_data['sell'] = isset($data['sell']) ? (bool)$data['sell'] : true; // Default to sellable
+    }
+
+    $buy_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'buy'");
+    if (!empty($buy_exists)) {
+        $insert_data['buy'] = isset($data['buy']) ? (bool)$data['buy'] : false; // Default not buyable
+    }
+
+    $turn_in_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'turn_in'");
+    if (!empty($turn_in_exists)) {
+        $insert_data['turn_in'] = isset($data['turn_in']) ? (bool)$data['turn_in'] : false; // Default not turn-in
+    }
     
     // Enhanced debug logging
     error_log('DEBUG - Final insert data: ' . json_encode($insert_data));
@@ -2087,6 +2124,19 @@ function jotun_api_update_shop_item($request) {
 
     if (isset($data['turn_in_requirement'])) {
         $update_data['turn_in_requirement'] = (int)$data['turn_in_requirement'];
+    }
+
+    // Handle new checkbox fields
+    if (isset($data['sell'])) {
+        $update_data['sell'] = (bool)$data['sell'];
+    }
+
+    if (isset($data['buy'])) {
+        $update_data['buy'] = (bool)$data['buy'];
+    }
+
+    if (isset($data['turn_in'])) {
+        $update_data['turn_in'] = (bool)$data['turn_in'];
     }
     
     if (empty($update_data)) {

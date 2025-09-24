@@ -174,6 +174,23 @@ function shop_manager_interface() {
             max-width: 200px;
             word-wrap: break-word;
         }
+        
+        /* Checkbox display styles */
+        .checkbox-display {
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            display: inline-block;
+            width: 20px;
+        }
+        
+        .checkbox-display.checked {
+            color: #28a745;
+        }
+        
+        .checkbox-display:not(.checked) {
+            color: #dc3545;
+        }
         </style>
         <?php
 
@@ -333,6 +350,26 @@ function shop_manager_interface() {
                                 </select>
                             </div>
                         </div>
+                        <!-- Transaction Type Checkboxes -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Transaction Types</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="sell-checkbox" name="sell" checked>
+                                        <span>Sell</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="buy-checkbox" name="buy">
+                                        <span>Buy</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="turn-in-checkbox" name="turn_in">
+                                        <span>Turn-In</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Add Item to Shop</button>
                         </div>
@@ -384,6 +421,9 @@ function shop_manager_interface() {
                                     <th>Shop Price (Coins)</th>
                                     <th>Stock</th>
                                     <th>Rotation</th>
+                                    <th>Sell</th>
+                                    <th>Buy</th>
+                                    <th>Turn-In</th>
                                     <th>Available</th>
                                     <th>Actions</th>
                                 </tr>

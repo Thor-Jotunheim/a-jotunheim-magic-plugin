@@ -7,6 +7,7 @@ class ShopManager {
     constructor() {
         this.currentEditingShop = null;
         this.currentEditingShopType = null;
+        this.currentEditingShopItem = null;
         this.selectedShop = null;
         this.selectedShopData = null;
         this.shopTypes = [];
@@ -718,6 +719,9 @@ class ShopManager {
                 <td>${this.formatPrice(shopPrice)}</td>
                 <td>${item.stock_quantity || 0}</td>
                 <td><span class="rotation-badge">${item.rotation || 1}</span></td>
+                <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
+                <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
+                <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.id})">Edit</button>
@@ -742,10 +746,13 @@ class ShopManager {
         let customPrice = formData.get('custom_price');
         const rotation = formData.get('rotation') || 1;
         
-        // Check if we have either an item selection or custom item name
-        if (!itemId && !customItemName) {
-            this.showStatus('Please select an item or enter a custom item name', 'error');
-            return;
+        // For editing, we don't need to check item selection again
+        if (!this.currentEditingShopItem) {
+            // Check if we have either an item selection or custom item name for new items
+            if (!itemId && !customItemName) {
+                this.showStatus('Please select an item or enter a custom item name', 'error');
+                return;
+            }
         }
 
         // Price is always in Coins (no conversion needed)
@@ -760,26 +767,42 @@ class ShopManager {
             is_available: formData.get('is_available') === '1',
             unlimited_stock: formData.get('unlimited_stock') === 'on',
             turn_in_quantity: formData.get('turn_in_quantity') || 0,
-            turn_in_requirement: formData.get('turn_in_requirement') || 0
+            turn_in_requirement: formData.get('turn_in_requirement') || 0,
+            // Add checkbox data
+            sell: document.getElementById('sell-checkbox')?.checked || false,
+            buy: document.getElementById('buy-checkbox')?.checked || false,
+            turn_in: document.getElementById('turn-in-checkbox')?.checked || false
         };
 
-        // Handle custom items vs regular items
-        if (customItemName) {
-            shopItemData.custom_item_name = customItemName;
-            shopItemData.item_id = null; // No item_id for custom items
-        } else {
-            shopItemData.item_id = itemId;
+        // Handle custom items vs regular items (only for new items, not edits)
+        if (!this.currentEditingShopItem) {
+            if (customItemName) {
+                shopItemData.custom_item_name = customItemName;
+                shopItemData.item_id = null; // No item_id for custom items
+            } else {
+                shopItemData.item_id = itemId;
+            }
         }
 
         if (customPrice && customPrice.toString().trim() !== '') {
             shopItemData.custom_price = parseFloat(customPrice);
+        } else {
+            shopItemData.custom_price = null; // Clear price if empty
         }
 
         console.log('DEBUG - Shop item data being sent:', shopItemData);
 
         try {
-            await JotunAPI.addShopItem(shopItemData);
-            this.showStatus('Item added to shop successfully', 'success');
+            if (this.currentEditingShopItem) {
+                // Update existing item
+                await JotunAPI.updateShopItem(this.currentEditingShopItem, shopItemData);
+                this.showStatus('Item updated successfully', 'success');
+                this.cancelShopItemEdit();
+            } else {
+                // Add new item
+                await JotunAPI.addShopItem(shopItemData);
+                this.showStatus('Item added to shop successfully', 'success');
+            }
             
             // Reset form and reload shop items
             e.target.reset();
@@ -788,8 +811,8 @@ class ShopManager {
             document.getElementById('item-selector-hidden').value = ''; // Clear hidden field
             await this.loadShopItems(this.selectedShop);
         } catch (error) {
-            console.error('Error adding item to shop:', error);
-            this.showStatus('Failed to add item to shop', 'error');
+            console.error('Error saving item to shop:', error);
+            this.showStatus(this.currentEditingShopItem ? 'Failed to update item' : 'Failed to add item to shop', 'error');
         }
     }
 
@@ -803,6 +826,109 @@ class ShopManager {
                 console.error('Error removing item from shop:', error);
                 this.showStatus('Failed to remove item from shop', 'error');
             }
+        }
+    }
+
+    async editShopItem(shopItemId) {
+        try {
+            // Get the current shop items and find the one being edited
+            const response = await JotunAPI.getShopItems({ shop_id: this.selectedShop });
+            const shopItems = response.data || [];
+            const item = shopItems.find(item => item.id == shopItemId);
+            
+            if (!item) {
+                this.showStatus('Shop item not found', 'error');
+                return;
+            }
+
+            // Populate the form with current item data
+            this.currentEditingShopItem = shopItemId;
+            
+            // Clear form first
+            document.getElementById('add-shop-item-form').reset();
+            
+            // If it's a custom item, populate custom item name
+            if (item.is_custom_item == 1) {
+                document.getElementById('custom-item-name').value = item.item_name || '';
+                document.getElementById('item-selector').value = '';
+                document.getElementById('item-selector-hidden').value = '';
+            } else {
+                // For regular items, set the item selector
+                if (item.item_id) {
+                    document.getElementById('item-selector-hidden').value = item.item_id;
+                    document.getElementById('item-selector').value = item.master_item_name || item.item_name || '';
+                }
+                document.getElementById('custom-item-name').value = '';
+            }
+            
+            // Populate other fields
+            document.getElementById('custom-price').value = item.custom_price || '';
+            document.getElementById('stock-quantity').value = item.stock_quantity || 0;
+            document.getElementById('unlimited-stock').checked = item.unlimited_stock == 1;
+            document.getElementById('item-rotation').value = item.rotation || 1;
+            document.getElementById('item-available').value = item.is_available || '1';
+            
+            // Populate checkbox fields if they exist
+            const sellCheckbox = document.getElementById('sell-checkbox');
+            const buyCheckbox = document.getElementById('buy-checkbox');
+            const turnInCheckbox = document.getElementById('turn-in-checkbox');
+            
+            if (sellCheckbox) sellCheckbox.checked = item.sell == 1;
+            if (buyCheckbox) buyCheckbox.checked = item.buy == 1;
+            if (turnInCheckbox) turnInCheckbox.checked = item.turn_in == 1;
+            
+            // Update form button
+            const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
+            submitButton.textContent = 'Update Item';
+            
+            // Show cancel button
+            this.showCancelEditItemButton();
+            
+            // Scroll to form
+            document.getElementById('add-shop-item-form').scrollIntoView({ behavior: 'smooth' });
+            
+        } catch (error) {
+            console.error('Error loading shop item for edit:', error);
+            this.showStatus('Failed to load item data', 'error');
+        }
+    }
+
+    showCancelEditItemButton() {
+        // Create cancel button if it doesn't exist
+        let cancelButton = document.getElementById('cancel-edit-item');
+        if (!cancelButton) {
+            cancelButton = document.createElement('button');
+            cancelButton.id = 'cancel-edit-item';
+            cancelButton.type = 'button';
+            cancelButton.className = 'btn btn-secondary';
+            cancelButton.textContent = 'Cancel Edit';
+            cancelButton.style.display = 'none';
+            
+            // Add click handler
+            cancelButton.addEventListener('click', () => this.cancelShopItemEdit());
+            
+            // Add after the submit button
+            const formActions = document.querySelector('#add-shop-item-form .form-actions');
+            if (formActions) {
+                formActions.appendChild(cancelButton);
+            }
+        }
+        cancelButton.style.display = 'inline-block';
+    }
+
+    cancelShopItemEdit() {
+        this.currentEditingShopItem = null;
+        document.getElementById('add-shop-item-form').reset();
+        document.getElementById('item-rotation').value = '1'; // Reset to default
+        
+        // Reset form button text
+        const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
+        submitButton.textContent = 'Add Item to Shop';
+        
+        // Hide cancel button
+        const cancelButton = document.getElementById('cancel-edit-item');
+        if (cancelButton) {
+            cancelButton.style.display = 'none';
         }
     }
 
