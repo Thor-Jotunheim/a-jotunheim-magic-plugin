@@ -17,31 +17,68 @@ class UnifiedTeller {
 
     initializeEventListeners() {
         // Shop selection
-        document.getElementById('teller-shop-selector').addEventListener('change', (e) => this.selectShop(e.target.value));
-
-        // Transaction mode selection
-        document.querySelectorAll('.transaction-type-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.setTransactionMode(e.target.dataset.mode));
-        });
+        const shopSelector = document.getElementById('teller-shop-selector');
+        if (shopSelector) {
+            shopSelector.addEventListener('change', (e) => this.selectShop(e.target.value));
+        }
 
         // Customer validation
-        document.getElementById('validate-customer-btn').addEventListener('click', () => this.validateCustomer());
-        document.getElementById('customer-name').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.validateCustomer();
-        });
+        const validateBtn = document.getElementById('validate-customer-btn');
+        if (validateBtn) {
+            validateBtn.addEventListener('click', () => this.validateCustomer());
+        }
+        
+        const customerNameInput = document.getElementById('customer-name');
+        if (customerNameInput) {
+            customerNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.validateCustomer();
+            });
+        }
 
-        // Item search and filter
-        document.getElementById('item-search').addEventListener('input', () => this.filterItems());
-        document.getElementById('item-category-filter').addEventListener('change', () => this.filterItems());
+        // Register new player button
+        const registerBtn = document.getElementById('register-new-player-btn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', () => this.registerNewPlayer());
+        }
 
-        // Cart actions
-        document.getElementById('clear-cart-btn').addEventListener('click', () => this.clearCart());
-        document.getElementById('process-transaction-btn').addEventListener('click', () => this.showTransactionModal());
+        // Item search
+        const itemSearch = document.getElementById('item-search');
+        if (itemSearch) {
+            itemSearch.addEventListener('input', () => this.filterItems());
+        }
+
+        // Toggle view button
+        const toggleViewBtn = document.getElementById('toggle-view-btn');
+        if (toggleViewBtn) {
+            toggleViewBtn.addEventListener('click', () => this.toggleItemsView());
+        }
+
+        // Transaction actions
+        const clearTransactionBtn = document.getElementById('clear-transaction-btn');
+        if (clearTransactionBtn) {
+            clearTransactionBtn.addEventListener('click', () => this.clearCart());
+        }
+        
+        const recordTransactionBtn = document.getElementById('record-transaction-btn');
+        if (recordTransactionBtn) {
+            recordTransactionBtn.addEventListener('click', () => this.showTransactionModal());
+        }
 
         // History controls
-        document.getElementById('history-filter').addEventListener('change', () => this.loadTransactionHistory());
-        document.getElementById('history-date-filter').addEventListener('change', () => this.loadTransactionHistory());
-        document.getElementById('refresh-history-btn').addEventListener('click', () => this.loadTransactionHistory());
+        const historyFilter = document.getElementById('history-filter');
+        if (historyFilter) {
+            historyFilter.addEventListener('change', () => this.loadTransactionHistory());
+        }
+        
+        const historyDateFilter = document.getElementById('history-date-filter');
+        if (historyDateFilter) {
+            historyDateFilter.addEventListener('change', () => this.loadTransactionHistory());
+        }
+        
+        const refreshHistoryBtn = document.getElementById('refresh-history-btn');
+        if (refreshHistoryBtn) {
+            refreshHistoryBtn.addEventListener('click', () => this.loadTransactionHistory());
+        }
     }
 
     async loadInitialData() {
@@ -536,6 +573,38 @@ class UnifiedTeller {
     clearCart() {
         this.cart = [];
         this.updateCartDisplay();
+    }
+
+    toggleItemsView() {
+        const gridView = document.getElementById('items-grid-view');
+        const tableView = document.getElementById('items-table-view');
+        const toggleBtn = document.getElementById('toggle-view-btn');
+        
+        if (gridView && tableView && toggleBtn) {
+            if (gridView.style.display === 'none') {
+                // Switch to grid view
+                gridView.style.display = 'grid';
+                tableView.style.display = 'none';
+                toggleBtn.textContent = 'Table View';
+            } else {
+                // Switch to table view
+                gridView.style.display = 'none';
+                tableView.style.display = 'block';
+                toggleBtn.textContent = 'Grid View';
+            }
+        }
+    }
+
+    registerNewPlayer() {
+        const customerName = document.getElementById('customer-name')?.value?.trim();
+        if (!customerName) {
+            this.showStatus('Please enter a customer name first', 'error');
+            return;
+        }
+        
+        // This would typically open a modal or form for player registration
+        console.log('Register new player:', customerName);
+        this.showStatus('Player registration functionality to be implemented', 'info');
     }
 
     showTransactionModal() {
