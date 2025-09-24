@@ -542,11 +542,13 @@ class UnifiedTeller {
                 <div class="item-type">${item.item_type || 'Trophies'}</div>
             </div>
             <div class="item-pricing" style="position: relative;">
-                <div class="item-icon" style="position: absolute; left: 0; top: 0; z-index: 10; width: 40px; height: 40px;">
-                    <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                         style="width: 100%; height: 100%; object-fit: cover;"
-                         onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
-                </div>
+                ${item.icon_image ? `
+                    <div class="item-icon" style="position: absolute; left: 5px; top: 5px; z-index: 10; width: 64px; height: 64px;">
+                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
+                             onerror="this.parentElement.style.display='none'">
+                    </div>
+                ` : ''}
                 <div class="price-row">
                     <span class="price-label">Unit:</span>
                     <span class="price-value">${unitPrice}</span>
