@@ -19,6 +19,12 @@ function unified_teller_scripts_shortcode($atts) {
         true
     );
 
+    // Localize the comprehensive API script with necessary data
+    wp_localize_script('jotun-comprehensive-api', 'jotun_api_vars', [
+        'nonce' => wp_create_nonce('wp_rest'),
+        'rest_url' => rest_url('jotun-api/v1/')
+    ]);
+
     wp_enqueue_script(
         'unified-teller-js',
         plugin_dir_url(__FILE__) . '../../assets/js/unified-teller.js',
@@ -58,6 +64,12 @@ function maybe_enqueue_teller_scripts() {
             '1.0.0',
             true
         );
+
+        // Localize the comprehensive API script with necessary data
+        wp_localize_script('jotun-comprehensive-api', 'jotun_api_vars', [
+            'nonce' => wp_create_nonce('wp_rest'),
+            'rest_url' => rest_url('jotun-api/v1/')
+        ]);
 
         wp_enqueue_script(
             'unified-teller-js',
