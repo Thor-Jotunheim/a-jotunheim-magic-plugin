@@ -480,7 +480,9 @@ class JotunheimPagePermissions {
                     'eventzones_editor', 
                     'event_zone_editor',
                     'pos_interface',
-                    'jotun-playerlist'
+                    'jotun-playerlist',
+                    'jotunheim_barter_page',
+                    'barter'
                 ];
                 return in_array($page_slug, $allowed_pages_for_editors);
             }
