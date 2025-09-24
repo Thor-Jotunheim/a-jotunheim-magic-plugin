@@ -1072,7 +1072,8 @@ function jotun_api_get_playerlist($request) {
     $params = [];
     
     if ($search) {
-        $sql .= " WHERE player_name LIKE %s";
+        $sql .= " WHERE activePlayerName LIKE %s OR player_name LIKE %s";
+        $params[] = '%' . $wpdb->esc_like($search) . '%';
         $params[] = '%' . $wpdb->esc_like($search) . '%';
     }
     

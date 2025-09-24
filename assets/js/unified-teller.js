@@ -234,7 +234,7 @@ class UnifiedTeller {
             }
             
             const filteredPlayers = this.playerList.filter(player => 
-                player.player_name.toLowerCase().includes(query)
+                player.activePlayerName && player.activePlayerName.toLowerCase().includes(query)
             ).slice(0, 10); // Show max 10 suggestions
             
             this.displayPlayerSuggestions(filteredPlayers, suggestionsContainer, customerNameInput);
@@ -282,12 +282,12 @@ class UnifiedTeller {
             const div = document.createElement('div');
             div.className = 'player-suggestion-item';
             div.innerHTML = `
-                <div class="player-name">${player.player_name}</div>
+                <div class="player-name">${player.activePlayerName}</div>
                 <div class="player-status ${player.is_active ? 'active' : 'inactive'}">${player.is_active ? 'Active' : 'Inactive'}</div>
             `;
             
             div.addEventListener('click', () => {
-                input.value = player.player_name;
+                input.value = player.activePlayerName;
                 container.style.display = 'none';
                 
                 // Automatically validate the selected customer
@@ -596,26 +596,21 @@ class UnifiedTeller {
         }
 
         try {
-            // Use the player validation API
-            const response = await fetch('/wp-json/pos/v1/validate-player', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': typeof posAjax !== 'undefined' ? posAjax.nonce : ''
-                },
-                body: JSON.stringify({ player_name: customerName })
-            });
-
-            const result = await response.json();
+            // Search for player using the comprehensive API
+            const response = await JotunAPI.getPlayers({ search: customerName });
+            const players = response.data || [];
             
-            if (result.success) {
-                this.currentCustomer = result.player;
-                this.displayCustomerInfo(result.player);
+            // Find exact match by activePlayerName
+            const player = players.find(p => p.activePlayerName === customerName);
+            
+            if (player) {
+                this.currentCustomer = player;
+                this.displayCustomerInfo(player);
                 this.showCustomerStatus('Customer validated successfully', 'valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
             } else {
                 this.currentCustomer = null;
-                this.showCustomerStatus(result.message || 'Customer not found', 'invalid');
+                this.showCustomerStatus('Customer not found', 'invalid');
                 document.getElementById('customer-info').style.display = 'none';
                 document.getElementById('process-transaction-btn').disabled = true;
             }
@@ -627,9 +622,10 @@ class UnifiedTeller {
     }
 
     displayCustomerInfo(customer) {
+        document.getElementById('customer-display-name').textContent = customer.activePlayerName;
         document.getElementById('customer-id').textContent = customer.id;
         document.getElementById('customer-active-status').textContent = customer.is_active ? 'Active' : 'Inactive';
-        document.getElementById('customer-registration').textContent = this.formatDate(customer.registration_date);
+        document.getElementById('customer-registration').textContent = this.formatDate(customer.registration_date || customer.created_at);
         document.getElementById('customer-info').style.display = 'block';
     }
 
@@ -944,7 +940,7 @@ class UnifiedTeller {
             }
             
             const filteredPlayers = players.filter(player => 
-                player.player_name && player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+                player.activePlayerName && player.activePlayerName.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
             console.log('Filtered players:', filteredPlayers);
@@ -966,7 +962,7 @@ class UnifiedTeller {
             const players = response.data || [];
             
             const filteredPlayers = players.filter(player => 
-                player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+                player.activePlayerName && player.activePlayerName.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
             this.showCustomerSuggestions(filteredPlayers, 'turnin-customer-suggestions');
@@ -989,7 +985,7 @@ class UnifiedTeller {
             const suggestion = document.createElement('div');
             suggestion.className = 'customer-suggestion';
             suggestion.innerHTML = `
-                <span class="customer-suggestion-name">${player.player_name}</span>
+                <span class="customer-suggestion-name">${player.activePlayerName}</span>
                 <span class="customer-suggestion-status ${player.is_active ? 'active' : 'inactive'}">
                     ${player.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -1008,14 +1004,14 @@ class UnifiedTeller {
     }
 
     selectCustomer(player) {
-        document.getElementById('customer-name').value = player.player_name;
+        document.getElementById('customer-name').value = player.activePlayerName;
         this.currentCustomer = player;
         this.hideCustomerSuggestions();
         this.displayCustomerInfo(player, 'customer');
     }
 
     selectTurninCustomer(player) {
-        document.getElementById('turnin-customer-name').value = player.player_name;
+        document.getElementById('turnin-customer-name').value = player.activePlayerName;
         this.currentTurninCustomer = player;
         this.hideTurninCustomerSuggestions();
         this.displayCustomerInfo(player, 'turnin');
@@ -1024,7 +1020,7 @@ class UnifiedTeller {
     displayCustomerInfo(player, type) {
         const prefix = type === 'turnin' ? 'turnin-' : '';
         
-        document.getElementById(`${prefix}customer-display-name`).textContent = player.player_name;
+        document.getElementById(`${prefix}customer-display-name`).textContent = player.activePlayerName;
         document.getElementById(`${prefix}customer-active-status`).textContent = player.is_active ? 'Active' : 'Inactive';
         document.getElementById(`${prefix}customer-registration`).textContent = this.formatDate(player.created_at);
         document.getElementById(`${prefix}customer-info`).style.display = 'block';
