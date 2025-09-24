@@ -1,11 +1,12 @@
 <?php
 // File: editor-permissions.php
-// *** DEPRECATED - DISABLED IN FAVOR OF DISCORD-BASED PAGE PERMISSIONS ***
-// This file is kept for reference but is not actively used.
-// The new Discord page permissions system in page-permissions.php handles access control.
+// *** DEPRECATED - TO BE REMOVED ***
+// This file is completely replaced by the Discord page permissions system in page-permissions.php
+// The new system now handles both frontend page access AND admin page capabilities
 // 
 // Original purpose: Special permission handler to allow editors access to specific admin pages
 // Status: INACTIVE - All hooks have been commented out
+// TODO: Remove this file after confirming new system works properly
 
 // Prevent direct access
 if (!defined('ABSPATH')) exit;

@@ -9,8 +9,57 @@ class JotunheimPagePermissions {
     public function __construct() {
         add_action('wp_ajax_save_page_permissions', [$this, 'ajax_save_page_permissions']);
         add_action('wp_ajax_get_page_permissions', [$this, 'ajax_get_page_permissions']);
+        
+        // Add admin capability management
+        add_action('init', [$this, 'manage_admin_capabilities'], 1);
     }
     
+    /**
+     * Manage admin page capabilities based on Discord permissions
+     */
+    public function manage_admin_capabilities() {
+        // Only run in admin area for logged-in users
+        if (!is_admin() || !is_user_logged_in()) {
+            return;
+        }
+
+        $current_user = wp_get_current_user();
+        
+        // Don't interfere with administrators at all
+        if (in_array('administrator', $current_user->roles)) {
+            return;
+        }
+        
+        // Only apply to users with editor role (but not administrator)
+        if (!in_array('editor', $current_user->roles)) {
+            return;
+        }
+
+        // Get the current admin page being accessed
+        $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+        
+        if (!$current_page) {
+            return;
+        }
+
+        // Check if user has Discord permission for this admin page
+        $user_id = $current_user->ID;
+        if (self::user_can_access_page($current_page, $user_id)) {
+            // Grant manage_options capability for this specific page
+            add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user, $current_page) {
+                // Only modify capabilities for the current user
+                if ($user->ID === $current_user->ID) {
+                    // Check if we're requesting manage_options capability
+                    if (isset($caps[0]) && $caps[0] === 'manage_options') {
+                        $allcaps['manage_options'] = true;
+                        error_log("Jotunheim Page Permissions: Granted manage_options to user {$current_user->user_login} for page {$current_page}");
+                    }
+                }
+                return $allcaps;
+            }, 10, 4);
+        }
+    }
+
     /**
      * Render the page permissions configuration page
      */
@@ -418,32 +467,50 @@ class JotunheimPagePermissions {
             return true;
         }
         
-        // For now, also allow editors to access everything until Discord integration is fully set up
-        if (user_can($user_id, 'edit_posts')) {
-            return true;
-        }
-        
-        // Get user's Discord roles (this would need to be implemented based on your Discord integration)
+        // Get user's Discord roles from stored metadata
         $user_discord_roles = self::get_user_discord_roles($user_id);
         
+        // If user has no Discord roles, check if they have editor role as fallback
         if (empty($user_discord_roles)) {
-            return false; // No Discord roles = no access
+            // Allow editors access to core Jotunheim pages as fallback
+            if (user_can($user_id, 'edit_posts')) {
+                $allowed_pages_for_editors = [
+                    'jotunheim_magic',
+                    'item_list_editor',
+                    'eventzones_editor', 
+                    'event_zone_editor',
+                    'pos_interface',
+                    'jotun-playerlist'
+                ];
+                return in_array($page_slug, $allowed_pages_for_editors);
+            }
+            return false; // No Discord roles and not editor = no access
         }
         
         // Get page permissions
         $page_permissions = get_option('jotunheim_page_permissions', []);
         
         if (!isset($page_permissions[$page_slug])) {
-            return false; // Page not configured = no access
+            // If page not configured, check if user has high-level Discord role as fallback
+            $high_level_roles = ['norn', 'aesir'];
+            foreach ($user_discord_roles as $role_key) {
+                if (in_array($role_key, $high_level_roles)) {
+                    error_log("Jotunheim Page Permissions: Granting access to unconfigured page {$page_slug} for high-level role {$role_key}");
+                    return true;
+                }
+            }
+            return false; // Page not configured and no high-level role = no access
         }
         
         // Check if user has any role that grants access to this page
         foreach ($user_discord_roles as $role_key) {
             if (isset($page_permissions[$page_slug][$role_key]) && $page_permissions[$page_slug][$role_key]) {
+                error_log("Jotunheim Page Permissions: Granting access to page {$page_slug} for Discord role {$role_key}");
                 return true;
             }
         }
         
+        error_log("Jotunheim Page Permissions: Denying access to page {$page_slug} for user {$user_id} with roles: " . implode(', ', $user_discord_roles));
         return false;
     }
     
@@ -459,15 +526,18 @@ class JotunheimPagePermissions {
         }
         
         // Get configured Discord roles to map IDs to role keys
-        $configured_roles = get_configured_discord_roles();
+        $configured_roles = get_option('jotunheim_discord_roles', []);
         $user_role_keys = [];
         
         // Map Discord role IDs to our role keys
         foreach ($configured_roles as $role_key => $role_data) {
-            if (in_array($role_data['id'], $discord_roles)) {
+            if (isset($role_data['id']) && in_array($role_data['id'], $discord_roles)) {
                 $user_role_keys[] = $role_key;
             }
         }
+        
+        error_log("Jotunheim Page Permissions: User {$user_id} has Discord role IDs: " . implode(', ', $discord_roles));
+        error_log("Jotunheim Page Permissions: Mapped to role keys: " . implode(', ', $user_role_keys));
         
         return $user_role_keys;
     }
