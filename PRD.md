@@ -92,10 +92,6 @@ Create a comprehensive shop management system for the Jotunheim gaming community
 - Purpose: Streamline transaction processing for staff and reduce interface switching
 - Features: Multi-shop view, bulk operations, transaction batching, real-time updates
 - Multi-User: Multiple staff can operate simultaneously on same interface
-- Needs: 
-   - Drop down menu to select shop
-   - Access to drop downs should be determined by discord role permissions already set in shop manager. 
-   
 
 **Transaction Recording (Multi-Shop)**
 - Functionality: Record purchases/sales across Admin, Popup, Haldore, and Beehive shops
@@ -207,20 +203,10 @@ Subtle and functional animations that provide immediate feedback without interfe
 
 ## Known Issues & Technical Debt
 
-**Dashboard Manager Search Issues**
-- Problem: Shop Manager[shop_manager] & Unified Teller[unified_teller] pages appear in search but other shortcodes don't
-- Impact: Inconsistent search results, some pages missing from navigation
-- Status: Under investigation
-
-**Overview Page Permissions**
-- Problem: Dashboard overview links return permission errors despite proper authentication
-- Impact: Navigation broken for some admin functions
-- Status: Requires permission system debugging
-
-**Database Schema Migration**
-- Recent Fix: Resolved "Unknown column 'custom_price'" errors causing 500 status responses
-- Solution: Added proper column existence checking and safe migration logic
-- Status: ✅ Resolved in latest update
+**Unified Teller Needs**
+- Needs: 
+   - Drop down menu to select shop
+   - Access to drop downs should be determined by discord role permissions already set in shop manager. 
 
 ## Integration Opportunities
 

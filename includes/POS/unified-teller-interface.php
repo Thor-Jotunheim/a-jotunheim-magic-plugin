@@ -43,78 +43,116 @@ function unified_teller_interface() {
         <!-- Teller Interface (hidden until shop is selected) -->
         <div id="teller-main-interface" style="display: none;">
             
-            <!-- Transaction Type Selection -->
-            <div class="transaction-type-section">
-                <h3>Transaction Type</h3>
-                <div class="transaction-type-buttons">
-                    <button id="buy-mode-btn" class="transaction-type-btn active" data-mode="buy">
-                        💰 Customer Purchase
-                    </button>
-                    <button id="sell-mode-btn" class="transaction-type-btn" data-mode="sell">
-                        📦 Customer Sale
-                    </button>
-                    <button id="admin-mode-btn" class="transaction-type-btn" data-mode="admin">
-                        ⚙️ Admin Transaction
-                    </button>
+            <!-- Teller Information -->
+            <div class="teller-info-section">
+                <h3>Teller Information</h3>
+                <div class="teller-form">
+                    <div class="form-group">
+                        <label for="teller-name">Shopkeeper/Teller:</label>
+                        <input type="text" id="teller-name" placeholder="Enter teller name (e.g., Huginn, Muninn)" value="<?php echo esc_attr(wp_get_current_user()->display_name); ?>">
+                    </div>
                 </div>
             </div>
 
             <!-- Player Information -->
             <div class="player-section">
-                <h3>Customer Information</h3>
+                <h3>Player</h3>
                 <div class="player-form">
                     <div class="form-group">
-                        <label for="customer-name">Customer Name:</label>
-                        <input type="text" id="customer-name" placeholder="Enter customer name">
-                        <button id="validate-customer-btn" type="button">Validate</button>
+                        <label for="customer-name">Player Name:</label>
+                        <input type="text" id="customer-name" placeholder="Enter player name (e.g., Sephrm)">
+                        <button id="validate-customer-btn" type="button">Validate Player</button>
+                    </div>
+                    <div class="form-group">
+                        <button id="register-new-player-btn" type="button" class="register-btn" style="display: none;">
+                            Register New Player
+                        </button>
                     </div>
                     <div id="customer-status" class="customer-status"></div>
                     <div id="customer-info" class="customer-info" style="display: none;">
-                        <p><strong>Player ID:</strong> <span id="customer-id"></span></p>
-                        <p><strong>Status:</strong> <span id="customer-active-status"></span></p>
-                        <p><strong>Registration:</strong> <span id="customer-registration"></span></p>
+                        <div class="player-info-card">
+                            <p><strong>Player:</strong> <span id="customer-display-name"></span></p>
+                            <p><strong>Status:</strong> <span id="customer-active-status"></span></p>
+                            <p><strong>Registered:</strong> <span id="customer-registration"></span></p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Shop Items Display -->
+            <!-- Player Payment Tracking -->
+            <div class="player-payment-section">
+                <h3>Player Payment</h3>
+                <div class="payment-grid">
+                    <div class="payment-item">
+                        <label for="ymir-flesh-total">Ymir Flesh</label>
+                        <input type="number" id="ymir-flesh-total" value="0" min="0">
+                    </div>
+                    <div class="payment-item">
+                        <label for="gold-total">Gold</label>
+                        <input type="number" id="gold-total" value="0" min="0">
+                    </div>
+                    <div class="payment-summary">
+                        <div class="total-cost">
+                            <strong>Item Total Cost: <span id="item-total-cost">0</span></strong>
+                        </div>
+                        <div class="payment-status">
+                            <span id="payment-balance">Balanced</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Items Grid -->
             <div class="shop-items-section">
-                <h3>Available Items</h3>
                 <div class="items-controls">
                     <input type="text" id="item-search" placeholder="Search items..." class="item-search">
-                    <select id="item-category-filter" class="item-filter">
-                        <option value="">All Categories</option>
-                        <!-- Categories will be loaded dynamically -->
-                    </select>
+                    <button id="toggle-view-btn" class="btn btn-secondary">Toggle View</button>
                 </div>
-                <div id="shop-items-grid" class="items-grid">
-                    <!-- Items will be loaded here based on selected shop -->
+                
+                <div id="shop-items-table" class="items-table-container">
+                    <table class="shop-items-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Buy</th>
+                                <th>Claim</th>
+                                <th>Value</th>
+                                <th>Item Name</th>
+                                <th>Buy</th>
+                                <th>Claim</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-table-body">
+                            <!-- Items will be loaded here in two-column layout -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Shopping Cart -->
-            <div class="shopping-cart-section">
-                <h3>Transaction Cart</h3>
-                <div id="shopping-cart" class="shopping-cart">
-                    <div class="cart-header">
+            <!-- Transaction Summary -->
+            <div class="transaction-summary-section">
+                <h3>Transaction Summary</h3>
+                <div id="transaction-items" class="transaction-items">
+                    <div class="transaction-header">
                         <span>Item</span>
-                        <span>Price</span>
-                        <span>Qty</span>
-                        <span>Total</span>
+                        <span>Type</span>
+                        <span>Quantity</span>
+                        <span>Value</span>
                         <span>Actions</span>
                     </div>
-                    <div id="cart-items" class="cart-items">
-                        <!-- Cart items will be added here -->
+                    <div id="transaction-items-list" class="transaction-items-list">
+                        <!-- Selected items will appear here -->
                     </div>
-                    <div class="cart-footer">
-                        <div class="cart-total">
-                            <strong>Total: $<span id="cart-total-amount">0.00</span></strong>
-                        </div>
-                        <div class="cart-actions">
-                            <button id="clear-cart-btn" class="btn btn-secondary">Clear Cart</button>
-                            <button id="process-transaction-btn" class="btn btn-primary" disabled>Process Transaction</button>
-                        </div>
-                    </div>
+                </div>
+                
+                <div class="transaction-actions">
+                    <button id="clear-transaction-btn" class="btn btn-secondary">
+                        Clear Transaction
+                    </button>
+                    <button id="record-transaction-btn" class="btn btn-primary" disabled>
+                        Clear & Record Transaction
+                    </button>
                 </div>
             </div>
 

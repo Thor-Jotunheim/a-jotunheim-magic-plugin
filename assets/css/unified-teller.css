@@ -1,0 +1,485 @@
+/**
+ * Unified Teller Interface Styles
+ * Based on PRD design specifications from Spark
+ * Professional, enterprise-like interface with triadic color scheme
+ */
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CSS Variables based on PRD color scheme */
+:root {
+    /* Primary Colors */
+    --primary-blue: oklch(0.45 0.15 240);
+    --primary-blue-dark: oklch(0.25 0.05 240);
+    --secondary-slate: oklch(0.35 0.02 240);
+    --secondary-steel: oklch(0.55 0.12 240);
+    --accent-amber: oklch(0.75 0.15 60);
+    --background-white: oklch(0.98 0.01 240);
+    --success-green: oklch(0.65 0.15 140);
+    --error-red: oklch(0.55 0.15 15);
+    
+    /* Spacing based on PRD (16px base, 8px tight, 24px section) */
+    --spacing-tight: 8px;
+    --spacing-base: 16px;
+    --spacing-section: 24px;
+    --spacing-large: 32px;
+    
+    /* Typography based on PRD */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-small: 14px;
+    --font-size-base: 16px;
+    --font-size-h3: 18px;
+    --font-size-h2: 24px;
+    --font-size-h1: 32px;
+    
+    /* Border radius for modern look */
+    --border-radius: 8px;
+    --border-radius-small: 4px;
+    
+    /* Shadows for depth */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Base styles */
+.teller-container {
+    font-family: var(--font-family);
+    color: var(--primary-blue-dark);
+    background-color: var(--background-white);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-section);
+}
+
+.teller-container h1 {
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 var(--spacing-large) 0;
+    color: var(--primary-blue);
+}
+
+.teller-container h2 {
+    font-size: var(--font-size-h2);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-base) 0;
+    color: var(--primary-blue);
+}
+
+.teller-container h3 {
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    margin: 0 0 var(--spacing-base) 0;
+    color: var(--primary-blue-dark);
+}
+
+/* Section styling */
+.shop-selection-section,
+.teller-info-section,
+.player-section,
+.player-payment-section,
+.shop-items-section,
+.transaction-summary-section {
+    background: white;
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-section);
+    margin-bottom: var(--spacing-section);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Form elements */
+.form-group {
+    margin-bottom: var(--spacing-base);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    color: var(--primary-blue-dark);
+    margin-bottom: var(--spacing-tight);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px var(--spacing-base);
+    border: 1px solid oklch(0.8 0.01 240);
+    border-radius: var(--border-radius-small);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    background-color: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px oklch(0.45 0.15 240 / 0.1);
+}
+
+/* Button styling */
+.btn {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    padding: 12px var(--spacing-section);
+    border: none;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-tight);
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: oklch(0.4 0.15 240);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-slate);
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: oklch(0.3 0.02 240);
+}
+
+.btn-accent {
+    background-color: var(--accent-amber);
+    color: var(--primary-blue-dark);
+}
+
+.btn-accent:hover:not(:disabled) {
+    background-color: oklch(0.7 0.15 60);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.register-btn {
+    background-color: var(--success-green);
+    color: white;
+    padding: var(--spacing-tight) var(--spacing-base);
+    font-size: var(--font-size-small);
+}
+
+/* Shop selector row */
+.shop-selector-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-section);
+    flex-wrap: wrap;
+}
+
+.shop-selector-row .form-group {
+    flex: 1;
+    min-width: 300px;
+    margin-bottom: 0;
+}
+
+.shop-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-base);
+}
+
+.shop-type-badge {
+    background-color: var(--accent-amber);
+    color: var(--primary-blue-dark);
+    padding: 4px var(--spacing-tight);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-small);
+    font-weight: 500;
+}
+
+/* Player info card */
+.player-info-card {
+    background-color: oklch(0.96 0.01 240);
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius-small);
+    padding: var(--spacing-base);
+    margin-top: var(--spacing-base);
+}
+
+.player-info-card p {
+    margin: 0 0 var(--spacing-tight) 0;
+}
+
+.player-info-card p:last-child {
+    margin-bottom: 0;
+}
+
+/* Payment grid */
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-base);
+    align-items: start;
+}
+
+.payment-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-item label {
+    font-weight: 500;
+    color: var(--primary-blue-dark);
+    margin-bottom: var(--spacing-tight);
+}
+
+.payment-item input {
+    padding: var(--spacing-tight) 12px;
+    border: 1px solid oklch(0.8 0.01 240);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-base);
+}
+
+.payment-summary {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: oklch(0.96 0.01 240);
+    padding: var(--spacing-base);
+    border-radius: var(--border-radius-small);
+    margin-top: var(--spacing-base);
+}
+
+.total-cost {
+    font-size: var(--font-size-base);
+    color: var(--primary-blue-dark);
+}
+
+.payment-status {
+    font-weight: 500;
+    color: var(--success-green);
+}
+
+/* Items controls */
+.items-controls {
+    display: flex;
+    gap: var(--spacing-base);
+    margin-bottom: var(--spacing-section);
+    align-items: center;
+}
+
+.item-search {
+    flex: 1;
+    max-width: 300px;
+}
+
+/* Items table */
+.items-table-container {
+    overflow-x: auto;
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius);
+}
+
+.shop-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-base);
+}
+
+.shop-items-table th {
+    background-color: var(--secondary-slate);
+    color: white;
+    padding: 12px var(--spacing-base);
+    text-align: left;
+    font-weight: 500;
+    border-bottom: 1px solid oklch(0.9 0.01 240);
+}
+
+.shop-items-table td {
+    padding: 12px var(--spacing-base);
+    border-bottom: 1px solid oklch(0.95 0.01 240);
+}
+
+.shop-items-table tbody tr:hover {
+    background-color: oklch(0.98 0.01 240);
+}
+
+/* Item action buttons */
+.item-action-btn {
+    padding: 6px 12px;
+    font-size: var(--font-size-small);
+    border: 1px solid oklch(0.8 0.01 240);
+    background-color: white;
+    color: var(--primary-blue-dark);
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.item-action-btn:hover {
+    background-color: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.item-action-btn.active {
+    background-color: var(--accent-amber);
+    color: var(--primary-blue-dark);
+    border-color: var(--accent-amber);
+}
+
+/* Transaction summary */
+.transaction-items {
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.transaction-header {
+    background-color: var(--secondary-slate);
+    color: white;
+    padding: 12px var(--spacing-base);
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: var(--spacing-base);
+    font-weight: 500;
+}
+
+.transaction-items-list {
+    min-height: 100px;
+    background-color: white;
+}
+
+.transaction-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: var(--spacing-base);
+    padding: 12px var(--spacing-base);
+    border-bottom: 1px solid oklch(0.95 0.01 240);
+    align-items: center;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-actions {
+    display: flex;
+    gap: var(--spacing-base);
+    justify-content: flex-end;
+    margin-top: var(--spacing-section);
+}
+
+/* Status messages */
+.customer-status {
+    padding: var(--spacing-tight) var(--spacing-base);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-small);
+    font-weight: 500;
+    margin-top: var(--spacing-tight);
+}
+
+.customer-status.success {
+    background-color: oklch(0.9 0.1 140);
+    color: oklch(0.3 0.15 140);
+    border: 1px solid oklch(0.8 0.1 140);
+}
+
+.customer-status.error {
+    background-color: oklch(0.9 0.1 15);
+    color: oklch(0.3 0.15 15);
+    border: 1px solid oklch(0.8 0.1 15);
+}
+
+.customer-status.warning {
+    background-color: oklch(0.9 0.1 60);
+    color: oklch(0.3 0.15 60);
+    border: 1px solid oklch(0.8 0.1 60);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .teller-container {
+        padding: var(--spacing-base);
+    }
+    
+    .shop-selector-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .items-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .transaction-actions {
+        flex-direction: column;
+    }
+    
+    .transaction-header,
+    .transaction-item {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-tight);
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Validation states */
+.form-group.error input,
+.form-group.error select {
+    border-color: var(--error-red);
+    box-shadow: 0 0 0 3px oklch(0.55 0.15 15 / 0.1);
+}
+
+.form-group.success input,
+.form-group.success select {
+    border-color: var(--success-green);
+    box-shadow: 0 0 0 3px oklch(0.65 0.15 140 / 0.1);
+}
+
+/* Hidden state */
+.hidden {
+    display: none !important;
+}
