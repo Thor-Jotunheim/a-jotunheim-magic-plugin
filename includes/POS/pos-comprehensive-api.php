@@ -2264,6 +2264,18 @@ function jotun_api_add_transaction($request) {
         'transaction_type' => sanitize_text_field($data['transaction_type'] ?? 'general')
     ];
     
+    // Add player_id if the column exists and we can find the player
+    if (POS_Database_Utils::column_exists('jotun_transactions', 'player_id')) {
+        $customer_name = sanitize_text_field($data['customer_name']);
+        $player_record = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+            $customer_name, $customer_name
+        ));
+        if ($player_record) {
+            $insert_data['player_id'] = $player_record->id;
+        }
+    }
+    
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {

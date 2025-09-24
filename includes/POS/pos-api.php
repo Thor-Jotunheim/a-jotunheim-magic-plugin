@@ -169,13 +169,25 @@ function pos_admin_record($request) {
                 'transaction_date' => current_time('mysql')
             ];
             
+            // Add player_id if the column exists and we can find the player
+            if (POS_Database_Utils::column_exists('jotun_transactions', 'player_id')) {
+                $player_record = $wpdb->get_row($wpdb->prepare(
+                    "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+                    $player_name, $player_name
+                ));
+                if ($player_record) {
+                    $transaction_data_to_insert['player_id'] = $player_record->id;
+                }
+            }
+            
             // Use database utilities for safe column handling
             $include_transaction_type = POS_Database_Utils::column_exists('jotun_transactions', 'transaction_type');
             if ($include_transaction_type) {
                 $transaction_data_to_insert['transaction_type'] = $no_buys ? 'claim' : ($no_claims ? 'buy' : 'buy_and_claim');
             }
             
-            $format = POS_Database_Utils::get_transaction_insert_format($include_transaction_type);
+            $include_player_id = POS_Database_Utils::column_exists('jotun_transactions', 'player_id');
+            $format = POS_Database_Utils::get_transaction_insert_format($include_transaction_type, $include_player_id);
             $result = $wpdb->insert($transaction_table, $transaction_data_to_insert, $format);
             
             if ($result) {
@@ -234,13 +246,25 @@ function pos_spell_record($request) {
                 'transaction_date' => current_time('mysql')
             ];
             
+            // Add player_id if the column exists and we can find the player
+            if (POS_Database_Utils::column_exists('jotun_transactions', 'player_id')) {
+                $player_record = $wpdb->get_row($wpdb->prepare(
+                    "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+                    $player_name, $player_name
+                ));
+                if ($player_record) {
+                    $transaction_data_to_insert['player_id'] = $player_record->id;
+                }
+            }
+            
             // Use database utilities for safe column handling
             $include_transaction_type = POS_Database_Utils::column_exists('jotun_transactions', 'transaction_type');
             if ($include_transaction_type) {
                 $transaction_data_to_insert['transaction_type'] = 'spell';
             }
             
-            $format = POS_Database_Utils::get_transaction_insert_format($include_transaction_type);
+            $include_player_id = POS_Database_Utils::column_exists('jotun_transactions', 'player_id');
+            $format = POS_Database_Utils::get_transaction_insert_format($include_transaction_type, $include_player_id);
             $result = $wpdb->insert($transaction_table, $transaction_data_to_insert, $format);
             
             if ($result) {

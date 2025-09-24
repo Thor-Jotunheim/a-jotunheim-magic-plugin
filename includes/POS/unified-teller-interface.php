@@ -66,10 +66,9 @@ function unified_teller_interface() {
                                         type="text" 
                                         id="customer-name" 
                                         class="field-input" 
-                                        placeholder="Start typing player name..."
+                                        placeholder="Start typing player name... (auto-validates)"
                                         autocomplete="off"
                                     >
-                                    <button id="validate-customer-btn" class="btn btn-secondary">Validate</button>
                                 </div>
                                 <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                             </div>
@@ -99,46 +98,6 @@ function unified_teller_interface() {
 
         <!-- Main Transaction Interface (hidden until shop is selected) -->
         <div id="teller-main-interface" class="teller-main" style="display: none;">
-
-            <!-- Shop Items -->
-            <div class="teller-card items-card">
-                <div class="card-header">
-                    <h2 class="card-title">Shop Inventory</h2>
-                    <p class="card-description">Browse and select items for transaction</p>
-                </div>
-                <div class="card-content">
-                    <div class="items-controls">
-                        <input type="text" id="item-search" class="field-input" placeholder="Search items...">
-                        <button id="toggle-view-btn" class="btn btn-secondary">Toggle View</button>
-                    </div>
-                    
-                    <div id="shop-items-table" class="items-container">
-                        <div id="items-grid-view" class="items-grid" style="display: block;">
-                            <!-- Items will be populated here -->
-                        </div>
-                        
-                        <div id="items-table-view" class="items-table" style="display: none;">
-                            <table class="items-data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Buy</th>
-                                        <th>Sell</th>
-                                        <th>Price</th>
-                                        <th>Item</th>
-                                        <th>Buy</th>
-                                        <th>Sell</th>
-                                        <th>Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="items-table-body">
-                                    <!-- Items will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Shop Items -->
             <div class="teller-card items-card">

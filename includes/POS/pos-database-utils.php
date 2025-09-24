@@ -112,11 +112,15 @@ class POS_Database_Utils {
     /**
      * Get safe insert format for transactions table
      */
-    public static function get_transaction_insert_format($include_transaction_type = false) {
+    public static function get_transaction_insert_format($include_transaction_type = false, $include_player_id = false) {
         $base_format = ['%s', '%s', '%d', '%f', '%s', '%s', '%s']; // shop_name, item_name, quantity, total_amount, customer_name, teller, transaction_date
         
         if ($include_transaction_type && self::column_exists('jotun_transactions', 'transaction_type')) {
             $base_format[] = '%s'; // transaction_type
+        }
+        
+        if ($include_player_id && self::column_exists('jotun_transactions', 'player_id')) {
+            $base_format[] = '%d'; // player_id
         }
         
         return $base_format;

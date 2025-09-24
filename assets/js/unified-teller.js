@@ -514,17 +514,41 @@ class UnifiedTeller {
         card.className = `item-card ${item.stock_quantity <= 0 ? 'out-of-stock' : ''}`;
         card.dataset.itemId = item.id;
         
-        const price = item.price || item.default_price || 0;
+        // Use unit_price from the enriched data
+        const unitPrice = item.unit_price || item.price || item.default_price || 0;
+        const stackPrice = item.stack_price || (unitPrice * (item.stack_size || 1));
         
         card.innerHTML = `
             <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-            <div class="item-price">$${parseFloat(price).toFixed(2)}</div>
-            <div class="item-stock">Stock: ${item.stock_quantity || 0}</div>
+            <div class="item-pricing">
+                <div class="unit-price">Unit: ${unitPrice} YF</div>
+                <div class="stack-price">Stack: ${stackPrice} YF</div>
+            </div>
+            <div class="item-stock">Stock: ${item.stock_quantity === -1 ? '∞' : (item.stock_quantity || 0)}</div>
             ${item.description ? `<div class="item-description">${this.escapeHtml(item.description)}</div>` : ''}
+            <div class="item-actions">
+                <button class="btn btn-sm btn-primary individual-buy" data-type="individual">Buy 1</button>
+                <button class="btn btn-sm btn-secondary stack-buy" data-type="stack">Buy Stack</button>
+            </div>
         `;
 
-        if (item.stock_quantity > 0) {
-            card.addEventListener('click', () => this.addToCart(item));
+        // Add event listeners for individual and stack purchases
+        const individualBtn = card.querySelector('.individual-buy');
+        const stackBtn = card.querySelector('.stack-buy');
+        
+        if (item.stock_quantity !== 0) {
+            individualBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.addToCart(item, 1, unitPrice);
+            });
+            
+            stackBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.addToCart(item, item.stack_size || 1, stackPrice);
+            });
+        } else {
+            individualBtn.disabled = true;
+            stackBtn.disabled = true;
         }
 
         return card;
@@ -609,15 +633,53 @@ class UnifiedTeller {
                 this.showCustomerStatus('Customer validated successfully', 'valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
             } else {
+                // Show register option for new customers
                 this.currentCustomer = null;
-                this.showCustomerStatus('Customer not found', 'invalid');
+                this.showCustomerStatus('Customer not found. Would you like to register them?', 'register');
                 document.getElementById('customer-info').style.display = 'none';
+                this.showRegisterOption(customerName);
                 document.getElementById('process-transaction-btn').disabled = true;
             }
         } catch (error) {
             console.error('Error validating customer:', error);
             this.showCustomerStatus('Error validating customer', 'invalid');
             this.currentCustomer = null;
+        }
+    }
+
+    showRegisterOption(customerName) {
+        const statusDiv = document.getElementById('customer-status');
+        statusDiv.innerHTML = `
+            <span>Customer "${customerName}" not found.</span>
+            <button id="register-customer-btn" class="btn btn-primary btn-sm" style="margin-left: 10px;">
+                Register New Customer
+            </button>
+        `;
+        
+        const registerBtn = document.getElementById('register-customer-btn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', () => this.registerNewCustomer(customerName));
+        }
+    }
+
+    async registerNewCustomer(customerName) {
+        try {
+            const playerData = {
+                player_name: customerName,
+                activePlayerName: customerName,
+                is_active: true
+            };
+            
+            await JotunAPI.addPlayer(playerData);
+            this.showCustomerStatus(`Customer "${customerName}" registered successfully!`, 'valid');
+            
+            // Reload player list and validate the newly registered customer
+            this.playerList = null; // Clear cache
+            await this.validateCustomer();
+            
+        } catch (error) {
+            console.error('Error registering customer:', error);
+            this.showCustomerStatus('Error registering customer', 'invalid');
         }
     }
 
@@ -636,32 +698,35 @@ class UnifiedTeller {
         statusDiv.style.display = 'block';
     }
 
-    addToCart(item) {
+    addToCart(item, quantity = 1, price = null) {
         if (!this.selectedShop) {
             this.showStatus('Please select a shop first', 'error');
             return;
         }
 
+        // Use provided price or fallback to item pricing
+        const itemPrice = price || item.unit_price || item.price || item.default_price || 0;
+        
         // Check if item already in cart
         const existingCartItem = this.cart.find(cartItem => cartItem.id === item.id);
         
         if (existingCartItem) {
             // Increase quantity if stock allows
-            if (existingCartItem.quantity < item.stock_quantity) {
-                existingCartItem.quantity++;
+            const newQuantity = existingCartItem.quantity + quantity;
+            if (item.stock_quantity === -1 || newQuantity <= item.stock_quantity) {
+                existingCartItem.quantity = newQuantity;
                 this.updateCartDisplay();
-            } else {
+            } else {  
                 this.showStatus('Cannot add more - insufficient stock', 'error');
             }
         } else {
             // Add new item to cart
-            const price = item.price || item.default_price || 0;
             this.cart.push({
                 id: item.id,
                 item_id: item.item_id,
                 item_name: item.item_name,
-                price: parseFloat(price),
-                quantity: 1,
+                price: parseFloat(itemPrice),
+                quantity: quantity,
                 max_stock: item.stock_quantity
             });
             this.updateCartDisplay();
@@ -1008,6 +1073,13 @@ class UnifiedTeller {
         this.currentCustomer = player;
         this.hideCustomerSuggestions();
         this.displayCustomerInfo(player, 'customer');
+        this.showCustomerStatus('Customer validated successfully', 'valid');
+        
+        // Enable transaction processing if cart has items
+        const processBtn = document.getElementById('process-transaction-btn');
+        if (processBtn) {
+            processBtn.disabled = this.cart.length === 0;
+        }
     }
 
     selectTurninCustomer(player) {
