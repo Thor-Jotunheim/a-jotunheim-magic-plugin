@@ -141,6 +141,7 @@ class UnifiedTeller {
         await this.loadShopsForSelector();
         await this.loadPlayerList();
         await this.loadTransactionHistory();
+        await this.loadCurrentUserInfo();
         this.setupPlayerAutocomplete();
     }
     
@@ -152,6 +153,50 @@ class UnifiedTeller {
         } catch (error) {
             console.error('Error loading player list:', error);
             this.playerList = [];
+        }
+    }
+
+    async loadCurrentUserInfo() {
+        try {
+            // Get current user info to populate teller name
+            const response = await fetch('/wp-json/jotunheim-magic/v1/user/current', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-WP-Nonce': jotunAjax.nonce
+                }
+            });
+            
+            if (response.ok) {
+                const userData = await response.json();
+                console.log('Current user data:', userData);
+                
+                // Populate teller name fields with Discord username
+                const tellerNameField = document.getElementById('teller-name');
+                const turninTellerNameField = document.getElementById('turnin-teller-name');
+                
+                const discordName = userData.data?.discord_username || userData.data?.display_name || 'Unknown User';
+                
+                if (tellerNameField) {
+                    tellerNameField.value = discordName;
+                }
+                if (turninTellerNameField) {
+                    turninTellerNameField.value = discordName;
+                }
+                
+                this.currentTeller = {
+                    name: discordName,
+                    user_id: userData.data?.ID,
+                    discord_id: userData.data?.discord_id
+                };
+                
+            } else {
+                console.error('Failed to load current user info');
+                this.showStatus('Could not load teller information', 'warning');
+            }
+        } catch (error) {
+            console.error('Error loading current user info:', error);
+            this.showStatus('Error loading teller information', 'warning');
         }
     }
     
@@ -363,27 +408,57 @@ class UnifiedTeller {
     async loadShopItems(shopId) {
         try {
             console.log('Loading shop items for shop ID:', shopId);
+            
             // Load shop items from jotun_shop_items table
-            const response = await JotunAPI.getShopItems({ shop_id: shopId });
-            console.log('Shop items response:', response);
-            this.shopItems = response.data || [];
+            const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId });
+            console.log('Shop items response:', shopItemsResponse);
+            const shopItems = shopItemsResponse.data || [];
             
-            // Also load master item list for reference
-            const itemsResponse = await JotunAPI.getItemlist();
-            const masterItems = itemsResponse.data || [];
+            // Load master item list from jotun_item_list table for pricing and details
+            const itemListResponse = await JotunAPI.getItemlist();
+            console.log('Item list response:', itemListResponse);
+            const masterItems = itemListResponse.data || [];
             
-            // Enrich shop items with master item data
-            this.shopItems = this.shopItems.map(shopItem => {
-                const masterItem = masterItems.find(item => item.id == shopItem.item_id);
-                return {
-                    ...shopItem,
-                    item_name: masterItem?.item_name || shopItem.item_name || 'Unknown Item',
-                    default_price: masterItem?.price || 0,
-                    category: masterItem?.category || 'Uncategorized',
-                    description: masterItem?.description || ''
-                };
+            // Enrich shop items with master item data including pricing from jotun_item_list
+            this.shopItems = shopItems.map(shopItem => {
+                const masterItem = masterItems.find(item => 
+                    item.item_name === shopItem.item_name || 
+                    item.id == shopItem.item_id ||
+                    item.prefab_name === shopItem.prefab_name
+                );
+                
+                if (masterItem) {
+                    return {
+                        ...shopItem,
+                        item_name: masterItem.item_name || shopItem.item_name || 'Unknown Item',
+                        unit_price: masterItem.unit_price || 0,
+                        stack_size: masterItem.stack_size || 1,
+                        stack_price: (masterItem.unit_price || 0) * (masterItem.stack_size || 1),
+                        tech_tier: masterItem.tech_tier || 0,
+                        tech_name: masterItem.tech_name || 'N/A',
+                        item_type: masterItem.item_type || 'Unknown',
+                        prefab_name: masterItem.prefab_name || shopItem.prefab_name,
+                        undercut: masterItem.undercut || false,
+                        description: masterItem.description || ''
+                    };
+                } else {
+                    console.warn('No master item found for shop item:', shopItem);
+                    return {
+                        ...shopItem,
+                        item_name: shopItem.item_name || 'Unknown Item',
+                        unit_price: 0,
+                        stack_size: 1,
+                        stack_price: 0,
+                        tech_tier: 0,
+                        tech_name: 'N/A',
+                        item_type: 'Unknown',
+                        undercut: false,
+                        description: ''
+                    };
+                }
             });
 
+            console.log('Enriched shop items:', this.shopItems);
             this.displayShopItems();
         } catch (error) {
             console.error('Error loading shop items:', error);
@@ -1141,18 +1216,65 @@ class UnifiedTeller {
         this.shopItems.forEach(item => {
             const itemCard = document.createElement('div');
             itemCard.className = 'item-card';
-            itemCard.innerHTML = `
-                <div class="item-name">${item.item_name}</div>
-                <div class="item-price">Price: ${item.default_price || 0}</div>
-                <div class="item-actions">
-                    <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy')">
-                        Buy
-                    </button>
-                    <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell')">
-                        Sell
-                    </button>
-                </div>
-            `;
+            
+            // Check if this is a turn-in only shop
+            const isTurninShop = this.selectedShopData && this.selectedShopData.shop_type === 'turnin_only';
+            
+            if (isTurninShop) {
+                itemCard.innerHTML = `
+                    <div class="item-header">
+                        <div class="item-name">${item.item_name}</div>
+                        <div class="item-type">${item.item_type}</div>
+                    </div>
+                    <div class="item-details">
+                        <div class="item-points">Event Points: ${item.event_points || 0}</div>
+                        <div class="item-tech">Tech: ${item.tech_name} (Tier ${item.tech_tier})</div>
+                    </div>
+                    <div class="item-actions">
+                        <div class="quantity-controls">
+                            <input type="number" class="quantity-input" id="qty-${item.shop_item_id}" min="1" value="1" placeholder="Qty">
+                        </div>
+                        <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addToTurnin(${item.shop_item_id})">
+                            Turn In
+                        </button>
+                    </div>
+                `;
+            } else {
+                itemCard.innerHTML = `
+                    <div class="item-header">
+                        <div class="item-name">${item.item_name}</div>
+                        <div class="item-type">${item.item_type}</div>
+                    </div>
+                    <div class="item-pricing">
+                        <div class="price-row">
+                            <span class="price-label">Unit:</span>
+                            <span class="price-value">${item.unit_price || 0}</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label">Stack (${item.stack_size || 1}):</span>
+                            <span class="price-value">${item.stack_price || 0}</span>
+                        </div>
+                        <div class="item-tech">Tech: ${item.tech_name} (Tier ${item.tech_tier})</div>
+                    </div>
+                    <div class="item-actions">
+                        <div class="quantity-controls">
+                            <input type="number" class="quantity-input" id="qty-${item.shop_item_id}" min="1" value="1" placeholder="Qty">
+                            <button class="btn btn-sm btn-outline qty-btn" onclick="window.unifiedTeller.setStackQuantity(${item.shop_item_id})">
+                                Stack
+                            </button>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy')">
+                                Buy
+                            </button>
+                            <button class="btn btn-outline item-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell')">
+                                Sell
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
             container.appendChild(itemCard);
         });
     }
@@ -1168,26 +1290,254 @@ class UnifiedTeller {
             return;
         }
 
+        const isTurninShop = this.selectedShopData && this.selectedShopData.shop_type === 'turnin_only';
+
+        // Update table headers for turn-in shops
+        const tableHeader = container.querySelector('thead tr');
+        if (tableHeader && isTurninShop) {
+            tableHeader.innerHTML = `
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Turn In</th>
+                <th>Points</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Turn In</th>
+                <th>Points</th>
+            `;
+        } else if (tableHeader && !isTurninShop) {
+            tableHeader.innerHTML = `
+                <th>Item</th>
+                <th>Buy</th>
+                <th>Sell</th>
+                <th>Price</th>
+                <th>Item</th>
+                <th>Buy</th>
+                <th>Sell</th>
+                <th>Price</th>
+            `;
+        }
+
         // Render items in pairs for two-column layout
         for (let i = 0; i < this.shopItems.length; i += 2) {
             const item1 = this.shopItems[i];
             const item2 = this.shopItems[i + 1];
 
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item1.item_name}</td>
-                <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'buy')">Buy</button></td>
-                <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'sell')">Sell</button></td>
-                <td>${item1.default_price || 0}</td>
-                ${item2 ? `
-                    <td>${item2.item_name}</td>
-                    <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'buy')">Buy</button></td>
-                    <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'sell')">Sell</button></td>
-                    <td>${item2.default_price || 0}</td>
-                ` : '<td colspan="4"></td>'}
-            `;
+            
+            if (isTurninShop) {
+                row.innerHTML = `
+                    <td>${item1.item_name}</td>
+                    <td><input type="number" class="table-qty-input" id="table-qty-${item1.shop_item_id}" min="1" value="1"></td>
+                    <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToTurnin(${item1.shop_item_id})">Turn In</button></td>
+                    <td>${item1.event_points || 0}</td>
+                    ${item2 ? `
+                        <td>${item2.item_name}</td>
+                        <td><input type="number" class="table-qty-input" id="table-qty-${item2.shop_item_id}" min="1" value="1"></td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToTurnin(${item2.shop_item_id})">Turn In</button></td>
+                        <td>${item2.event_points || 0}</td>
+                    ` : '<td colspan="4"></td>'}
+                `;
+            } else {
+                row.innerHTML = `
+                    <td>${item1.item_name}</td>
+                    <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'buy')">Buy</button></td>
+                    <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'sell')">Sell</button></td>
+                    <td>${item1.unit_price || 0}</td>
+                    ${item2 ? `
+                        <td>${item2.item_name}</td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'buy')">Buy</button></td>
+                        <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'sell')">Sell</button></td>
+                        <td>${item2.unit_price || 0}</td>
+                    ` : '<td colspan="4"></td>'}
+                `;
+            }
             tableBody.appendChild(row);
         }
+    }
+
+    // Cart and transaction methods
+    setStackQuantity(shopItemId) {
+        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) return;
+        
+        const qtyInput = document.getElementById(`qty-${shopItemId}`);
+        if (qtyInput) {
+            qtyInput.value = item.stack_size || 1;
+        }
+    }
+
+    addToCart(shopItemId, action = 'buy') {
+        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) {
+            this.showStatus('Item not found', 'error');
+            return;
+        }
+
+        // Get quantity from input
+        const qtyInput = document.getElementById(`qty-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
+        const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+
+        if (quantity <= 0) {
+            this.showStatus('Invalid quantity', 'error');
+            return;
+        }
+
+        // Calculate price based on quantity and unit price
+        const unitPrice = item.unit_price || 0;
+        const totalPrice = unitPrice * quantity;
+
+        // Add to cart or update existing cart item
+        const existingItem = this.cart.find(cartItem => 
+            cartItem.shop_item_id === shopItemId && cartItem.action === action
+        );
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+            existingItem.total_price = existingItem.unit_price * existingItem.quantity;
+        } else {
+            this.cart.push({
+                shop_item_id: shopItemId,
+                item_name: item.item_name,
+                action: action,
+                quantity: quantity,
+                unit_price: unitPrice,
+                total_price: totalPrice,
+                stack_size: item.stack_size || 1
+            });
+        }
+
+        this.updateCartDisplay();
+        this.updatePaymentCalculations();
+        this.showStatus(`Added ${quantity} ${item.item_name} to cart (${action})`, 'success');
+
+        // Reset quantity input
+        if (qtyInput) {
+            qtyInput.value = 1;
+        }
+    }
+
+    addToTurnin(shopItemId) {
+        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) {
+            this.showStatus('Item not found', 'error');
+            return;
+        }
+
+        // Get quantity from input
+        const qtyInput = document.getElementById(`qty-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
+        const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+
+        if (quantity <= 0) {
+            this.showStatus('Invalid quantity', 'error');
+            return;
+        }
+
+        // Initialize turnin list if not exists
+        if (!this.turninList) this.turninList = [];
+
+        // Add to turnin list or update existing
+        const existingItem = this.turninList.find(turninItem => 
+            turninItem.shop_item_id === shopItemId
+        );
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+            existingItem.total_points = (item.event_points || 0) * existingItem.quantity;
+        } else {
+            this.turninList.push({
+                shop_item_id: shopItemId,
+                item_name: item.item_name,
+                quantity: quantity,
+                event_points: item.event_points || 0,
+                total_points: (item.event_points || 0) * quantity
+            });
+        }
+
+        this.updateTurninDisplay();
+        this.showStatus(`Added ${quantity} ${item.item_name} to turn-in list`, 'success');
+
+        // Reset quantity input
+        if (qtyInput) {
+            qtyInput.value = 1;
+        }
+    }
+
+    updateCartDisplay() {
+        const container = document.getElementById('transaction-items');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (this.cart.length === 0) {
+            container.innerHTML = '<div class="no-items">No items in cart.</div>';
+            document.getElementById('record-transaction-btn').disabled = true;
+            return;
+        }
+
+        let totalCost = 0;
+
+        this.cart.forEach((cartItem, index) => {
+            const itemRow = document.createElement('div');
+            itemRow.className = 'transaction-item';
+            itemRow.innerHTML = `
+                <div class="item-info">
+                    <span class="item-name">${cartItem.item_name}</span>
+                    <span class="item-action ${cartItem.action}">${cartItem.action.toUpperCase()}</span>
+                </div>
+                <div class="item-quantity">
+                    <input type="number" class="cart-qty-input" value="${cartItem.quantity}" 
+                           min="1" onchange="window.unifiedTeller.updateCartItemQuantity(${index}, this.value)">
+                    <span class="stack-info">/ ${cartItem.stack_size}</span>
+                </div>
+                <div class="item-pricing">
+                    <span class="unit-price">${cartItem.unit_price} each</span>
+                    <span class="total-price">${cartItem.total_price} total</span>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
+                    Remove
+                </button>
+            `;
+            container.appendChild(itemRow);
+
+            // Calculate total (buy adds to cost, sell subtracts)
+            if (cartItem.action === 'buy') {
+                totalCost += cartItem.total_price;
+            } else if (cartItem.action === 'sell') {
+                totalCost -= cartItem.total_price;
+            }
+        });
+
+        // Update total cost display
+        document.getElementById('item-total-cost').textContent = totalCost.toFixed(0);
+        document.getElementById('record-transaction-btn').disabled = false;
+    }
+
+    updateCartItemQuantity(cartIndex, newQuantity) {
+        const quantity = parseInt(newQuantity) || 1;
+        if (quantity <= 0) return;
+
+        if (this.cart[cartIndex]) {
+            this.cart[cartIndex].quantity = quantity;
+            this.cart[cartIndex].total_price = this.cart[cartIndex].unit_price * quantity;
+            this.updateCartDisplay();
+            this.updatePaymentCalculations();
+        }
+    }
+
+    removeFromCart(cartIndex) {
+        if (this.cart[cartIndex]) {
+            this.cart.splice(cartIndex, 1);
+            this.updateCartDisplay();
+            this.updatePaymentCalculations();
+        }
+    }
+
+    clearCart() {
+        this.cart = [];
+        this.updateCartDisplay();
+        this.updatePaymentCalculations();
+        this.showStatus('Cart cleared', 'info');
     }
     
     // Debug method to create test shops

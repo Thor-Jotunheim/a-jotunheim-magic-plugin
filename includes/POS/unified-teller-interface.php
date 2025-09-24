@@ -121,6 +121,47 @@ function unified_teller_interface() {
             </div>
 
             <!-- Payment Tracking -->
+                        <!-- Shop Items -->
+            <div class="teller-card items-card">
+                <div class="card-header">
+                    <h2 class="card-title">Shop Inventory</h2>
+                    <p class="card-description">Browse and select items for transaction</p>
+                </div>
+                <div class="card-content">
+                    <div class="items-controls">
+                        <input type="text" id="item-search" class="field-input" placeholder="Search items...">
+                        <button id="toggle-view-btn" class="btn btn-secondary">Toggle View</button>
+                    </div>
+                    
+                    <div id="shop-items-table" class="items-container">
+                        <div id="items-grid-view" class="items-grid" style="display: block;">
+                            <!-- Items will be populated here -->
+                        </div>
+                        
+                        <div id="items-table-view" class="items-table" style="display: none;">
+                            <table class="items-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Buy</th>
+                                        <th>Sell</th>
+                                        <th>Price</th>
+                                        <th>Item</th>
+                                        <th>Buy</th>
+                                        <th>Sell</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="items-table-body">
+                                    <!-- Items will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Tracking -->
             <div class="teller-card payment-card">
                 <div class="card-header">
                     <h2 class="card-title">Payment Tracking</h2>
@@ -129,30 +170,30 @@ function unified_teller_interface() {
                 <div class="card-content">
                     <div class="payment-grid">
                         <div class="form-field">
-                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh</label>
-                            <input type="number" id="ymir-flesh-total" class="field-input" value="0" min="0">
+                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh Total</label>
+                            <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
                         </div>
                         <div class="form-field">
-                            <label for="gold-total" class="field-label">Gold</label>
-                            <input type="number" id="gold-total" class="field-input" value="0" min="0">
+                            <label for="gold-total" class="field-label">Gold Total</label>
+                            <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
                         </div>
                     </div>
                     <div class="payment-summary">
                         <div class="summary-row">
-                            <span class="summary-label">Total Cost</span>
+                            <span class="summary-label">Total Cost:</span>
                             <span id="item-total-cost" class="summary-value">0</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Amount Paid</span>
+                            <span class="summary-label">Amount Paid:</span>
                             <span id="amount-paid-display" class="summary-value">0</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Change Due</span>
+                            <span class="summary-label">Change Due:</span>
                             <span id="change-due" class="summary-value change-amount">0</span>
                         </div>
-                        <div class="summary-row balance-row">
-                            <span class="summary-label">Status</span>
-                            <span id="payment-balance" class="summary-status balanced">Balanced</span>
+                        <div class="summary-row">
+                            <span class="summary-label">Payment Status:</span>
+                            <span id="payment-balance" class="summary-status">Pending</span>
                         </div>
                     </div>
                 </div>
