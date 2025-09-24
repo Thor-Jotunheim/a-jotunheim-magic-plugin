@@ -1,6 +1,11 @@
 <?php
 // File: editor-permissions.php
-// Special permission handler to allow editors access to specific admin pages
+// *** DEPRECATED - DISABLED IN FAVOR OF DISCORD-BASED PAGE PERMISSIONS ***
+// This file is kept for reference but is not actively used.
+// The new Discord page permissions system in page-permissions.php handles access control.
+// 
+// Original purpose: Special permission handler to allow editors access to specific admin pages
+// Status: INACTIVE - All hooks have been commented out
 
 // Prevent direct access
 if (!defined('ABSPATH')) exit;
@@ -64,7 +69,7 @@ function jotunheim_allow_editor_specific_page_access() {
 }
 
 // Hook this function to run very early, before menu registration
-add_action('init', 'jotunheim_allow_editor_specific_page_access', 1);
+// DISABLED: add_action('init', 'jotunheim_allow_editor_specific_page_access', 1);
 
 /**
  * Allow editors to access dashboard-created shortcode pages
@@ -110,7 +115,8 @@ function jotunheim_allow_editor_page_access() {
 }
 
 // Hook to run early on page load
-add_action('wp', 'jotunheim_allow_editor_page_access', 1);
+}
+// DISABLED: add_action('wp', 'jotunheim_allow_editor_page_access', 1);
 
 /**
  * Ensure editors can see Pages in their menu
@@ -151,7 +157,7 @@ function jotunheim_restore_editor_pages_menu() {
 }
 
 // Hook to restore Pages menu for editors - run very early
-add_action('init', 'jotunheim_restore_editor_pages_menu', 1);
+// DISABLED: add_action('init', 'jotunheim_restore_editor_pages_menu', 1);
 
 /**
  * Block editors from accessing admin settings pages they shouldn't see
@@ -215,7 +221,7 @@ function jotunheim_block_editor_admin_access() {
 }
 
 // Hook to block admin access
-add_action('admin_init', 'jotunheim_block_editor_admin_access', 5);
+// DISABLED: add_action('admin_init', 'jotunheim_block_editor_admin_access', 5);
 
 /**
  * Remove File Manager and other plugin menus from editors
@@ -253,8 +259,8 @@ function jotunheim_remove_editor_plugin_menus() {
 }
 
 // Hook to remove plugin menus from editors - try multiple priority levels
-add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 999);
-add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 9999);
+// DISABLED: add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 999);
+// DISABLED: add_action('admin_menu', 'jotunheim_remove_editor_plugin_menus', 9999);
 
 /**
  * Hide File Manager menu with CSS if remove_menu_page doesn't work
@@ -283,7 +289,7 @@ function jotunheim_hide_file_manager_css() {
 }
 
 // Hook to add CSS hiding
-add_action('admin_head', 'jotunheim_hide_file_manager_css');
+// DISABLED: add_action('admin_head', 'jotunheim_hide_file_manager_css');
 
 /**
  * Debug function to log access attempts
@@ -300,4 +306,4 @@ function jotunheim_debug_editor_access() {
 }
 
 // Hook for debugging
-add_action('admin_init', 'jotunheim_debug_editor_access');
+// DISABLED: add_action('admin_init', 'jotunheim_debug_editor_access');
