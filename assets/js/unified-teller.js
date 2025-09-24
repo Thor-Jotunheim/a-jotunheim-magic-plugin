@@ -541,23 +541,23 @@ class UnifiedTeller {
                 <div class="item-name">${this.escapeHtml(item.item_name)}</div>
                 <div class="item-type">${item.item_type || 'Trophies'}</div>
             </div>
-            <div class="item-pricing" style="position: relative;">
+            <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                 ${item.icon_image ? `
-                    <div class="item-icon" style="position: absolute; left: 5px; top: 5px; z-index: 10; width: 64px; height: 64px;">
+                    <div class="item-icon" style="position: absolute; left: 5px; top: 5px; z-index: 10; width: 100px; height: 100px;">
                         <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
                              style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
                              onerror="this.parentElement.style.display='none'">
                     </div>
                 ` : ''}
-                <div class="price-row">
-                    <span class="price-label">Unit:</span>
-                    <span class="price-value">${unitPrice}</span>
+                <div class="price-row" style="opacity: 1;">
+                    <span class="price-label" style="opacity: 1;">Unit:</span>
+                    <span class="price-value" style="opacity: 1;">${unitPrice}</span>
                 </div>
-                <div class="price-row">
-                    <span class="price-label">Stack (${item.stack_size || 1}):</span>
-                    <span class="price-value">${stackPrice}</span>
+                <div class="price-row" style="opacity: 1;">
+                    <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
+                    <span class="price-value" style="opacity: 1;">${stackPrice}</span>
                 </div>
-                <div class="item-tech">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
+                <div class="item-tech" style="opacity: 1;">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
             </div>
             <div class="item-actions">
                 ${this.generateItemActionButtons(item)}
