@@ -95,8 +95,8 @@ if (!function_exists('fetch_item_by_name_rest')) {
 
 // Register REST API routes
 add_action('rest_api_init', function () {
-    // Public endpoint to fetch all items
-    register_rest_route('jotunheim-magic/v1', '/items', array(
+    // Public endpoint to fetch all items from database (renamed to avoid conflict)
+    register_rest_route('jotunheim-magic/v1', '/trade-items', array(
         'methods' => 'GET',
         'callback' => 'fetch_all_items_rest',
         'permission_callback' => '__return_true', // No authentication required

@@ -234,7 +234,8 @@ class UnifiedTeller {
             }
             
             const filteredPlayers = this.playerList.filter(player => 
-                player.activePlayerName && player.activePlayerName.toLowerCase().includes(query)
+                (player.activePlayerName && player.activePlayerName.toLowerCase().includes(query)) ||
+                (player.player_name && player.player_name.toLowerCase().includes(query))
             ).slice(0, 10); // Show max 10 suggestions
             
             this.displayPlayerSuggestions(filteredPlayers, suggestionsContainer, customerNameInput);
@@ -431,9 +432,9 @@ class UnifiedTeller {
                     return {
                         ...shopItem,
                         item_name: masterItem.item_name || shopItem.item_name || 'Unknown Item',
-                        unit_price: masterItem.unit_price || 0,
+                        unit_price: masterItem.unit_price || masterItem.price || masterItem.default_price || shopItem.custom_price || 0,
                         stack_size: masterItem.stack_size || 1,
-                        stack_price: (masterItem.unit_price || 0) * (masterItem.stack_size || 1),
+                        stack_price: (masterItem.unit_price || masterItem.price || masterItem.default_price || shopItem.custom_price || 0) * (masterItem.stack_size || 1),
                         tech_tier: masterItem.tech_tier || 0,
                         tech_name: masterItem.tech_name || 'N/A',
                         item_type: masterItem.item_type || 'Unknown',
@@ -446,9 +447,9 @@ class UnifiedTeller {
                     return {
                         ...shopItem,
                         item_name: shopItem.item_name || 'Unknown Item',
-                        unit_price: 0,
+                        unit_price: shopItem.custom_price || 0,
                         stack_size: 1,
-                        stack_price: 0,
+                        stack_price: shopItem.custom_price || 0,
                         tech_tier: 0,
                         tech_name: 'N/A',
                         item_type: 'Unknown',
@@ -518,37 +519,65 @@ class UnifiedTeller {
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
         const stackPrice = item.stack_price || (unitPrice * (item.stack_size || 1));
         
+        // Generate item image URL (using same logic as barter page)
+        const itemImageUrl = item.prefab_name ? 
+            `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name.toLowerCase()}.png` : 
+            '/wp-content/uploads/Jotunheim-magic/icons/default-item.png';
+        
         card.innerHTML = `
-            <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-            <div class="item-pricing">
-                <div class="unit-price">Unit: ${unitPrice} YF</div>
-                <div class="stack-price">Stack: ${stackPrice} YF</div>
+            <div class="item-image-container">
+                <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                     onerror="this.src='/wp-content/uploads/Jotunheim-magic/icons/default-item.png'">
             </div>
-            <div class="item-stock">Stock: ${item.stock_quantity === -1 ? '∞' : (item.stock_quantity || 0)}</div>
-            ${item.description ? `<div class="item-description">${this.escapeHtml(item.description)}</div>` : ''}
+            <div class="item-name">${this.escapeHtml(item.item_name)}</div>
+            <div class="item-details">
+                <div class="item-pricing">
+                    <div class="unit-price">Unit: <strong>${unitPrice}</strong> YF</div>
+                    <div class="stack-price">Stack (${item.stack_size || 1}): <strong>${stackPrice}</strong> YF</div>
+                </div>
+                <div class="item-meta">
+                    <div class="tech-info">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
+                    <div class="stock-info">Stock: ${item.stock_quantity === -1 ? '∞' : (item.stock_quantity || 0)}</div>
+                </div>
+            </div>
             <div class="item-actions">
-                <button class="btn btn-sm btn-primary individual-buy" data-type="individual">Buy 1</button>
-                <button class="btn btn-sm btn-secondary stack-buy" data-type="stack">Buy Stack</button>
+                <div class="quantity-controls">
+                    <label>Individual:</label>
+                    <input type="number" class="quantity-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
+                    <button class="btn btn-primary individual-buy" data-type="individual">Buy</button>
+                </div>
+                <div class="quantity-controls">
+                    <label>Stack (${item.stack_size || 1}):</label>
+                    <input type="number" class="stack-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / (item.stack_size || 1))}">
+                    <button class="btn btn-secondary stack-buy" data-type="stack">Buy</button>
+                </div>
             </div>
         `;
 
         // Add event listeners for individual and stack purchases
         const individualBtn = card.querySelector('.individual-buy');
         const stackBtn = card.querySelector('.stack-buy');
+        const quantityInput = card.querySelector('.quantity-input');
+        const stackInput = card.querySelector('.stack-input');
         
         if (item.stock_quantity !== 0) {
             individualBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.addToCart(item, 1, unitPrice);
+                const quantity = parseInt(quantityInput.value) || 1;
+                this.addToCart(item, quantity, unitPrice * quantity);
             });
             
             stackBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.addToCart(item, item.stack_size || 1, stackPrice);
+                const stackCount = parseInt(stackInput.value) || 1;
+                const totalQuantity = stackCount * (item.stack_size || 1);
+                this.addToCart(item, totalQuantity, stackPrice * stackCount);
             });
         } else {
             individualBtn.disabled = true;
             stackBtn.disabled = true;
+            quantityInput.disabled = true;
+            stackInput.disabled = true;
         }
 
         return card;
@@ -624,8 +653,11 @@ class UnifiedTeller {
             const response = await JotunAPI.getPlayers({ search: customerName });
             const players = response.data || [];
             
-            // Find exact match by activePlayerName
-            const player = players.find(p => p.activePlayerName === customerName);
+            // Find exact match by activePlayerName or player_name (case-insensitive)
+            const player = players.find(p => 
+                (p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase()) ||
+                (p.player_name && p.player_name.toLowerCase() === customerName.toLowerCase())
+            );
             
             if (player) {
                 this.currentCustomer = player;
