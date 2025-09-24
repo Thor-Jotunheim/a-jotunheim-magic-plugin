@@ -1,61 +1,188 @@
-// Global variable to hold items data
+// Global variables
 let itemsData = [];
+let selectedItem = null;
 
-// Fetch items from the API
-export async function fetchItems() {
-    console.log('Fetching items from API...');
+// Initialize the barter page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Barter page initializing...');
+    loadMasterItemList();
+    setupItemAutocomplete();
+    setupAddItemButtons();
+});
+
+// Load items using the same API as shop manager
+async function loadMasterItemList() {
+    console.log('Loading master item list...');
     try {
-        const response = await fetch('https://jotun.games/wp-json/jotunheim-magic/v1/trade-items');
-        const data = await response.json();
+        // Check if JotunAPI is available
+        if (typeof JotunAPI === 'undefined') {
+            console.error('JotunAPI not available, falling back to direct fetch');
+            const response = await fetch('/wp-json/jotun-api/v1/itemlist');
+            const result = await response.json();
+            itemsData = result.data || [];
+        } else {
+            const response = await JotunAPI.getItemlist();
+            itemsData = response.data || [];
+        }
+        
+        console.log('Loaded items:', itemsData.length);
+    } catch (error) {
+        console.error('Error loading item list:', error);
+        itemsData = [];
+    }
+}
 
-        console.log('Fetched Items:', data); // Log the fetched data
-
-        if (Array.isArray(data)) {
-            itemsData = data; // Populate the global variable
-
-            // Populate the accordion lists
-            populateItemList('item-list-accordion', itemsData, '', addItemToContainer);
-            populateItemList('item-list-accordion-2', itemsData, '', addItemToContainer);
-
-            // Add event listeners for search functionality
-            const searchBar1 = document.getElementById('item-search');
-            const searchBar2 = document.getElementById('item-search-2');
-
-            if (searchBar1) {
-                searchBar1.addEventListener('input', (event) => {
-                    filterItems('item-list-accordion');
-                });
-
-                // Add keydown event listener for Enter key
-                searchBar1.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' || event.keyCode === 13) {
-                        handleEnterKey('item-list-accordion', 'selected-items-container', 'item-search');
-                    }
-                });
-                } else {
-                    console.error('Search bar 1 not found.');
-                }
-
-                if (searchBar2) {
-                    searchBar2.addEventListener('input', (event) => {
-                        filterItems('item-list-accordion-2');
-                    });
-
-                    // Add keydown event listener for Enter key
-                    searchBar2.addEventListener('keydown', (event) => {
-                        if (event.key === 'Enter' || event.keyCode === 13) {
-                            handleEnterKey('item-list-accordion-2', 'selected-items-container-2', 'item-search-2');
-                        }
-                    });
-                } else {
-                    console.error('Search bar 2 not found.');
-                }
-                } else {
-                    console.error('Error fetching items: Unexpected data format or empty response', data);
-                }
-            } catch (error) {
-                console.error('Error fetching items:', error);
+// Setup autocomplete functionality (same as shop manager)
+function setupItemAutocomplete() {
+    const searchInput = document.getElementById('barter-item-selector');
+    const suggestionsDiv = document.getElementById('barter-item-suggestions');
+    let currentSuggestionIndex = -1;
+    
+    if (!searchInput || !suggestionsDiv) {
+        console.error('Search elements not found');
+        return;
+    }
+    
+    // Show all items when input is focused and empty
+    searchInput.addEventListener('focus', (e) => {
+        if (e.target.value.trim() === '' && itemsData.length > 0) {
+            displaySuggestions(itemsData.slice(0, 20), suggestionsDiv, searchInput);
+        }
+    });
+    
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        
+        if (query.length === 0) {
+            // Show all items when empty
+            displaySuggestions(itemsData.slice(0, 20), suggestionsDiv, searchInput);
+            selectedItem = null;
+            return;
+        }
+        
+        const filteredItems = itemsData.filter(item => 
+            item.item_name && item.item_name.toLowerCase().includes(query) ||
+            (item.prefab_name && item.prefab_name.toLowerCase().includes(query))
+        ).slice(0, 20); // Show max 20 suggestions
+        
+        displaySuggestions(filteredItems, suggestionsDiv, searchInput);
+    });
+    
+    searchInput.addEventListener('keydown', (e) => {
+        const suggestions = suggestionsDiv.querySelectorAll('.suggestion-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+            highlightSuggestion(suggestions, currentSuggestionIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+            highlightSuggestion(suggestions, currentSuggestionIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
+                suggestions[currentSuggestionIndex].click();
             }
+        } else if (e.key === 'Escape') {
+            suggestionsDiv.style.display = 'none';
+            currentSuggestionIndex = -1;
+        }
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.style.display = 'none';
+        }
+    });
+}
+
+function displaySuggestions(items, container, searchInput) {
+    if (items.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerHTML = `
+            <div class="item-name">${item.item_name}</div>
+            <div class="item-price">${formatPrice(item.unit_price || 0)}</div>
+        `;
+        
+        div.addEventListener('click', () => {
+            searchInput.value = item.item_name;
+            selectedItem = item;
+            container.style.display = 'none';
+            console.log('Selected item:', selectedItem);
+        });
+        
+        container.appendChild(div);
+    });
+    
+    container.style.display = 'block';
+}
+
+function highlightSuggestion(suggestions, index) {
+    suggestions.forEach((s, i) => {
+        s.classList.toggle('highlighted', i === index);
+    });
+}
+
+function formatPrice(price) {
+    const numPrice = parseFloat(price) || 0;
+    
+    // Always show both formats when price is 120+ coins (1+ Ymir)
+    if (numPrice >= 120) {
+        const ymirWholeAmount = Math.floor(numPrice / 120);
+        const remainingCoins = numPrice % 120;
+        
+        if (remainingCoins === 0) {
+            return `${ymirWholeAmount} Ymir`;
+        } else {
+            return `${ymirWholeAmount} Ymir ${remainingCoins} Coins`;
+        }
+    }
+    
+    // For small amounts, just show coins
+    return `${numPrice} Coins`;
+}
+
+function setupAddItemButtons() {
+    const addToTrader1Btn = document.getElementById('add-item-to-trader1');
+    const addToTrader2Btn = document.getElementById('add-item-to-trader2');
+    
+    if (addToTrader1Btn) {
+        addToTrader1Btn.addEventListener('click', () => {
+            if (selectedItem) {
+                addItemToContainer(selectedItem, 'selected-items-container');
+                clearSelection();
+            } else {
+                alert('Please select an item first');
+            }
+        });
+    }
+    
+    if (addToTrader2Btn) {
+        addToTrader2Btn.addEventListener('click', () => {
+            if (selectedItem) {
+                addItemToContainer(selectedItem, 'selected-items-container-2');
+                clearSelection();
+            } else {
+                alert('Please select an item first');
+            }
+        });
+    }
+}
+
+function clearSelection() {
+    document.getElementById('barter-item-selector').value = '';
+    selectedItem = null;
+    document.getElementById('barter-item-suggestions').style.display = 'none';
 }
 
 // Populate an accordion list with items

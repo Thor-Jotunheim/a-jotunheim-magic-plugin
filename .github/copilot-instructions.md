@@ -4,6 +4,8 @@ This WordPress plugin manages a Valheim gaming server with complex integrations 
 
 Reminder, i am not doing localhost. I test on the live wordpress website. I want you to commit and push to main main each time, then i'll test. I have safeguards in place, incase you break something.
 
+when you push, we push to main main branch. I will test on the live site.
+
 ## Architecture Overview
 
 **Main Entry Point**: `jotunheim-magic.php` - Monolithic include file that loads all subsystems  
