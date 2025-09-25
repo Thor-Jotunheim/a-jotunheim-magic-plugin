@@ -107,7 +107,7 @@ class QuickAddItemModal {
         // Reset button state
         if (this.submitBtn) {
             this.submitBtn.disabled = false;
-            this.submitBtn.textContent = 'Add Item & Continue';
+            this.submitBtn.textContent = 'Add to Item Database';
         }
 
         console.log('Quick add modal hidden');
@@ -154,7 +154,7 @@ class QuickAddItemModal {
 
         this.isSubmitting = true;
         this.submitBtn.disabled = true;
-        this.submitBtn.textContent = 'Adding Item...';
+        this.submitBtn.textContent = 'Adding to Database...';
 
         // Prepare form data
         const formData = new FormData(this.form);
@@ -176,7 +176,7 @@ class QuickAddItemModal {
                 }
                 
                 this.hide();
-                this.showSuccessMessage(`${data.data.item_name} added to master list successfully!`);
+                this.showSuccessMessage(`${data.data.item_name} added to Item Database successfully!`);
             } else {
                 console.error('Failed to add item:', data.data);
                 this.showValidationError(data.data || 'Failed to add item. Please try again.');
@@ -189,7 +189,7 @@ class QuickAddItemModal {
         .finally(() => {
             this.isSubmitting = false;
             this.submitBtn.disabled = false;
-            this.submitBtn.textContent = 'Add Item & Continue';
+            this.submitBtn.textContent = 'Add to Item Database';
         });
     }
 

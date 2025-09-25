@@ -14,13 +14,13 @@ function jotunheim_quick_add_item_modal() {
         <div class="quick-add-overlay"></div>
         <div class="quick-add-content">
             <div class="quick-add-header">
-                <h3>Add New Item to Master List</h3>
+                <h3>Add New Item to Item Database</h3>
                 <button id="quick-add-close" class="quick-add-close">&times;</button>
             </div>
             
             <div class="quick-add-body">
                 <p class="quick-add-intro">
-                    This item doesn't exist in the master item list. Add it now to complete your transaction.
+                    This item doesn't exist in the Item Database. Add it now to complete your transaction.
                 </p>
                 
                 <form id="quick-add-item-form" class="quick-add-form">
@@ -106,7 +106,7 @@ function jotunheim_quick_add_item_modal() {
             
             <div class="quick-add-footer">
                 <button type="button" id="quick-add-cancel" class="btn btn-secondary">Cancel Transaction</button>
-                <button type="button" id="quick-add-submit" class="btn btn-primary">Add Item & Continue</button>
+                <button type="button" id="quick-add-submit" class="btn btn-primary">Add to Item Database</button>
             </div>
         </div>
     </div>
@@ -320,7 +320,7 @@ function jotunheim_quick_add_item_modal() {
 // AJAX handler for quick add item
 function handle_quick_add_item() {
     // Verify nonce
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'quick_add_item_nonce')) {
+    if (!isset($_POST['quick_add_nonce']) || !wp_verify_nonce($_POST['quick_add_nonce'], 'quick_add_item_nonce')) {
         wp_send_json_error('Invalid nonce verification.');
         return;
     }
@@ -348,7 +348,7 @@ function handle_quick_add_item() {
 
     if ($existing_item) {
         wp_send_json_success([
-            'message' => 'Item already exists in master list.',
+            'message' => 'Item already exists in Item Database.',
             'item_id' => $existing_item->id,
             'item_name' => sanitize_text_field($_POST['item_name'])
         ]);
@@ -383,7 +383,7 @@ function handle_quick_add_item() {
     }
 
     wp_send_json_success([
-        'message' => 'Item added successfully to master list.',
+        'message' => 'Item added successfully to Item Database.',
         'item_id' => $wpdb->insert_id,
         'item_name' => sanitize_text_field($_POST['item_name'])
     ]);

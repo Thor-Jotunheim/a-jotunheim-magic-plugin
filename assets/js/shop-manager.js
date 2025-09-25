@@ -111,7 +111,7 @@ class ShopManager {
             this.loadShops();
         } else if (tabName === 'items') {
             this.loadShopsForSelector();
-            this.loadMasterItemList();
+            this.loadItemDatabase();
         } else if (tabName === 'types') {
             this.loadShopTypesTable();
             // Ensure the form is ready for new type creation
@@ -123,7 +123,7 @@ class ShopManager {
         await this.loadShopTypes();
         await this.loadShops();
         await this.loadShopsForSelector();
-        await this.loadMasterItemList();
+        await this.loadItemDatabase();
     }
 
     async loadShopTypes() {
@@ -188,7 +188,7 @@ class ShopManager {
         }
     }
 
-    async loadMasterItemList() {
+    async loadItemDatabase() {
         try {
             const response = await JotunAPI.getItemlist();
             const items = response.data || [];
@@ -367,7 +367,7 @@ class ShopManager {
             // Update notice text with the searched item name
             const noticeText = noticeDiv.querySelector('p');
             if (noticeText) {
-                noticeText.textContent = `"${itemName}" not found in master list.`;
+                noticeText.textContent = `"${itemName}" not found in Item Database.`;
             }
             
             // Show the notice
@@ -430,7 +430,7 @@ class ShopManager {
                 this.hideAddNewItemNotice();
                 
                 // Show success message
-                this.showStatus(`${result.item_name} added to master list and selected!`, 'success');
+                this.showStatus(`${result.item_name} added to Item Database and selected!`, 'success');
             });
         });
     }
@@ -673,7 +673,7 @@ class ShopManager {
             // Update field labels for turn-in context  
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
             if (itemSelectorLabel) {
-                itemSelectorLabel.textContent = 'Search Turn-In Items from Master List';
+                itemSelectorLabel.textContent = 'Search Turn-In Items from Item Database';
             }
         } else {
             // Regular shop interface
@@ -691,7 +691,7 @@ class ShopManager {
             // Restore original field labels
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
             if (itemSelectorLabel) {
-                itemSelectorLabel.textContent = 'Search Items from Master List';
+                itemSelectorLabel.textContent = 'Search Items from Item Database';
             }
         }
         
@@ -958,7 +958,7 @@ class ShopManager {
         if (!this.currentEditingShopItem) {
             // Check if we have an item selection
             if (!itemId) {
-                this.showStatus('Please select an item from the master list', 'error');
+                this.showStatus('Please select an item from the Item Database', 'error');
                 return;
             }
         }
@@ -1106,7 +1106,7 @@ class ShopManager {
                 document.getElementById('item-selector-hidden').value = item.item_id;
                 document.getElementById('item-selector').value = item.master_item_name || item.item_name || '';
             } else {
-                // For items without item_id, they should be in the master list now
+                // For items without item_id, they should be in the Item Database now
                 document.getElementById('item-selector').value = item.item_name || '';
                 document.getElementById('item-selector-hidden').value = '';
             }

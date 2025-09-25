@@ -432,12 +432,12 @@ class UnifiedTeller {
             const shopItems = shopItemsResponse.data || [];
             console.log('Raw shop items from API:', shopItems);
             
-            // Load master item list from jotun_item_list table for pricing and details
+            // Load Item Database from jotun_item_list table for pricing and details
             const itemListResponse = await JotunAPI.getItemlist();
             console.log('Item list response:', itemListResponse);
             const masterItems = itemListResponse.data || [];
             
-            // Enrich shop items with master item data including pricing from jotun_item_list
+            // Enrich shop items with Item Database data including pricing from jotun_item_list
             this.shopItems = shopItems.map(shopItem => {
                 const masterItem = masterItems.find(item => 
                     item.item_name === shopItem.item_name || 
@@ -504,7 +504,7 @@ class UnifiedTeller {
             console.log('Turn-in items response:', response);
             this.turninItems = response.data || [];
             
-            // Also load master item list for reference
+            // Also load Item Database for reference
             const itemsResponse = await JotunAPI.getItemlist();
             const masterItems = itemsResponse.data || [];
             
@@ -1165,7 +1165,7 @@ class UnifiedTeller {
                         
                         // Check if this is a missing item error
                         if (response.error && response.error.includes('Invalid item_name: no matching item_id found')) {
-                            this.showStatus(`Item "${cartItem.item_name}" not found in master list. Please use Shop Manager to add new items first.`, 'error', true);
+                            this.showStatus(`Item "${cartItem.item_name}" not found in Item Database. Please use Shop Manager to add new items first.`, 'error', true);
                             return; // Exit early - cannot process transaction for unknown items
                         }
                     }
