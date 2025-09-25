@@ -77,6 +77,11 @@ class ShopManager {
         document.getElementById('turn-in-checkbox').addEventListener('change', () => {
             this.updateTurnInFieldVisibility();
         });
+        
+        // Handle daily limit checkbox to toggle quantity field
+        document.getElementById('daily-limit-enabled').addEventListener('change', () => {
+            this.updateDailyLimitFieldVisibility();
+        });
     }
 
     switchTab(tabName) {
@@ -648,6 +653,26 @@ class ShopManager {
         }
     }
 
+    updateDailyLimitFieldVisibility() {
+        const dailyLimitCheckbox = document.getElementById('daily-limit-enabled');
+        const quantityGroup = document.getElementById('max-daily-quantity-group');
+        
+        if (dailyLimitCheckbox && quantityGroup) {
+            const isChecked = dailyLimitCheckbox.checked;
+            
+            if (isChecked) {
+                quantityGroup.style.display = 'block';
+            } else {
+                quantityGroup.style.display = 'none';
+                // Reset the value when hiding (but not during edit mode)
+                const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
+                if (submitButton && submitButton.textContent !== 'Update Item') {
+                    document.getElementById('max-daily-sell-quantity').value = '0';
+                }
+            }
+        }
+    }
+
     async loadTurnInTracker(shopId) {
         try {
             // Load turn-in count for this shop
@@ -872,6 +897,9 @@ class ShopManager {
                 if (dailyLimitCheckbox) dailyLimitCheckbox.checked = false; // Default no daily limit
                 document.getElementById('max-daily-sell-quantity').value = '0';
                 
+                // Update daily limit field visibility
+                this.updateDailyLimitFieldVisibility();
+                
                 await this.loadShopItems(this.selectedShop);
             }
         } catch (error) {
@@ -953,6 +981,9 @@ class ShopManager {
             
             // Update turn-in field visibility based on checkbox state
             this.updateTurnInFieldVisibility();
+            
+            // Update daily limit field visibility
+            this.updateDailyLimitFieldVisibility();
             
             // Update form button
             const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');

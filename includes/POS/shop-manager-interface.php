@@ -365,7 +365,7 @@ function shop_manager_interface() {
                                     Limit how much each player can sell per 24-hour period
                                 </small>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="max-daily-quantity-group" style="display: none;">
                                 <label for="max-daily-sell-quantity">Max Daily Sell Quantity</label>
                                 <input type="number" id="max-daily-sell-quantity" name="max_daily_sell_quantity" value="0" min="0" title="Maximum quantity each player can sell per day (resets every 24 hours)">
                                 <small style="display: block; color: #666; margin-top: 4px;">
@@ -783,6 +783,32 @@ function shop_manager_interface() {
         color: #000;
     }
     </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dailyLimitCheckbox = document.getElementById('daily-limit-enabled');
+        const quantityGroup = document.getElementById('max-daily-quantity-group');
+        
+        if (dailyLimitCheckbox && quantityGroup) {
+            // Function to toggle visibility
+            function toggleQuantityField() {
+                if (dailyLimitCheckbox.checked) {
+                    quantityGroup.style.display = 'block';
+                } else {
+                    quantityGroup.style.display = 'none';
+                    // Reset the value when hiding
+                    document.getElementById('max-daily-sell-quantity').value = '0';
+                }
+            }
+            
+            // Add event listener
+            dailyLimitCheckbox.addEventListener('change', toggleQuantityField);
+            
+            // Set initial state
+            toggleQuantityField();
+        }
+    });
+    </script>
     <?php
     return ob_get_clean();
 }
