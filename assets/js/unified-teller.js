@@ -1065,6 +1065,16 @@ class UnifiedTeller {
                 const newTotal = currentTurnedIn + item.quantity;
                 const progress = requirement > 0 ? Math.min(100, (newTotal / requirement) * 100) : 0;
                 
+                // Debug logging to track the 10x issue
+                console.log('DEBUG - Turn-in summary:', {
+                    item_name: item.item_name,
+                    raw_turn_in_quantity: item.turn_in_quantity,
+                    currentTurnedIn: currentTurnedIn,
+                    quantity: item.quantity,
+                    requirement: requirement,
+                    newTotal: newTotal
+                });
+                
                 summary += `<li>${item.item_name}: Turning in ${item.quantity}`;
                 if (requirement > 0) {
                     summary += ` (${newTotal}/${requirement} - ${progress.toFixed(1)}% complete)`;
@@ -1838,6 +1848,14 @@ class UnifiedTeller {
             existingItem.quantity += 1;
             existingItem.total_price = existingItem.unit_price * existingItem.quantity;
         } else {
+            // Debug logging to track the 10x issue
+            console.log('DEBUG - Adding turn-in item to cart:', {
+                item_name: item.item_name,
+                raw_item_data: item,
+                turn_in_quantity_from_item: item.turn_in_quantity,
+                turn_in_requirement_from_item: item.turn_in_requirement
+            });
+            
             this.cart.push({
                 shop_item_id: shopItemId,
                 item_name: item.item_name,

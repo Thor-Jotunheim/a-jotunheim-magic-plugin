@@ -558,8 +558,8 @@ function shop_manager_interface() {
                                         <input type="text" id="turn-in-item" name="item_name" required placeholder="Enter item name">
                                     </div>
                                     <div class="form-group">
-                                        <label for="turn-in-quantity">Quantity</label>
-                                        <input type="number" id="turn-in-quantity" name="quantity" value="1" min="1" required>
+                                        <label for="record-turn-in-quantity">Quantity</label>
+                                        <input type="number" id="record-turn-in-quantity" name="quantity" value="1" min="1" required>
                                     </div>
                                     <div class="form-group">
                                         <label for="turn-in-player">Player Name (optional)</label>
