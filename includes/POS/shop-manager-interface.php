@@ -93,6 +93,42 @@ function shop_manager_interface() {
             font-size: 0.9em;
         }
         
+        /* Item not found notice */
+        .item-not-found-notice {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-top: none;
+            padding: 12px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .item-not-found-notice p {
+            margin: 0 0 10px 0;
+            color: #856404;
+            font-weight: 500;
+        }
+        
+        .item-not-found-notice .btn {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .item-not-found-notice .btn:hover {
+            background: #005a87;
+        }
+        
         /* Price input group */
         .price-input-group {
             display: flex;
@@ -296,16 +332,16 @@ function shop_manager_interface() {
                     <form id="add-shop-item-form" class="shop-item-form">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="item-selector">Select Item from Master List</label>
-                                <input type="text" id="item-selector" name="item_search" placeholder="Type to search items..." autocomplete="off">
+                                <label for="item-selector">Search Items from Master List</label>
+                                <input type="text" id="item-selector" name="item_search" placeholder="Type to search items... (If not found, you can add new items)" autocomplete="off">
                                 <select id="item-selector-hidden" name="item_id" style="display: none;">
                                     <option value="">Select an item...</option>
                                 </select>
                                 <div id="item-suggestions" class="item-suggestions" style="display: none;"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="custom-item-name">Custom Item Name (for Aesir Spells)</label>
-                                <input type="text" id="custom-item-name" name="custom_item_name" placeholder="Enter custom item name for spells/special items">
+                                <div id="item-not-found-notice" class="item-not-found-notice" style="display: none;">
+                                    <p>Item not found in master list.</p>
+                                    <button type="button" id="add-new-item-btn" class="btn btn-primary">Add New Item to Master List</button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="custom-price">Custom Price (Coins)</label>
@@ -991,6 +1027,13 @@ function shop_manager_interface() {
         }
     });
     </script>
+    
+    <?php
+    // Include the quick add item modal
+    include_once(plugin_dir_path(__FILE__) . '../ItemList/itemlist-quick-add-interface.php');
+    echo include_quick_add_item_modal();
+    ?>
+    
     <?php
     return ob_get_clean();
 }

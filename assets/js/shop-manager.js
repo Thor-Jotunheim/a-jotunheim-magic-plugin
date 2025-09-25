@@ -268,6 +268,13 @@ class ShopManager {
             ).slice(0, 20); // Show max 20 suggestions
             
             this.displaySuggestions(filteredItems, suggestionsDiv, searchInput, hiddenSelect);
+            
+            // Show "Add New Item" notice if no items found and query is substantial
+            if (filteredItems.length === 0 && query.length >= 2) {
+                this.showAddNewItemNotice(query, searchInput);
+            } else {
+                this.hideAddNewItemNotice();
+            }
         });
         
         searchInput.addEventListener('keydown', (e) => {
@@ -288,14 +295,18 @@ class ShopManager {
                 }
             } else if (e.key === 'Escape') {
                 suggestionsDiv.style.display = 'none';
+                this.hideAddNewItemNotice();
                 currentSuggestionIndex = -1;
             }
         });
         
         // Hide suggestions when clicking outside
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            const noticeDiv = document.getElementById('item-not-found-notice');
+            if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target) && 
+                (!noticeDiv || !noticeDiv.contains(e.target))) {
                 suggestionsDiv.style.display = 'none';
+                this.hideAddNewItemNotice();
             }
         });
     }
@@ -342,6 +353,85 @@ class ShopManager {
     highlightSuggestion(suggestions, index) {
         suggestions.forEach((s, i) => {
             s.classList.toggle('highlighted', i === index);
+        });
+    }
+    
+    showAddNewItemNotice(itemName, searchInput) {
+        const noticeDiv = document.getElementById('item-not-found-notice');
+        const suggestionsDiv = document.getElementById('item-suggestions');
+        
+        if (noticeDiv) {
+            // Hide suggestions when showing notice
+            suggestionsDiv.style.display = 'none';
+            
+            // Update notice text with the searched item name
+            const noticeText = noticeDiv.querySelector('p');
+            if (noticeText) {
+                noticeText.textContent = `"${itemName}" not found in master list.`;
+            }
+            
+            // Show the notice
+            noticeDiv.style.display = 'block';
+            
+            // Setup the "Add New Item" button click handler
+            const addBtn = document.getElementById('add-new-item-btn');
+            if (addBtn) {
+                // Remove existing listeners
+                const newBtn = addBtn.cloneNode(true);
+                addBtn.parentNode.replaceChild(newBtn, addBtn);
+                
+                // Add new listener
+                newBtn.addEventListener('click', () => {
+                    this.showQuickAddModalForShop(itemName);
+                });
+            }
+        }
+    }
+    
+    hideAddNewItemNotice() {
+        const noticeDiv = document.getElementById('item-not-found-notice');
+        if (noticeDiv) {
+            noticeDiv.style.display = 'none';
+        }
+    }
+    
+    showQuickAddModalForShop(itemName) {
+        console.log('Showing quick add modal for shop with item:', itemName);
+        
+        // Check if the modal is available
+        if (typeof window.showQuickAddModal !== 'function') {
+            console.error('Quick add modal not available');
+            alert('Quick add modal not loaded. Please refresh the page.');
+            return;
+        }
+        
+        // Show the modal with a callback to refresh the item list
+        window.showQuickAddModal(itemName, (result) => {
+            console.log('Item added successfully from shop:', result);
+            
+            // Refresh the item list
+            this.loadAllItems().then(() => {
+                // Auto-select the newly added item
+                const searchInput = document.getElementById('item-selector');
+                const hiddenSelect = document.getElementById('item-selector-hidden');
+                
+                if (searchInput && hiddenSelect) {
+                    searchInput.value = result.item_name;
+                    hiddenSelect.value = result.item_id;
+                    
+                    // Update price placeholder
+                    const customPriceInput = document.getElementById('custom-price');
+                    if (customPriceInput) {
+                        customPriceInput.placeholder = `Default: ${this.formatPrice(0)}`;
+                    }
+                }
+                
+                // Hide the notice
+                this.hideAddNewItemNotice();
+                
+                // Show success message
+                this.showStatus(`${result.item_name} added to master list and selected!`, 'success');
+            });
         });
     }
     
@@ -583,16 +673,7 @@ class ShopManager {
             // Update field labels for turn-in context  
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
             if (itemSelectorLabel) {
-                itemSelectorLabel.textContent = 'Select Turn-In Item from Master List';
-            }
-            
-            const customItemLabel = document.querySelector('label[for="custom-item-name"]');
-            if (customItemLabel) {
-                customItemLabel.textContent = 'Custom Turn-In Event Name';
-                const customItemInput = document.getElementById('custom-item-name');
-                if (customItemInput) {
-                    customItemInput.placeholder = 'e.g., "Dragon Egg Collection Event"';
-                }
+                itemSelectorLabel.textContent = 'Search Turn-In Items from Master List';
             }
         } else {
             // Regular shop interface
@@ -610,16 +691,7 @@ class ShopManager {
             // Restore original field labels
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
             if (itemSelectorLabel) {
-                itemSelectorLabel.textContent = 'Select Item from Master List';
-            }
-            
-            const customItemLabel = document.querySelector('label[for="custom-item-name"]');
-            if (customItemLabel) {
-                customItemLabel.textContent = 'Custom Item Name (for Aesir Spells)';
-                const customItemInput = document.getElementById('custom-item-name');
-                if (customItemInput) {
-                    customItemInput.placeholder = 'Enter custom item name for spells/special items';
-                }
+                itemSelectorLabel.textContent = 'Search Items from Master List';
             }
         }
         
@@ -879,15 +951,14 @@ class ShopManager {
 
         const formData = new FormData(e.target);
         const itemId = formData.get('item_id');
-        const customItemName = formData.get('custom_item_name');
         let customPrice = formData.get('custom_price');
         const rotation = formData.get('rotation') || 1;
         
         // For editing, we don't need to check item selection again
         if (!this.currentEditingShopItem) {
-            // Check if we have either an item selection or custom item name for new items
-            if (!itemId && !customItemName) {
-                this.showStatus('Please select an item or enter a custom item name', 'error');
+            // Check if we have an item selection
+            if (!itemId) {
+                this.showStatus('Please select an item from the master list', 'error');
                 return;
             }
         }
@@ -928,14 +999,9 @@ class ShopManager {
             max_daily_turnin_quantity: parseInt(formData.get('max_daily_turnin_quantity') || '0')
         };
 
-        // Handle custom items vs regular items (only for new items, not edits)
+        // Set item_id for new items
         if (!this.currentEditingShopItem) {
-            if (customItemName) {
-                shopItemData.custom_item_name = customItemName;
-                shopItemData.item_id = null; // No item_id for custom items
-            } else {
-                shopItemData.item_id = itemId;
-            }
+            shopItemData.item_id = itemId;
         }
 
         if (customPrice && customPrice.toString().trim() !== '') {
@@ -1035,18 +1101,14 @@ class ShopManager {
             // Clear form first
             document.getElementById('add-shop-item-form').reset();
             
-            // If it's a custom item, populate custom item name
-            if (item.is_custom_item == 1) {
-                document.getElementById('custom-item-name').value = item.item_name || '';
-                document.getElementById('item-selector').value = '';
-                document.getElementById('item-selector-hidden').value = '';
+            // Set the item selector for all items
+            if (item.item_id) {
+                document.getElementById('item-selector-hidden').value = item.item_id;
+                document.getElementById('item-selector').value = item.master_item_name || item.item_name || '';
             } else {
-                // For regular items, set the item selector
-                if (item.item_id) {
-                    document.getElementById('item-selector-hidden').value = item.item_id;
-                    document.getElementById('item-selector').value = item.master_item_name || item.item_name || '';
-                }
-                document.getElementById('custom-item-name').value = '';
+                // For items without item_id, they should be in the master list now
+                document.getElementById('item-selector').value = item.item_name || '';
+                document.getElementById('item-selector-hidden').value = '';
             }
             
             // Populate other fields
@@ -1176,7 +1238,6 @@ class ShopManager {
         document.getElementById('item-rotation').value = '1'; // Reset to default
         document.getElementById('item-selector').value = '';
         document.getElementById('item-selector-hidden').value = '';
-        document.getElementById('custom-item-name').value = '';
         document.getElementById('custom-price').value = '';
         
         // Clear price placeholder
@@ -1184,6 +1245,9 @@ class ShopManager {
         if (customPriceInput) {
             customPriceInput.placeholder = 'Enter custom price';
         }
+        
+        // Hide add new item notice
+        this.hideAddNewItemNotice();
         
         // Reset stock checkbox and enable stock input
         const stockCheckbox = document.getElementById('custom-stock-enabled');
