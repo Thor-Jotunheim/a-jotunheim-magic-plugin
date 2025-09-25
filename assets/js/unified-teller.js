@@ -587,7 +587,7 @@ class UnifiedTeller {
             buttonsHTML += `
                 <div class="quantity-controls buy-section">
                     <label>Individual:</label>
-                    <input type="number" class="quantity-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
+                    <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
                     <button class="btn btn-primary individual-buy" data-type="individual">Buy</button>
                 </div>`;
             
@@ -596,7 +596,7 @@ class UnifiedTeller {
                 buttonsHTML += `
                     <div class="quantity-controls buy-section">
                         <label>Stack (${stackSize}):</label>
-                        <input type="number" class="stack-input" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
+                        <input type="number" class="stack-input" id="qty-stack-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
                         <button class="btn btn-secondary stack-buy" data-type="stack">Buy</button>
                     </div>`;
             }
@@ -607,7 +607,7 @@ class UnifiedTeller {
             buttonsHTML += `
                 <div class="quantity-controls sell-section">
                     <label>Sell to Shop:</label>
-                    <input type="number" class="sell-quantity-input" value="1" min="1" max="999">
+                    <input type="number" class="sell-quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="999">
                     <button class="btn btn-warning sell-to-shop" data-type="sell">Sell</button>
                 </div>`;
         }
@@ -637,8 +637,8 @@ class UnifiedTeller {
                 individualBtn.addEventListener('click', (e) => {
                     console.log('Individual buy button clicked for:', item.item_name);
                     e.stopPropagation();
-                    const quantity = parseInt(quantityInput.value) || 1;
-                    this.addToCart(item, quantity, unitPrice * quantity);
+                    // Use the proper addToCart method that handles buy/sell actions
+                    this.addToCart(item.shop_item_id, 'buy', 'individual');
                 });
             } else {
                 individualBtn.disabled = true;
@@ -655,9 +655,8 @@ class UnifiedTeller {
             if (item.stock_quantity !== 0) {
                 stackBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const stackCount = parseInt(stackInput.value) || 1;
-                    const totalQuantity = stackCount * stackSize;
-                    this.addToCart(item, totalQuantity, stackPrice * stackCount);
+                    // Use the proper addToCart method that handles stack purchases
+                    this.addToCart(item.shop_item_id, 'buy', 'stack');
                 });
             } else {
                 stackBtn.disabled = true;
@@ -673,8 +672,8 @@ class UnifiedTeller {
             sellBtn.addEventListener('click', (e) => {
                 console.log('Sell button clicked for:', item.item_name);
                 e.stopPropagation();
-                const quantity = parseInt(sellInput.value) || 1;
-                this.sellToShop(item, quantity);
+                // Use the proper addToCart method that handles sell actions
+                this.addToCart(item.shop_item_id, 'sell', 'individual');
             });
         } else {
             console.log('No sell button found for item:', item.item_name);
@@ -688,8 +687,8 @@ class UnifiedTeller {
             turnInBtn.addEventListener('click', (e) => {
                 console.log('Turn-in button clicked for:', item.item_name);
                 e.stopPropagation();
-                const quantity = parseInt(turnInInput.value) || 1;
-                this.turnInItem(item, quantity);
+                // Use the proper turn-in method
+                this.addTurninItem(item.shop_item_id);
             });
         } else {
             console.log('No turn-in button found for item:', item.item_name);
