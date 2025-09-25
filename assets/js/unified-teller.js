@@ -1043,32 +1043,57 @@ class UnifiedTeller {
     }
 
     generateTransactionSummary() {
-        const total = this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0);
         const notes = document.getElementById('transaction-notes').value;
+        const isTurnIn = this.cart.some(item => item.action === 'turnin');
 
         let summary = `
             <div class="transaction-summary">
                 <h4>Transaction Details</h4>
                 <p><strong>Shop:</strong> ${document.getElementById('shop-name-display').textContent}</p>
                 <p><strong>Customer:</strong> ${this.currentCustomer.playerName || this.currentCustomer.player_name}</p>
-                <p><strong>Type:</strong> ${this.transactionMode.charAt(0).toUpperCase() + this.transactionMode.slice(1)}</p>
+                <p><strong>Type:</strong> ${isTurnIn ? 'Turn-In' : this.transactionMode.charAt(0).toUpperCase() + this.transactionMode.slice(1)}</p>
                 
                 <h5>Items:</h5>
                 <ul>
         `;
 
-        this.cart.forEach(item => {
-            const itemPrice = item.price || item.unit_price || 0;
-            const totalPrice = item.total_price || (itemPrice * item.quantity);
-            summary += `<li>${item.item_name} x${item.quantity} @ $${itemPrice.toFixed(2)} = $${totalPrice.toFixed(2)}</li>`;
-        });
+        if (isTurnIn) {
+            // Turn-in summary - show quantities and progress
+            this.cart.forEach(item => {
+                const currentTurnedIn = item.turn_in_quantity || 0;
+                const requirement = item.turn_in_requirement || 0;
+                const newTotal = currentTurnedIn + item.quantity;
+                const progress = requirement > 0 ? Math.min(100, (newTotal / requirement) * 100) : 0;
+                
+                summary += `<li>${item.item_name}: Turning in ${item.quantity}`;
+                if (requirement > 0) {
+                    summary += ` (${newTotal}/${requirement} - ${progress.toFixed(1)}% complete)`;
+                }
+                summary += `</li>`;
+            });
+            
+            const totalTurningIn = this.cart.reduce((sum, item) => sum + item.quantity, 0);
+            summary += `
+                    </ul>
+                    <p><strong>Total Items Turning In: ${totalTurningIn}</strong></p>
+                    ${notes ? `<p><strong>Notes:</strong> ${this.escapeHtml(notes)}</p>` : ''}
+                </div>`;
+        } else {
+            // Regular transaction - show prices
+            const total = this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0);
+            
+            this.cart.forEach(item => {
+                const itemPrice = item.price || item.unit_price || 0;
+                const totalPrice = item.total_price || (itemPrice * item.quantity);
+                summary += `<li>${item.item_name} x${item.quantity} @ $${itemPrice.toFixed(2)} = $${totalPrice.toFixed(2)}</li>`;
+            });
 
-        summary += `
-                </ul>
-                <p><strong>Total Amount: $${total.toFixed(2)}</strong></p>
-                ${notes ? `<p><strong>Notes:</strong> ${this.escapeHtml(notes)}</p>` : ''}
-            </div>
-        `;
+            summary += `
+                    </ul>
+                    <p><strong>Total Amount: $${total.toFixed(2)}</strong></p>
+                    ${notes ? `<p><strong>Notes:</strong> ${this.escapeHtml(notes)}</p>` : ''}
+                </div>`;
+        }
 
         return summary;
     }
@@ -1096,27 +1121,33 @@ class UnifiedTeller {
                 }
             }
             
+            // Detect transaction type from cart items
+            const isTurnIn = this.cart.some(item => item.action === 'turnin');
+            const transactionType = isTurnIn ? 'turnin' : this.transactionMode;
+            
             const transactionData = {
                 shop_id: this.selectedShop,
                 player_id: this.currentCustomer.id,
                 player_name: this.currentCustomer.playerName || this.currentCustomer.player_name,
-                transaction_type: this.transactionMode,
+                transaction_type: transactionType,
                 items: this.cart,
-                total_amount: this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0),
+                total_amount: isTurnIn ? 0 : this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0),
                 notes: document.getElementById('transaction-notes').value,
                 transaction_date: new Date().toISOString()
             };
 
             // Record transaction
+            console.log('Recording transaction:', transactionData);
             const response = await JotunAPI.addTransaction(transactionData);
+            console.log('Transaction response:', response);
             
             if (response.success !== false) {
                 // Record daily activity for transactions with limits
-                if (this.transactionMode === 'sell') {
+                if (transactionType === 'sell') {
                     await this.recordDailySales();
-                } else if (this.transactionMode === 'buy') {
+                } else if (transactionType === 'buy') {
                     await this.recordDailyBuys();
-                } else if (this.transactionMode === 'turnin') {
+                } else if (transactionType === 'turnin') {
                     await this.recordDailyTurnins();
                 }
                 
