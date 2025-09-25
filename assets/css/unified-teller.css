@@ -216,11 +216,8 @@ button.btn.btn-success {
     border: 1px solid #dee2e6 !important;
 }
 
-/* Brand new green buy button class - completely fresh start */
+/* Brand new green buy button class - match exact sizing of other buttons */
 .purchase-button {
-    background: #28a745 !important;
-    color: #ffffff !important;
-    border: 1px solid #28a745 !important;
     padding: 4px 8px !important;
     font-size: 11px !important;
     font-weight: 500 !important;
@@ -228,10 +225,13 @@ button.btn.btn-success {
     min-width: 60px !important;
     text-align: center !important;
     cursor: pointer !important;
-    display: inline-block !important;
+    font-family: var(--font-family) !important;
+    transition: all 0.2s ease !important;
     text-decoration: none !important;
-    font-family: inherit !important;
-    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: var(--spacing-tight) !important;
+    border: none !important;
 }
 
 .purchase-button:hover {
