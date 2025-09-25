@@ -247,7 +247,8 @@ class ShopManager {
         });
         
         searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
+            const originalQuery = e.target.value.trim();
+            const query = originalQuery.toLowerCase();
             
             if (query.length === 0) {
                 // Show all items when empty
@@ -271,7 +272,7 @@ class ShopManager {
             
             // Show "Add New Item" notice if no items found and query is substantial
             if (filteredItems.length === 0 && query.length >= 2) {
-                this.showAddNewItemNotice(query, searchInput);
+                this.showAddNewItemNotice(originalQuery, searchInput);
             } else {
                 this.hideAddNewItemNotice();
             }
