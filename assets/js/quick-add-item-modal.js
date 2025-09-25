@@ -380,11 +380,85 @@ class QuickAddItemModal {
 // Initialize modal when script loads
 let quickAddModal = null;
 
+// Load dynamic item types
+function loadItemTypes() {
+    fetch(window.jotunheimQuickAdd.rest_url + 'jotunheim/v1/itemlist-item-types/', {
+        method: 'GET',
+        headers: {
+            'X-WP-Nonce': window.jotunheimQuickAdd.nonce,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.data) {
+            populateItemTypeDropdown(data.data);
+        } else {
+            console.warn('Failed to load item types, using fallback');
+            populateItemTypeDropdown([]);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading item types:', error);
+        populateItemTypeDropdown([]);
+    });
+}
+
+// Populate item type dropdown with dynamic data
+function populateItemTypeDropdown(itemTypes) {
+    const typeSelect = document.getElementById('quick-add-type');
+    if (!typeSelect) return;
+
+    // Clear existing options except first one
+    while (typeSelect.children.length > 1) {
+        typeSelect.removeChild(typeSelect.lastChild);
+    }
+
+    // Add dynamic options
+    if (itemTypes.length > 0) {
+        itemTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.type_name;
+            option.textContent = type.type_name;
+            option.dataset.multiplier = type.price_multiplier;
+            typeSelect.appendChild(option);
+        });
+    } else {
+        // Fallback hardcoded options if API fails
+        const fallbackTypes = [
+            { type_name: 'Weapon', price_multiplier: 1.2 },
+            { type_name: 'Armor', price_multiplier: 1.1 },
+            { type_name: 'Tool', price_multiplier: 1.0 },
+            { type_name: 'Food', price_multiplier: 0.8 },
+            { type_name: 'Material', price_multiplier: 0.5 },
+            { type_name: 'Resource', price_multiplier: 0.7 },
+            { type_name: 'Building', price_multiplier: 0.9 },
+            { type_name: 'Consumable', price_multiplier: 0.6 },
+            { type_name: 'Misc', price_multiplier: 0.4 },
+            { type_name: 'Decoration', price_multiplier: 0.3 },
+            { type_name: 'Trophy', price_multiplier: 2.0 },
+            { type_name: 'Aesir Spell', price_multiplier: 3.0 }
+        ];
+        
+        fallbackTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.type_name;
+            option.textContent = type.type_name;
+            option.dataset.multiplier = type.price_multiplier;
+            typeSelect.appendChild(option);
+        });
+    }
+}
+
 // Wait for DOM and initialize
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initQuickAddModal);
+    document.addEventListener('DOMContentLoaded', function() {
+        initQuickAddModal();
+        loadItemTypes();
+    });
 } else {
     initQuickAddModal();
+    loadItemTypes();
 }
 
 function initQuickAddModal() {

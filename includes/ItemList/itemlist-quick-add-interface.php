@@ -35,28 +35,10 @@ function jotunheim_quick_add_item_modal() {
                     <!-- Item Type -->
                     <div class="form-group">
                         <label for="quick-item-type">Item Type:</label>
-                        <select id="quick-item-type" name="item_type" class="form-control" required>
-                            <option value="">Select Type...</option>
-                            <option value="Currency">Currency</option>
-                            <option value="Untradable">Untradable</option>
-                            <option value="Raw Food">Raw Food</option>
-                            <option value="Cooked Food">Cooked Food</option>
-                            <option value="Fish">Fish</option>
-                            <option value="Seeds">Seeds</option>
-                            <option value="Bait">Bait</option>
-                            <option value="Mead">Mead</option>
-                            <option value="Building & Crafting">Building & Crafting</option>
-                            <option value="Boss Summons">Boss Summons</option>
-                            <option value="Tamed Animals">Tamed Animals</option>
-                            <option value="Armor Sets">Armor Sets</option>
-                            <option value="Armor">Armor</option>
-                            <option value="Ammunition">Ammunition</option>
-                            <option value="Weapons">Weapons</option>
-                            <option value="Tools">Tools</option>
-                            <option value="Shields">Shields</option>
-                            <option value="Trophies" selected>Trophies</option>
-                            <option value="Crafting Components">Crafting Components</option>
-                        </select>
+                                                        <select id="quick-add-type" name="type" required>
+                                    <option value="">Select Item Type</option>
+                                    <!-- Options will be loaded dynamically via JavaScript -->
+                                </select>
                     </div>
                     
                     <!-- Tech Level -->
