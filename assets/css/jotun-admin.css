@@ -385,11 +385,12 @@
 }
 
 .advanced-settings-content {
-    max-height: 1000px; /* Increased to accommodate all content */
+    max-height: 1200px; /* Generous height for all content */
     padding: 15px 0;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     opacity: 1;
+    transform: translateY(0);
 }
 
 .advanced-settings-content.collapsed {
@@ -397,6 +398,9 @@
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     opacity: 0 !important;
+    transform: translateY(-10px) !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 /* Form styling within advanced settings */

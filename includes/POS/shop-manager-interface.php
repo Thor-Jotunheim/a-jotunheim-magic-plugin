@@ -317,17 +317,38 @@ function shop_manager_interface() {
                             </div>
                         </div>
                         
+                        <!-- Transaction Type Checkboxes (moved above advanced settings) -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Transaction Types</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="sell-checkbox" name="sell" checked>
+                                        <span>Sell</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="buy-checkbox" name="buy">
+                                        <span>Buy</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="turn-in-checkbox" name="turn_in">
+                                        <span>Turn-In</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Advanced Item Settings Collapsible Section -->
                         <div class="advanced-settings-section">
                             <div class="advanced-settings-header" onclick="toggleAdvancedSettings()">
                                 <h4 class="advanced-settings-title">
-                                    <span class="toggle-icon" id="advanced-toggle-icon">▼</span>
+                                    <span class="toggle-icon collapsed" id="advanced-toggle-icon">▶</span>
                                     Advanced Item Configuration
                                 </h4>
                                 <small class="advanced-settings-subtitle">Stock limits, rotation, availability, and daily transaction limits</small>
                             </div>
                             
-                            <div class="advanced-settings-content" id="advanced-settings-content">
+                            <div class="advanced-settings-content collapsed" id="advanced-settings-content">
                                 <!-- Stock Management -->
                                 <div class="form-row">
                                     <div class="form-group">
@@ -470,27 +491,6 @@ function shop_manager_interface() {
                                             0 = no limit. Example: if set to 10, each player can only turn in up to 10 of this item per day
                                         </small>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Transaction Type Checkboxes -->
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Transaction Types</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="sell-checkbox" name="sell" checked>
-                                        <span>Sell</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="buy-checkbox" name="buy">
-                                        <span>Buy</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="turn-in-checkbox" name="turn_in">
-                                        <span>Turn-In</span>
-                                    </label>
                                 </div>
                             </div>
                         </div>

@@ -1692,28 +1692,26 @@ const additionalCSS = `
 
 // Advanced Settings Toggle Function
 function toggleAdvancedSettings() {
-    console.log('DEBUG - toggleAdvancedSettings called');
     const content = document.getElementById('advanced-settings-content');
     const icon = document.getElementById('advanced-toggle-icon');
-    
-    console.log('DEBUG - Found elements:', { content, icon });
+    const header = document.querySelector('.advanced-settings-header');
     
     if (content && icon) {
-        if (content.classList.contains('collapsed')) {
+        const isCollapsed = content.classList.contains('collapsed');
+        
+        if (isCollapsed) {
             // Expand
-            console.log('DEBUG - Expanding advanced settings');
             content.classList.remove('collapsed');
             icon.textContent = '▼';
             icon.classList.remove('collapsed');
+            if (header) header.classList.remove('collapsed');
         } else {
             // Collapse
-            console.log('DEBUG - Collapsing advanced settings');
             content.classList.add('collapsed');
             icon.textContent = '▶';
             icon.classList.add('collapsed');
+            if (header) header.classList.add('collapsed');
         }
-    } else {
-        console.log('DEBUG - Missing elements for toggle');
     }
 }
 
