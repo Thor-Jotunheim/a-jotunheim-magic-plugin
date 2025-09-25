@@ -882,25 +882,53 @@ span.item-action[class*="turnin"],
     text-transform: uppercase !important;
 }
 
-/* Status Message Styles - Prominent Centered Popups */
+/* Status Message Styles - Smart Positioning */
 #teller-status {
     display: none;
     position: fixed;
+    z-index: 10000;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    line-height: 1.4;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: statusSlideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+/* Default positioning - top right for regular messages */
+#teller-status:not(.critical) {
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: normal;
+    text-align: left;
+    min-width: 200px;
+    max-width: 400px;
+}
+
+/* Critical positioning - centered modal for important messages */
+#teller-status.critical {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 10000;
     padding: 20px 30px;
-    border-radius: 10px;
     font-size: 18px;
     font-weight: bold;
     text-align: center;
     min-width: 300px;
     max-width: 600px;
-    line-height: 1.4;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    backdrop-filter: blur(5px);
-    animation: statusPopIn 0.3s ease-out;
+}
+
+@keyframes statusSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 @keyframes statusPopIn {
@@ -912,6 +940,11 @@ span.item-action[class*="turnin"],
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
+}
+
+/* Critical status messages get the pop-in animation */
+#teller-status.critical {
+    animation: statusPopIn 0.3s ease-out;
 }
 
 /* Status message types */

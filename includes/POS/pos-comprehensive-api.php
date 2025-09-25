@@ -2498,9 +2498,36 @@ function jotun_api_add_transaction($request) {
         return new WP_REST_Response(['error' => 'Shop name, item name, and customer name are required'], 400);
     }
     
+    $item_name = sanitize_text_field($data['item_name']);
+    
+    // Check if item exists in master itemlist, if not add it as a custom item
+    $existing_item = $wpdb->get_row($wpdb->prepare(
+        "SELECT id FROM jotun_itemlist WHERE item_name = %s",
+        $item_name
+    ));
+    
+    if (!$existing_item) {
+        // Add custom item to master itemlist to satisfy database constraints
+        error_log("Adding custom item '$item_name' to master itemlist for transaction recording");
+        $item_insert = $wpdb->insert('jotun_itemlist', [
+            'item_name' => $item_name,
+            'unit_price' => 0.00, // Default price for custom items
+            'is_custom' => 1, // Mark as custom item
+            'created_date' => current_time('mysql'),
+            'description' => 'Auto-generated custom item from shop transaction'
+        ]);
+        
+        if ($item_insert === false) {
+            error_log("Failed to add custom item '$item_name' to itemlist: " . $wpdb->last_error);
+            // Continue anyway - maybe the constraint allows it
+        } else {
+            error_log("Successfully added custom item '$item_name' to itemlist with ID: " . $wpdb->insert_id);
+        }
+    }
+    
     $insert_data = [
         'shop_name' => sanitize_text_field($data['shop_name']),
-        'item_name' => sanitize_text_field($data['item_name']),
+        'item_name' => $item_name,
         'quantity' => (int)($data['quantity'] ?? 1),
         'total_amount' => floatval($data['total_amount'] ?? 0),
         'customer_name' => sanitize_text_field($data['customer_name']),
@@ -2521,12 +2548,24 @@ function jotun_api_add_transaction($request) {
         }
     }
     
+    // Add item_id and shop_item_id if provided (for frontend compatibility)
+    if (!empty($data['item_id'])) {
+        $insert_data['item_id'] = (int)$data['item_id'];
+    }
+    if (!empty($data['shop_item_id'])) {
+        $insert_data['shop_item_id'] = (int)$data['shop_item_id'];
+    }
+    
+    error_log("Attempting to insert transaction: " . json_encode($insert_data));
+    
     $result = $wpdb->insert($table_name, $insert_data);
     
     if ($result === false) {
+        error_log("Transaction insert failed: " . $wpdb->last_error);
         return new WP_REST_Response(['error' => 'Failed to add transaction: ' . $wpdb->last_error], 500);
     }
     
+    error_log("Transaction added successfully with ID: " . $wpdb->insert_id);
     return new WP_REST_Response(['message' => 'Transaction added successfully', 'id' => $wpdb->insert_id], 201);
 }
 

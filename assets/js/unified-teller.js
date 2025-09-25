@@ -1027,12 +1027,12 @@ class UnifiedTeller {
 
     showTransactionModal() {
         if (!this.currentCustomer) {
-            this.showStatus('Please validate a customer first', 'error');
+            this.showStatus('Please validate a customer first', 'error', true);
             return;
         }
 
         if (this.cart.length === 0) {
-            this.showStatus('Please add items to cart', 'error');
+            this.showStatus('Please add items to cart', 'error', true);
             return;
         }
 
@@ -1196,7 +1196,7 @@ class UnifiedTeller {
             }
         } catch (error) {
             console.error('Error processing transaction:', error);
-            this.showStatus('Transaction failed: ' + error.message, 'error');
+            this.showStatus('Transaction failed: ' + error.message, 'error', true);
         }
     }
 
@@ -1536,62 +1536,59 @@ class UnifiedTeller {
         }
     }
 
-    showStatus(message, type) {
+    showStatus(message, type, isCritical = false) {
         const statusDiv = document.getElementById('teller-status');
-        statusDiv.textContent = message;
-        statusDiv.className = `status-message ${type}`;
+        statusDiv.innerHTML = `${message}${isCritical ? '<button id="status-close-btn" style="margin-left: 15px; padding: 5px 10px; background: rgba(255,255,255,0.3); border: none; border-radius: 3px; cursor: pointer;">✕</button>' : ''}`;
+        statusDiv.className = `status-message ${type}${isCritical ? ' critical' : ''}`;
         statusDiv.style.display = 'block';
         
-        // Make the popup more prominent and centered
-        statusDiv.style.position = 'fixed';
-        statusDiv.style.top = '50%';
-        statusDiv.style.left = '50%';
-        statusDiv.style.transform = 'translate(-50%, -50%)';
-        statusDiv.style.zIndex = '10000';
-        statusDiv.style.padding = '20px 30px';
-        statusDiv.style.fontSize = '18px';
-        statusDiv.style.fontWeight = 'bold';
-        statusDiv.style.borderRadius = '10px';
-        statusDiv.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
-        statusDiv.style.minWidth = '300px';
-        statusDiv.style.textAlign = 'center';
-        statusDiv.style.lineHeight = '1.4';
-        
-        // Add background overlay to make it stand out
         let overlay = document.getElementById('status-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'status-overlay';
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            overlay.style.zIndex = '9999';
-            overlay.style.display = 'none';
-            document.body.appendChild(overlay);
+        
+        if (isCritical) {
+            // Critical messages: show overlay
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'status-overlay';
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                overlay.style.zIndex = '9999';
+                overlay.style.display = 'none';
+                document.body.appendChild(overlay);
+            }
+            overlay.style.display = 'block';
+        } else {
+            // Regular messages: hide overlay
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
         }
-        overlay.style.display = 'block';
 
+        // Add close button functionality
+        const closeBtn = document.getElementById('status-close-btn');
+        if (closeBtn) {
+            closeBtn.onclick = () => this.hideStatus();
+        }
+
+        // Auto-hide timeout
+        const timeout = isCritical ? 8000 : 3000; // Critical messages stay longer
         setTimeout(() => {
-            statusDiv.style.display = 'none';
+            this.hideStatus();
+        }, timeout);
+    }
+
+    hideStatus() {
+        const statusDiv = document.getElementById('teller-status');
+        const overlay = document.getElementById('status-overlay');
+        
+        statusDiv.style.display = 'none';
+        statusDiv.className = ''; // Reset all classes
+        if (overlay) {
             overlay.style.display = 'none';
-            // Reset inline styles to allow CSS to take over
-            statusDiv.style.position = '';
-            statusDiv.style.top = '';
-            statusDiv.style.left = '';
-            statusDiv.style.transform = '';
-            statusDiv.style.zIndex = '';
-            statusDiv.style.padding = '';
-            statusDiv.style.fontSize = '';
-            statusDiv.style.fontWeight = '';
-            statusDiv.style.borderRadius = '';
-            statusDiv.style.boxShadow = '';
-            statusDiv.style.minWidth = '';
-            statusDiv.style.textAlign = '';
-            statusDiv.style.lineHeight = '';
-        }, 5000); // Extended to 5 seconds for better visibility
+        }
     }
 
     escapeHtml(text) {
@@ -1944,12 +1941,12 @@ class UnifiedTeller {
 
     async recordTurnin() {
         if (!this.currentTurninCustomer) {
-            this.showStatus('Please validate a customer first', 'error');
+            this.showStatus('Please validate a customer first', 'error', true);
             return;
         }
 
         if (!this.turninList || this.turninList.length === 0) {
-            this.showStatus('Please add items to turn in', 'error');
+            this.showStatus('Please add items to turn in', 'error', true);
             return;
         }
 
