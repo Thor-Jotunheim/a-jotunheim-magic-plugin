@@ -761,3 +761,28 @@ button.btn.btn-success {
 .hidden {
     display: none !important;
 }
+
+/* FINAL OVERRIDE: Force button colors with maximum specificity */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success,
+.shop-items-grid .item-card button.btn.btn-success.individual-buy,
+.shop-items-grid .item-card button.btn.btn-success.stack-buy,
+.item-card .quantity-controls .btn.btn-success,
+button.btn.btn-success.individual-buy,
+button.btn.btn-success.stack-buy,
+input[type="button"].btn.btn-success,
+[class*="btn-success"] {
+    background-color: #28a745 !important;
+    background-image: none !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+/* Force hover state */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success:hover,
+button.btn.btn-success.individual-buy:hover,
+button.btn.btn-success.stack-buy:hover {
+    background-color: #218838 !important;
+    border-color: #218838 !important;
+    color: white !important;
+}
