@@ -1812,7 +1812,7 @@ class UnifiedTeller {
             itemRow.innerHTML = `
                 <div class="item-info">
                     <span class="item-name">${cartItem.item_name}</span>
-                    <span class="item-action ${cartItem.action}">${cartItem.action.toUpperCase()}</span>
+                    <span class="item-action ${cartItem.action}" style="background-color: ${cartItem.action === 'sell' ? '#dc3545' : cartItem.action === 'buy' ? '#28a745' : cartItem.action === 'turnin' ? '#6c757d' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block;">${cartItem.action.toUpperCase()}</span>
                 </div>
                 <div class="item-quantity">
                     <input type="number" class="cart-qty-input" value="${cartItem.quantity}" 
