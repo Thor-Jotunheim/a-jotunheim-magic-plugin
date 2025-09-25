@@ -841,6 +841,29 @@ class ShopManager {
                 input.removeAttribute('pattern');
                 input.setAttribute('novalidate', '');
             });
+            
+            // Special handling for turn-in only shops - remove validation from hidden fields
+            const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in_only';
+            if (isTurnInOnly) {
+                const stockField = document.getElementById('stock-quantity');
+                const priceField = document.getElementById('custom-price');
+                
+                // Remove validation attributes and set default values for turn-in items
+                if (stockField) {
+                    stockField.removeAttribute('required');
+                    stockField.removeAttribute('min');
+                    stockField.removeAttribute('max');
+                    stockField.removeAttribute('pattern');
+                    stockField.value = '0'; // Turn-in items don't use stock
+                }
+                if (priceField) {
+                    priceField.removeAttribute('required');
+                    priceField.removeAttribute('min');
+                    priceField.removeAttribute('max');
+                    priceField.removeAttribute('pattern');
+                    priceField.value = '0'; // Turn-in items don't use price
+                }
+            }
         }
     }
     
@@ -1026,9 +1049,14 @@ class ShopManager {
             }
         }
 
+        // Check if this is a turn-in only shop
+        const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in_only';
+        
         // Price is always in Coins (no conversion needed)
-        if (customPrice) {
+        if (customPrice && !isTurnInOnly) {
             customPrice = parseFloat(customPrice);
+        } else if (isTurnInOnly) {
+            customPrice = null; // Turn-in items don't use price
         }
 
         // Handle conditional field values based on checkboxes
@@ -1038,9 +1066,9 @@ class ShopManager {
         
         const shopItemData = {
             shop_id: this.selectedShop,
-            // Stock quantity: -1 for unlimited if checkbox not checked, otherwise use input value
-            stock_quantity: customStockEnabled ? (parseInt(formData.get('stock_quantity')) || 0) : -1,
-            unlimited_stock: !customStockEnabled, // Unlimited if checkbox not checked
+            // Stock quantity: For turn-in only shops, always use -1 (unlimited), otherwise use checkbox logic
+            stock_quantity: isTurnInOnly ? -1 : (customStockEnabled ? (parseInt(formData.get('stock_quantity')) || 0) : -1),
+            unlimited_stock: isTurnInOnly ? true : !customStockEnabled, // Always unlimited for turn-in items
             // Rotation: use input value if checkbox checked, otherwise default to 1
             rotation: customRotationEnabled ? parseInt(rotation) : 1,
             // Availability: use dropdown value if checkbox checked, otherwise default to available (1)
@@ -1067,7 +1095,10 @@ class ShopManager {
             shopItemData.item_id = itemId;
         }
 
-        if (customPrice && customPrice.toString().trim() !== '') {
+        // Handle custom price assignment with turn-in only shop logic
+        if (isTurnInOnly) {
+            shopItemData.custom_price = null; // Turn-in only items never use price
+        } else if (customPrice && customPrice.toString().trim() !== '') {
             shopItemData.custom_price = parseFloat(customPrice);
         } else {
             shopItemData.custom_price = null; // Clear price if empty
