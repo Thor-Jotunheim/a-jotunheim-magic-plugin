@@ -99,6 +99,13 @@ class QuickAddItemModal {
         console.log('Modal parent element:', this.modal.parentNode);
         console.log('Modal rect before:', this.modal.getBoundingClientRect());
         
+        // CRITICAL FIX: Ensure modal is attached to body, not nested in another modal
+        if (this.modal.parentNode && this.modal.parentNode.id === 'edit-shop-modal') {
+            console.log('FOUND THE ISSUE: Modal is inside edit-shop-modal! Moving to body...');
+            document.body.appendChild(this.modal);
+            console.log('Modal moved to body. New parent:', this.modal.parentNode);
+        }
+        
         document.body.style.overflow = 'hidden';
         
         // EXTREME debugging - make modal impossible to miss
