@@ -73,13 +73,7 @@ class UnifiedTeller {
         
         const recordTransactionBtn = document.getElementById('record-transaction-btn');
         if (recordTransactionBtn) {
-            console.log('Record transaction button found, adding event listener');
-            recordTransactionBtn.addEventListener('click', () => {
-                console.log('Record transaction button clicked!');
-                this.showTransactionModal();
-            });
-        } else {
-            console.log('Record transaction button NOT found in DOM');
+            recordTransactionBtn.addEventListener('click', () => this.showTransactionModal());
         }
 
         // History controls
@@ -1032,19 +1026,12 @@ class UnifiedTeller {
     }
 
     showTransactionModal() {
-        console.log('showTransactionModal called');
-        console.log('Current customer:', this.currentCustomer);
-        console.log('Cart length:', this.cart.length);
-        console.log('Cart contents:', this.cart);
-        
         if (!this.currentCustomer) {
-            console.log('No customer - showing error');
             this.showStatus('Please validate a customer first', 'error');
             return;
         }
 
         if (this.cart.length === 0) {
-            console.log('No cart items - showing error');
             this.showStatus('Please add items to cart', 'error');
             return;
         }
@@ -1151,6 +1138,8 @@ class UnifiedTeller {
                 const individualTransactionData = {
                     shop_name: shopName,
                     item_name: cartItem.item_name,
+                    item_id: cartItem.item_id, // Include item_id (null for custom items)
+                    shop_item_id: cartItem.shop_item_id, // Include shop_item_id for custom items
                     quantity: cartItem.quantity,
                     total_amount: itemTransactionType === 'turnin' ? 0 : (cartItem.price || cartItem.unit_price || 0) * cartItem.quantity,
                     customer_name: customerName,
