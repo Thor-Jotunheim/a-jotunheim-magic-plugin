@@ -1692,31 +1692,58 @@ const additionalCSS = `
 
 // Advanced Settings Toggle Function
 function toggleAdvancedSettings() {
+    console.log('DEBUG - toggleAdvancedSettings called!');
     const content = document.getElementById('advanced-settings-content');
     const icon = document.getElementById('advanced-toggle-icon');
     const header = document.querySelector('.advanced-settings-header');
     
+    console.log('DEBUG - Elements found:', { content, icon, header });
+    
     if (content && icon) {
         const isCollapsed = content.classList.contains('collapsed');
+        console.log('DEBUG - Current collapsed state:', isCollapsed);
+        console.log('DEBUG - Current content classes:', content.className);
         
         if (isCollapsed) {
             // Expand
+            console.log('DEBUG - Expanding...');
             content.classList.remove('collapsed');
             icon.textContent = '▼';
             icon.classList.remove('collapsed');
             if (header) header.classList.remove('collapsed');
         } else {
             // Collapse
+            console.log('DEBUG - Collapsing...');
             content.classList.add('collapsed');
             icon.textContent = '▶';
             icon.classList.add('collapsed');
             if (header) header.classList.add('collapsed');
         }
+        
+        console.log('DEBUG - New content classes:', content.className);
+    } else {
+        console.log('DEBUG - Missing elements!');
     }
 }
 
 // Make function globally available
 window.toggleAdvancedSettings = toggleAdvancedSettings;
+
+// Also add event listener as backup to inline onclick
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const header = document.querySelector('.advanced-settings-header');
+        if (header) {
+            console.log('DEBUG - Adding click event listener to header');
+            header.addEventListener('click', function(e) {
+                console.log('DEBUG - Header clicked via event listener');
+                toggleAdvancedSettings();
+            });
+        } else {
+            console.log('DEBUG - Advanced settings header not found for event listener');
+        }
+    }, 500);
+});
 
 // Initialize advanced settings as collapsed
 document.addEventListener('DOMContentLoaded', function() {
