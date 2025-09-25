@@ -1683,6 +1683,41 @@ const additionalCSS = `
     }
 `;
 
+// Advanced Settings Toggle Function
+function toggleAdvancedSettings() {
+    const content = document.getElementById('advanced-settings-content');
+    const icon = document.getElementById('advanced-toggle-icon');
+    
+    if (content && icon) {
+        if (content.classList.contains('collapsed')) {
+            // Expand
+            content.classList.remove('collapsed');
+            icon.textContent = '▼';
+            icon.classList.remove('collapsed');
+        } else {
+            // Collapse
+            content.classList.add('collapsed');
+            icon.textContent = '▶';
+            icon.classList.add('collapsed');
+        }
+    }
+}
+
+// Make function globally available
+window.toggleAdvancedSettings = toggleAdvancedSettings;
+
+// Initialize advanced settings as collapsed
+document.addEventListener('DOMContentLoaded', function() {
+    const content = document.getElementById('advanced-settings-content');
+    const icon = document.getElementById('advanced-toggle-icon');
+    
+    if (content && icon) {
+        content.classList.add('collapsed');
+        icon.textContent = '▶';
+        icon.classList.add('collapsed');
+    }
+});
+
 // Inject the additional CSS
 const style = document.createElement('style');
 style.textContent = additionalCSS;

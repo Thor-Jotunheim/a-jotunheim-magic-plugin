@@ -317,4 +317,110 @@
         border-color: #3c434a;
         color: #f0f0f1;
     }
+    
+    .advanced-settings-section {
+        background: #2c3338;
+        border-color: #3c434a;
+    }
+    
+    .advanced-settings-header {
+        background: #3c434a;
+        color: #f0f0f1;
+    }
+    
+    .advanced-settings-header:hover {
+        background: #50575e;
+    }
+}
+
+/* Advanced Settings Collapsible Section */
+.advanced-settings-section {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin: 20px 0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.advanced-settings-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.advanced-settings-header:hover {
+    background: #e9ecef;
+}
+
+.advanced-settings-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toggle-icon {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+    color: #6c757d;
+}
+
+.toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.advanced-settings-subtitle {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.advanced-settings-content {
+    padding: 20px;
+    border-top: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.advanced-settings-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+/* Form styling within advanced settings */
+.advanced-settings-content .form-row {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.advanced-settings-content .form-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.advanced-settings-content .form-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.advanced-settings-content .checkbox-label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.advanced-settings-content small {
+    color: #6c757d !important;
 }

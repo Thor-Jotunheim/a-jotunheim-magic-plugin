@@ -316,145 +316,161 @@ function shop_manager_interface() {
                                 <small class="price-conversion">Display will show both Coins and Ymir Flesh equivalent (1 Ymir = 120 Coins)</small>
                             </div>
                         </div>
-                        <!-- Item Configuration Fields -->
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Stock Management</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="custom-stock-enabled" name="custom_stock_enabled">
-                                        <span>Set Stock Quantity</span>
-                                    </label>
-                                </div>
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    If unchecked, item will have unlimited stock
-                                </small>
-                            </div>
-                            <div class="form-group" id="stock-quantity-group" style="display: none;">
-                                <label for="stock-quantity">Stock Quantity</label>
-                                <input type="number" id="stock-quantity" name="stock_quantity" value="0" min="0">
-                            </div>
-                        </div>
                         
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Rotation Settings</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="custom-rotation-enabled" name="custom_rotation_enabled">
-                                        <span>Set Custom Rotation</span>
-                                    </label>
+                        <!-- Advanced Item Settings Collapsible Section -->
+                        <div class="advanced-settings-section">
+                            <div class="advanced-settings-header" onclick="toggleAdvancedSettings()">
+                                <h4 class="advanced-settings-title">
+                                    <span class="toggle-icon" id="advanced-toggle-icon">▼</span>
+                                    Advanced Item Configuration
+                                </h4>
+                                <small class="advanced-settings-subtitle">Stock limits, rotation, availability, and daily transaction limits</small>
+                            </div>
+                            
+                            <div class="advanced-settings-content" id="advanced-settings-content">
+                                <!-- Stock Management -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Stock Management</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="custom-stock-enabled" name="custom_stock_enabled">
+                                                <span>Set Stock Quantity</span>
+                                            </label>
+                                        </div>
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            If unchecked, item will have unlimited stock
+                                        </small>
+                                    </div>
+                                    <div class="form-group" id="stock-quantity-group" style="display: none;">
+                                        <label for="stock-quantity">Stock Quantity</label>
+                                        <input type="number" id="stock-quantity" name="stock_quantity" value="0" min="0">
+                                    </div>
                                 </div>
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    If unchecked, item will use default rotation (1)
-                                </small>
-                            </div>
-                            <div class="form-group" id="rotation-group" style="display: none;">
-                                <label for="item-rotation">Rotation</label>
-                                <input type="number" id="item-rotation" name="rotation" value="1" min="1" title="Rotation number for grouping items">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Availability Settings</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="custom-availability-enabled" name="custom_availability_enabled">
-                                        <span>Set Custom Availability</span>
-                                    </label>
+                                
+                                <!-- Rotation Settings -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Rotation Settings</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="custom-rotation-enabled" name="custom_rotation_enabled">
+                                                <span>Set Custom Rotation</span>
+                                            </label>
+                                        </div>
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            If unchecked, item will use default rotation (1)
+                                        </small>
+                                    </div>
+                                    <div class="form-group" id="rotation-group" style="display: none;">
+                                        <label for="item-rotation">Rotation</label>
+                                        <input type="number" id="item-rotation" name="rotation" value="1" min="1" title="Rotation number for grouping items">
+                                    </div>
                                 </div>
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    If unchecked, item will be available by default
-                                </small>
-                            </div>
-                            <div class="form-group" id="availability-group" style="display: none;">
-                                <label for="item-available">Available</label>
-                                <select id="item-available" name="is_available">
-                                    <option value="1">Yes</option>
-                                    <option value="0">No</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Turn-In Only Fields -->
-                        <div class="form-row turn-in-fields" style="display: none;">
-                            <div class="form-group">
-                                <label for="turn-in-quantity">Current Turn-In Quantity</label>
-                                <input type="number" id="turn-in-quantity" name="turn_in_quantity" value="0" min="0" title="Current amount turned in by players">
-                            </div>
-                            <div class="form-group">
-                                <label for="turn-in-requirement">Turn-In Requirement</label>
-                                <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="0" title="Total amount needed to complete this turn-in event">
-                            </div>
-                        </div>
-                        
-                        <!-- Daily Selling Limit Fields -->
-                        <div class="form-row daily-limit-fields">
-                            <div class="form-group">
-                                <label>Daily Selling Limits</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="daily-limit-enabled" name="daily_limit_enabled">
-                                        <span>Enable Daily Limit</span>
-                                    </label>
+                                
+                                <!-- Availability Settings -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Availability Settings</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="custom-availability-enabled" name="custom_availability_enabled">
+                                                <span>Set Custom Availability</span>
+                                            </label>
+                                        </div>
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            If unchecked, item will be available by default
+                                        </small>
+                                    </div>
+                                    <div class="form-group" id="availability-group" style="display: none;">
+                                        <label for="item-available">Available</label>
+                                        <select id="item-available" name="is_available">
+                                            <option value="1">Yes</option>
+                                            <option value="0">No</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    Limit how much each player can sell per 24-hour period
-                                </small>
-                            </div>
-                            <div class="form-group" id="max-daily-quantity-group" style="display: none;">
-                                <label for="max-daily-sell-quantity">Max Daily Sell Quantity</label>
-                                <input type="number" id="max-daily-sell-quantity" name="max_daily_sell_quantity" value="0" min="0" title="Maximum quantity each player can sell per day (resets every 24 hours)">
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    0 = no limit. Example: if set to 5, each player can only sell up to 5 of this item per day
-                                </small>
-                            </div>
-                        </div>
-                        
-                        <!-- Daily Buying Limit Fields -->
-                        <div class="form-row daily-buy-limit-fields">
-                            <div class="form-group">
-                                <label>Daily Buying Limits</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="buy-daily-limit-enabled" name="buy_daily_limit_enabled">
-                                        <span>Enable Daily Buy Limit</span>
-                                    </label>
+                                
+                                <!-- Turn-In Only Fields -->
+                                <div class="form-row turn-in-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="turn-in-quantity">Current Turn-In Quantity</label>
+                                        <input type="number" id="turn-in-quantity" name="turn_in_quantity" value="0" min="0" title="Current amount turned in by players">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="turn-in-requirement">Turn-In Requirement</label>
+                                        <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="0" title="Total amount needed to complete this turn-in event">
+                                    </div>
                                 </div>
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    Limit how much each player can buy per 24-hour period
-                                </small>
-                            </div>
-                            <div class="form-group" id="max-daily-buy-quantity-group" style="display: none;">
-                                <label for="max-daily-buy-quantity">Max Daily Buy Quantity</label>
-                                <input type="number" id="max-daily-buy-quantity" name="max_daily_buy_quantity" value="0" min="0" title="Maximum quantity each player can buy per day (resets every 24 hours)">
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    0 = no limit. Example: if set to 3, each player can only buy up to 3 of this item per day
-                                </small>
-                            </div>
-                        </div>
-                        
-                        <!-- Daily Turn-in Limit Fields -->
-                        <div class="form-row daily-turnin-limit-fields">
-                            <div class="form-group">
-                                <label>Daily Turn-in Limits</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="turnin-daily-limit-enabled" name="turnin_daily_limit_enabled">
-                                        <span>Enable Daily Turn-in Limit</span>
-                                    </label>
+                                
+                                <!-- Daily Selling Limit Fields -->
+                                <div class="form-row daily-limit-fields">
+                                    <div class="form-group">
+                                        <label>Daily Selling Limits</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="daily-limit-enabled" name="daily_limit_enabled">
+                                                <span>Enable Daily Limit</span>
+                                            </label>
+                                        </div>
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            Limit how much each player can sell per 24-hour period
+                                        </small>
+                                    </div>
+                                    <div class="form-group" id="max-daily-quantity-group" style="display: none;">
+                                        <label for="max-daily-sell-quantity">Max Daily Sell Quantity</label>
+                                        <input type="number" id="max-daily-sell-quantity" name="max_daily_sell_quantity" value="0" min="0" title="Maximum quantity each player can sell per day (resets every 24 hours)">
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            0 = no limit. Example: if set to 5, each player can only sell up to 5 of this item per day
+                                        </small>
+                                    </div>
                                 </div>
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    Limit how much each player can turn in per 24-hour period
-                                </small>
-                            </div>
-                            <div class="form-group" id="max-daily-turnin-quantity-group" style="display: none;">
-                                <label for="max-daily-turnin-quantity">Max Daily Turn-in Quantity</label>
-                                <input type="number" id="max-daily-turnin-quantity" name="max_daily_turnin_quantity" value="0" min="0" title="Maximum quantity each player can turn in per day (resets every 24 hours)">
-                                <small style="display: block; color: #666; margin-top: 4px;">
-                                    0 = no limit. Example: if set to 10, each player can only turn in up to 10 of this item per day
-                                </small>
+                                
+                                <!-- Daily Buying Limit Fields -->
+                                <div class="form-row daily-buy-limit-fields">
+                                    <div class="form-group">
+                                        <label>Daily Buying Limits</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="buy-daily-limit-enabled" name="buy_daily_limit_enabled">
+                                                <span>Enable Daily Buy Limit</span>
+                                            </label>
+                                        </div>
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            Limit how much each player can buy per 24-hour period
+                                        </small>
+                                    </div>
+                                    <div class="form-group" id="max-daily-buy-quantity-group" style="display: none;">
+                                        <label for="max-daily-buy-quantity">Max Daily Buy Quantity</label>
+                                        <input type="number" id="max-daily-buy-quantity" name="max_daily_buy_quantity" value="0" min="0" title="Maximum quantity each player can buy per day (resets every 24 hours)">
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            0 = no limit. Example: if set to 3, each player can only buy up to 3 of this item per day
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Daily Turn-in Limit Fields -->
+                                <div class="form-row daily-turnin-limit-fields">
+                                    <div class="form-group">
+                                        <label>Daily Turn-in Limits</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="turnin-daily-limit-enabled" name="turnin_daily_limit_enabled">
+                                                <span>Enable Daily Turn-in Limit</span>
+                                            </label>
+                                        </div>
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            Limit how much each player can turn in per 24-hour period
+                                        </small>
+                                    </div>
+                                    <div class="form-group" id="max-daily-turnin-quantity-group" style="display: none;">
+                                        <label for="max-daily-turnin-quantity">Max Daily Turn-in Quantity</label>
+                                        <input type="number" id="max-daily-turnin-quantity" name="max_daily_turnin_quantity" value="0" min="0" title="Maximum quantity each player can turn in per day (resets every 24 hours)">
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            0 = no limit. Example: if set to 10, each player can only turn in up to 10 of this item per day
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
