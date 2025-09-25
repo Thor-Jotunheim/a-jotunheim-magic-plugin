@@ -1121,27 +1121,49 @@ class UnifiedTeller {
                 }
             }
             
+            // Get shop and customer names for legacy API
+            const shopName = document.getElementById('shop-name-display').textContent;
+            const customerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
             // Detect transaction type from cart items
             const isTurnIn = this.cart.some(item => item.action === 'turnin');
             const transactionType = isTurnIn ? 'turnin' : this.transactionMode;
             
-            const transactionData = {
-                shop_id: this.selectedShop,
-                player_id: this.currentCustomer.id,
-                player_name: this.currentCustomer.playerName || this.currentCustomer.player_name,
-                transaction_type: transactionType,
-                items: this.cart,
-                total_amount: isTurnIn ? 0 : this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0),
-                notes: document.getElementById('transaction-notes').value,
-                transaction_date: new Date().toISOString()
-            };
-
-            // Record transaction
-            console.log('Recording transaction:', transactionData);
-            const response = await JotunAPI.addTransaction(transactionData);
-            console.log('Transaction response:', response);
+            // Record each cart item as individual transaction (legacy API format)
+            let allSuccessful = true;
+            const responses = [];
             
-            if (response.success !== false) {
+            for (const cartItem of this.cart) {
+                const itemTransactionType = cartItem.action === 'turnin' ? 'turnin' : transactionType;
+                const individualTransactionData = {
+                    shop_name: shopName,
+                    item_name: cartItem.item_name,
+                    quantity: cartItem.quantity,
+                    total_amount: itemTransactionType === 'turnin' ? 0 : (cartItem.price || cartItem.unit_price || 0) * cartItem.quantity,
+                    customer_name: customerName,
+                    transaction_type: itemTransactionType,
+                    notes: document.getElementById('transaction-notes').value,
+                    transaction_date: new Date().toISOString()
+                };
+                
+                console.log('Recording individual transaction:', individualTransactionData);
+                try {
+                    const response = await JotunAPI.addTransaction(individualTransactionData);
+                    console.log('Individual transaction response:', response);
+                    responses.push(response);
+                    
+                    if (response.success === false) {
+                        allSuccessful = false;
+                        console.error('Transaction failed for item:', cartItem.item_name, response.error);
+                    }
+                } catch (error) {
+                    allSuccessful = false;
+                    console.error('Error recording transaction for item:', cartItem.item_name, error);
+                    responses.push({ success: false, error: error.message });
+                }
+            }
+            
+            if (allSuccessful) {
                 // Record daily activity for transactions with limits
                 if (transactionType === 'sell') {
                     await this.recordDailySales();
@@ -1151,7 +1173,7 @@ class UnifiedTeller {
                     await this.recordDailyTurnins();
                 }
                 
-                this.showStatus('Transaction completed successfully', 'success');
+                this.showStatus(`Transaction completed successfully (${responses.length} items)`, 'success');
                 
                 // Clear cart and customer
                 this.clearCart();
@@ -1167,7 +1189,8 @@ class UnifiedTeller {
                 
                 this.closeTellerModal();
             } else {
-                throw new Error(response.error || 'Transaction failed');
+                const failedItems = responses.filter(r => r.success === false).length;
+                throw new Error(`Transaction failed for ${failedItems} items`);
             }
         } catch (error) {
             console.error('Error processing transaction:', error);
