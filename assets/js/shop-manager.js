@@ -382,6 +382,7 @@ class ShopManager {
                 
                 // Add new listener
                 newBtn.addEventListener('click', () => {
+                    console.log('Add new item button clicked for item:', itemName);
                     this.showQuickAddModalForShop(itemName);
                 });
             }
@@ -397,6 +398,8 @@ class ShopManager {
     
     showQuickAddModalForShop(itemName) {
         console.log('Showing quick add modal for shop with item:', itemName);
+        console.log('window.showQuickAddModal exists:', typeof window.showQuickAddModal);
+        console.log('window.quickAddModal exists:', typeof window.quickAddModal);
         
         // Check if the modal is available
         if (typeof window.showQuickAddModal !== 'function') {

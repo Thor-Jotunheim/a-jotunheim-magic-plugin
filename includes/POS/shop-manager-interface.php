@@ -339,8 +339,8 @@ function shop_manager_interface() {
                                 </select>
                                 <div id="item-suggestions" class="item-suggestions" style="display: none;"></div>
                                 <div id="item-not-found-notice" class="item-not-found-notice" style="display: none;">
-                                    <p>Item not found in master list.</p>
-                                    <button type="button" id="add-new-item-btn" class="btn btn-primary">Add New Item to Master List</button>
+                                    <p>Item not found in Item Database.</p>
+                                    <button type="button" id="add-new-item-btn" class="btn btn-primary">Add New Item to Item Database</button>
                                 </div>
                             </div>
                             <div class="form-group">

@@ -26,11 +26,14 @@ class QuickAddItemModal {
     }
 
     setupModal() {
+        console.log('Setting up quick add modal...');
         this.modal = document.getElementById('quick-add-item-modal');
         if (!this.modal) {
             console.error('Quick add item modal not found in DOM');
+            console.log('Available modals:', document.querySelectorAll('[id*="modal"]'));
             return;
         }
+        console.log('Modal element found:', this.modal);
 
         // Get form elements
         this.form = document.getElementById('quick-add-item-form');
@@ -68,10 +71,13 @@ class QuickAddItemModal {
     }
 
     show(itemName, onSuccessCallback = null) {
+        console.log('show() method called with itemName:', itemName);
         if (!this.modal) {
             console.error('Modal not initialized');
             return;
         }
+
+        console.log('Modal element exists, showing modal...');
 
         // Set item name
         if (this.itemNameInput) {
@@ -85,6 +91,7 @@ class QuickAddItemModal {
         this.resetForm();
 
         // Show modal
+        console.log('Setting modal display to flex...');
         this.modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
@@ -277,6 +284,8 @@ function initQuickAddModal() {
 
 // Global helper function for other scripts to use
 window.showQuickAddModal = function(itemName, onSuccessCallback) {
+    console.log('Global showQuickAddModal called with:', itemName);
+    console.log('quickAddModal instance:', quickAddModal);
     if (quickAddModal) {
         quickAddModal.show(itemName, onSuccessCallback);
     } else {
