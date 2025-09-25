@@ -835,3 +835,49 @@ button.btn.btn-success.stack-buy:hover {
     border-color: #218838 !important;
     color: white !important;
 }
+
+/* FINAL OVERRIDE: Action labels with maximum force */
+span.item-action[class*="sell"],
+.item-action[class*="sell"],
+*[class*="item-action"][class*="sell"] {
+    background: #dc3545 !important;
+    background-color: #dc3545 !important;
+    color: white !important;
+    border: none !important;
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+span.item-action[class*="buy"],
+.item-action[class*="buy"],
+*[class*="item-action"][class*="buy"] {
+    background: #28a745 !important;
+    background-color: #28a745 !important;
+    color: white !important;
+    border: none !important;
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+span.item-action[class*="turnin"],
+.item-action[class*="turnin"],
+*[class*="item-action"][class*="turnin"] {
+    background: #6c757d !important;
+    background-color: #6c757d !important;
+    color: white !important;
+    border: none !important;
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
