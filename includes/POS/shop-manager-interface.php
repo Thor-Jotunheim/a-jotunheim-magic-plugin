@@ -354,10 +354,13 @@ function shop_manager_interface() {
                         <!-- Daily Selling Limit Fields -->
                         <div class="form-row daily-limit-fields">
                             <div class="form-group">
-                                <label>
-                                    <input type="checkbox" id="daily-limit-enabled" name="daily_limit_enabled">
-                                    Enable Daily Selling Limit
-                                </label>
+                                <label>Daily Selling Limits</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="daily-limit-enabled" name="daily_limit_enabled">
+                                        <span>Enable Daily Limit</span>
+                                    </label>
+                                </div>
                                 <small style="display: block; color: #666; margin-top: 4px;">
                                     Limit how much each player can sell per 24-hour period
                                 </small>
