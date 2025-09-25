@@ -1865,8 +1865,8 @@ class UnifiedTeller {
                 unit_price: item.event_points || 0,
                 total_price: item.event_points || 0,
                 stack_size: item.stack_size || 1,
-                turn_in_quantity: item.turn_in_quantity || 0,
-                turn_in_requirement: item.turn_in_requirement || 0,
+                turn_in_quantity: parseInt(item.turn_in_quantity || 0),
+                turn_in_requirement: parseInt(item.turn_in_requirement || 0),
                 item: item
             });
         }
@@ -2239,8 +2239,21 @@ class UnifiedTeller {
             // Different display for turn-in vs buy/sell items
             let pricingSection;
             if (cartItem.action === 'turnin') {
-                const currentProgress = (cartItem.turn_in_quantity || 0) + cartItem.quantity;
-                const required = cartItem.turn_in_requirement || 0;
+                console.log('DEBUG - Turn-in progress calculation:', {
+                    turn_in_quantity: cartItem.turn_in_quantity,
+                    turn_in_quantity_type: typeof cartItem.turn_in_quantity,
+                    quantity: cartItem.quantity,
+                    quantity_type: typeof cartItem.quantity,
+                    raw_addition: (cartItem.turn_in_quantity || 0) + cartItem.quantity
+                });
+                
+                const currentProgress = parseInt(cartItem.turn_in_quantity || 0) + parseInt(cartItem.quantity || 0);
+                const required = parseInt(cartItem.turn_in_requirement || 0);
+                
+                console.log('DEBUG - Fixed progress calculation:', {
+                    currentProgress,
+                    required
+                });
                 
                 pricingSection = `
                     <div class="item-pricing">
