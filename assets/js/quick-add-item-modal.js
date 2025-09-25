@@ -183,7 +183,7 @@ class QuickAddItemModal {
         formData.append('action', 'quick_add_item');
 
         // Submit via AJAX
-        fetch(jotunheim_ajax.ajax_url, {
+        fetch(jotunheimQuickAdd.ajax_url, {
             method: 'POST',
             body: formData
         })
