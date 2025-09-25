@@ -33,25 +33,10 @@ function unified_teller_scripts_shortcode($atts) {
         'rest_url' => rest_url('jotun-api/v1/')
     ]);
 
-    // Enqueue quick add item modal script
-    wp_enqueue_script(
-        'quick-add-item-modal',
-        plugin_dir_url(__FILE__) . '../../assets/js/quick-add-item-modal.js',
-        ['jquery'],
-        '1.0.0',
-        true
-    );
-
-    // Localize the quick add modal script
-    wp_localize_script('quick-add-item-modal', 'jotunheim_ajax', [
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('quick_add_item_nonce')
-    ]);
-
     wp_enqueue_script(
         'unified-teller-js',
         plugin_dir_url(__FILE__) . '../../assets/js/unified-teller.js',
-        ['jquery', 'jotun-comprehensive-api', 'quick-add-item-modal'],
+        ['jquery', 'jotun-comprehensive-api'],
         '1.0.0',
         true
     );
