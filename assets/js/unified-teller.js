@@ -1790,14 +1790,11 @@ class UnifiedTeller {
             if (cartItem.action === 'turnin') {
                 const currentProgress = (cartItem.turn_in_quantity || 0) + cartItem.quantity;
                 const required = cartItem.turn_in_requirement || 0;
-                const progressPercent = required > 0 ? Math.min((currentProgress / required) * 100, 100) : 0;
                 
                 pricingSection = `
-                    <div class="item-progress">
-                        <span class="progress-text">${currentProgress} / ${required}</span>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                        </div>
+                    <div class="item-pricing">
+                        <span class="unit-price">${required} each</span>
+                        <span class="total-price">${currentProgress} total</span>
                     </div>
                 `;
             } else {
