@@ -216,7 +216,7 @@ button.btn.btn-success {
     border: 1px solid #dee2e6 !important;
 }
 
-/* Brand new green buy button class - match exact sizing of other buttons */
+/* Match exact styling of quantity-controls buttons */
 .purchase-button {
     padding: 4px 8px !important;
     font-size: 11px !important;
@@ -228,10 +228,7 @@ button.btn.btn-success {
     font-family: var(--font-family) !important;
     transition: all 0.2s ease !important;
     text-decoration: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: var(--spacing-tight) !important;
-    border: none !important;
+    display: inline-block !important;
 }
 
 .purchase-button:hover {
