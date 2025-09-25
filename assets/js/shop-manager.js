@@ -672,6 +672,29 @@ class ShopManager {
             }
         }
     }
+    
+    updateConditionalFieldVisibility() {
+        // Update stock quantity fields
+        const stockCheckbox = document.getElementById('custom-stock-enabled');
+        const stockFields = document.getElementById('stock-fields');
+        if (stockCheckbox && stockFields) {
+            stockFields.style.display = stockCheckbox.checked ? 'block' : 'none';
+        }
+        
+        // Update rotation fields
+        const rotationCheckbox = document.getElementById('custom-rotation-enabled');
+        const rotationFields = document.getElementById('rotation-fields');
+        if (rotationCheckbox && rotationFields) {
+            rotationFields.style.display = rotationCheckbox.checked ? 'block' : 'none';
+        }
+        
+        // Update availability fields
+        const availabilityCheckbox = document.getElementById('custom-availability-enabled');
+        const availabilityFields = document.getElementById('availability-fields');
+        if (availabilityCheckbox && availabilityFields) {
+            availabilityFields.style.display = availabilityCheckbox.checked ? 'block' : 'none';
+        }
+    }
 
     async loadTurnInTracker(shopId) {
         try {
@@ -772,8 +795,8 @@ class ShopManager {
                 </td>
                 <td>${this.formatPrice(defaultPrice)}</td>
                 <td>${this.formatPrice(shopPrice)}</td>
-                <td>${item.stock_quantity || 0}</td>
-                <td><span class="rotation-badge">${item.rotation || 1}</span></td>
+                <td>${item.stock_quantity === -1 ? '∞' : (item.stock_quantity || 0)}</td>
+                <td><span class="rotation-badge">${(item.rotation === 1 || !item.rotation) ? 'none' : item.rotation}</span></td>
                 <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
@@ -819,12 +842,20 @@ class ShopManager {
             customPrice = parseFloat(customPrice);
         }
 
+        // Handle conditional field values based on checkboxes
+        const customStockEnabled = document.getElementById('custom-stock-enabled')?.checked || false;
+        const customRotationEnabled = document.getElementById('custom-rotation-enabled')?.checked || false;
+        const customAvailabilityEnabled = document.getElementById('custom-availability-enabled')?.checked || false;
+        
         const shopItemData = {
             shop_id: this.selectedShop,
-            stock_quantity: formData.get('unlimited_stock') === 'on' ? -1 : (formData.get('stock_quantity') || 0),
-            rotation: parseInt(rotation),
-            is_available: formData.get('is_available') === '1',
-            unlimited_stock: formData.get('unlimited_stock') === 'on',
+            // Stock quantity: -1 for unlimited if checkbox not checked, otherwise use input value
+            stock_quantity: customStockEnabled ? (parseInt(formData.get('stock_quantity')) || 0) : -1,
+            unlimited_stock: !customStockEnabled, // Unlimited if checkbox not checked
+            // Rotation: use input value if checkbox checked, otherwise default to 1
+            rotation: customRotationEnabled ? parseInt(rotation) : 1,
+            // Availability: use dropdown value if checkbox checked, otherwise default to available (1)
+            is_available: customAvailabilityEnabled ? (formData.get('is_available') === '1') : true,
             turn_in_quantity: formData.get('turn_in_quantity') || 0,
             turn_in_requirement: formData.get('turn_in_requirement') || 0,
             // Add checkbox data
@@ -956,10 +987,30 @@ class ShopManager {
             
             // Populate other fields
             document.getElementById('custom-price').value = item.custom_price || '';
-            document.getElementById('stock-quantity').value = item.stock_quantity || 0;
-            document.getElementById('unlimited-stock').checked = item.unlimited_stock == 1;
-            document.getElementById('item-rotation').value = item.rotation || 1;
-            document.getElementById('item-available').value = item.is_available || '1';
+            
+            // Handle stock quantity checkbox and field
+            const hasCustomStock = item.stock_quantity !== -1;
+            const customStockCheckbox = document.getElementById('custom-stock-enabled');
+            const stockQuantityField = document.getElementById('stock-quantity');
+            
+            if (customStockCheckbox) customStockCheckbox.checked = hasCustomStock;
+            if (stockQuantityField) stockQuantityField.value = hasCustomStock ? (item.stock_quantity || 0) : 0;
+            
+            // Handle rotation checkbox and field  
+            const hasCustomRotation = item.rotation && item.rotation !== 1;
+            const customRotationCheckbox = document.getElementById('custom-rotation-enabled');
+            const rotationField = document.getElementById('item-rotation');
+            
+            if (customRotationCheckbox) customRotationCheckbox.checked = hasCustomRotation;
+            if (rotationField) rotationField.value = item.rotation || 1;
+            
+            // Handle availability checkbox and field
+            const hasCustomAvailability = item.is_available == '0' || item.is_available === false;
+            const customAvailabilityCheckbox = document.getElementById('custom-availability-enabled');
+            const availabilityField = document.getElementById('item-available');
+            
+            if (customAvailabilityCheckbox) customAvailabilityCheckbox.checked = hasCustomAvailability;
+            if (availabilityField) availabilityField.value = item.is_available || '1';
             
             // Populate turn-in fields
             document.getElementById('turn-in-quantity').value = item.turn_in_quantity || 0;
@@ -984,6 +1035,9 @@ class ShopManager {
             
             // Update daily limit field visibility
             this.updateDailyLimitFieldVisibility();
+            
+            // Update conditional field visibility for new checkboxes
+            this.updateConditionalFieldVisibility();
             
             // Update form button
             const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');

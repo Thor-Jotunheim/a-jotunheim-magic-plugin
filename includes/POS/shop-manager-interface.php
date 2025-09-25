@@ -316,20 +316,67 @@ function shop_manager_interface() {
                                 <small class="price-conversion">Display will show both Coins and Ymir Flesh equivalent (1 Ymir = 120 Coins)</small>
                             </div>
                         </div>
+                        <!-- Item Configuration Fields -->
                         <div class="form-row">
                             <div class="form-group">
+                                <label>Stock Management</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="custom-stock-enabled" name="custom_stock_enabled">
+                                        <span>Set Stock Quantity</span>
+                                    </label>
+                                </div>
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    If unchecked, item will have unlimited stock
+                                </small>
+                            </div>
+                            <div class="form-group" id="stock-quantity-group" style="display: none;">
                                 <label for="stock-quantity">Stock Quantity</label>
                                 <input type="number" id="stock-quantity" name="stock_quantity" value="0" min="0">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="unlimited-stock" name="unlimited_stock">
-                                    Unlimited Stock
-                                </label>
                             </div>
+                        </div>
+                        
+                        <div class="form-row">
                             <div class="form-group">
+                                <label>Rotation Settings</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="custom-rotation-enabled" name="custom_rotation_enabled">
+                                        <span>Set Custom Rotation</span>
+                                    </label>
+                                </div>
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    If unchecked, item will use default rotation (1)
+                                </small>
+                            </div>
+                            <div class="form-group" id="rotation-group" style="display: none;">
                                 <label for="item-rotation">Rotation</label>
                                 <input type="number" id="item-rotation" name="rotation" value="1" min="1" title="Rotation number for grouping items">
                             </div>
                         </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Availability Settings</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="custom-availability-enabled" name="custom_availability_enabled">
+                                        <span>Set Custom Availability</span>
+                                    </label>
+                                </div>
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    If unchecked, item will be available by default
+                                </small>
+                            </div>
+                            <div class="form-group" id="availability-group" style="display: none;">
+                                <label for="item-available">Available</label>
+                                <select id="item-available" name="is_available">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <!-- Turn-In Only Fields -->
                         <div class="form-row turn-in-fields" style="display: none;">
                             <div class="form-group">
@@ -339,15 +386,6 @@ function shop_manager_interface() {
                             <div class="form-group">
                                 <label for="turn-in-requirement">Turn-In Requirement</label>
                                 <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="0" title="Total amount needed to complete this turn-in event">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="item-available">Available</label>
-                                <select id="item-available" name="is_available">
-                                    <option value="1">Yes</option>
-                                    <option value="0">No</option>
-                                </select>
                             </div>
                         </div>
                         
@@ -786,26 +824,72 @@ function shop_manager_interface() {
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Daily Limit checkbox functionality
         const dailyLimitCheckbox = document.getElementById('daily-limit-enabled');
         const quantityGroup = document.getElementById('max-daily-quantity-group');
         
         if (dailyLimitCheckbox && quantityGroup) {
-            // Function to toggle visibility
             function toggleQuantityField() {
                 if (dailyLimitCheckbox.checked) {
                     quantityGroup.style.display = 'block';
                 } else {
                     quantityGroup.style.display = 'none';
-                    // Reset the value when hiding
                     document.getElementById('max-daily-sell-quantity').value = '0';
                 }
             }
-            
-            // Add event listener
             dailyLimitCheckbox.addEventListener('change', toggleQuantityField);
-            
-            // Set initial state
             toggleQuantityField();
+        }
+        
+        // Stock Quantity checkbox functionality
+        const stockCheckbox = document.getElementById('custom-stock-enabled');
+        const stockGroup = document.getElementById('stock-quantity-group');
+        
+        if (stockCheckbox && stockGroup) {
+            function toggleStockField() {
+                if (stockCheckbox.checked) {
+                    stockGroup.style.display = 'block';
+                } else {
+                    stockGroup.style.display = 'none';
+                    document.getElementById('stock-quantity').value = '0';
+                }
+            }
+            stockCheckbox.addEventListener('change', toggleStockField);
+            toggleStockField();
+        }
+        
+        // Rotation checkbox functionality
+        const rotationCheckbox = document.getElementById('custom-rotation-enabled');
+        const rotationGroup = document.getElementById('rotation-group');
+        
+        if (rotationCheckbox && rotationGroup) {
+            function toggleRotationField() {
+                if (rotationCheckbox.checked) {
+                    rotationGroup.style.display = 'block';
+                } else {
+                    rotationGroup.style.display = 'none';
+                    document.getElementById('item-rotation').value = '1';
+                }
+            }
+            rotationCheckbox.addEventListener('change', toggleRotationField);
+            toggleRotationField();
+        }
+        
+        // Availability checkbox functionality
+        const availabilityCheckbox = document.getElementById('custom-availability-enabled');
+        const availabilityGroup = document.getElementById('availability-group');
+        
+        if (availabilityCheckbox && availabilityGroup) {
+            function toggleAvailabilityField() {
+                if (availabilityCheckbox.checked) {
+                    availabilityGroup.style.display = 'block';
+                } else {
+                    availabilityGroup.style.display = 'none';
+                    document.getElementById('item-available').value = '1';
+                }
+            }
+            availabilityCheckbox.addEventListener('change', toggleAvailabilityField);
+            toggleAvailabilityField();
         }
     });
     </script>
