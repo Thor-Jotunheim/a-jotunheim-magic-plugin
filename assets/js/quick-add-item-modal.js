@@ -93,22 +93,56 @@ class QuickAddItemModal {
         // Show modal
         console.log('Setting modal display to flex...');
         this.modal.style.display = 'flex';
-        console.log('Modal computed styles:', window.getComputedStyle(this.modal));
-        console.log('Modal z-index:', window.getComputedStyle(this.modal).zIndex);
-        console.log('Modal position:', window.getComputedStyle(this.modal).position);
-        console.log('Modal visibility:', window.getComputedStyle(this.modal).visibility);
-        console.log('Modal opacity:', window.getComputedStyle(this.modal).opacity);
+        
+        // Debug: Check DOM presence and positioning
+        console.log('Modal exists in DOM:', document.contains(this.modal));
+        console.log('Modal parent element:', this.modal.parentNode);
+        console.log('Modal rect before:', this.modal.getBoundingClientRect());
+        
         document.body.style.overflow = 'hidden';
         
-        // Force modal to be visible for debugging
+        // EXTREME debugging - make modal impossible to miss
         this.modal.style.zIndex = '999999';
         this.modal.style.position = 'fixed';
-        this.modal.style.top = '0';
-        this.modal.style.left = '0';
-        this.modal.style.width = '100%';
-        this.modal.style.height = '100%';
-        this.modal.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Red for debugging
-        console.log('Forced modal styles applied for debugging');
+        this.modal.style.top = '0px';
+        this.modal.style.left = '0px';
+        this.modal.style.right = '0px';
+        this.modal.style.bottom = '0px';
+        this.modal.style.width = '100vw';
+        this.modal.style.height = '100vh';
+        this.modal.style.backgroundColor = 'rgba(255, 0, 0, 0.95)';
+        this.modal.style.opacity = '1';
+        this.modal.style.visibility = 'visible';
+        this.modal.style.display = 'flex';
+        this.modal.style.alignItems = 'center';
+        this.modal.style.justifyContent = 'center';
+        
+        // Replace content with obvious test message
+        const originalContent = this.modal.innerHTML;
+        this.modal.innerHTML = `
+            <div style="
+                color: white; 
+                font-size: 48px; 
+                font-weight: bold; 
+                text-align: center; 
+                background: black; 
+                padding: 50px; 
+                border: 10px solid yellow;
+                border-radius: 20px;
+                box-shadow: 0 0 50px rgba(255,255,0,0.8);
+            ">
+                🚨 MODAL TEST 🚨<br>
+                MODAL IS WORKING!<br>
+                <button onclick="this.closest('.quick-add-modal').style.display='none'" 
+                        style="font-size: 24px; padding: 20px; margin-top: 20px; background: red; color: white; border: none; cursor: pointer;">
+                    CLOSE TEST
+                </button>
+            </div>
+        `;
+        
+        console.log('EXTREME modal debugging applied - should cover entire screen');
+        console.log('Modal rect after:', this.modal.getBoundingClientRect());
+        console.log('Modal computed styles:', window.getComputedStyle(this.modal));
 
         // Focus first input
         const firstInput = this.modal.querySelector('select[required]');
