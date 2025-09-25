@@ -181,6 +181,11 @@ class QuickAddItemModal {
         // Prepare form data
         const formData = new FormData(this.form);
         formData.append('action', 'quick_add_item');
+        
+        // Add the nonce from JavaScript localization
+        if (jotunheimQuickAdd.quick_add_nonce) {
+            formData.append('quick_add_nonce', jotunheimQuickAdd.quick_add_nonce);
+        }
 
         // Submit via AJAX
         fetch(jotunheimQuickAdd.ajax_url, {

@@ -24,7 +24,11 @@ function jotunheim_quick_add_item_modal() {
                 </p>
                 
                 <form id="quick-add-item-form" class="quick-add-form">
-                    <?php wp_nonce_field('quick_add_item_nonce', 'quick_add_nonce'); ?>
+                    <?php 
+                    $nonce = wp_create_nonce('quick_add_item_nonce');
+                    error_log('Generated nonce in modal: ' . $nonce);
+                    wp_nonce_field('quick_add_item_nonce', 'quick_add_nonce'); 
+                    ?>
                     
                     <!-- Pre-filled item name -->
                     <div class="form-group">

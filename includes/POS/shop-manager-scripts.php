@@ -38,7 +38,8 @@ function shop_manager_scripts_shortcode($atts) {
     wp_localize_script('quick-add-item-modal', 'jotunheimQuickAdd', [
         'ajax_url' => admin_url('admin-ajax.php'),
         'rest_url' => rest_url(),
-        'nonce' => wp_create_nonce('wp_rest')
+        'nonce' => wp_create_nonce('wp_rest'),
+        'quick_add_nonce' => wp_create_nonce('quick_add_item_nonce')
     ]);
 
     wp_enqueue_script(
