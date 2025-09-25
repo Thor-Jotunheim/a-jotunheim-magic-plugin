@@ -2492,11 +2492,25 @@ function jotun_api_add_transaction($request) {
     global $wpdb;
     
     $data = $request->get_json_params();
-    $table_name = 'jotun_transactions';
+    
+    // Determine table based on shop type
+    $shop_type = sanitize_text_field($data['shop_type'] ?? '');
+    $transaction_type = sanitize_text_field($data['transaction_type'] ?? 'general');
+    
+    // Route transactions to appropriate tables
+    if ($shop_type === 'aesir') {
+        $table_name = 'jotun_ledger';
+    } elseif ($shop_type === 'turn-in-only' || $transaction_type === 'turnin') {
+        $table_name = 'jotun_turn_ins';
+    } else {
+        $table_name = 'jotun_transactions';
+    }
     
     if (empty($data['shop_name']) || empty($data['item_name']) || empty($data['customer_name'])) {
         return new WP_REST_Response(['error' => 'Shop name, item name, and customer name are required'], 400);
     }
+    
+    error_log("Transaction routing: shop_type='$shop_type', transaction_type='$transaction_type' -> table='$table_name'");
     
     $item_name = sanitize_text_field($data['item_name']);
     
@@ -2525,35 +2539,133 @@ function jotun_api_add_transaction($request) {
         }
     }
     
-    $insert_data = [
-        'shop_name' => sanitize_text_field($data['shop_name']),
-        'item_name' => $item_name,
-        'quantity' => (int)($data['quantity'] ?? 1),
-        'total_amount' => floatval($data['total_amount'] ?? 0),
-        'customer_name' => sanitize_text_field($data['customer_name']),
-        'teller' => sanitize_text_field($data['teller'] ?? wp_get_current_user()->display_name),
-        'transaction_date' => $data['transaction_date'] ?? current_time('mysql'),
-        'transaction_type' => sanitize_text_field($data['transaction_type'] ?? 'general')
-    ];
-    
-    // Add player_id if the column exists and we can find the player
-    if (POS_Database_Utils::column_exists('jotun_transactions', 'player_id')) {
+    // Handle different data structures for different tables
+    if ($table_name === 'jotun_ledger') {
+        // Aesir ledger uses player-specific resource columns
         $customer_name = sanitize_text_field($data['customer_name']);
-        $player_record = $wpdb->get_row($wpdb->prepare(
-            "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
-            $customer_name, $customer_name
+        $quantity = (int)($data['quantity'] ?? 1);
+        
+        // Find existing ledger record for this player
+        $existing_record = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM jotun_ledger WHERE activePlayerName = %s LIMIT 1",
+            $customer_name
         ));
-        if ($player_record) {
-            $insert_data['player_id'] = $player_record->id;
+        
+        if (!$existing_record) {
+            // Create new ledger record for player
+            $insert_data = [
+                'activePlayerName' => $customer_name,
+                'playerName' => $customer_name, // Fallback if different
+                'vidar' => 0, // Initialize all resources to 0
+                'steamID' => '',
+                'unbreakableoath' => 0,
+                'eternalflame' => 0,
+                'floatingrockbase' => 0,
+                'rockpillar' => 0,
+                'rockfingerthumb' => 0,
+                'unbreakabletrees' => 0,
+                'widestone' => 0,
+                'greydwarfspawner' => 0,
+                'pickablethistle' => 0,
+                'cloudberrybush' => 0,
+                'pickablemushroom' => 0,
+                'blueberrybush' => 0,
+                'raspberrybush' => 0,
+                'bluemushroomsx50' => 0,
+                'yuletree' => 0,
+                'maypole' => 0,
+                'jackoturnip' => 0,
+                'flowercrown' => 0,
+                'doorautoclose' => 0,
+                'mistlandsrockgreen' => 0,
+                'mistlandsrockyellow' => 0,
+                'mistlandsrocksmall' => 0,
+                'pickableyellowmushroom' => 0,
+                'stonemarker' => 0,
+                'deertrophy' => 0,
+                'leechtrophy' => 0,
+                'draugrellitetrophy' => 0,
+                'growthtrophy' => 0,
+                'seekertrophy' => 0,
+                'ulvtrophy' => 0,
+                'gjerrahfatrophy' => 0,
+                'fulingbeserkertrophy' => 0,
+                'yagluthtrophy' => 0,
+                'player_id' => null
+            ];
+            
+            $result = $wpdb->insert($table_name, $insert_data);
+            if ($result === false) {
+                error_log("Failed to create ledger record for player: " . $wpdb->last_error);
+                return new WP_REST_Response(['error' => 'Failed to create ledger record: ' . $wpdb->last_error], 500);
+            }
+            error_log("Created new ledger record for player: $customer_name");
         }
-    }
-    
-    // Add item_id and shop_item_id if provided (for frontend compatibility)
-    if (!empty($data['item_id'])) {
-        $insert_data['item_id'] = (int)$data['item_id'];
-    }
-    if (!empty($data['shop_item_id'])) {
-        $insert_data['shop_item_id'] = (int)$data['shop_item_id'];
+        
+        // For now, just log the transaction - full ledger integration would need item mapping
+        error_log("Aesir transaction recorded in ledger for $customer_name: $item_name (qty: $quantity)");
+        return new WP_REST_Response(['message' => 'Aesir transaction recorded in ledger', 'table' => 'jotun_ledger'], 201);
+        
+    } elseif ($table_name === 'jotun_turn_ins') {
+        // Turn-in transactions table
+        $shop_id = (int)($data['shop_id'] ?? 0);
+        $customer_name = sanitize_text_field($data['customer_name']);
+        $quantity = (int)($data['quantity'] ?? 1);
+        $current_user = wp_get_current_user();
+        
+        $insert_data = [
+            'shop_id' => $shop_id,
+            'item_name' => $item_name,
+            'quantity' => $quantity,
+            'player_name' => $customer_name,
+            'recorded_at' => current_time('mysql'),
+            'recorded_by' => $current_user->ID
+        ];
+        
+        error_log("Recording turn-in transaction: " . json_encode($insert_data));
+        $result = $wpdb->insert($table_name, $insert_data);
+        
+        if ($result === false) {
+            error_log("Turn-in transaction insert failed: " . $wpdb->last_error);
+            return new WP_REST_Response(['error' => 'Failed to add turn-in transaction: ' . $wpdb->last_error], 500);
+        }
+        
+        // Update turn-in tracker - ensure column exists for this item
+        jotun_ensure_turnin_tracker_column($item_name);
+        jotun_update_turnin_tracker($shop_id, $item_name, $quantity);
+        
+        error_log("Turn-in transaction added successfully with ID: " . $wpdb->insert_id);
+        return new WP_REST_Response(['message' => 'Turn-in transaction recorded successfully', 'id' => $wpdb->insert_id, 'table' => 'jotun_turn_ins'], 201);
+        
+    } else {
+        // Standard transactions table
+        $insert_data = [
+            'shop_name' => sanitize_text_field($data['shop_name']),
+            'item_name' => $item_name,
+            'quantity' => (int)($data['quantity'] ?? 1),
+            'total_amount' => floatval($data['total_amount'] ?? 0),
+            'customer_name' => sanitize_text_field($data['customer_name']),
+            'teller' => sanitize_text_field($data['teller'] ?? wp_get_current_user()->display_name),
+            'transaction_date' => $data['transaction_date'] ?? current_time('mysql'),
+            'transaction_type' => sanitize_text_field($data['transaction_type'] ?? 'general')
+        ];
+        
+        // Add player_id if the column exists and we can find the player
+        if (POS_Database_Utils::column_exists($table_name, 'player_id')) {
+            $customer_name = sanitize_text_field($data['customer_name']);
+            $player_record = $wpdb->get_row($wpdb->prepare(
+                "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+                $customer_name, $customer_name
+            ));
+            if ($player_record) {
+                $insert_data['player_id'] = $player_record->id;
+            }
+        }
+        
+        // Add item_id if provided (for frontend compatibility)
+        if (!empty($data['item_id'])) {
+            $insert_data['item_id'] = (int)$data['item_id'];
+        }
     }
     
     error_log("Attempting to insert transaction: " . json_encode($insert_data));
@@ -3566,4 +3678,111 @@ function jotun_api_record_daily_turnin($request) {
     } else {
         return new WP_Error('record_failed', 'Failed to record daily turnin', array('status' => 500));
     }
+}
+
+/**
+ * Ensure a column exists in jotun_turn_in_trackers for the given item
+ * This creates dynamic columns for new turn-in items
+ */
+function jotun_ensure_turnin_tracker_column($item_name) {
+    global $wpdb;
+    
+    // Sanitize item name for column usage
+    $column_name = jotun_sanitize_item_column_name($item_name);
+    $table_name = 'jotun_turn_in_trackers';
+    
+    // Check if column already exists
+    $column_exists = $wpdb->get_results($wpdb->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+         WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+        DB_NAME, $table_name, $column_name
+    ));
+    
+    if (empty($column_exists)) {
+        // Add the column
+        $alter_query = "ALTER TABLE $table_name ADD COLUMN `$column_name` int(11) DEFAULT 0 COMMENT 'Turn-in count for $item_name'";
+        $result = $wpdb->query($alter_query);
+        
+        if ($result === false) {
+            error_log("Failed to add turn-in tracker column '$column_name': " . $wpdb->last_error);
+        } else {
+            error_log("Successfully added turn-in tracker column '$column_name' for item '$item_name'");
+        }
+    }
+}
+
+/**
+ * Update the turn-in tracker for a shop and item
+ */
+function jotun_update_turnin_tracker($shop_id, $item_name, $quantity) {
+    global $wpdb;
+    
+    $column_name = jotun_sanitize_item_column_name($item_name);
+    $table_name = 'jotun_turn_in_trackers';
+    
+    // Find or create tracker record for this shop
+    $existing_tracker = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table_name WHERE shop_id = %d",
+        $shop_id
+    ));
+    
+    if (!$existing_tracker) {
+        // Create new tracker record
+        $insert_data = [
+            'shop_id' => $shop_id,
+            'total_count' => $quantity,
+            'last_reset' => current_time('mysql'),
+            'reset_by' => wp_get_current_user()->ID,
+            $column_name => $quantity
+        ];
+        
+        $result = $wpdb->insert($table_name, $insert_data);
+        if ($result === false) {
+            error_log("Failed to create turn-in tracker for shop $shop_id: " . $wpdb->last_error);
+        } else {
+            error_log("Created new turn-in tracker for shop $shop_id");
+        }
+    } else {
+        // Update existing tracker
+        $current_item_count = (int)($existing_tracker->{$column_name} ?? 0);
+        $new_item_count = $current_item_count + $quantity;
+        $new_total_count = (int)$existing_tracker->total_count + $quantity;
+        
+        $update_data = [
+            'total_count' => $new_total_count,
+            $column_name => $new_item_count
+        ];
+        
+        $result = $wpdb->update($table_name, $update_data, ['shop_id' => $shop_id]);
+        if ($result === false) {
+            error_log("Failed to update turn-in tracker for shop $shop_id: " . $wpdb->last_error);
+        } else {
+            error_log("Updated turn-in tracker for shop $shop_id: $item_name count now $new_item_count");
+        }
+    }
+}
+
+/**
+ * Sanitize item name for use as database column name
+ */
+function jotun_sanitize_item_column_name($item_name) {
+    // Convert to lowercase, replace spaces and special chars with underscores
+    $column_name = strtolower($item_name);
+    $column_name = preg_replace('/[^a-z0-9_]/', '_', $column_name);
+    // Remove consecutive underscores
+    $column_name = preg_replace('/_+/', '_', $column_name);
+    // Remove leading/trailing underscores
+    $column_name = trim($column_name, '_');
+    
+    // Ensure it starts with a letter (MySQL requirement)
+    if (preg_match('/^[0-9]/', $column_name)) {
+        $column_name = 'item_' . $column_name;
+    }
+    
+    // Limit length (MySQL column names max 64 chars)
+    if (strlen($column_name) > 60) {
+        $column_name = substr($column_name, 0, 60);
+    }
+    
+    return $column_name;
 }

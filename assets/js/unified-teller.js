@@ -1135,11 +1135,16 @@ class UnifiedTeller {
             
             for (const cartItem of this.cart) {
                 const itemTransactionType = cartItem.action === 'turnin' ? 'turnin' : transactionType;
+                
+                // Get shop type for proper transaction routing
+                const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+                
                 const individualTransactionData = {
                     shop_name: shopName,
+                    shop_type: shopType, // Add shop type for backend routing
                     item_name: cartItem.item_name,
                     item_id: cartItem.item_id, // Include item_id (null for custom items)
-                    shop_item_id: cartItem.shop_item_id, // Include shop_item_id for custom items
                     quantity: cartItem.quantity,
                     total_amount: itemTransactionType === 'turnin' ? 0 : (cartItem.price || cartItem.unit_price || 0) * cartItem.quantity,
                     customer_name: customerName,
