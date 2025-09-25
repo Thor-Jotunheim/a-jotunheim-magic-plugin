@@ -303,6 +303,15 @@ function jotunheim_quick_add_item_modal() {
 
 // AJAX handler for quick add item
 function handle_quick_add_item() {
+    // Debug logging
+    error_log('Quick Add AJAX Handler Called');
+    error_log('POST data: ' . print_r($_POST, true));
+    error_log('quick_add_nonce isset: ' . (isset($_POST['quick_add_nonce']) ? 'yes' : 'no'));
+    if (isset($_POST['quick_add_nonce'])) {
+        error_log('quick_add_nonce value: ' . $_POST['quick_add_nonce']);
+        error_log('Nonce verification result: ' . (wp_verify_nonce($_POST['quick_add_nonce'], 'quick_add_item_nonce') ? 'valid' : 'invalid'));
+    }
+    
     // Verify nonce
     if (!isset($_POST['quick_add_nonce']) || !wp_verify_nonce($_POST['quick_add_nonce'], 'quick_add_item_nonce')) {
         wp_send_json_error('Invalid nonce verification.');
