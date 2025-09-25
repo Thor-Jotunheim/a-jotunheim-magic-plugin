@@ -1373,20 +1373,29 @@ class UnifiedTeller {
             return;
         }
 
-        // Add to turn-in list (simplified - would need quantity handling)
-        if (!this.turninList) this.turninList = [];
-        
-        const existingItem = this.turninList.find(i => i.shop_item_id == shopItemId);
+        // Add to main cart with 'turnin' action type
+        const existingItem = this.cart.find(cartItem => 
+            cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin'
+        );
+
         if (existingItem) {
             existingItem.quantity += 1;
+            existingItem.total_price = existingItem.unit_price * existingItem.quantity;
         } else {
-            this.turninList.push({
-                ...item,
-                quantity: 1
+            this.cart.push({
+                shop_item_id: shopItemId,
+                item_name: item.item_name,
+                action: 'turnin',
+                quantity: 1,
+                unit_price: item.event_points || 0,
+                total_price: item.event_points || 0,
+                item: item
             });
         }
 
-        this.updateTurninDisplay();
+        console.log('Added turn-in item to cart:', item.item_name, 'Cart now has', this.cart.length, 'items');
+        this.updateCartDisplay();
+        this.showStatus(`Added ${item.item_name} to turn-in cart`, 'success');
     }
 
     updateTurninDisplay() {
@@ -1726,11 +1735,13 @@ class UnifiedTeller {
             `;
             container.appendChild(itemRow);
 
-            // Calculate total (buy adds to cost, sell subtracts)
+            // Calculate total (buy adds to cost, sell subtracts, turnin is neutral)
             if (cartItem.action === 'buy') {
                 totalCost += cartItem.total_price;
             } else if (cartItem.action === 'sell') {
                 totalCost -= cartItem.total_price;
+            } else if (cartItem.action === 'turnin') {
+                // Turn-in items don't affect monetary cost, only event points
             }
         });
 
