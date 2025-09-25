@@ -855,8 +855,8 @@ class ShopManager {
                 <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.shop_item_id || item.id})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}')">Remove</button>
+                    <button class="btn btn-primary btn-sm" onclick="console.log('Edit button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.editShopItem(${item.shop_item_id || item.id}); } else { console.error('shopManager not found'); }">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="console.log('Delete button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}'); } else { console.error('shopManager not found'); }">Remove</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -1560,7 +1560,11 @@ class ShopManager {
 // Initialize shop manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('shop-manager-interface')) {
+        console.log('DEBUG - Initializing ShopManager');
         window.shopManager = new ShopManager();
+        console.log('DEBUG - ShopManager initialized:', window.shopManager);
+    } else {
+        console.log('DEBUG - shop-manager-interface element not found');
     }
 });
 
@@ -1685,21 +1689,28 @@ const additionalCSS = `
 
 // Advanced Settings Toggle Function
 function toggleAdvancedSettings() {
+    console.log('DEBUG - toggleAdvancedSettings called');
     const content = document.getElementById('advanced-settings-content');
     const icon = document.getElementById('advanced-toggle-icon');
+    
+    console.log('DEBUG - Found elements:', { content, icon });
     
     if (content && icon) {
         if (content.classList.contains('collapsed')) {
             // Expand
+            console.log('DEBUG - Expanding advanced settings');
             content.classList.remove('collapsed');
             icon.textContent = '▼';
             icon.classList.remove('collapsed');
         } else {
             // Collapse
+            console.log('DEBUG - Collapsing advanced settings');
             content.classList.add('collapsed');
             icon.textContent = '▶';
             icon.classList.add('collapsed');
         }
+    } else {
+        console.log('DEBUG - Missing elements for toggle');
     }
 }
 
@@ -1708,14 +1719,33 @@ window.toggleAdvancedSettings = toggleAdvancedSettings;
 
 // Initialize advanced settings as collapsed
 document.addEventListener('DOMContentLoaded', function() {
-    const content = document.getElementById('advanced-settings-content');
-    const icon = document.getElementById('advanced-toggle-icon');
-    
-    if (content && icon) {
-        content.classList.add('collapsed');
-        icon.textContent = '▶';
-        icon.classList.add('collapsed');
-    }
+    console.log('DEBUG - DOMContentLoaded for advanced settings');
+    setTimeout(() => {
+        const content = document.getElementById('advanced-settings-content');
+        const icon = document.getElementById('advanced-toggle-icon');
+        
+        console.log('DEBUG - Advanced settings elements:', { content, icon });
+        
+        if (content && icon) {
+            console.log('DEBUG - Setting initial collapsed state');
+            content.classList.add('collapsed');
+            icon.textContent = '▶';
+            icon.classList.add('collapsed');
+        } else {
+            console.log('DEBUG - Advanced settings elements not found, trying later');
+            // Try again after a short delay in case elements are rendered later
+            setTimeout(() => {
+                const content2 = document.getElementById('advanced-settings-content');
+                const icon2 = document.getElementById('advanced-toggle-icon');
+                console.log('DEBUG - Second attempt - Advanced settings elements:', { content: content2, icon: icon2 });
+                if (content2 && icon2) {
+                    content2.classList.add('collapsed');
+                    icon2.textContent = '▶';
+                    icon2.classList.add('collapsed');
+                }
+            }, 1000);
+        }
+    }, 100);
 });
 
 // Inject the additional CSS
