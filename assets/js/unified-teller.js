@@ -623,7 +623,7 @@ class UnifiedTeller {
         if (item.buy == 1 || item.buy === true) {
             buttonsHTML += `
                 <div class="quantity-controls sell-section">
-                    <label>Units:</label>
+                    <label>Unit(s):</label>
                     <input type="number" class="sell-quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="999">
                     <button class="btn btn-danger sell-to-shop" data-type="sell">Sell</button>
                 </div>`;
