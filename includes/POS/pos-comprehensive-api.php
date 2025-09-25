@@ -2738,8 +2738,6 @@ function jotun_api_get_itemlist($request) {
     global $wpdb;
     
     $table_name = 'jotun_itemlist';
-    $limit = $request->get_param('limit') ?: 100;
-    $offset = $request->get_param('offset') ?: 0;
     $search = $request->get_param('search');
     $category = $request->get_param('category');
     
@@ -2761,11 +2759,25 @@ function jotun_api_get_itemlist($request) {
         $sql .= " WHERE " . implode(' AND ', $conditions);
     }
     
-    $sql .= " ORDER BY item_name ASC LIMIT %d OFFSET %d";
-    $params[] = $limit;
-    $params[] = $offset;
+    $sql .= " ORDER BY item_name ASC";
     
-    $results = $wpdb->get_results($wpdb->prepare($sql, $params));
+    // Add debug logging
+    error_log('jotun_api_get_itemlist: SQL = ' . $sql);
+    if (!empty($params)) {
+        error_log('jotun_api_get_itemlist: Params = ' . print_r($params, true));
+    }
+    
+    if (!empty($params)) {
+        $results = $wpdb->get_results($wpdb->prepare($sql, $params));
+    } else {
+        $results = $wpdb->get_results($sql);
+    }
+    
+    error_log('jotun_api_get_itemlist: Retrieved ' . count($results) . ' items');
+    if (!empty($results)) {
+        error_log('jotun_api_get_itemlist: First item = ' . $results[0]->item_name);
+        error_log('jotun_api_get_itemlist: Last item = ' . $results[count($results)-1]->item_name);
+    }
     
     if ($wpdb->last_error) {
         return new WP_REST_Response(['error' => 'Database error: ' . $wpdb->last_error], 500);

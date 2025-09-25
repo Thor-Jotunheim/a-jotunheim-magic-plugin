@@ -21,8 +21,8 @@ function fetch_all_itemlist_items_rest() {
     $table_name = 'jotun_itemlist';
     
     try {
-        // Try to query the table directly
-        $items = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY item_name ASC LIMIT 10", ARRAY_A);
+        // Try to query the table directly - fetch ALL items for search functionality
+        $items = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY item_name ASC", ARRAY_A);
         
         if ($wpdb->last_error) {
             error_log('fetch_all_itemlist_items_rest: Database error - ' . $wpdb->last_error);
