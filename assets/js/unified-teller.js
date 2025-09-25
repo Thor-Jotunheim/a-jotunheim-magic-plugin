@@ -163,7 +163,7 @@ class UnifiedTeller {
                 method: 'GET',
                 credentials: 'same-origin',
                 headers: {
-                    'X-WP-Nonce': jotunAjax.nonce
+                    'X-WP-Nonce': tellerAjax.nonce
                 }
             });
             
@@ -1451,7 +1451,7 @@ class UnifiedTeller {
         }
 
         this.shopItems.forEach(item => {
-            console.log('Rendering item in grid:', item.item_name, 'sell:', item.sell, 'buy:', item.buy, 'turn_in:', item.turn_in, 'icon_image:', item.icon_image, 'stock_quantity:', item.stock_quantity);
+    
             
             // Use the existing createItemCard method which has proper conditional buttons and icons
             const itemCard = this.createItemCard(item);
