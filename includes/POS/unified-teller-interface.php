@@ -876,6 +876,13 @@ function unified_teller_interface() {
         color: #7b1fa2;
     }
     </style>
+
+    <?php
+    // Include the quick add item modal
+    include_once(plugin_dir_path(__FILE__) . '../ItemList/itemlist-quick-add-interface.php');
+    echo include_quick_add_item_modal();
+    ?>
+    
     <?php
     return ob_get_clean();
 }

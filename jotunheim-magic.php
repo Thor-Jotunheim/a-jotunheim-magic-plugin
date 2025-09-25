@@ -97,6 +97,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-inte
 //include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-editor-ajax.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-rest-api.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-add-new-item-interface.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/ItemList/itemlist-quick-add-interface.php');
 
 // Include prefablist files
 require_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefablist-api-get.php');

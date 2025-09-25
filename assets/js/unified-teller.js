@@ -1157,6 +1157,13 @@ class UnifiedTeller {
                     if (response.success === false) {
                         allSuccessful = false;
                         console.error('Transaction failed for item:', cartItem.item_name, response.error);
+                        
+                        // Check if this is a missing item error
+                        if (response.error && response.error.includes('Invalid item_name: no matching item_id found')) {
+                            // Show quick add modal for this item
+                            this.showQuickAddModalForItem(cartItem, individualTransactionData);
+                            return; // Exit early - transaction will resume after item is added
+                        }
                     }
                 } catch (error) {
                     allSuccessful = false;
@@ -1589,6 +1596,53 @@ class UnifiedTeller {
         if (overlay) {
             overlay.style.display = 'none';
         }
+    }
+
+    showQuickAddModalForItem(cartItem, transactionData) {
+        console.log('Showing quick add modal for item:', cartItem.item_name);
+        
+        // Check if the modal is available
+        if (typeof window.showQuickAddModal !== 'function') {
+            console.error('Quick add modal not available');
+            this.showStatus('Unable to add custom item - modal not loaded', 'error', true);
+            return;
+        }
+        
+        // Show the modal with a callback to resume transaction
+        window.showQuickAddModal(cartItem.item_name, (result) => {
+            console.log('Item added successfully, resuming transaction:', result);
+            // Re-attempt the transaction after the item has been added
+            this.resumeTransactionAfterItemAdd(cartItem, transactionData);
+        });
+    }
+    
+    async resumeTransactionAfterItemAdd(cartItem, originalTransactionData) {
+        try {
+            console.log('Resuming transaction after item add for:', cartItem.item_name);
+            // Re-attempt the original transaction
+            const response = await JotunAPI.addTransaction(originalTransactionData);
+            console.log('Resumed transaction response:', response);
+            
+            if (response.success) {
+                this.showStatus(`Transaction completed for ${cartItem.item_name}`, 'success');
+                // Continue with the rest of the transaction processing
+                this.completePendingTransaction();
+            } else {
+                console.error('Transaction still failed after adding item:', response.error);
+                this.showStatus(`Transaction still failed: ${response.error}`, 'error', true);
+            }
+        } catch (error) {
+            console.error('Error resuming transaction:', error);
+            this.showStatus('Error resuming transaction after item add', 'error', true);
+        }
+    }
+    
+    async completePendingTransaction() {
+        // This would complete the rest of the cart items and finalize the transaction
+        console.log('Completing pending transaction...');
+        // For now, just reload the transaction processing
+        // In a full implementation, we'd track which items succeeded/failed and only process the remaining ones
+        this.showStatus('Please try the transaction again - item has been added to master list', 'info');
     }
 
     escapeHtml(text) {
