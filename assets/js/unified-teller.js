@@ -633,9 +633,9 @@ class UnifiedTeller {
         if (item.turn_in == 1 || item.turn_in === true) {
             buttonsHTML += `
                 <div class="quantity-controls turn-in-section">
-                    <label>Units:</label>
+                    <label>Unit(s):</label>
                     <input type="number" class="turn-in-quantity-input" value="1" min="1" max="999">
-                    <button class="btn btn-secondary turn-in-item" data-type="turn-in">Turn In</button>
+                    <button class="btn btn-primary turn-in-item" data-type="turn-in">Turn In</button>
                 </div>`;
             
             // Add stack turn-in controls only if item is stackable
@@ -644,7 +644,7 @@ class UnifiedTeller {
                     <div class="quantity-controls turn-in-section">
                         <label>Stack (${stackSize}):</label>
                         <input type="number" class="turn-in-stack-input" value="1" min="1" max="999">
-                        <button class="btn btn-secondary turn-in-stack" data-type="turn-in-stack">Turn In</button>
+                        <button class="btn btn-primary turn-in-stack" data-type="turn-in-stack">Turn In</button>
                     </div>`;
             }
         }

@@ -696,13 +696,7 @@
     text-align: center;
 }
 
-.item-card .btn-primary {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, oklch(0.4 0.15 240) 100%);
-}
-
-.item-card .btn-secondary {
-    background: linear-gradient(135deg, var(--secondary-slate) 0%, oklch(0.3 0.02 240) 100%);
-}
+/* Removed conflicting .item-card button overrides to allow proper color classes */
 
 /* Item grid container */
 .shop-items-grid {
