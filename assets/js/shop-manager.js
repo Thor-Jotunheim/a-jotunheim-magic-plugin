@@ -64,15 +64,8 @@ class ShopManager {
         // Handle unlimited stock checkbox
         const stockCheckbox = document.getElementById('custom-stock-enabled');
         if (stockCheckbox) {
-            stockCheckbox.addEventListener('change', (e) => {
-                const stockInput = document.getElementById('stock-quantity');
-                if (e.target.checked) {
-                    stockInput.disabled = false;
-                    stockInput.value = 0;
-                } else {
-                    stockInput.disabled = true;
-                    stockInput.value = '';
-                }
+            stockCheckbox.addEventListener('change', () => {
+                this.updateConditionalFieldVisibility();
             });
         }
 
@@ -766,8 +759,16 @@ class ShopManager {
         // Update stock quantity fields
         const stockCheckbox = document.getElementById('custom-stock-enabled');
         const stockFields = document.getElementById('stock-quantity-group');
-        if (stockCheckbox && stockFields) {
-            stockFields.style.display = stockCheckbox.checked ? 'block' : 'none';
+        const stockInput = document.getElementById('stock-quantity');
+        if (stockCheckbox && stockFields && stockInput) {
+            const isEnabled = stockCheckbox.checked;
+            stockFields.style.display = isEnabled ? 'block' : 'none';
+            // Disable field when hidden to prevent validation issues
+            stockInput.disabled = !isEnabled;
+            // Clear validation state when disabled
+            if (!isEnabled) {
+                stockInput.value = '0';
+            }
         }
         
         // Update rotation fields
@@ -1253,16 +1254,14 @@ class ShopManager {
         // Hide add new item notice
         this.hideAddNewItemNotice();
         
-        // Reset stock checkbox and enable stock input
+        // Reset stock checkbox
         const stockCheckbox = document.getElementById('custom-stock-enabled');
-        const stockInput = document.getElementById('stock-quantity');
         if (stockCheckbox) {
             stockCheckbox.checked = false;
         }
-        if (stockInput) {
-            stockInput.disabled = false;
-            stockInput.value = '0';
-        }
+        
+        // Update field visibility and states after resetting checkboxes
+        this.updateConditionalFieldVisibility();
         
         // Reset checkboxes to their default states
         const sellCheckbox = document.getElementById('sell-checkbox');
