@@ -72,6 +72,11 @@ class ShopManager {
                 stockInput.value = 0;
             }
         });
+
+        // Handle turn-in checkbox to toggle turn-in requirement field
+        document.getElementById('turn-in-checkbox').addEventListener('change', () => {
+            this.updateTurnInFieldVisibility();
+        });
     }
 
     switchTab(tabName) {
@@ -526,8 +531,6 @@ class ShopManager {
         // Get form sections - using more reliable selectors
         const priceRow = document.getElementById('custom-price')?.closest('.form-row');
         const stockRow = document.getElementById('stock-quantity')?.closest('.form-row');
-        const turnInFields = document.querySelectorAll('.turn-in-fields');
-        const turnInRequirementField = document.getElementById('turn-in-requirement');
         const addItemSection = document.getElementById('add-item-section');
         const addItemTitle = addItemSection?.querySelector('h3');
         const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
@@ -535,7 +538,6 @@ class ShopManager {
         console.log('DEBUG - Found elements:', {
             priceRow: !!priceRow,
             stockRow: !!stockRow,
-            turnInFields: turnInFields.length,
             addItemTitle: !!addItemTitle,
             submitButton: !!submitButton
         });
@@ -553,17 +555,6 @@ class ShopManager {
             // Hide price and stock fields for turn-in shops
             if (priceRow) priceRow.style.display = 'none';
             if (stockRow) stockRow.style.display = 'none';
-            
-            // Show turn-in fields
-            turnInFields.forEach(field => field.style.display = 'flex');
-            
-            // Set min=1 for turn-in requirement when visible
-            if (turnInRequirementField) {
-                turnInRequirementField.setAttribute('min', '1');
-                if (turnInRequirementField.value === '0') {
-                    turnInRequirementField.value = '1';
-                }
-            }
             
             // Ensure item selector row is visible for turn-in shops
             const itemSelectorRow = document.getElementById('item-selector')?.closest('.form-row');
@@ -598,15 +589,6 @@ class ShopManager {
             if (priceRow) priceRow.style.display = 'flex';
             if (stockRow) stockRow.style.display = 'flex';
             
-            // Hide turn-in fields
-            turnInFields.forEach(field => field.style.display = 'none');
-            
-            // Remove min constraint when hidden to prevent validation errors
-            if (turnInRequirementField) {
-                turnInRequirementField.setAttribute('min', '0');
-                turnInRequirementField.value = '0';
-            }
-            
             // Restore original field labels
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
             if (itemSelectorLabel) {
@@ -620,6 +602,48 @@ class ShopManager {
                 if (customItemInput) {
                     customItemInput.placeholder = 'Enter custom item name for spells/special items';
                 }
+            }
+        }
+        
+        // Update turn-in field visibility based on shop type and checkbox state
+        this.updateTurnInFieldVisibility();
+    }
+
+    updateTurnInFieldVisibility() {
+        const turnInCheckbox = document.getElementById('turn-in-checkbox');
+        const turnInFields = document.querySelectorAll('.turn-in-fields');
+        const turnInRequirementField = document.getElementById('turn-in-requirement');
+        
+        // Determine if we should show turn-in fields
+        const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in_only';
+        const isTurnInChecked = turnInCheckbox && turnInCheckbox.checked;
+        const shouldShowTurnInFields = isTurnInOnly || isTurnInChecked;
+        
+        console.log('DEBUG - updateTurnInFieldVisibility:', {
+            isTurnInOnly,
+            isTurnInChecked,
+            shouldShowTurnInFields
+        });
+        
+        if (shouldShowTurnInFields) {
+            // Show turn-in fields
+            turnInFields.forEach(field => field.style.display = 'flex');
+            
+            // Set min=1 for turn-in requirement when visible
+            if (turnInRequirementField) {
+                turnInRequirementField.setAttribute('min', '1');
+                if (turnInRequirementField.value === '0') {
+                    turnInRequirementField.value = '1';
+                }
+            }
+        } else {
+            // Hide turn-in fields
+            turnInFields.forEach(field => field.style.display = 'none');
+            
+            // Remove min constraint when hidden to prevent validation errors
+            if (turnInRequirementField) {
+                turnInRequirementField.setAttribute('min', '0');
+                turnInRequirementField.value = '0';
             }
         }
     }
@@ -900,6 +924,10 @@ class ShopManager {
             document.getElementById('item-rotation').value = item.rotation || 1;
             document.getElementById('item-available').value = item.is_available || '1';
             
+            // Populate turn-in fields
+            document.getElementById('turn-in-quantity').value = item.turn_in_quantity || 0;
+            document.getElementById('turn-in-requirement').value = item.turn_in_requirement || 0;
+            
             // Populate checkbox fields if they exist
             const sellCheckbox = document.getElementById('sell-checkbox');
             const buyCheckbox = document.getElementById('buy-checkbox');
@@ -908,6 +936,9 @@ class ShopManager {
             if (sellCheckbox) sellCheckbox.checked = item.sell == 1;
             if (buyCheckbox) buyCheckbox.checked = item.buy == 1;
             if (turnInCheckbox) turnInCheckbox.checked = item.turn_in == 1;
+            
+            // Update turn-in field visibility based on checkbox state
+            this.updateTurnInFieldVisibility();
             
             // Update form button
             const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
