@@ -181,9 +181,21 @@
 }
 
 /* Ensure button colors work in item cards */
-.quantity-controls .btn.btn-success {
-    background-color: var(--success-green) !important;
+.quantity-controls .btn.btn-success,
+.btn.btn-success.individual-buy,
+.btn.btn-success.stack-buy,
+button.btn.btn-success {
+    background-color: #28a745 !important;
     color: white !important;
+    border: 1px solid #28a745 !important;
+}
+
+/* Even more specific for individual and stack buy buttons */
+.individual-buy.btn-success,
+.stack-buy.btn-success {
+    background-color: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
 }
 
 .quantity-controls .btn.btn-danger {
