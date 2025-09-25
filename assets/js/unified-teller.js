@@ -632,8 +632,10 @@ class UnifiedTeller {
         const individualBtn = card.querySelector('.individual-buy');
         const quantityInput = card.querySelector('.quantity-input');
         if (individualBtn && quantityInput) {
+            console.log('Found individual buy button for item:', item.item_name);
             if (item.stock_quantity !== 0) {
                 individualBtn.addEventListener('click', (e) => {
+                    console.log('Individual buy button clicked for:', item.item_name);
                     e.stopPropagation();
                     const quantity = parseInt(quantityInput.value) || 1;
                     this.addToCart(item, quantity, unitPrice * quantity);
@@ -642,6 +644,8 @@ class UnifiedTeller {
                 individualBtn.disabled = true;
                 quantityInput.disabled = true;
             }
+        } else {
+            console.log('No individual buy button found for item:', item.item_name);
         }
 
         // Buy button (stack)
@@ -665,22 +669,30 @@ class UnifiedTeller {
         const sellBtn = card.querySelector('.sell-to-shop');
         const sellInput = card.querySelector('.sell-quantity-input');
         if (sellBtn && sellInput) {
+            console.log('Found sell button for item:', item.item_name);
             sellBtn.addEventListener('click', (e) => {
+                console.log('Sell button clicked for:', item.item_name);
                 e.stopPropagation();
                 const quantity = parseInt(sellInput.value) || 1;
                 this.sellToShop(item, quantity);
             });
+        } else {
+            console.log('No sell button found for item:', item.item_name);
         }
 
         // Turn-in button
         const turnInBtn = card.querySelector('.turn-in-item');
         const turnInInput = card.querySelector('.turn-in-quantity-input');
         if (turnInBtn && turnInInput) {
+            console.log('Found turn-in button for item:', item.item_name);
             turnInBtn.addEventListener('click', (e) => {
+                console.log('Turn-in button clicked for:', item.item_name);
                 e.stopPropagation();
                 const quantity = parseInt(turnInInput.value) || 1;
                 this.turnInItem(item, quantity);
             });
+        } else {
+            console.log('No turn-in button found for item:', item.item_name);
         }
     }
 
@@ -844,6 +856,7 @@ class UnifiedTeller {
     }
 
     addToCart(item, quantity = 1, price = null) {
+        console.log('addToCart called with:', item.item_name, 'quantity:', quantity, 'price:', price);
         if (!this.selectedShop) {
             this.showStatus('Please select a shop first', 'error');
             return;
