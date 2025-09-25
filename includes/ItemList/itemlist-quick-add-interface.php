@@ -14,13 +14,13 @@ function jotunheim_quick_add_item_modal() {
         <div class="quick-add-overlay"></div>
         <div class="quick-add-content">
             <div class="quick-add-header">
-                <h3>Add New Item to Item Database</h3>
+                <h3>Add to Database</h3>
                 <button id="quick-add-close" class="quick-add-close">&times;</button>
             </div>
             
             <div class="quick-add-body">
                 <p class="quick-add-intro">
-                    This item doesn't exist in the Item Database. Add it now to complete your transaction.
+                    This item doesn't exist in the database. Add it now to complete your transaction.
                 </p>
                 
                 <form id="quick-add-item-form" class="quick-add-form">
@@ -119,7 +119,7 @@ function jotunheim_quick_add_item_modal() {
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 10001;
+        z-index: 999999;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -131,7 +131,7 @@ function jotunheim_quick_add_item_modal() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.6);
+        background: rgba(0,0,0,0.8);
         backdrop-filter: blur(2px);
     }
     
@@ -145,6 +145,7 @@ function jotunheim_quick_add_item_modal() {
         max-height: 80vh;
         overflow: hidden;
         animation: quickAddSlideIn 0.3s ease-out;
+        z-index: 999999;
     }
     
     @keyframes quickAddSlideIn {

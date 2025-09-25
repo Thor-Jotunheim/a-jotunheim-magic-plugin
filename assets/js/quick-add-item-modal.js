@@ -183,7 +183,7 @@ class QuickAddItemModal {
                 }
                 
                 this.hide();
-                this.showSuccessMessage(`${data.data.item_name} added to Item Database successfully!`);
+                this.showSuccessMessage(`${data.data.item_name} added to database successfully!`);
             } else {
                 console.error('Failed to add item:', data.data);
                 this.showValidationError(data.data || 'Failed to add item. Please try again.');

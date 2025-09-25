@@ -433,7 +433,7 @@ class ShopManager {
                 this.hideAddNewItemNotice();
                 
                 // Show success message
-                this.showStatus(`${result.item_name} added to Item Database and selected!`, 'success');
+                this.showStatus(`${result.item_name} added to database and selected!`, 'success');
             });
         });
     }
