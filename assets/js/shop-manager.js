@@ -82,6 +82,16 @@ class ShopManager {
         document.getElementById('daily-limit-enabled').addEventListener('change', () => {
             this.updateDailyLimitFieldVisibility();
         });
+        
+        // Handle buy daily limit checkbox to toggle quantity field
+        document.getElementById('buy-daily-limit-enabled').addEventListener('change', () => {
+            this.updateBuyDailyLimitFieldVisibility();
+        });
+        
+        // Handle turn-in daily limit checkbox to toggle quantity field
+        document.getElementById('turnin-daily-limit-enabled').addEventListener('change', () => {
+            this.updateTurninDailyLimitFieldVisibility();
+        });
     }
 
     switchTab(tabName) {
@@ -695,6 +705,46 @@ class ShopManager {
             availabilityFields.style.display = availabilityCheckbox.checked ? 'block' : 'none';
         }
     }
+    
+    updateBuyDailyLimitFieldVisibility() {
+        const buyDailyLimitCheckbox = document.getElementById('buy-daily-limit-enabled');
+        const buyQuantityGroup = document.getElementById('max-daily-buy-quantity-group');
+        
+        if (buyDailyLimitCheckbox && buyQuantityGroup) {
+            const isChecked = buyDailyLimitCheckbox.checked;
+            
+            if (isChecked) {
+                buyQuantityGroup.style.display = 'block';
+            } else {
+                buyQuantityGroup.style.display = 'none';
+                // Reset the value when hiding (but not during edit mode)
+                const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
+                if (submitButton && submitButton.textContent !== 'Update Item') {
+                    document.getElementById('max-daily-buy-quantity').value = '0';
+                }
+            }
+        }
+    }
+    
+    updateTurninDailyLimitFieldVisibility() {
+        const turninDailyLimitCheckbox = document.getElementById('turnin-daily-limit-enabled');
+        const turninQuantityGroup = document.getElementById('max-daily-turnin-quantity-group');
+        
+        if (turninDailyLimitCheckbox && turninQuantityGroup) {
+            const isChecked = turninDailyLimitCheckbox.checked;
+            
+            if (isChecked) {
+                turninQuantityGroup.style.display = 'block';
+            } else {
+                turninQuantityGroup.style.display = 'none';
+                // Reset the value when hiding (but not during edit mode)
+                const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
+                if (submitButton && submitButton.textContent !== 'Update Item') {
+                    document.getElementById('max-daily-turnin-quantity').value = '0';
+                }
+            }
+        }
+    }
 
     async loadTurnInTracker(shopId) {
         try {
@@ -801,6 +851,8 @@ class ShopManager {
                 <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
                 <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
+                <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_buy_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
+                <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.shop_item_id || item.id})">Edit</button>
@@ -864,7 +916,13 @@ class ShopManager {
             turn_in: document.getElementById('turn-in-checkbox')?.checked || false,
             // Add daily limit data
             daily_limit_enabled: document.getElementById('daily-limit-enabled')?.checked || false,
-            max_daily_sell_quantity: parseInt(formData.get('max_daily_sell_quantity') || '0')
+            max_daily_sell_quantity: parseInt(formData.get('max_daily_sell_quantity') || '0'),
+            // Add daily buy limit data
+            buy_daily_limit_enabled: document.getElementById('buy-daily-limit-enabled')?.checked || false,
+            max_daily_buy_quantity: parseInt(formData.get('max_daily_buy_quantity') || '0'),
+            // Add daily turn-in limit data
+            turnin_daily_limit_enabled: document.getElementById('turnin-daily-limit-enabled')?.checked || false,
+            max_daily_turnin_quantity: parseInt(formData.get('max_daily_turnin_quantity') || '0')
         };
 
         // Handle custom items vs regular items (only for new items, not edits)
@@ -1030,11 +1088,23 @@ class ShopManager {
             if (dailyLimitCheckbox) dailyLimitCheckbox.checked = item.daily_limit_enabled == 1;
             document.getElementById('max-daily-sell-quantity').value = item.max_daily_sell_quantity || 0;
             
+            // Populate buy daily limit fields
+            const buyDailyLimitCheckbox = document.getElementById('buy-daily-limit-enabled');
+            if (buyDailyLimitCheckbox) buyDailyLimitCheckbox.checked = item.buy_daily_limit_enabled == 1;
+            document.getElementById('max-daily-buy-quantity').value = item.max_daily_buy_quantity || 0;
+            
+            // Populate turn-in daily limit fields
+            const turninDailyLimitCheckbox = document.getElementById('turnin-daily-limit-enabled');
+            if (turninDailyLimitCheckbox) turninDailyLimitCheckbox.checked = item.turnin_daily_limit_enabled == 1;
+            document.getElementById('max-daily-turnin-quantity').value = item.max_daily_turnin_quantity || 0;
+            
             // Update turn-in field visibility based on checkbox state
             this.updateTurnInFieldVisibility();
             
             // Update daily limit field visibility
             this.updateDailyLimitFieldVisibility();
+            this.updateBuyDailyLimitFieldVisibility();
+            this.updateTurninDailyLimitFieldVisibility();
             
             // Update conditional field visibility for new checkboxes
             this.updateConditionalFieldVisibility();

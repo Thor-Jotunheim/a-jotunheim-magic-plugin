@@ -1071,11 +1071,23 @@ class UnifiedTeller {
 
     async confirmTransaction() {
         try {
-            // Validate daily selling limits before processing transaction
+            // Validate daily limits before processing transaction
             if (this.transactionMode === 'sell') {
                 const dailyLimitValidation = await this.validateDailySellingLimits();
                 if (!dailyLimitValidation.valid) {
                     this.showStatus(dailyLimitValidation.error, 'error');
+                    return;
+                }
+            } else if (this.transactionMode === 'buy') {
+                const dailyBuyValidation = await this.validateDailyBuyingLimits();
+                if (!dailyBuyValidation.valid) {
+                    this.showStatus(dailyBuyValidation.error, 'error');
+                    return;
+                }
+            } else if (this.transactionMode === 'turnin') {
+                const dailyTurninValidation = await this.validateDailyTurninLimits();
+                if (!dailyTurninValidation.valid) {
+                    this.showStatus(dailyTurninValidation.error, 'error');
                     return;
                 }
             }
@@ -1095,9 +1107,13 @@ class UnifiedTeller {
             const response = await JotunAPI.addTransaction(transactionData);
             
             if (response.success !== false) {
-                // Record daily sales for sell transactions
+                // Record daily activity for transactions with limits
                 if (this.transactionMode === 'sell') {
                     await this.recordDailySales();
+                } else if (this.transactionMode === 'buy') {
+                    await this.recordDailyBuys();
+                } else if (this.transactionMode === 'turnin') {
+                    await this.recordDailyTurnins();
                 }
                 
                 this.showStatus('Transaction completed successfully', 'success');
@@ -1235,6 +1251,126 @@ class UnifiedTeller {
         }
     }
 
+    async validateDailyBuyingLimits() {
+        try {
+            const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
+            // Check each item in cart for daily buy limits
+            for (const cartItem of this.cart) {
+                if (cartItem.action !== 'buy') continue;
+                
+                // Skip if item doesn't have daily buy limits enabled
+                if (!cartItem.buy_daily_limit_enabled || cartItem.max_daily_buy_quantity <= 0) {
+                    continue;
+                }
+                
+                // Check current daily buys for this player/item combination
+                const dailyCheckResponse = await fetch('/wp-json/jotunheim/v1/daily-buys-check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': window.jotunheim_ajax.nonce
+                    },
+                    body: JSON.stringify({
+                        player_name: playerName,
+                        shop_id: this.selectedShop,
+                        shop_item_id: cartItem.shop_item_id,
+                        proposed_quantity: cartItem.quantity
+                    })
+                });
+                
+                const checkResult = await dailyCheckResponse.json();
+                
+                if (!checkResult.success) {
+                    return {
+                        valid: false,
+                        error: `Daily buy limit validation failed for ${cartItem.item_name}: ${checkResult.error}`
+                    };
+                }
+                
+                if (!checkResult.data.can_buy) {
+                    const boughtToday = checkResult.data.bought_today || 0;
+                    const maxDaily = cartItem.max_daily_buy_quantity;
+                    const remaining = Math.max(0, maxDaily - boughtToday);
+                    
+                    return {
+                        valid: false,
+                        error: `${playerName} has reached daily buying limit for ${cartItem.item_name}. Bought today: ${boughtToday}/${maxDaily}. Remaining: ${remaining}`
+                    };
+                }
+            }
+            
+            return { valid: true };
+            
+        } catch (error) {
+            console.error('Daily buy limit validation error:', error);
+            return {
+                valid: false,
+                error: 'Failed to validate daily buying limits. Please try again.'
+            };
+        }
+    }
+
+    async validateDailyTurninLimits() {
+        try {
+            const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
+            // Check each item in cart for daily turn-in limits
+            for (const cartItem of this.cart) {
+                if (cartItem.action !== 'turnin') continue;
+                
+                // Skip if item doesn't have daily turn-in limits enabled
+                if (!cartItem.turnin_daily_limit_enabled || cartItem.max_daily_turnin_quantity <= 0) {
+                    continue;
+                }
+                
+                // Check current daily turn-ins for this player/item combination
+                const dailyCheckResponse = await fetch('/wp-json/jotunheim/v1/daily-turnins-check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': window.jotunheim_ajax.nonce
+                    },
+                    body: JSON.stringify({
+                        player_name: playerName,
+                        shop_id: this.selectedShop,
+                        shop_item_id: cartItem.shop_item_id,
+                        proposed_quantity: cartItem.quantity
+                    })
+                });
+                
+                const checkResult = await dailyCheckResponse.json();
+                
+                if (!checkResult.success) {
+                    return {
+                        valid: false,
+                        error: `Daily turn-in limit validation failed for ${cartItem.item_name}: ${checkResult.error}`
+                    };
+                }
+                
+                if (!checkResult.data.can_turnin) {
+                    const turnedInToday = checkResult.data.turned_in_today || 0;
+                    const maxDaily = cartItem.max_daily_turnin_quantity;
+                    const remaining = Math.max(0, maxDaily - turnedInToday);
+                    
+                    return {
+                        valid: false,
+                        error: `${playerName} has reached daily turn-in limit for ${cartItem.item_name}. Turned in today: ${turnedInToday}/${maxDaily}. Remaining: ${remaining}`
+                    };
+                }
+            }
+            
+            return { valid: true };
+            
+        } catch (error) {
+            console.error('Daily turn-in limit validation error:', error);
+            return {
+                valid: false,
+                error: 'Failed to validate daily turn-in limits. Please try again.'
+            };
+        }
+    }
+
     async recordDailySales() {
         try {
             const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
@@ -1266,6 +1402,76 @@ class UnifiedTeller {
             }
         } catch (error) {
             console.error('Error recording daily sales:', error);
+            // Don't fail the transaction for this - it's already completed
+        }
+    }
+
+    async recordDailyBuys() {
+        try {
+            const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
+            // Record daily buys for each buy item in the cart
+            for (const cartItem of this.cart) {
+                if (cartItem.action !== 'buy') continue;
+                
+                // Only record if the item has daily buy limits enabled
+                if (cartItem.buy_daily_limit_enabled && cartItem.max_daily_buy_quantity > 0) {
+                    const recordResponse = await fetch('/wp-json/jotunheim/v1/record-daily-buy', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-WP-Nonce': window.jotunheim_ajax.nonce
+                        },
+                        body: JSON.stringify({
+                            player_name: playerName,
+                            shop_id: this.selectedShop,
+                            shop_item_id: cartItem.shop_item_id,
+                            quantity_bought: cartItem.quantity
+                        })
+                    });
+                    
+                    if (!recordResponse.ok) {
+                        console.error('Failed to record daily buy for item:', cartItem.item_name);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error recording daily buys:', error);
+            // Don't fail the transaction for this - it's already completed
+        }
+    }
+
+    async recordDailyTurnins() {
+        try {
+            const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
+            // Record daily turn-ins for each turn-in item in the cart
+            for (const cartItem of this.cart) {
+                if (cartItem.action !== 'turnin') continue;
+                
+                // Only record if the item has daily turn-in limits enabled
+                if (cartItem.turnin_daily_limit_enabled && cartItem.max_daily_turnin_quantity > 0) {
+                    const recordResponse = await fetch('/wp-json/jotunheim/v1/record-daily-turnin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-WP-Nonce': window.jotunheim_ajax.nonce
+                        },
+                        body: JSON.stringify({
+                            player_name: playerName,
+                            shop_id: this.selectedShop,
+                            shop_item_id: cartItem.shop_item_id,
+                            quantity_turned_in: cartItem.quantity
+                        })
+                    });
+                    
+                    if (!recordResponse.ok) {
+                        console.error('Failed to record daily turn-in for item:', cartItem.item_name);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error recording daily turn-ins:', error);
             // Don't fail the transaction for this - it's already completed
         }
     }

@@ -412,6 +412,52 @@ function shop_manager_interface() {
                             </div>
                         </div>
                         
+                        <!-- Daily Buying Limit Fields -->
+                        <div class="form-row daily-buy-limit-fields">
+                            <div class="form-group">
+                                <label>Daily Buying Limits</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="buy-daily-limit-enabled" name="buy_daily_limit_enabled">
+                                        <span>Enable Daily Buy Limit</span>
+                                    </label>
+                                </div>
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    Limit how much each player can buy per 24-hour period
+                                </small>
+                            </div>
+                            <div class="form-group" id="max-daily-buy-quantity-group" style="display: none;">
+                                <label for="max-daily-buy-quantity">Max Daily Buy Quantity</label>
+                                <input type="number" id="max-daily-buy-quantity" name="max_daily_buy_quantity" value="0" min="0" title="Maximum quantity each player can buy per day (resets every 24 hours)">
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    0 = no limit. Example: if set to 3, each player can only buy up to 3 of this item per day
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Daily Turn-in Limit Fields -->
+                        <div class="form-row daily-turnin-limit-fields">
+                            <div class="form-group">
+                                <label>Daily Turn-in Limits</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="turnin-daily-limit-enabled" name="turnin_daily_limit_enabled">
+                                        <span>Enable Daily Turn-in Limit</span>
+                                    </label>
+                                </div>
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    Limit how much each player can turn in per 24-hour period
+                                </small>
+                            </div>
+                            <div class="form-group" id="max-daily-turnin-quantity-group" style="display: none;">
+                                <label for="max-daily-turnin-quantity">Max Daily Turn-in Quantity</label>
+                                <input type="number" id="max-daily-turnin-quantity" name="max_daily_turnin_quantity" value="0" min="0" title="Maximum quantity each player can turn in per day (resets every 24 hours)">
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    0 = no limit. Example: if set to 10, each player can only turn in up to 10 of this item per day
+                                </small>
+                            </div>
+                        </div>
+                        
                         <!-- Transaction Type Checkboxes -->
                         <div class="form-row">
                             <div class="form-group">
@@ -486,7 +532,9 @@ function shop_manager_interface() {
                                     <th>Sell</th>
                                     <th>Buy</th>
                                     <th>Turn-In</th>
-                                    <th>Daily Limit</th>
+                                    <th>Daily Sell Limit</th>
+                                    <th>Daily Buy Limit</th>
+                                    <th>Daily Turn-in Limit</th>
                                     <th>Available</th>
                                     <th>Actions</th>
                                 </tr>
@@ -824,7 +872,7 @@ function shop_manager_interface() {
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Daily Limit checkbox functionality
+        // Daily Sell Limit checkbox functionality
         const dailyLimitCheckbox = document.getElementById('daily-limit-enabled');
         const quantityGroup = document.getElementById('max-daily-quantity-group');
         
@@ -839,6 +887,40 @@ function shop_manager_interface() {
             }
             dailyLimitCheckbox.addEventListener('change', toggleQuantityField);
             toggleQuantityField();
+        }
+        
+        // Daily Buy Limit checkbox functionality
+        const buyDailyLimitCheckbox = document.getElementById('buy-daily-limit-enabled');
+        const buyQuantityGroup = document.getElementById('max-daily-buy-quantity-group');
+        
+        if (buyDailyLimitCheckbox && buyQuantityGroup) {
+            function toggleBuyQuantityField() {
+                if (buyDailyLimitCheckbox.checked) {
+                    buyQuantityGroup.style.display = 'block';
+                } else {
+                    buyQuantityGroup.style.display = 'none';
+                    document.getElementById('max-daily-buy-quantity').value = '0';
+                }
+            }
+            buyDailyLimitCheckbox.addEventListener('change', toggleBuyQuantityField);
+            toggleBuyQuantityField();
+        }
+        
+        // Daily Turn-in Limit checkbox functionality
+        const turninDailyLimitCheckbox = document.getElementById('turnin-daily-limit-enabled');
+        const turninQuantityGroup = document.getElementById('max-daily-turnin-quantity-group');
+        
+        if (turninDailyLimitCheckbox && turninQuantityGroup) {
+            function toggleTurninQuantityField() {
+                if (turninDailyLimitCheckbox.checked) {
+                    turninQuantityGroup.style.display = 'block';
+                } else {
+                    turninQuantityGroup.style.display = 'none';
+                    document.getElementById('max-daily-turnin-quantity').value = '0';
+                }
+            }
+            turninDailyLimitCheckbox.addEventListener('change', toggleTurninQuantityField);
+            toggleTurninQuantityField();
         }
         
         // Stock Quantity checkbox functionality
