@@ -384,23 +384,26 @@
     font-weight: 400;
 }
 
-.advanced-settings-content {
-    max-height: 1200px; /* Generous height for all content */
-    padding: 15px 0;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    opacity: 1;
-    transform: translateY(0);
+#advanced-settings-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 15px 0 !important;
+    overflow: visible !important;
+    transition: all 0.3s ease;
 }
 
-.advanced-settings-content.collapsed {
+#advanced-settings-content.collapsed {
+    display: none !important;
+    height: 0 !important;
     max-height: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
     opacity: 0 !important;
-    transform: translateY(-10px) !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    visibility: hidden !important;
+    overflow: hidden !important;
 }
 
 /* Form styling within advanced settings */

@@ -1708,6 +1708,10 @@ function toggleAdvancedSettings() {
             // Expand
             console.log('DEBUG - Expanding...');
             content.classList.remove('collapsed');
+            content.style.display = 'block';
+            content.style.visibility = 'visible';
+            content.style.opacity = '1';
+            content.style.height = 'auto';
             icon.textContent = '▼';
             icon.classList.remove('collapsed');
             if (header) header.classList.remove('collapsed');
@@ -1715,6 +1719,10 @@ function toggleAdvancedSettings() {
             // Collapse
             console.log('DEBUG - Collapsing...');
             content.classList.add('collapsed');
+            content.style.display = 'none';
+            content.style.visibility = 'hidden';
+            content.style.opacity = '0';
+            content.style.height = '0';
             icon.textContent = '▶';
             icon.classList.add('collapsed');
             if (header) header.classList.add('collapsed');
@@ -1729,21 +1737,7 @@ function toggleAdvancedSettings() {
 // Make function globally available
 window.toggleAdvancedSettings = toggleAdvancedSettings;
 
-// Also add event listener as backup to inline onclick
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        const header = document.querySelector('.advanced-settings-header');
-        if (header) {
-            console.log('DEBUG - Adding click event listener to header');
-            header.addEventListener('click', function(e) {
-                console.log('DEBUG - Header clicked via event listener');
-                toggleAdvancedSettings();
-            });
-        } else {
-            console.log('DEBUG - Advanced settings header not found for event listener');
-        }
-    }, 500);
-});
+// Removed event listener backup since inline onclick is working
 
 // Initialize advanced settings as collapsed
 document.addEventListener('DOMContentLoaded', function() {
@@ -1755,8 +1749,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('DEBUG - Advanced settings elements:', { content, icon });
         
         if (content && icon) {
-            console.log('DEBUG - Setting initial collapsed state');
+            console.log('DEBUG - Setting initial collapsed state with inline styles');
             content.classList.add('collapsed');
+            content.style.display = 'none';
+            content.style.visibility = 'hidden';
+            content.style.opacity = '0';
+            content.style.height = '0';
             icon.textContent = '▶';
             icon.classList.add('collapsed');
         } else {
@@ -1768,6 +1766,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('DEBUG - Second attempt - Advanced settings elements:', { content: content2, icon: icon2 });
                 if (content2 && icon2) {
                     content2.classList.add('collapsed');
+                    content2.style.display = 'none';
+                    content2.style.visibility = 'hidden';
+                    content2.style.opacity = '0';
+                    content2.style.height = '0';
                     icon2.textContent = '▶';
                     icon2.classList.add('collapsed');
                 }
