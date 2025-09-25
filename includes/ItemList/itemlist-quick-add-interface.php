@@ -24,11 +24,7 @@ function jotunheim_quick_add_item_modal() {
                 </p>
                 
                 <form id="quick-add-item-form" class="quick-add-form">
-                    <?php 
-                    $nonce = wp_create_nonce('quick_add_item_nonce');
-                    error_log('Generated nonce in modal: ' . $nonce);
-                    wp_nonce_field('quick_add_item_nonce', 'quick_add_nonce'); 
-                    ?>
+                    <?php wp_nonce_field('quick_add_item_nonce', 'quick_add_nonce'); ?>
                     
                     <!-- Pre-filled item name -->
                     <div class="form-group">
@@ -307,15 +303,6 @@ function jotunheim_quick_add_item_modal() {
 
 // AJAX handler for quick add item
 function handle_quick_add_item() {
-    // Debug logging
-    error_log('Quick Add AJAX Handler Called');
-    error_log('POST data: ' . print_r($_POST, true));
-    error_log('quick_add_nonce isset: ' . (isset($_POST['quick_add_nonce']) ? 'yes' : 'no'));
-    if (isset($_POST['quick_add_nonce'])) {
-        error_log('quick_add_nonce value: ' . $_POST['quick_add_nonce']);
-        error_log('Nonce verification result: ' . (wp_verify_nonce($_POST['quick_add_nonce'], 'quick_add_item_nonce') ? 'valid' : 'invalid'));
-    }
-    
     // Verify nonce
     if (!isset($_POST['quick_add_nonce']) || !wp_verify_nonce($_POST['quick_add_nonce'], 'quick_add_item_nonce')) {
         wp_send_json_error('Invalid nonce verification.');
@@ -332,7 +319,7 @@ function handle_quick_add_item() {
     $table_name = 'jotun_itemlist';
 
     // Validate required fields
-    if (empty($_POST['item_name']) || empty($_POST['item_type']) || empty($_POST['prefab_name'])) {
+    if (empty($_POST['item_name']) || empty($_POST['type']) || empty($_POST['prefab_name'])) {
         wp_send_json_error('Item name, type, and prefab name are required.');
         return;
     }
@@ -358,7 +345,7 @@ function handle_quick_add_item() {
         [
             'item_name' => sanitize_text_field($_POST['item_name']),
             'tech_name' => sanitize_text_field($_POST['tech_name'] ?? 'N/A'),
-            'item_type' => sanitize_text_field($_POST['item_type']),
+            'item_type' => sanitize_text_field($_POST['type']),
             'stack_size' => intval($_POST['stack_size'] ?? 1),
             'undercut' => isset($_POST['undercut']) ? 1 : 0,
             'unit_price' => floatval($_POST['unit_price'] ?? 0),
