@@ -41,6 +41,13 @@ class ShopManager {
 
         // Shop item form submission
         document.getElementById('add-shop-item-form').addEventListener('submit', (e) => {
+            // For turn-in only shops, completely bypass HTML5 validation
+            const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in_only';
+            if (isTurnInOnly) {
+                e.target.setAttribute('novalidate', 'novalidate');
+                console.log('DEBUG - Set form novalidate for turn-in only submission');
+            }
+            
             // Clean up validation issues before form submission
             this.cleanupFormValidation();
             this.handleAddShopItem(e);
@@ -686,6 +693,13 @@ class ShopManager {
                 stockField.removeAttribute('pattern');
             }
             
+            // Set the entire form to bypass HTML5 validation for turn-in only shops
+            const form = document.getElementById('add-shop-item-form');
+            if (form) {
+                form.setAttribute('novalidate', 'novalidate');
+                console.log('DEBUG - Set form novalidate for turn-in only shop configuration');
+            }
+            
             // Ensure item selector row is visible for turn-in shops
             const itemSelectorRow = document.getElementById('item-selector')?.closest('.form-row');
             if (itemSelectorRow) {
@@ -718,6 +732,13 @@ class ShopManager {
             if (stockField) {
                 stockField.setAttribute('required', '');
                 stockField.setAttribute('min', '0');
+            }
+            
+            // Remove novalidate for regular shops to enable normal validation
+            const form = document.getElementById('add-shop-item-form');
+            if (form) {
+                form.removeAttribute('novalidate');
+                console.log('DEBUG - Removed novalidate for regular shop configuration');
             }
             
             // Restore original field labels
@@ -829,10 +850,12 @@ class ShopManager {
     }
     
     cleanupFormValidation() {
+        console.log('DEBUG - cleanupFormValidation called');
         // Remove validation constraints from disabled fields to prevent "not focusable" errors
         const form = document.getElementById('add-shop-item-form');
         if (form) {
             const disabledInputs = form.querySelectorAll('input:disabled');
+            console.log('DEBUG - Found disabled inputs:', disabledInputs.length);
             disabledInputs.forEach(input => {
                 // Remove all validation attributes from disabled fields
                 input.removeAttribute('required');
@@ -844,25 +867,39 @@ class ShopManager {
             
             // Special handling for turn-in only shops - remove validation from hidden fields
             const isTurnInOnly = this.selectedShopData && this.selectedShopData.shop_type === 'turn-in_only';
+            console.log('DEBUG - isTurnInOnly:', isTurnInOnly);
             if (isTurnInOnly) {
+                // Get the correct field IDs (with dashes)
                 const stockField = document.getElementById('stock-quantity');
                 const priceField = document.getElementById('custom-price');
                 
+                console.log('DEBUG - Found fields:', { stockField: !!stockField, priceField: !!priceField });
+                
                 // Remove validation attributes and set default values for turn-in items
                 if (stockField) {
+                    console.log('DEBUG - Cleaning stock field validation');
                     stockField.removeAttribute('required');
                     stockField.removeAttribute('min');
                     stockField.removeAttribute('max');
                     stockField.removeAttribute('pattern');
                     stockField.value = '0'; // Turn-in items don't use stock
+                    // Also disable the field to prevent any validation
+                    stockField.disabled = true;
                 }
                 if (priceField) {
+                    console.log('DEBUG - Cleaning price field validation');
                     priceField.removeAttribute('required');
                     priceField.removeAttribute('min');
                     priceField.removeAttribute('max');
                     priceField.removeAttribute('pattern');
                     priceField.value = '0'; // Turn-in items don't use price
+                    // Also disable the field to prevent any validation
+                    priceField.disabled = true;
                 }
+                
+                // Also set the form itself to novalidate for turn-in items
+                form.setAttribute('novalidate', 'novalidate');
+                console.log('DEBUG - Set form novalidate for turn-in only shop');
             }
         }
     }
