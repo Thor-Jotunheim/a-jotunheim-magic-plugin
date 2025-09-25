@@ -353,9 +353,7 @@ function handle_quick_add_item() {
             'lv3_price' => floatval($_POST['lv3_price'] ?? 0),
             'lv4_price' => floatval($_POST['lv4_price'] ?? 0),
             'lv5_price' => floatval($_POST['lv5_price'] ?? 0),
-            'prefab_name' => sanitize_text_field($_POST['prefab_name'] ?? ''),
-            'created_date' => current_time('mysql'),
-            'description' => 'Added via quick-add during transaction'
+            'prefab_name' => sanitize_text_field($_POST['prefab_name'] ?? '')
         ]
     );
 
