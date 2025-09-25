@@ -926,6 +926,7 @@ class UnifiedTeller {
                 item_id: item.item_id,
                 item_name: item.item_name,
                 price: parseFloat(itemPrice),
+                unit_price: parseFloat(itemPrice),
                 quantity: quantity,
                 max_stock: item.stock_quantity
             });
@@ -940,14 +941,15 @@ class UnifiedTeller {
         let total = 0;
 
         this.cart.forEach((item, index) => {
-            const itemTotal = item.price * item.quantity;
+            const itemPrice = item.price || item.unit_price || 0;
+            const itemTotal = itemPrice * item.quantity;
             total += itemTotal;
 
             const cartItem = document.createElement('div');
             cartItem.className = 'cart-item';
             cartItem.innerHTML = `
                 <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-                <div class="item-price">$${item.price.toFixed(2)}</div>
+                <div class="item-price">$${itemPrice.toFixed(2)}</div>
                 <div class="item-quantity">
                     <input type="number" class="quantity-input" value="${item.quantity}" 
                            min="1" max="${item.max_stock}" 
@@ -1041,7 +1043,7 @@ class UnifiedTeller {
     }
 
     generateTransactionSummary() {
-        const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total = this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0);
         const notes = document.getElementById('transaction-notes').value;
 
         let summary = `
@@ -1056,7 +1058,9 @@ class UnifiedTeller {
         `;
 
         this.cart.forEach(item => {
-            summary += `<li>${item.item_name} x${item.quantity} @ $${item.price.toFixed(2)} = $${(item.price * item.quantity).toFixed(2)}</li>`;
+            const itemPrice = item.price || item.unit_price || 0;
+            const totalPrice = item.total_price || (itemPrice * item.quantity);
+            summary += `<li>${item.item_name} x${item.quantity} @ $${itemPrice.toFixed(2)} = $${totalPrice.toFixed(2)}</li>`;
         });
 
         summary += `
@@ -1098,7 +1102,7 @@ class UnifiedTeller {
                 player_name: this.currentCustomer.playerName || this.currentCustomer.player_name,
                 transaction_type: this.transactionMode,
                 items: this.cart,
-                total_amount: this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                total_amount: this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0),
                 notes: document.getElementById('transaction-notes').value,
                 transaction_date: new Date().toISOString()
             };
@@ -1728,6 +1732,7 @@ class UnifiedTeller {
                 item_name: item.item_name,
                 action: 'turnin',
                 quantity: 1,
+                price: item.event_points || 0,
                 unit_price: item.event_points || 0,
                 total_price: item.event_points || 0,
                 stack_size: item.stack_size || 1,
@@ -1768,6 +1773,7 @@ class UnifiedTeller {
                 item_name: item.item_name,
                 action: 'turnin',
                 quantity: quantity,
+                price: item.event_points || 0,
                 unit_price: item.event_points || 0,
                 total_price: (item.event_points || 0) * quantity,
                 stack_size: item.stack_size || 1,
@@ -2015,6 +2021,7 @@ class UnifiedTeller {
                 item_name: item.item_name,
                 action: action,
                 quantity: quantity,
+                price: unitPrice,
                 unit_price: unitPrice,
                 total_price: totalPrice,
                 stack_size: item.stack_size || 1,
