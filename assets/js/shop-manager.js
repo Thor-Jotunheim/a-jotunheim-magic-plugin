@@ -62,16 +62,19 @@ class ShopManager {
         document.getElementById('cancel-edit-type').addEventListener('click', () => this.cancelShopTypeEdit());
         
         // Handle unlimited stock checkbox
-        document.getElementById('unlimited-stock').addEventListener('change', (e) => {
-            const stockInput = document.getElementById('stock-quantity');
-            if (e.target.checked) {
-                stockInput.disabled = true;
-                stockInput.value = -1;
-            } else {
-                stockInput.disabled = false;
-                stockInput.value = 0;
-            }
-        });
+        const stockCheckbox = document.getElementById('custom-stock-enabled');
+        if (stockCheckbox) {
+            stockCheckbox.addEventListener('change', (e) => {
+                const stockInput = document.getElementById('stock-quantity');
+                if (e.target.checked) {
+                    stockInput.disabled = false;
+                    stockInput.value = 0;
+                } else {
+                    stockInput.disabled = true;
+                    stockInput.value = '';
+                }
+            });
+        }
 
         // Handle turn-in checkbox to toggle turn-in requirement field
         document.getElementById('turn-in-checkbox').addEventListener('change', () => {
@@ -1182,11 +1185,11 @@ class ShopManager {
             customPriceInput.placeholder = 'Enter custom price';
         }
         
-        // Reset unlimited stock checkbox and enable stock input
-        const unlimitedCheckbox = document.getElementById('unlimited-stock');
+        // Reset stock checkbox and enable stock input
+        const stockCheckbox = document.getElementById('custom-stock-enabled');
         const stockInput = document.getElementById('stock-quantity');
-        if (unlimitedCheckbox) {
-            unlimitedCheckbox.checked = false;
+        if (stockCheckbox) {
+            stockCheckbox.checked = false;
         }
         if (stockInput) {
             stockInput.disabled = false;
