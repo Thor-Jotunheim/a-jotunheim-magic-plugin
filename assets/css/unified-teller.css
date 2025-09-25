@@ -773,8 +773,20 @@ input[type="button"].btn.btn-success,
 [class*="btn-success"] {
     background-color: #28a745 !important;
     background-image: none !important;
+    background: #28a745 !important;
     color: white !important;
     border: 1px solid #28a745 !important;
+    border-color: #28a745 !important;
+    box-shadow: none !important;
+}
+
+/* Force normal state explicitly */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success:not(:hover),
+button.btn.btn-success.individual-buy:not(:hover),
+button.btn.btn-success.stack-buy:not(:hover) {
+    background-color: #28a745 !important;
+    background: #28a745 !important;
+    color: white !important;
     border-color: #28a745 !important;
 }
 
