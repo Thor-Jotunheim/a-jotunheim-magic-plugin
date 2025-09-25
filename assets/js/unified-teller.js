@@ -524,7 +524,9 @@ class UnifiedTeller {
 
     createItemCard(item) {
         const card = document.createElement('div');
-        card.className = `item-card ${item.stock_quantity <= 0 ? 'out-of-stock' : ''}`;
+        // Only mark as out-of-stock if stock_quantity exists and is exactly 0 (not null, undefined, or -1 for infinite)
+        const isOutOfStock = item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity === 0;
+        card.className = `item-card ${isOutOfStock ? 'out-of-stock' : ''}`;
         card.dataset.itemId = item.id;
         
         // Use unit_price from the enriched data
@@ -537,13 +539,13 @@ class UnifiedTeller {
             '/wp-content/uploads/Jotunheim-magic/icons/default-item.png');
         
         card.innerHTML = `
-            <div class="item-header">
-                <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-                <div class="item-type">${item.item_type || 'Trophies'}</div>
+            <div class="item-header" style="opacity: 1;">
+                <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
+                <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
             </div>
             <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                 ${item.icon_image ? `
-                    <div class="item-icon" style="position: absolute; left: 5px; top: 5px; z-index: 10; width: 100px; height: 100px;">
+                    <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
                         <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
                              style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
                              onerror="this.parentElement.style.display='none'">
@@ -1436,7 +1438,7 @@ class UnifiedTeller {
         }
 
         this.shopItems.forEach(item => {
-            console.log('Rendering item in grid:', item.item_name, 'sell:', item.sell, 'buy:', item.buy, 'turn_in:', item.turn_in, 'icon_image:', item.icon_image);
+            console.log('Rendering item in grid:', item.item_name, 'sell:', item.sell, 'buy:', item.buy, 'turn_in:', item.turn_in, 'icon_image:', item.icon_image, 'stock_quantity:', item.stock_quantity);
             
             // Use the existing createItemCard method which has proper conditional buttons and icons
             const itemCard = this.createItemCard(item);
