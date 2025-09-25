@@ -686,21 +686,21 @@ class ShopManager {
     updateConditionalFieldVisibility() {
         // Update stock quantity fields
         const stockCheckbox = document.getElementById('custom-stock-enabled');
-        const stockFields = document.getElementById('stock-fields');
+        const stockFields = document.getElementById('stock-quantity-group');
         if (stockCheckbox && stockFields) {
             stockFields.style.display = stockCheckbox.checked ? 'block' : 'none';
         }
         
         // Update rotation fields
         const rotationCheckbox = document.getElementById('custom-rotation-enabled');
-        const rotationFields = document.getElementById('rotation-fields');
+        const rotationFields = document.getElementById('rotation-group');
         if (rotationCheckbox && rotationFields) {
             rotationFields.style.display = rotationCheckbox.checked ? 'block' : 'none';
         }
         
         // Update availability fields
         const availabilityCheckbox = document.getElementById('custom-availability-enabled');
-        const availabilityFields = document.getElementById('availability-fields');
+        const availabilityFields = document.getElementById('availability-group');
         if (availabilityCheckbox && availabilityFields) {
             availabilityFields.style.display = availabilityCheckbox.checked ? 'block' : 'none';
         }
@@ -1011,12 +1011,15 @@ class ShopManager {
     }
 
     async editShopItem(shopItemId) {
+        console.log('DEBUG - editShopItem called with ID:', shopItemId);
         try {
             // Get the current shop items and find the one being edited
             const response = await JotunAPI.getShopItems({ shop_id: this.selectedShop });
+            console.log('DEBUG - Shop items response:', response);
             const shopItems = response.data || [];
             const item = shopItems.find(item => (item.shop_item_id || item.id) == shopItemId);
             
+            console.log('DEBUG - Found item:', item);
             if (!item) {
                 this.showStatus('Shop item not found', 'error');
                 return;
@@ -1111,13 +1114,23 @@ class ShopManager {
             
             // Update form button
             const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
-            submitButton.textContent = 'Update Item';
+            console.log('DEBUG - Submit button found:', submitButton);
+            if (submitButton) {
+                submitButton.textContent = 'Update Item';
+                console.log('DEBUG - Button text updated to:', submitButton.textContent);
+            }
             
             // Show cancel button
             this.showCancelEditItemButton();
             
             // Scroll to form
-            document.getElementById('add-shop-item-form').scrollIntoView({ behavior: 'smooth' });
+            const form = document.getElementById('add-shop-item-form');
+            if (form) {
+                form.scrollIntoView({ behavior: 'smooth' });
+                console.log('DEBUG - Scrolled to form');
+            }
+            
+            this.showStatus('Item loaded for editing. Make your changes and click "Update Item".', 'info');
             
         } catch (error) {
             console.error('Error loading shop item for edit:', error);
