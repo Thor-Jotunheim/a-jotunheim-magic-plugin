@@ -1793,8 +1793,8 @@ class UnifiedTeller {
                 
                 pricingSection = `
                     <div class="item-pricing">
-                        <span class="unit-price">${required} each</span>
-                        <span class="total-price">${currentProgress} total</span>
+                        <span class="unit-price">${required} required</span>
+                        <span class="total-price">${currentProgress} / ${required}</span>
                     </div>
                 `;
             } else {
