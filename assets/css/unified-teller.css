@@ -158,6 +158,28 @@
     background-color: oklch(0.3 0.02 240);
 }
 
+.btn-success {
+    background-color: var(--success-green);
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background-color: oklch(0.5 0.15 140);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger {
+    background-color: var(--error-red);
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: oklch(0.4 0.15 10);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
 .btn-accent {
     background-color: var(--accent-amber);
     color: var(--primary-blue-dark);
@@ -643,6 +665,7 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
+    min-height: 32px;
 }
 
 .quantity-controls label {
@@ -653,13 +676,15 @@
     text-align: left;
 }
 
-.quantity-input, .stack-input {
+.quantity-input, .stack-input, .sell-quantity-input, .turn-in-quantity-input, .turn-in-stack-input {
     width: 40px;
     padding: 2px 4px;
     border: 1px solid #ccc;
     border-radius: 3px;
     text-align: center;
     font-size: 12px;
+    height: 24px;
+    box-sizing: border-box;
 }
 
 .quantity-controls .btn {

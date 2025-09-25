@@ -599,11 +599,11 @@ class UnifiedTeller {
         
         let buttonsHTML = '';
         
-        // Generate Buy button and individual controls (sell=1 means customers can buy from shop)
+        // Generate Buy button and unit controls (sell=1 means customers can buy from shop)
         if (item.sell == 1 || item.sell === true) {
             buttonsHTML += `
                 <div class="quantity-controls buy-section">
-                    <label>Individual:</label>
+                    <label>Unit(s):</label>
                     <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
                     <button class="btn btn-success individual-buy" data-type="individual">Buy</button>
                 </div>`;
@@ -623,7 +623,7 @@ class UnifiedTeller {
         if (item.buy == 1 || item.buy === true) {
             buttonsHTML += `
                 <div class="quantity-controls sell-section">
-                    <label>Sell to Shop:</label>
+                    <label>Units:</label>
                     <input type="number" class="sell-quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="999">
                     <button class="btn btn-danger sell-to-shop" data-type="sell">Sell</button>
                 </div>`;
@@ -633,10 +633,20 @@ class UnifiedTeller {
         if (item.turn_in == 1 || item.turn_in === true) {
             buttonsHTML += `
                 <div class="quantity-controls turn-in-section">
-                    <label>Turn In:</label>
+                    <label>Units:</label>
                     <input type="number" class="turn-in-quantity-input" value="1" min="1" max="999">
                     <button class="btn btn-secondary turn-in-item" data-type="turn-in">Turn In</button>
                 </div>`;
+            
+            // Add stack turn-in controls only if item is stackable
+            if (isStackable) {
+                buttonsHTML += `
+                    <div class="quantity-controls turn-in-section">
+                        <label>Stack (${stackSize}):</label>
+                        <input type="number" class="turn-in-stack-input" value="1" min="1" max="999">
+                        <button class="btn btn-secondary turn-in-stack" data-type="turn-in-stack">Turn In</button>
+                    </div>`;
+            }
         }
         
         return buttonsHTML;
@@ -709,6 +719,22 @@ class UnifiedTeller {
             });
         } else {
             console.log('No turn-in button found for item:', item.item_name);
+        }
+
+        // Turn-in stack button (for stackable items)
+        const turnInStackBtn = card.querySelector('.turn-in-stack');
+        const turnInStackInput = card.querySelector('.turn-in-stack-input');
+        if (turnInStackBtn && turnInStackInput) {
+            console.log('Found turn-in stack button for item:', item.item_name);
+            turnInStackBtn.addEventListener('click', (e) => {
+                console.log('Turn-in stack button clicked for:', item.item_name);
+                e.stopPropagation();
+                // Turn in a full stack quantity
+                const stackQuantity = parseInt(turnInStackInput.value) || 1;
+                const stackSize = item.stack_size || 1;
+                const totalQuantity = stackQuantity * stackSize;
+                this.addTurninItemWithQuantity(item.shop_item_id, totalQuantity);
+            });
         }
     }
 
@@ -1399,6 +1425,46 @@ class UnifiedTeller {
         console.log('Added turn-in item to cart:', item.item_name, 'Cart now has', this.cart.length, 'items');
         this.updateCartDisplay();
         this.showStatus(`Added ${item.item_name} to turn-in cart`, 'success');
+    }
+
+    addTurninItemWithQuantity(shopItemId, quantity) {
+        // Initialize turninItems if not loaded
+        if (!this.turninItems) {
+            this.turninItems = this.shopItems || [];
+        }
+        
+        const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) {
+            console.log('Item not found for turn-in:', shopItemId);
+            return;
+        }
+
+        // Add to main cart with 'turnin' action type
+        const existingItem = this.cart.find(cartItem => 
+            cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin'
+        );
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+            existingItem.total_price = existingItem.unit_price * existingItem.quantity;
+        } else {
+            this.cart.push({
+                shop_item_id: shopItemId,
+                item_name: item.item_name,
+                action: 'turnin',
+                quantity: quantity,
+                unit_price: item.event_points || 0,
+                total_price: (item.event_points || 0) * quantity,
+                stack_size: item.stack_size || 1,
+                turn_in_quantity: item.turn_in_quantity || 0,
+                turn_in_requirement: item.turn_in_requirement || 0,
+                item: item
+            });
+        }
+
+        console.log('Added turn-in item to cart:', item.item_name, 'Quantity:', quantity, 'Cart now has', this.cart.length, 'items');
+        this.updateCartDisplay();
+        this.showStatus(`Added ${quantity} ${item.item_name} to turn-in cart`, 'success');
     }
 
     updateTurninDisplay() {
