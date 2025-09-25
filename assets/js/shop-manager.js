@@ -647,6 +647,10 @@ class ShopManager {
         const addItemTitle = addItemSection?.querySelector('h3');
         const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
         
+        // Get the actual input fields for validation attribute management
+        const priceField = document.getElementById('custom-price');
+        const stockField = document.getElementById('stock-quantity');
+        
         console.log('DEBUG - Found elements:', {
             priceRow: !!priceRow,
             stockRow: !!stockRow,
@@ -667,6 +671,20 @@ class ShopManager {
             // Hide price and stock fields for turn-in shops
             if (priceRow) priceRow.style.display = 'none';
             if (stockRow) stockRow.style.display = 'none';
+            
+            // Remove validation attributes from hidden fields to prevent validation errors
+            if (priceField) {
+                priceField.removeAttribute('required');
+                priceField.removeAttribute('min');
+                priceField.removeAttribute('max');
+                priceField.removeAttribute('pattern');
+            }
+            if (stockField) {
+                stockField.removeAttribute('required');
+                stockField.removeAttribute('min');
+                stockField.removeAttribute('max');
+                stockField.removeAttribute('pattern');
+            }
             
             // Ensure item selector row is visible for turn-in shops
             const itemSelectorRow = document.getElementById('item-selector')?.closest('.form-row');
@@ -691,6 +709,16 @@ class ShopManager {
             // Show price and stock fields for regular shops
             if (priceRow) priceRow.style.display = 'flex';
             if (stockRow) stockRow.style.display = 'flex';
+            
+            // Restore validation attributes for visible fields
+            if (priceField) {
+                priceField.setAttribute('required', '');
+                priceField.setAttribute('min', '0');
+            }
+            if (stockField) {
+                stockField.setAttribute('required', '');
+                stockField.setAttribute('min', '0');
+            }
             
             // Restore original field labels
             const itemSelectorLabel = document.querySelector('label[for="item-selector"]');
