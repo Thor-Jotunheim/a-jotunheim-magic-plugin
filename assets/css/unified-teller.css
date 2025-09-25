@@ -192,8 +192,16 @@
 }
 
 .quantity-controls .btn.btn-secondary {
-    background-color: var(--secondary-slate) !important;
-    color: white !important;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+/* Match the default button gray color shown in Buy button */
+.btn-default-gray {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
 }
 
 .btn-accent {
