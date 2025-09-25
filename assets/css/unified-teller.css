@@ -216,20 +216,7 @@ button.btn.btn-success {
     border: 1px solid #dee2e6 !important;
 }
 
-/* Match exact styling of quantity-controls buttons */
-.purchase-button {
-    padding: 4px 8px !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    border-radius: 4px !important;
-    min-width: 60px !important;
-    text-align: center !important;
-    cursor: pointer !important;
-    font-family: var(--font-family) !important;
-    transition: all 0.2s ease !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-}
+
 
 .purchase-button:hover {
     background: #218838 !important;
