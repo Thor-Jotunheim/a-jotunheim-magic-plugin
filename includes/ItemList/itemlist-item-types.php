@@ -18,6 +18,9 @@ class Jotunheim_Item_Types {
         add_action('wp_ajax_delete_item_type', array($this, 'handle_delete_item_type'));
         add_action('wp_ajax_get_item_types', array($this, 'handle_get_item_types'));
         
+        // Register REST API endpoints
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
+        
         // Create table on activation
         add_action('init', array($this, 'maybe_create_table'));
     }
@@ -428,6 +431,132 @@ class Jotunheim_Item_Types {
         );
         
         wp_send_json_success($types);
+    }
+    
+    public function register_rest_routes() {
+        register_rest_route('jotunheim/v1', '/itemlist-item-types/', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'rest_get_item_types'),
+            'permission_callback' => array($this, 'check_permissions')
+        ));
+        
+        register_rest_route('jotunheim/v1', '/itemlist-item-types/', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'rest_create_item_type'),
+            'permission_callback' => array($this, 'check_permissions')
+        ));
+        
+        register_rest_route('jotunheim/v1', '/itemlist-item-types/(?P<id>\d+)', array(
+            'methods' => 'PUT',
+            'callback' => array($this, 'rest_update_item_type'),
+            'permission_callback' => array($this, 'check_permissions')
+        ));
+        
+        register_rest_route('jotunheim/v1', '/itemlist-item-types/(?P<id>\d+)', array(
+            'methods' => 'DELETE',
+            'callback' => array($this, 'rest_delete_item_type'),
+            'permission_callback' => array($this, 'check_permissions')
+        ));
+    }
+    
+    public function check_permissions() {
+        return current_user_can('manage_options');
+    }
+    
+    public function rest_get_item_types($request) {
+        global $wpdb;
+        
+        $types = $wpdb->get_results(
+            "SELECT * FROM {$this->table_name} WHERE is_active = 1 ORDER BY sort_order ASC, type_name ASC",
+            ARRAY_A
+        );
+        
+        return rest_ensure_response(array(
+            'success' => true,
+            'data' => $types,
+            'timestamp' => current_time('mysql')
+        ));
+    }
+    
+    public function rest_create_item_type($request) {
+        global $wpdb;
+        
+        $params = $request->get_json_params();
+        
+        if (empty($params['type_name'])) {
+            return new WP_Error('missing_type_name', 'Type name is required', array('status' => 400));
+        }
+        
+        $result = $wpdb->insert(
+            $this->table_name,
+            array(
+                'type_name' => sanitize_text_field($params['type_name']),
+                'description' => sanitize_textarea_field($params['description'] ?? ''),
+                'price_multiplier' => floatval($params['price_multiplier'] ?? 1.0),
+                'sort_order' => intval($params['sort_order'] ?? 0),
+                'is_active' => intval($params['is_active'] ?? 1)
+            )
+        );
+        
+        if ($result === false) {
+            return new WP_Error('insert_failed', 'Failed to create item type', array('status' => 500));
+        }
+        
+        return rest_ensure_response(array(
+            'success' => true,
+            'data' => array('id' => $wpdb->insert_id),
+            'timestamp' => current_time('mysql')
+        ));
+    }
+    
+    public function rest_update_item_type($request) {
+        global $wpdb;
+        
+        $id = $request->get_param('id');
+        $params = $request->get_json_params();
+        
+        $result = $wpdb->update(
+            $this->table_name,
+            array(
+                'type_name' => sanitize_text_field($params['type_name']),
+                'description' => sanitize_textarea_field($params['description'] ?? ''),
+                'price_multiplier' => floatval($params['price_multiplier'] ?? 1.0),
+                'sort_order' => intval($params['sort_order'] ?? 0),
+                'is_active' => intval($params['is_active'] ?? 1)
+            ),
+            array('id' => $id)
+        );
+        
+        if ($result === false) {
+            return new WP_Error('update_failed', 'Failed to update item type', array('status' => 500));
+        }
+        
+        return rest_ensure_response(array(
+            'success' => true,
+            'data' => array('affected_rows' => $result),
+            'timestamp' => current_time('mysql')
+        ));
+    }
+    
+    public function rest_delete_item_type($request) {
+        global $wpdb;
+        
+        $id = $request->get_param('id');
+        
+        $result = $wpdb->delete(
+            $this->table_name,
+            array('id' => $id)
+        );
+        
+        if ($result === false) {
+            return new WP_Error('delete_failed', 'Failed to delete item type', array('status' => 500));
+        }
+        
+        return rest_ensure_response(array(
+            'success' => true,
+            'data' => array('affected_rows' => $result),
+            'timestamp' => current_time('mysql')
+        ));
     }
     
     public function handle_save_item_type() {
