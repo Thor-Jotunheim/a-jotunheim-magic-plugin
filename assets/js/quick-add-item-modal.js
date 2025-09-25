@@ -145,8 +145,8 @@ class QuickAddItemModal {
                 input.checked = false;
             } else if (input.tagName === 'SELECT') {
                 // Set default values for selects
-                if (input.name === 'item_type') {
-                    input.value = 'Trophies'; // Default to Trophies for most custom items
+                if (input.name === 'type') {
+                    input.value = ''; // Start with no selection to encourage user to choose
                 } else if (input.name === 'tech_name') {
                     input.value = 'N/A';
                 } else {
@@ -168,7 +168,7 @@ class QuickAddItemModal {
         if (this.isSubmitting || !this.form) return;
 
         // Validate required fields
-        const itemType = document.getElementById('quick-item-type');
+        const itemType = document.getElementById('quick-add-type');
         if (!itemType || !itemType.value) {
             this.showValidationError('Please select an item type.');
             return;
@@ -279,7 +279,7 @@ class QuickAddItemModal {
 
     setupPriceSuggestion() {
         const techSelect = document.getElementById('quick-tech-name');
-        const itemTypeSelect = document.getElementById('quick-item-type');
+        const itemTypeSelect = document.getElementById('quick-add-type');
         const unitPriceInput = document.getElementById('quick-unit-price');
         
         if (!techSelect || !itemTypeSelect || !unitPriceInput) {
