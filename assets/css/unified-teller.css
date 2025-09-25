@@ -460,21 +460,39 @@ button.btn.btn-success {
 }
 
 .item-action.buy,
-.transaction-item .item-action.buy {
+.transaction-item .item-action.buy,
+span.item-action.buy,
+.transaction-item span.item-action.buy,
+.transaction-items .transaction-item .item-action.buy,
+.transaction-summary .item-action.buy {
+    background-color: #28a745 !important;
     background-color: var(--success-green) !important;
     color: white !important;
+    border: none !important;
 }
 
 .item-action.sell,
-.transaction-item .item-action.sell {
+.transaction-item .item-action.sell,
+span.item-action.sell,
+.transaction-item span.item-action.sell,
+.transaction-items .transaction-item .item-action.sell,
+.transaction-summary .item-action.sell {
+    background-color: #dc3545 !important;
     background-color: var(--error-red) !important;
     color: white !important;
+    border: none !important;
 }
 
 .item-action.turnin,
-.transaction-item .item-action.turnin {
+.transaction-item .item-action.turnin,
+span.item-action.turnin,
+.transaction-item span.item-action.turnin,
+.transaction-items .transaction-item .item-action.turnin,
+.transaction-summary .item-action.turnin {
+    background-color: #6c757d !important;
     background-color: var(--secondary-slate) !important;
     color: white !important;
+    border: none !important;
 }
 
 /* Turn-in progress styles */
