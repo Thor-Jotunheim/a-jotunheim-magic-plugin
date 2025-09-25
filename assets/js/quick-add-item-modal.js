@@ -93,7 +93,22 @@ class QuickAddItemModal {
         // Show modal
         console.log('Setting modal display to flex...');
         this.modal.style.display = 'flex';
+        console.log('Modal computed styles:', window.getComputedStyle(this.modal));
+        console.log('Modal z-index:', window.getComputedStyle(this.modal).zIndex);
+        console.log('Modal position:', window.getComputedStyle(this.modal).position);
+        console.log('Modal visibility:', window.getComputedStyle(this.modal).visibility);
+        console.log('Modal opacity:', window.getComputedStyle(this.modal).opacity);
         document.body.style.overflow = 'hidden';
+        
+        // Force modal to be visible for debugging
+        this.modal.style.zIndex = '999999';
+        this.modal.style.position = 'fixed';
+        this.modal.style.top = '0';
+        this.modal.style.left = '0';
+        this.modal.style.width = '100%';
+        this.modal.style.height = '100%';
+        this.modal.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Red for debugging
+        console.log('Forced modal styles applied for debugging');
 
         // Focus first input
         const firstInput = this.modal.querySelector('select[required]');
