@@ -605,7 +605,7 @@ class UnifiedTeller {
                 <div class="quantity-controls buy-section">
                     <label>Unit(s):</label>
                     <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
-                    <button class="btn btn-success individual-buy" data-type="individual">Buy</button>
+                    <button class="btn btn-custom-green individual-buy" data-type="individual">Buy</button>
                 </div>`;
             
             // Add stack controls only if item is stackable
@@ -614,7 +614,7 @@ class UnifiedTeller {
                     <div class="quantity-controls buy-section">
                         <label>Stack (${stackSize}):</label>
                         <input type="number" class="stack-input" id="qty-stack-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
-                        <button class="btn btn-success stack-buy" data-type="stack">Buy</button>
+                        <button class="btn btn-custom-green stack-buy" data-type="stack">Buy</button>
                     </div>`;
             }
         }
