@@ -459,19 +459,22 @@ button.btn.btn-success {
     letter-spacing: 0.5px;
 }
 
-.item-action.buy {
-    background-color: var(--success-green);
-    color: white;
+.item-action.buy,
+.transaction-item .item-action.buy {
+    background-color: var(--success-green) !important;
+    color: white !important;
 }
 
-.item-action.sell {
-    background-color: var(--error-red);
-    color: white;
+.item-action.sell,
+.transaction-item .item-action.sell {
+    background-color: var(--error-red) !important;
+    color: white !important;
 }
 
-.item-action.turnin {
-    background-color: var(--secondary-slate);
-    color: white;
+.item-action.turnin,
+.transaction-item .item-action.turnin {
+    background-color: var(--secondary-slate) !important;
+    color: white !important;
 }
 
 /* Turn-in progress styles */
