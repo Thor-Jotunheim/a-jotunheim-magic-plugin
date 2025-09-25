@@ -247,6 +247,16 @@ class JotunheimDashboardConfig {
                 'description' => 'Add new items to the game',
                 'quick_action' => false
             ],
+            [
+                'id' => 'jotunheim_item_types',
+                'title' => 'Item Types Manager',
+                'menu_title' => 'Item Types',
+                'callback' => 'render_shortcode_admin_page',
+                'category' => 'items',
+                'description' => 'Manage item types and price multipliers',
+                'shortcode' => 'jotunheim_item_types',
+                'quick_action' => false
+            ],
             
             // Event Management
             [
@@ -525,6 +535,11 @@ class JotunheimDashboardConfig {
                 'title' => 'Add New Item',
                 'description' => 'Add new items to the game database',
                 'interface_function' => 'jotunheim_magic_add_new_item_interface'
+            ],
+            'jotunheim_item_types' => [
+                'title' => 'Item Types Manager',
+                'description' => 'Manage item types and price multipliers',
+                'interface_function' => 'jotunheim_item_types_shortcode'
             ],
             'jotunheim_trade_page' => [
                 'title' => 'Trade Page',

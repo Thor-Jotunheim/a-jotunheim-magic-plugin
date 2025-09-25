@@ -641,6 +641,26 @@ class Jotunheim_Item_Types {
 // Initialize the class
 new Jotunheim_Item_Types();
 
+// Shortcode function for frontend/admin page integration
+function jotunheim_item_types_shortcode($atts) {
+    ob_start();
+    
+    // Check permissions
+    if (!current_user_can('manage_options')) {
+        echo '<div class="error"><p>You do not have permission to access this page.</p></div>';
+        return ob_get_clean();
+    }
+    
+    // Include the admin page content
+    $item_types = new Jotunheim_Item_Types();
+    $item_types->admin_page();
+    
+    return ob_get_clean();
+}
+
+// Register the shortcode
+add_shortcode('jotunheim_item_types', 'jotunheim_item_types_shortcode');
+
 // Helper function for other parts of the plugin
 function jotunheim_get_item_types() {
     global $wpdb;
