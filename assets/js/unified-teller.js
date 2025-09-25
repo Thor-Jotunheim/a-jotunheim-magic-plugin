@@ -190,13 +190,30 @@ class UnifiedTeller {
                     discord_id: userData.data?.discord_id
                 };
                 
+            } else if (response.status === 403) {
+                console.warn('User endpoint access denied - using fallback');
+                // Fallback for permission issues
+                const tellerNameField = document.getElementById('teller-name');
+                const turninTellerNameField = document.getElementById('turnin-teller-name');
+                
+                if (tellerNameField) tellerNameField.value = 'Teller';
+                if (turninTellerNameField) turninTellerNameField.value = 'Teller';
+                
+                this.currentTeller = { name: 'Teller', user_id: null, discord_id: null };
             } else {
                 console.error('Failed to load current user info');
                 this.showStatus('Could not load teller information', 'warning');
             }
         } catch (error) {
             console.error('Error loading current user info:', error);
-            this.showStatus('Error loading teller information', 'warning');
+            // Continue without user info - don't block the interface
+            const tellerNameField = document.getElementById('teller-name');
+            const turninTellerNameField = document.getElementById('turnin-teller-name');
+            
+            if (tellerNameField) tellerNameField.value = 'Teller';
+            if (turninTellerNameField) turninTellerNameField.value = 'Teller';
+            
+            this.currentTeller = { name: 'Teller', user_id: null, discord_id: null };
         }
     }
     
@@ -1288,23 +1305,31 @@ class UnifiedTeller {
         const amountPaid = ymirFlesh + gold; // Simplistic calculation
         const changeDue = amountPaid - totalCost;
 
-        // Update display
-        document.getElementById('amount-paid-display').textContent = amountPaid.toFixed(0);
+        // Update display with null checks
+        const amountPaidDisplay = document.getElementById('amount-paid-display');
+        if (amountPaidDisplay) {
+            amountPaidDisplay.textContent = amountPaid.toFixed(0);
+        }
+        
         const changeDueElement = document.getElementById('change-due');
-        changeDueElement.textContent = changeDue.toFixed(0);
-        changeDueElement.className = `summary-value change-amount ${changeDue < 0 ? 'negative' : ''}`;
+        if (changeDueElement) {
+            changeDueElement.textContent = changeDue.toFixed(0);
+            changeDueElement.className = `summary-value change-amount ${changeDue < 0 ? 'negative' : ''}`;
+        }
 
-        // Update status
+        // Update status with null check
         const statusElement = document.getElementById('payment-balance');
-        if (changeDue === 0) {
-            statusElement.textContent = 'Balanced';
-            statusElement.className = 'summary-status balanced';
-        } else if (changeDue > 0) {
-            statusElement.textContent = 'Overpaid';
-            statusElement.className = 'summary-status overpaid';
-        } else {
-            statusElement.textContent = 'Underpaid';
-            statusElement.className = 'summary-status underpaid';
+        if (statusElement) {
+            if (changeDue === 0) {
+                statusElement.textContent = 'Balanced';
+                statusElement.className = 'summary-status balanced';
+            } else if (changeDue > 0) {
+                statusElement.textContent = 'Overpaid';
+                statusElement.className = 'summary-status overpaid';
+            } else {
+                statusElement.textContent = 'Underpaid';
+                statusElement.className = 'summary-status underpaid';
+            }
         }
     }
 
@@ -1337,8 +1362,16 @@ class UnifiedTeller {
     }
 
     addTurninItem(shopItemId) {
-        const item = this.turninItems.find(i => i.shop_item_id == shopItemId);
-        if (!item) return;
+        // Initialize turninItems if not loaded
+        if (!this.turninItems) {
+            this.turninItems = this.shopItems || [];
+        }
+        
+        const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) {
+            console.log('Item not found for turn-in:', shopItemId);
+            return;
+        }
 
         // Add to turn-in list (simplified - would need quantity handling)
         if (!this.turninList) this.turninList = [];
