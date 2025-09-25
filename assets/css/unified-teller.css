@@ -375,6 +375,59 @@
     border-bottom: none;
 }
 
+/* Action label styles */
+.item-action {
+    padding: 4px 8px;
+    border-radius: var(--border-radius-small);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.item-action.buy {
+    background-color: var(--success-green);
+    color: white;
+}
+
+.item-action.sell {
+    background-color: var(--error-red);
+    color: white;
+}
+
+.item-action.turnin {
+    background-color: var(--secondary-slate);
+    color: white;
+}
+
+/* Turn-in progress styles */
+.item-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.progress-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    width: 100px;
+    height: 8px;
+    background-color: var(--secondary-slate);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--success-green);
+    transition: width 0.3s ease;
+}
+
 .transaction-actions {
     display: flex;
     gap: var(--spacing-base);

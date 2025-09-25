@@ -605,7 +605,7 @@ class UnifiedTeller {
                 <div class="quantity-controls buy-section">
                     <label>Individual:</label>
                     <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
-                    <button class="btn btn-primary individual-buy" data-type="individual">Buy</button>
+                    <button class="btn btn-success individual-buy" data-type="individual">Buy</button>
                 </div>`;
             
             // Add stack controls only if item is stackable
@@ -614,7 +614,7 @@ class UnifiedTeller {
                     <div class="quantity-controls buy-section">
                         <label>Stack (${stackSize}):</label>
                         <input type="number" class="stack-input" id="qty-stack-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
-                        <button class="btn btn-secondary stack-buy" data-type="stack">Buy</button>
+                        <button class="btn btn-success stack-buy" data-type="stack">Buy</button>
                     </div>`;
             }
         }
@@ -625,7 +625,7 @@ class UnifiedTeller {
                 <div class="quantity-controls sell-section">
                     <label>Sell to Shop:</label>
                     <input type="number" class="sell-quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="999">
-                    <button class="btn btn-warning sell-to-shop" data-type="sell">Sell</button>
+                    <button class="btn btn-danger sell-to-shop" data-type="sell">Sell</button>
                 </div>`;
         }
         
@@ -635,7 +635,7 @@ class UnifiedTeller {
                 <div class="quantity-controls turn-in-section">
                     <label>Turn In:</label>
                     <input type="number" class="turn-in-quantity-input" value="1" min="1" max="999">
-                    <button class="btn btn-success turn-in-item" data-type="turn-in">Turn In</button>
+                    <button class="btn btn-secondary turn-in-item" data-type="turn-in">Turn In</button>
                 </div>`;
         }
         
@@ -1389,6 +1389,9 @@ class UnifiedTeller {
                 quantity: 1,
                 unit_price: item.event_points || 0,
                 total_price: item.event_points || 0,
+                stack_size: item.stack_size || 1,
+                turn_in_quantity: item.turn_in_quantity || 0,
+                turn_in_requirement: item.turn_in_requirement || 0,
                 item: item
             });
         }
@@ -1715,6 +1718,31 @@ class UnifiedTeller {
         this.cart.forEach((cartItem, index) => {
             const itemRow = document.createElement('div');
             itemRow.className = 'transaction-item';
+            
+            // Different display for turn-in vs buy/sell items
+            let pricingSection;
+            if (cartItem.action === 'turnin') {
+                const currentProgress = (cartItem.turn_in_quantity || 0) + cartItem.quantity;
+                const required = cartItem.turn_in_requirement || 0;
+                const progressPercent = required > 0 ? Math.min((currentProgress / required) * 100, 100) : 0;
+                
+                pricingSection = `
+                    <div class="item-progress">
+                        <span class="progress-text">${currentProgress} / ${required}</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                pricingSection = `
+                    <div class="item-pricing">
+                        <span class="unit-price">${cartItem.unit_price} each</span>
+                        <span class="total-price">${cartItem.total_price} total</span>
+                    </div>
+                `;
+            }
+            
             itemRow.innerHTML = `
                 <div class="item-info">
                     <span class="item-name">${cartItem.item_name}</span>
@@ -1725,10 +1753,7 @@ class UnifiedTeller {
                            min="1" onchange="window.unifiedTeller.updateCartItemQuantity(${index}, this.value)">
                     <span class="stack-info">/ ${cartItem.stack_size}</span>
                 </div>
-                <div class="item-pricing">
-                    <span class="unit-price">${cartItem.unit_price} each</span>
-                    <span class="total-price">${cartItem.total_price} total</span>
-                </div>
+                ${pricingSection}
                 <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
                     Remove
                 </button>
