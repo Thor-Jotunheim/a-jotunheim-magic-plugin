@@ -67,6 +67,9 @@ class QuickAddItemModal {
             }
         });
 
+        // Setup price suggestion based on tech level
+        this.setupPriceSuggestion();
+
         console.log('Quick Add Item Modal initialized');
     }
 
@@ -272,6 +275,105 @@ class QuickAddItemModal {
     // Public method to check if modal is open
     isOpen() {
         return this.modal && this.modal.style.display !== 'none';
+    }
+
+    setupPriceSuggestion() {
+        const techSelect = document.getElementById('quick-tech-name');
+        const itemTypeSelect = document.getElementById('quick-item-type');
+        const unitPriceInput = document.getElementById('quick-unit-price');
+        
+        if (!techSelect || !itemTypeSelect || !unitPriceInput) {
+            return;
+        }
+
+        // Tech level price ranges (base prices)
+        const techPriceRanges = {
+            'N/A': { min: 1, max: 5 },
+            'Meadow': { min: 1, max: 10 },
+            'Forest': { min: 5, max: 25 },
+            'Ocean': { min: 10, max: 40 },
+            'Swamp': { min: 15, max: 60 },
+            'Mountain': { min: 25, max: 100 },
+            'Plains': { min: 40, max: 150 },
+            'Mistlands': { min: 60, max: 200 },
+            'Ashlands': { min: 80, max: 300 },
+            'Deep North': { min: 100, max: 400 }
+        };
+
+        // Item type multipliers
+        const typeMultipliers = {
+            'Currency': 1.0,
+            'Raw Food': 0.5,
+            'Cooked Food': 0.8,
+            'Fish': 0.6,
+            'Seeds': 0.3,
+            'Bait': 0.4,
+            'Mead': 1.2,
+            'Building & Crafting': 1.0,
+            'Boss Summons': 3.0,
+            'Tamed Animals': 5.0,
+            'Metals & Ores': 1.5,
+            'Gems & Precious Items': 2.0,
+            'Tools': 2.0,
+            'Weapons': 3.0,
+            'Armor': 2.5,
+            'Shields': 2.0,
+            'Arrows & Ammunition': 0.8,
+            'Trophies': 1.5,
+            'Quest Items': 1.0,
+            'Untradable': 0
+        };
+
+        const suggestPrice = () => {
+            const techLevel = techSelect.value;
+            const itemType = itemTypeSelect.value;
+            
+            if (!techLevel || !itemType || techLevel === '' || itemType === '') {
+                return;
+            }
+
+            const baseRange = techPriceRanges[techLevel];
+            const multiplier = typeMultipliers[itemType] || 1.0;
+            
+            if (!baseRange || multiplier === 0) {
+                unitPriceInput.value = '0';
+                unitPriceInput.style.backgroundColor = '#f0f0f0';
+                return;
+            }
+
+            // Calculate suggested price (mid-range with multiplier)
+            const baseSuggestion = (baseRange.min + baseRange.max) / 2;
+            const suggestedPrice = Math.round(baseSuggestion * multiplier);
+            
+            // Set the suggested price
+            unitPriceInput.value = suggestedPrice;
+            unitPriceInput.style.backgroundColor = '#e8f5e8'; // Light green to indicate suggestion
+            
+            // Show a small tooltip/message
+            const helpText = unitPriceInput.parentNode.querySelector('.price-suggestion-help') || 
+                           this.createPriceSuggestionHelp(unitPriceInput.parentNode);
+            helpText.textContent = `💡 Suggested: ${suggestedPrice} (${techLevel} ${itemType})`;
+            helpText.style.display = 'block';
+            
+            setTimeout(() => {
+                helpText.style.display = 'none';
+                unitPriceInput.style.backgroundColor = '';
+            }, 3000);
+        };
+
+        // Add event listeners
+        techSelect.addEventListener('change', suggestPrice);
+        itemTypeSelect.addEventListener('change', suggestPrice);
+    }
+
+    createPriceSuggestionHelp(parentElement) {
+        const helpDiv = document.createElement('small');
+        helpDiv.className = 'form-text text-muted price-suggestion-help';
+        helpDiv.style.display = 'none';
+        helpDiv.style.color = '#28a745';
+        helpDiv.style.fontWeight = 'bold';
+        parentElement.appendChild(helpDiv);
+        return helpDiv;
     }
 }
 

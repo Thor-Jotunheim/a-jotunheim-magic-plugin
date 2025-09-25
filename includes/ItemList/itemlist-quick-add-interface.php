@@ -96,10 +96,11 @@ function jotunheim_quick_add_item_modal() {
                         </label>
                     </div>
                     
-                    <!-- Prefab Name (Optional) -->
+                    <!-- Prefab Name (Required) -->
                     <div class="form-group">
-                        <label for="quick-prefab-name">Prefab Name (Optional):</label>
-                        <input type="text" id="quick-prefab-name" name="prefab_name" class="form-control">
+                        <label for="quick-prefab-name">Prefab Name *:</label>
+                        <input type="text" id="quick-prefab-name" name="prefab_name" class="form-control" required>
+                        <small class="form-text text-muted">Required for in-game price display and price lists</small>
                     </div>
                 </form>
             </div>
@@ -336,8 +337,8 @@ function handle_quick_add_item() {
     $table_name = 'jotun_itemlist';
 
     // Validate required fields
-    if (empty($_POST['item_name']) || empty($_POST['item_type'])) {
-        wp_send_json_error('Item name and type are required.');
+    if (empty($_POST['item_name']) || empty($_POST['item_type']) || empty($_POST['prefab_name'])) {
+        wp_send_json_error('Item name, type, and prefab name are required.');
         return;
     }
 
