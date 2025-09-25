@@ -413,7 +413,7 @@ class ShopManager {
             console.log('Item added successfully from shop:', result);
             
             // Refresh the item list
-            this.loadAllItems().then(() => {
+            this.loadItemDatabase().then(() => {
                 // Auto-select the newly added item
                 const searchInput = document.getElementById('item-selector');
                 const hiddenSelect = document.getElementById('item-selector-hidden');
