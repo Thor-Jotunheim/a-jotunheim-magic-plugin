@@ -40,7 +40,11 @@ class ShopManager {
         document.getElementById('items-shop-selector').addEventListener('change', (e) => this.selectShop(e.target.value));
 
         // Shop item form submission
-        document.getElementById('add-shop-item-form').addEventListener('submit', (e) => this.handleAddShopItem(e));
+        document.getElementById('add-shop-item-form').addEventListener('submit', (e) => {
+            // Clean up validation issues before form submission
+            this.cleanupFormValidation();
+            this.handleAddShopItem(e);
+        });
 
         // Turn-in form submission
         document.getElementById('record-turn-in-form').addEventListener('submit', (e) => this.handleRecordTurnIn(e));
@@ -117,6 +121,9 @@ class ShopManager {
         await this.loadShops();
         await this.loadShopsForSelector();
         await this.loadItemDatabase();
+        
+        // Initialize field visibility states
+        this.updateConditionalFieldVisibility();
     }
 
     async loadShopTypes() {
@@ -763,10 +770,17 @@ class ShopManager {
         if (stockCheckbox && stockFields && stockInput) {
             const isEnabled = stockCheckbox.checked;
             stockFields.style.display = isEnabled ? 'block' : 'none';
-            // Disable field when hidden to prevent validation issues
-            stockInput.disabled = !isEnabled;
-            // Clear validation state when disabled
-            if (!isEnabled) {
+            
+            if (isEnabled) {
+                // Enable field and restore validation
+                stockInput.disabled = false;
+                stockInput.setAttribute('min', '0');
+                stockInput.removeAttribute('novalidate');
+            } else {
+                // Disable field and remove validation to prevent focusability issues
+                stockInput.disabled = true;
+                stockInput.removeAttribute('min');
+                stockInput.setAttribute('novalidate', '');
                 stockInput.value = '0';
             }
         }
@@ -783,6 +797,22 @@ class ShopManager {
         const availabilityFields = document.getElementById('availability-group');
         if (availabilityCheckbox && availabilityFields) {
             availabilityFields.style.display = availabilityCheckbox.checked ? 'block' : 'none';
+        }
+    }
+    
+    cleanupFormValidation() {
+        // Remove validation constraints from disabled fields to prevent "not focusable" errors
+        const form = document.getElementById('add-shop-item-form');
+        if (form) {
+            const disabledInputs = form.querySelectorAll('input:disabled');
+            disabledInputs.forEach(input => {
+                // Remove all validation attributes from disabled fields
+                input.removeAttribute('required');
+                input.removeAttribute('min');
+                input.removeAttribute('max');
+                input.removeAttribute('pattern');
+                input.setAttribute('novalidate', '');
+            });
         }
     }
     
