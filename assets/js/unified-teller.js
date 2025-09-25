@@ -1071,6 +1071,15 @@ class UnifiedTeller {
 
     async confirmTransaction() {
         try {
+            // Validate daily selling limits before processing transaction
+            if (this.transactionMode === 'sell') {
+                const dailyLimitValidation = await this.validateDailySellingLimits();
+                if (!dailyLimitValidation.valid) {
+                    this.showStatus(dailyLimitValidation.error, 'error');
+                    return;
+                }
+            }
+            
             const transactionData = {
                 shop_id: this.selectedShop,
                 player_id: this.currentCustomer.id,
@@ -1086,6 +1095,11 @@ class UnifiedTeller {
             const response = await JotunAPI.addTransaction(transactionData);
             
             if (response.success !== false) {
+                // Record daily sales for sell transactions
+                if (this.transactionMode === 'sell') {
+                    await this.recordDailySales();
+                }
+                
                 this.showStatus('Transaction completed successfully', 'success');
                 
                 // Clear cart and customer
@@ -1159,6 +1173,101 @@ class UnifiedTeller {
 
     closeTellerModal() {
         document.getElementById('transaction-modal').style.display = 'none';
+    }
+
+    async validateDailySellingLimits() {
+        try {
+            const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
+            // Check each item in cart for daily limits
+            for (const cartItem of this.cart) {
+                if (cartItem.action !== 'sell') continue;
+                
+                // Skip if item doesn't have daily limits enabled
+                if (!cartItem.daily_limit_enabled || cartItem.max_daily_sell_quantity <= 0) {
+                    continue;
+                }
+                
+                // Check current daily sales for this player/item combination
+                const dailyCheckResponse = await fetch('/wp-json/jotunheim/v1/daily-sales-check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': window.jotunheim_ajax.nonce
+                    },
+                    body: JSON.stringify({
+                        player_name: playerName,
+                        shop_id: this.selectedShop,
+                        shop_item_id: cartItem.shop_item_id,
+                        proposed_quantity: cartItem.quantity
+                    })
+                });
+                
+                const checkResult = await dailyCheckResponse.json();
+                
+                if (!checkResult.success) {
+                    return {
+                        valid: false,
+                        error: `Daily limit validation failed for ${cartItem.item_name}: ${checkResult.error}`
+                    };
+                }
+                
+                if (!checkResult.data.can_sell) {
+                    const soldToday = checkResult.data.sold_today || 0;
+                    const maxDaily = cartItem.max_daily_sell_quantity;
+                    const remaining = Math.max(0, maxDaily - soldToday);
+                    
+                    return {
+                        valid: false,
+                        error: `${playerName} has reached daily selling limit for ${cartItem.item_name}. Sold today: ${soldToday}/${maxDaily}. Remaining: ${remaining}`
+                    };
+                }
+            }
+            
+            return { valid: true };
+            
+        } catch (error) {
+            console.error('Daily limit validation error:', error);
+            return {
+                valid: false,
+                error: 'Failed to validate daily selling limits. Please try again.'
+            };
+        }
+    }
+
+    async recordDailySales() {
+        try {
+            const playerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
+            
+            // Record daily sales for each sell item in the cart
+            for (const cartItem of this.cart) {
+                if (cartItem.action !== 'sell') continue;
+                
+                // Only record if the item has daily limits enabled
+                if (cartItem.daily_limit_enabled && cartItem.max_daily_sell_quantity > 0) {
+                    const recordResponse = await fetch('/wp-json/jotunheim/v1/record-daily-sale', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-WP-Nonce': window.jotunheim_ajax.nonce
+                        },
+                        body: JSON.stringify({
+                            player_name: playerName,
+                            shop_id: this.selectedShop,
+                            shop_item_id: cartItem.shop_item_id,
+                            quantity_sold: cartItem.quantity
+                        })
+                    });
+                    
+                    if (!recordResponse.ok) {
+                        console.error('Failed to record daily sale for item:', cartItem.item_name);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error recording daily sales:', error);
+            // Don't fail the transaction for this - it's already completed
+        }
     }
 
     showStatus(message, type) {

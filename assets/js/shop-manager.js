@@ -752,6 +752,7 @@ class ShopManager {
                 <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
+                <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShopItem(${item.shop_item_id || item.id})">Edit</button>
@@ -804,7 +805,10 @@ class ShopManager {
             // Add checkbox data
             sell: document.getElementById('sell-checkbox')?.checked || false,
             buy: document.getElementById('buy-checkbox')?.checked || false,
-            turn_in: document.getElementById('turn-in-checkbox')?.checked || false
+            turn_in: document.getElementById('turn-in-checkbox')?.checked || false,
+            // Add daily limit data
+            daily_limit_enabled: document.getElementById('daily-limit-enabled')?.checked || false,
+            max_daily_sell_quantity: parseInt(formData.get('max_daily_sell_quantity') || '0')
         };
 
         // Handle custom items vs regular items (only for new items, not edits)
@@ -862,6 +866,11 @@ class ShopManager {
                 if (sellCheckbox) sellCheckbox.checked = true; // Default to sellable
                 if (buyCheckbox) buyCheckbox.checked = false;  // Default not buyable  
                 if (turnInCheckbox) turnInCheckbox.checked = false; // Default not turn-in
+                
+                // Reset daily limit fields
+                const dailyLimitCheckbox = document.getElementById('daily-limit-enabled');
+                if (dailyLimitCheckbox) dailyLimitCheckbox.checked = false; // Default no daily limit
+                document.getElementById('max-daily-sell-quantity').value = '0';
                 
                 await this.loadShopItems(this.selectedShop);
             }
@@ -932,10 +941,15 @@ class ShopManager {
             const sellCheckbox = document.getElementById('sell-checkbox');
             const buyCheckbox = document.getElementById('buy-checkbox');
             const turnInCheckbox = document.getElementById('turn-in-checkbox');
+            const dailyLimitCheckbox = document.getElementById('daily-limit-enabled');
             
             if (sellCheckbox) sellCheckbox.checked = item.sell == 1;
             if (buyCheckbox) buyCheckbox.checked = item.buy == 1;
             if (turnInCheckbox) turnInCheckbox.checked = item.turn_in == 1;
+            
+            // Populate daily limit fields
+            if (dailyLimitCheckbox) dailyLimitCheckbox.checked = item.daily_limit_enabled == 1;
+            document.getElementById('max-daily-sell-quantity').value = item.max_daily_sell_quantity || 0;
             
             // Update turn-in field visibility based on checkbox state
             this.updateTurnInFieldVisibility();

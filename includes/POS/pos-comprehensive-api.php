@@ -367,6 +367,19 @@ function jotun_ensure_shop_items_table() {
         // 8. Re-enable foreign key checks at the end
         $wpdb->query("SET FOREIGN_KEY_CHECKS = 1");
         error_log("Jotunheim POS: Re-enabled foreign key checks after migration");
+        
+        // Migration: Add daily selling limit fields
+        $daily_limit_enabled_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'daily_limit_enabled'");
+        if (empty($daily_limit_enabled_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN daily_limit_enabled tinyint(1) DEFAULT 0 COMMENT 'Whether this item has a daily selling limit per player'");
+            error_log('Jotunheim POS: Added daily_limit_enabled column to jotun_shop_items table');
+        }
+        
+        $max_daily_sell_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'max_daily_sell_quantity'");
+        if (empty($max_daily_sell_quantity_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN max_daily_sell_quantity int(11) DEFAULT 0 COMMENT 'Maximum quantity a player can sell per 24-hour period'");
+            error_log('Jotunheim POS: Added max_daily_sell_quantity column to jotun_shop_items table');
+        }
     }
     
     // Create jotun_turn_ins table for tracking turn-ins
@@ -414,6 +427,34 @@ function jotun_ensure_shop_items_table() {
         dbDelta($sql);
         
         error_log('Jotunheim POS: Created jotun_turn_in_trackers table');
+    }
+    
+    // Create jotun_player_daily_sales table for tracking daily selling limits
+    $daily_sales_table = 'jotun_player_daily_sales';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$daily_sales_table'") !== $daily_sales_table) {
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $daily_sales_table (
+            id int(11) NOT NULL AUTO_INCREMENT,
+            player_name varchar(100) NOT NULL,
+            shop_id int(11) NOT NULL,
+            shop_item_id int(11) NOT NULL,
+            quantity_sold int(11) DEFAULT 0,
+            sale_date date NOT NULL COMMENT 'Date of sales (for 24-hour reset tracking)',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY unique_player_shop_item_date (player_name, shop_id, shop_item_id, sale_date),
+            KEY idx_player_name (player_name),
+            KEY idx_shop_id (shop_id),
+            KEY idx_sale_date (sale_date),
+            KEY idx_player_date (player_name, sale_date)
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        error_log('Jotunheim POS: Created jotun_player_daily_sales table for daily selling limits');
     }
 }
 
@@ -1084,6 +1125,24 @@ add_action('rest_api_init', function() {
     register_rest_route('jotun-api/v1', '/ledger/(?P<id>\d+)', [
         'methods' => 'DELETE',
         'callback' => 'jotun_api_delete_ledger_entry',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Daily sales limit check endpoint (using jotunheim namespace to match frontend)
+    register_rest_route('jotunheim/v1', '/daily-sales-check', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_daily_sales_check',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // Record daily sale endpoint
+    register_rest_route('jotunheim/v1', '/record-daily-sale', [
+        'methods' => 'POST',
+        'callback' => 'jotun_api_record_daily_sale',
         'permission_callback' => function() {
             return current_user_can('edit_posts');
         }
@@ -2895,4 +2954,153 @@ function jotun_api_reset_turn_in_tracker($request) {
     }
     
     return new WP_REST_Response(['message' => 'Turn-in tracker reset successfully'], 200);
+}
+
+function jotun_api_daily_sales_check($request) {
+    global $wpdb;
+    
+    // Verify nonce
+    if (!wp_verify_nonce($request->get_header('X-WP-Nonce'), 'wp_rest')) {
+        return new WP_Error('invalid_nonce', 'Invalid nonce', array('status' => 403));
+    }
+    
+    $params = $request->get_json_params();
+    $player_name = sanitize_text_field($params['player_name'] ?? '');
+    $shop_id = intval($params['shop_id'] ?? 0);
+    $shop_item_id = intval($params['shop_item_id'] ?? 0);
+    $proposed_quantity = intval($params['proposed_quantity'] ?? 0);
+    
+    if (empty($player_name) || $shop_id <= 0 || $shop_item_id <= 0 || $proposed_quantity <= 0) {
+        return new WP_Error('missing_params', 'Missing required parameters', array('status' => 400));
+    }
+    
+    try {
+        // Get the shop item to check if daily limits are enabled
+        $shop_item = $wpdb->get_row($wpdb->prepare(
+            "SELECT daily_limit_enabled, max_daily_sell_quantity 
+             FROM jotun_shop_items 
+             WHERE id = %d AND shop_id = %d",
+            $shop_item_id, $shop_id
+        ));
+        
+        if (!$shop_item) {
+            return new WP_Error('item_not_found', 'Shop item not found', array('status' => 404));
+        }
+        
+        // If daily limits aren't enabled, allow the sale
+        if (!$shop_item->daily_limit_enabled || $shop_item->max_daily_sell_quantity <= 0) {
+            return rest_ensure_response(array(
+                'success' => true,
+                'data' => array(
+                    'can_sell' => true,
+                    'sold_today' => 0,
+                    'max_daily' => 0,
+                    'remaining' => PHP_INT_MAX
+                )
+            ));
+        }
+        
+        // Check today's sales for this player/item combination
+        $today = current_time('Y-m-d');
+        $sales_today = $wpdb->get_row($wpdb->prepare(
+            "SELECT quantity_sold 
+             FROM jotun_player_daily_sales 
+             WHERE player_name = %s AND shop_id = %d AND shop_item_id = %d AND sale_date = %s",
+            $player_name, $shop_id, $shop_item_id, $today
+        ));
+        
+        $sold_today = $sales_today ? intval($sales_today->quantity_sold) : 0;
+        $max_daily = intval($shop_item->max_daily_sell_quantity);
+        $remaining = $max_daily - $sold_today;
+        
+        // Check if proposed quantity would exceed limit
+        $can_sell = ($sold_today + $proposed_quantity) <= $max_daily;
+        
+        return rest_ensure_response(array(
+            'success' => true,
+            'data' => array(
+                'can_sell' => $can_sell,
+                'sold_today' => $sold_today,
+                'max_daily' => $max_daily,
+                'remaining' => max(0, $remaining),
+                'proposed_quantity' => $proposed_quantity,
+                'would_exceed' => !$can_sell
+            )
+        ));
+        
+    } catch (Exception $e) {
+        error_log('Daily sales check error: ' . $e->getMessage());
+        return new WP_Error('database_error', 'Database error occurred', array('status' => 500));
+    }
+}
+
+function jotun_record_daily_sale($player_name, $shop_id, $shop_item_id, $quantity_sold) {
+    global $wpdb;
+    
+    $today = current_time('Y-m-d');
+    
+    // Check if a record already exists for today
+    $existing = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, quantity_sold 
+         FROM jotun_player_daily_sales 
+         WHERE player_name = %s AND shop_id = %d AND shop_item_id = %d AND sale_date = %s",
+        $player_name, $shop_id, $shop_item_id, $today
+    ));
+    
+    if ($existing) {
+        // Update existing record
+        $new_quantity = intval($existing->quantity_sold) + $quantity_sold;
+        $result = $wpdb->update(
+            'jotun_player_daily_sales',
+            ['quantity_sold' => $new_quantity],
+            ['id' => $existing->id]
+        );
+    } else {
+        // Insert new record
+        $result = $wpdb->insert(
+            'jotun_player_daily_sales',
+            [
+                'player_name' => $player_name,
+                'shop_id' => $shop_id,
+                'shop_item_id' => $shop_item_id,
+                'quantity_sold' => $quantity_sold,
+                'sale_date' => $today
+            ]
+        );
+    }
+    
+    if ($result === false) {
+        error_log('Failed to record daily sale: ' . $wpdb->last_error);
+        return false;
+    }
+    
+    return true;
+}
+
+function jotun_api_record_daily_sale($request) {
+    // Verify nonce
+    if (!wp_verify_nonce($request->get_header('X-WP-Nonce'), 'wp_rest')) {
+        return new WP_Error('invalid_nonce', 'Invalid nonce', array('status' => 403));
+    }
+    
+    $params = $request->get_json_params();
+    $player_name = sanitize_text_field($params['player_name'] ?? '');
+    $shop_id = intval($params['shop_id'] ?? 0);
+    $shop_item_id = intval($params['shop_item_id'] ?? 0);
+    $quantity_sold = intval($params['quantity_sold'] ?? 0);
+    
+    if (empty($player_name) || $shop_id <= 0 || $shop_item_id <= 0 || $quantity_sold <= 0) {
+        return new WP_Error('missing_params', 'Missing required parameters', array('status' => 400));
+    }
+    
+    $success = jotun_record_daily_sale($player_name, $shop_id, $shop_item_id, $quantity_sold);
+    
+    if ($success) {
+        return rest_ensure_response(array(
+            'success' => true,
+            'message' => 'Daily sale recorded successfully'
+        ));
+    } else {
+        return new WP_Error('record_failed', 'Failed to record daily sale', array('status' => 500));
+    }
 }

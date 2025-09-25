@@ -350,6 +350,27 @@ function shop_manager_interface() {
                                 </select>
                             </div>
                         </div>
+                        
+                        <!-- Daily Selling Limit Fields -->
+                        <div class="form-row daily-limit-fields">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="daily-limit-enabled" name="daily_limit_enabled">
+                                    Enable Daily Selling Limit
+                                </label>
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    Limit how much each player can sell per 24-hour period
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="max-daily-sell-quantity">Max Daily Sell Quantity</label>
+                                <input type="number" id="max-daily-sell-quantity" name="max_daily_sell_quantity" value="0" min="0" title="Maximum quantity each player can sell per day (resets every 24 hours)">
+                                <small style="display: block; color: #666; margin-top: 4px;">
+                                    0 = no limit. Example: if set to 5, each player can only sell up to 5 of this item per day
+                                </small>
+                            </div>
+                        </div>
+                        
                         <!-- Transaction Type Checkboxes -->
                         <div class="form-row">
                             <div class="form-group">
@@ -424,6 +445,7 @@ function shop_manager_interface() {
                                     <th>Sell</th>
                                     <th>Buy</th>
                                     <th>Turn-In</th>
+                                    <th>Daily Limit</th>
                                     <th>Available</th>
                                     <th>Actions</th>
                                 </tr>
