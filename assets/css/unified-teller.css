@@ -159,25 +159,41 @@
 }
 
 .btn-success {
-    background-color: var(--success-green);
-    color: white;
+    background-color: var(--success-green) !important;
+    color: white !important;
 }
 
 .btn-success:hover:not(:disabled) {
-    background-color: oklch(0.5 0.15 140);
+    background-color: oklch(0.5 0.15 140) !important;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
 
 .btn-danger {
-    background-color: var(--error-red);
-    color: white;
+    background-color: var(--error-red) !important;
+    color: white !important;
 }
 
 .btn-danger:hover:not(:disabled) {
-    background-color: oklch(0.4 0.15 10);
+    background-color: oklch(0.4 0.15 10) !important;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
+}
+
+/* Ensure button colors work in item cards */
+.quantity-controls .btn.btn-success {
+    background-color: var(--success-green) !important;
+    color: white !important;
+}
+
+.quantity-controls .btn.btn-danger {
+    background-color: var(--error-red) !important;
+    color: white !important;
+}
+
+.quantity-controls .btn.btn-secondary {
+    background-color: var(--secondary-slate) !important;
+    color: white !important;
 }
 
 .btn-accent {
