@@ -1541,10 +1541,57 @@ class UnifiedTeller {
         statusDiv.textContent = message;
         statusDiv.className = `status-message ${type}`;
         statusDiv.style.display = 'block';
+        
+        // Make the popup more prominent and centered
+        statusDiv.style.position = 'fixed';
+        statusDiv.style.top = '50%';
+        statusDiv.style.left = '50%';
+        statusDiv.style.transform = 'translate(-50%, -50%)';
+        statusDiv.style.zIndex = '10000';
+        statusDiv.style.padding = '20px 30px';
+        statusDiv.style.fontSize = '18px';
+        statusDiv.style.fontWeight = 'bold';
+        statusDiv.style.borderRadius = '10px';
+        statusDiv.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+        statusDiv.style.minWidth = '300px';
+        statusDiv.style.textAlign = 'center';
+        statusDiv.style.lineHeight = '1.4';
+        
+        // Add background overlay to make it stand out
+        let overlay = document.getElementById('status-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'status-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            overlay.style.zIndex = '9999';
+            overlay.style.display = 'none';
+            document.body.appendChild(overlay);
+        }
+        overlay.style.display = 'block';
 
         setTimeout(() => {
             statusDiv.style.display = 'none';
-        }, 3000);
+            overlay.style.display = 'none';
+            // Reset inline styles to allow CSS to take over
+            statusDiv.style.position = '';
+            statusDiv.style.top = '';
+            statusDiv.style.left = '';
+            statusDiv.style.transform = '';
+            statusDiv.style.zIndex = '';
+            statusDiv.style.padding = '';
+            statusDiv.style.fontSize = '';
+            statusDiv.style.fontWeight = '';
+            statusDiv.style.borderRadius = '';
+            statusDiv.style.boxShadow = '';
+            statusDiv.style.minWidth = '';
+            statusDiv.style.textAlign = '';
+            statusDiv.style.lineHeight = '';
+        }, 5000); // Extended to 5 seconds for better visibility
     }
 
     escapeHtml(text) {

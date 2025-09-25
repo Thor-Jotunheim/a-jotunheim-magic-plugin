@@ -881,3 +881,78 @@ span.item-action[class*="turnin"],
     font-weight: 600 !important;
     text-transform: uppercase !important;
 }
+
+/* Status Message Styles - Prominent Centered Popups */
+#teller-status {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    padding: 20px 30px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 300px;
+    max-width: 600px;
+    line-height: 1.4;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    backdrop-filter: blur(5px);
+    animation: statusPopIn 0.3s ease-out;
+}
+
+@keyframes statusPopIn {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Status message types */
+#teller-status.success {
+    background: linear-gradient(135deg, var(--success-green), oklch(0.70 0.18 140));
+    color: white;
+    border: 2px solid oklch(0.75 0.20 140);
+}
+
+#teller-status.error {
+    background: linear-gradient(135deg, var(--error-red), oklch(0.60 0.18 15));
+    color: white;
+    border: 2px solid oklch(0.65 0.20 15);
+}
+
+#teller-status.warning {
+    background: linear-gradient(135deg, var(--accent-amber), oklch(0.80 0.18 60));
+    color: var(--primary-blue-dark);
+    border: 2px solid oklch(0.85 0.20 60);
+}
+
+#teller-status.info {
+    background: linear-gradient(135deg, var(--primary-blue), oklch(0.50 0.18 240));
+    color: white;
+    border: 2px solid oklch(0.55 0.20 240);
+}
+
+/* Overlay for status messages */
+#status-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: none;
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
