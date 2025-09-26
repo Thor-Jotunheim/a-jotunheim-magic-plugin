@@ -447,11 +447,11 @@ class ShopManager {
     }
     
     formatPrice(price, currency = 'coins', showBothFormats = true) {
-        const numPrice = parseFloat(price) || 0;
+        const numPrice = Math.floor(parseFloat(price) || 0);
         
         // For legacy support - if currency is ymir, convert from ymir to coins display
         if (currency === 'ymir') {
-            return `${(numPrice / 120).toFixed(2)} Ymir Flesh`;
+            return `${Math.floor(numPrice / 120)} Ymir Flesh`;
         }
         
         // Always show both formats when price is 120+ coins (1+ Ymir)
@@ -974,8 +974,8 @@ class ShopManager {
                     ${this.escapeHtml(item.master_item_name || item.item_name)}
                     ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
                 </td>
-                <td>${defaultPrice} Coins</td>
-                <td>${shopPrice} Coins</td>
+                <td>${Math.floor(parseFloat(defaultPrice) || 0)} Coins</td>
+                <td>${Math.floor(parseFloat(shopPrice) || 0)} Coins</td>
                 <td class="stock-cell">${(() => {
                     console.log('DEBUG - Stock quantity for item:', item.master_item_name || item.item_name, 'stock_quantity:', item.stock_quantity, 'type:', typeof item.stock_quantity);
                     return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
