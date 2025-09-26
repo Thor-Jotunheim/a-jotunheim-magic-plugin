@@ -23,12 +23,14 @@ function unified_teller_interface() {
         <!-- Header with Shop Selection, Dynamic Title, and Teller Info -->
         <div class="teller-header">
             <div class="header-shop-selection">
-                <div class="form-field">
-                    <label for="teller-shop-selector" class="field-label">Shop Selection</label>
-                    <select id="teller-shop-selector" class="field-select">
-                        <option value="">Select a shop to begin...</option>
-                        <!-- Shops will be loaded here -->
-                    </select>
+                <div class="shop-selection-box">
+                    <div class="form-field">
+                        <label for="teller-shop-selector" class="field-label">Shop Selection</label>
+                        <select id="teller-shop-selector" class="field-select">
+                            <option value="">Select a shop to begin...</option>
+                            <!-- Shops will be loaded here -->
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="header-main">
