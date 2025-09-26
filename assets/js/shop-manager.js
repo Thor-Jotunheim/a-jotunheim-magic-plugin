@@ -224,6 +224,7 @@ class ShopManager {
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShop(${shop.shop_id})">Edit</button>
                     <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShop(${shop.shop_id}, '${this.escapeHtml(shop.shop_name)}')">Delete</button>
+                    ${shop.shop_type === 'turn-in_only' ? `<button class="btn btn-warning btn-sm" onclick="shopManager.resetTurnInProgress(${shop.shop_id}, '${this.escapeHtml(shop.shop_name)}')">Reset Progress</button>` : ''}
                 </td>
             `;
             tbody.appendChild(row);
@@ -588,6 +589,35 @@ class ShopManager {
             } catch (error) {
                 console.error('Error deleting shop:', error);
                 this.showStatus('Failed to delete shop', 'error');
+            }
+        }
+    }
+
+    async resetTurnInProgress(shopId, shopName) {
+        if (confirm(`Are you sure you want to reset all turn-in progress for "${shopName}"? This will set all turn-in quantities back to 0.`)) {
+            try {
+                const response = await fetch(shopManagerAjax.ajaxurl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'reset_turn_in_progress',
+                        nonce: shopManagerAjax.nonce,
+                        shop_id: shopId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.showStatus('Turn-in progress reset successfully', 'success');
+                } else {
+                    throw new Error(result.data || 'Failed to reset progress');
+                }
+            } catch (error) {
+                console.error('Error resetting turn-in progress:', error);
+                this.showStatus('Failed to reset turn-in progress', 'error');
             }
         }
     }

@@ -96,11 +96,6 @@ class TurnInTracker {
         <div class="turn-in-tracker" data-shop-id="<?php echo esc_attr($atts['shop_id']); ?>">
             <div class="tracker-header">
                 <h3><?php echo esc_html($shop->shop_name); ?> - Turn-In Progress</h3>
-                <?php if (current_user_can('manage_options')): ?>
-                    <button class="reset-progress-btn" data-shop-id="<?php echo esc_attr($atts['shop_id']); ?>">
-                        Reset All Progress
-                    </button>
-                <?php endif; ?>
             </div>
             
             <div class="turn-in-items">
@@ -136,7 +131,17 @@ class TurnInTracker {
      * AJAX handler to reset turn-in progress
      */
     public function ajax_reset_turn_in_progress() {
-        check_ajax_referer('turn_in_tracker_nonce', 'nonce');
+        // Accept both shop manager nonce and turn-in tracker nonce
+        $nonce_valid = false;
+        if (wp_verify_nonce($_POST['nonce'] ?? '', 'shop_manager_nonce')) {
+            $nonce_valid = true;
+        } elseif (wp_verify_nonce($_POST['nonce'] ?? '', 'turn_in_tracker_nonce')) {
+            $nonce_valid = true;
+        }
+        
+        if (!$nonce_valid) {
+            wp_die('Invalid nonce');
+        }
         
         if (!current_user_can('manage_options')) {
             wp_die('Unauthorized');

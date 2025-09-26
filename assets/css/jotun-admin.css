@@ -77,6 +77,18 @@
     color: white;
 }
 
+.jotun-btn-warning, .btn-warning {
+    background: #dba617;
+    border-color: #dba617;
+    color: white;
+}
+
+.jotun-btn-warning:hover, .btn-warning:hover {
+    background: #b8941a;
+    border-color: #b8941a;
+    color: white;
+}
+
 /* Table Styles */
 .jotun-table {
     width: 100%;
