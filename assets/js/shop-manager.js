@@ -225,7 +225,7 @@ class ShopManager {
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="shopManager.editShop(${shop.shop_id})">Edit</button>
                     <button class="btn btn-danger btn-sm" onclick="shopManager.deleteShop(${shop.shop_id}, '${this.escapeHtml(shop.shop_name)}')">Delete</button>
-                    ${shop.shop_type === 'turn-in_only' ? `<button class="btn btn-warning btn-sm" onclick="shopManager.resetTurnInProgress(${shop.shop_id}, '${this.escapeHtml(shop.shop_name)}')">Reset Progress</button>` : ''}
+                    ${shop.shop_type === 'turn-in_only' ? `<button class="btn btn-warning btn-sm" onclick="shopManager.resetTurnInProgress(${shop.shop_id}, '${this.escapeHtml(shop.shop_name)}')">Reset</button>` : ''}
                 </td>
             `;
             tbody.appendChild(row);
@@ -1081,7 +1081,7 @@ class ShopManager {
                 <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="console.log('Edit button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.editShopItem(${item.shop_item_id || item.id}); } else { console.error('shopManager not found'); }">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="console.log('Delete button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}'); } else { console.error('shopManager not found'); }">Remove</button>
+                    <button class="btn btn-danger btn-sm" onclick="console.log('Delete button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}'); } else { console.error('shopManager not found'); }">Delete</button>
                 </td>
             `;
             tbody.appendChild(row);

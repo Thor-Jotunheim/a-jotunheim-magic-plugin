@@ -694,8 +694,8 @@
 
 /* Shop Table Action Buttons - ONLY for main shops table */
 #shops-table .btn-sm {
-    min-width: 80px;
-    width: 80px;
+    min-width: 80px !important;
+    width: 80px !important;
     padding: 5px 8px;
     font-size: 12px;
     margin: 1px 2px;
@@ -707,7 +707,8 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
-    line-height: 1.1;
+    line-height: 1.2;
+    box-sizing: border-box;
 }
 
 /* Make buttons fit properly in Actions column - ONLY main shops table */
@@ -717,11 +718,15 @@
     text-align: left;
 }
 
-/* General button styling for other tables */
-.shop-table .btn-sm {
-    padding: 4px 8px;
+/* General button styling for all shop tables */
+.shop-table .btn-sm,
+#shop-items-table .btn-sm,
+#shop-types-table .btn-sm {
+    min-width: 80px !important;
+    width: 80px !important;
+    padding: 5px 8px;
     font-size: 12px;
-    margin: 2px;
+    margin: 1px 2px;
     border-radius: 3px;
     border: 1px solid;
     text-decoration: none;
@@ -731,19 +736,26 @@
     transition: all 0.2s ease;
     font-weight: 500;
     line-height: 1.2;
+    box-sizing: border-box;
 }
 
 /* Stack buttons on very narrow screens */
 @media (max-width: 768px) {
-    .shop-table td:last-child {
+    .shop-table td:last-child,
+    #shops-table td:last-child,
+    #shop-items-table td:last-child,
+    #shop-types-table td:last-child {
         white-space: normal;
     }
     
-    .shop-table .btn-sm {
+    .shop-table .btn-sm,
+    #shops-table .btn-sm,
+    #shop-items-table .btn-sm,
+    #shop-types-table .btn-sm {
         display: block;
         margin: 2px 0;
-        width: 100%;
-        min-width: auto;
+        width: 100% !important;
+        min-width: auto !important;
     }
 }
 
