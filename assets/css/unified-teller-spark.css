@@ -817,6 +817,19 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         grid-template-columns: 1fr;
         gap: var(--space-1);
     }
+    
+    /* Ensure cards don't overlap on mobile */
+    .teller-card {
+        margin-bottom: var(--space-8);
+        position: relative;
+        z-index: auto;
+    }
+    
+    /* Items card should clear properly on mobile */
+    .teller-card.items-card {
+        margin-bottom: var(--space-8);
+        clear: both;
+    }
 }
 
 /* Loading States */

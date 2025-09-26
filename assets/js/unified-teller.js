@@ -609,6 +609,11 @@ class UnifiedTeller {
                 });
             }
             console.log('Daily turn-in data loaded:', this.dailyTurninData);
+            
+            // Refresh the display to show updated remaining amounts
+            if (this.currentShop && this.currentShop.shop_type === 'turn-in') {
+                this.renderShopItems();
+            }
         } catch (error) {
             console.error('Error loading daily turn-in data:', error);
             this.dailyTurninData = {};
