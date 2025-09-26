@@ -1211,12 +1211,43 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         gap: var(--space-3);
     }
     
+    /* Create top row with shop selection and teller */
+    .header-shop-selection,
     .header-teller {
+        width: 48%;
+        display: inline-block;
+        vertical-align: top;
+    }
+    
+    .header-shop-selection {
+        float: left;
+    }
+    
+    .header-teller {
+        float: right;
+    }
+    
+    /* Shop and teller row container */
+    .teller-header::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+    
+    /* Main title section goes full width below */
+    .header-main {
         width: 100%;
+        margin-top: var(--space-4);
+        clear: both;
     }
     
     .teller-info {
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .shop-selection-box {
+        min-height: 50px;
     }
     
     .quantity-row {
