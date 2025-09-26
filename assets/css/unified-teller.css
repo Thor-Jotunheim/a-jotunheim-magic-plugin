@@ -772,11 +772,12 @@ span.item-action.turnin,
 /* Removed conflicting .item-card button overrides to allow proper color classes */
 
 /* Item grid container */
+.items-grid,
 .shop-items-grid {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 2px;
+    padding: 0 4px;
 }
 
 /* Mobile responsive */
@@ -787,10 +788,11 @@ span.item-action.turnin,
         margin: 4px auto;
     }
     
+    .items-grid,
     .shop-items-grid {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 12px;
-        padding: 4px;
+        padding: 0 4px;
     }
 }
 
