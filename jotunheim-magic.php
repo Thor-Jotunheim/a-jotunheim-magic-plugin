@@ -4,7 +4,7 @@
 /*
 Plugin Name: A Jotunheim Magic Plugin
 Description: A plugin to manage the item list and editor for Jotunheim.
- * Version: 0.9.5.1.23
+ * Version: 0.9.5.1.24
 Author: Thor
 */
 
@@ -167,7 +167,15 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-permissions.php')
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-post.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-put.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-api-rest.php');
-include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-cleanup.php');
+// REMOVED: trade-shops-cleanup.php - Was automatically deleting shops without transactions
+
+// EMERGENCY: Clear the dangerous scheduled event that was deleting shops
+add_action('init', function() {
+    if (wp_next_scheduled('jotun_daily_cleanup')) {
+        wp_clear_scheduled_hook('jotun_daily_cleanup');
+        error_log('EMERGENCY: Cleared dangerous jotun_daily_cleanup scheduled event that was deleting shops');
+    }
+});
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-post.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-put.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/Trade/trade-shops-items-api-rest.php');
