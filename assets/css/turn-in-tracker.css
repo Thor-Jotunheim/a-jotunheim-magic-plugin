@@ -135,3 +135,135 @@
         gap: 5px;
     }
 }
+
+/* Universal Turn-In Tracker Styles */
+.universal-turn-in-tracker {
+    margin: 20px 0;
+    padding: 0;
+}
+
+.universal-turn-in-tracker .tracker-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.universal-turn-in-tracker .tracker-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 2em;
+    font-weight: 600;
+}
+
+.universal-turn-in-tracker .tracker-description {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1em;
+}
+
+.turn-in-shops-grid {
+    display: grid;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.turn-in-shops-grid.columns-1 {
+    grid-template-columns: 1fr;
+}
+
+.turn-in-shops-grid.columns-2 {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+.turn-in-shops-grid.columns-3 {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+.turn-in-shop-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.turn-in-shop-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.shop-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.shop-name {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.shop-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.shop-progress .progress-text {
+    font-weight: 500;
+    color: #666;
+    min-width: 100px;
+}
+
+.shop-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.shop-progress-bar .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    transition: width 0.3s ease;
+}
+
+.turn-in-shop-card .turn-in-items {
+    padding: 20px;
+    gap: 12px;
+}
+
+.turn-in-shop-card .turn-in-item {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .turn-in-shops-grid.columns-2,
+    .turn-in-shops-grid.columns-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .universal-turn-in-tracker .tracker-header h2 {
+        font-size: 1.6em;
+    }
+    
+    .shop-progress {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .shop-progress .progress-text {
+        min-width: auto;
+    }
+}

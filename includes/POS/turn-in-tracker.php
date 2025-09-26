@@ -14,6 +14,7 @@ class TurnInTracker {
     
     public function register_shortcodes() {
         add_shortcode('turn_in_progress', array($this, 'display_turn_in_progress'));
+        add_shortcode('universal_turn_in_tracker', array($this, 'display_universal_turn_in_tracker'));
     }
     
     /**
@@ -120,6 +121,118 @@ class TurnInTracker {
                             <span class="completion-badge">✓ Complete</span>
                         <?php endif; ?>
                     </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+    
+    /**
+     * Universal Turn-In Tracker - Shows all active turn-in shops
+     * Usage: [universal_turn_in_tracker]
+     * Optional attributes: show_completed="true/false", columns="1/2/3"
+     */
+    public function display_universal_turn_in_tracker($atts) {
+        $atts = shortcode_atts(array(
+            'show_completed' => 'false',
+            'columns' => '2',
+            'title' => 'Turn-In Progress Tracker'
+        ), $atts);
+        
+        global $wpdb;
+        
+        // Get all active turn-in shops with their items
+        $shops = $wpdb->get_results("
+            SELECT DISTINCT s.shop_id, s.shop_name, s.shop_type
+            FROM jotun_shops s
+            INNER JOIN jotun_shop_items si ON s.shop_id = si.shop_id
+            WHERE s.shop_type = 'turn-in_only' 
+            AND s.is_active = 1
+            AND si.turn_in = 1 
+            AND si.turn_in_requirement > 0
+            ORDER BY s.shop_name ASC
+        ");
+        
+        if (empty($shops)) {
+            return '<div class="universal-turn-in-tracker"><p><em>No active turn-in shops found.</em></p></div>';
+        }
+        
+        // Enqueue styles
+        wp_enqueue_style('turn-in-tracker', plugin_dir_url(__FILE__) . '../../assets/css/turn-in-tracker.css', array(), '1.0.0');
+        
+        ob_start();
+        ?>
+        <div class="universal-turn-in-tracker">
+            <div class="tracker-header">
+                <h2><?php echo esc_html($atts['title']); ?></h2>
+                <p class="tracker-description">Track progress for all active turn-in objectives</p>
+            </div>
+            
+            <div class="turn-in-shops-grid columns-<?php echo esc_attr($atts['columns']); ?>">
+                <?php foreach ($shops as $shop): 
+                    // Get turn-in items for this shop
+                    $items = $wpdb->get_results($wpdb->prepare("
+                        SELECT si.*, ml.item_name as master_item_name
+                        FROM jotun_shop_items si
+                        LEFT JOIN jotun_itemlist ml ON si.item_id = ml.id
+                        WHERE si.shop_id = %d 
+                        AND si.turn_in = 1 
+                        AND si.turn_in_requirement > 0
+                        ORDER BY ml.item_name ASC
+                    ", $shop->shop_id));
+                    
+                    if (empty($items)) continue;
+                    
+                    // Calculate shop completion stats
+                    $total_items = 0;
+                    $completed_items = 0;
+                    foreach ($items as $item) {
+                        $total_items++;
+                        if (intval($item->turn_in_quantity) >= intval($item->turn_in_requirement)) {
+                            $completed_items++;
+                        }
+                    }
+                    $shop_progress = $total_items > 0 ? ($completed_items / $total_items) * 100 : 0;
+                ?>
+                
+                <div class="turn-in-shop-card">
+                    <div class="shop-header">
+                        <h3 class="shop-name"><?php echo esc_html($shop->shop_name); ?></h3>
+                        <div class="shop-progress">
+                            <span class="progress-text"><?php echo $completed_items; ?>/<?php echo $total_items; ?> Complete</span>
+                            <div class="shop-progress-bar">
+                                <div class="progress-fill" style="width: <?php echo $shop_progress; ?>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="turn-in-items">
+                        <?php foreach ($items as $item): 
+                            $item_name = $item->master_item_name ?: $item->item_name;
+                            $progress = intval($item->turn_in_quantity);
+                            $goal = intval($item->turn_in_requirement);
+                            $percentage = $goal > 0 ? min(100, ($progress / $goal) * 100) : 0;
+                            $is_completed = $progress >= $goal;
+                            
+                            if ($atts['show_completed'] === 'false' && $is_completed) continue;
+                        ?>
+                            <div class="turn-in-item <?php echo $is_completed ? 'completed' : ''; ?>">
+                                <div class="item-info">
+                                    <span class="item-name"><?php echo esc_html($item_name); ?></span>
+                                    <span class="progress-text"><?php echo $progress; ?> / <?php echo $goal; ?></span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: <?php echo $percentage; ?>%"></div>
+                                </div>
+                                <?php if ($is_completed): ?>
+                                    <span class="completion-badge">✓ Complete</span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                
                 <?php endforeach; ?>
             </div>
         </div>
