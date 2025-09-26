@@ -1113,6 +1113,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .header-shop-selection {
     flex-shrink: 0;
     width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     display: flex;
     justify-content: center;
 }
@@ -1122,11 +1124,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: 8px;
     border: 1px solid var(--gray-6);
     padding: var(--space-3) var(--space-4);
-    width: 100%;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     min-height: 60px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .header-main {
@@ -1137,6 +1142,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .header-teller {
     flex-shrink: 0;
     width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     display: flex;
     justify-content: center;
 }
@@ -1150,9 +1157,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     background: var(--blue-2);
     border-radius: 8px;
     border: 1px solid var(--blue-6);
-    width: 100%;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     min-height: 60px;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .teller-label {
