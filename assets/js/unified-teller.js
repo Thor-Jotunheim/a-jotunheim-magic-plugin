@@ -547,9 +547,9 @@ class UnifiedTeller {
     }
 
     renderShopItems() {
-        const container = document.getElementById('shop-items-table');
+        const container = document.getElementById('items-grid-view');
         if (!container) {
-            console.error('Shop items container not found: shop-items-table');
+            console.error('Shop items container not found: items-grid-view');
             return;
         }
         
