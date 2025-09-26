@@ -547,8 +547,18 @@ class UnifiedTeller {
     }
 
     renderShopItems() {
-        const container = document.getElementById('shop-items-grid');
+        const container = document.getElementById('shop-items-table');
+        if (!container) {
+            console.error('Shop items container not found: shop-items-table');
+            return;
+        }
+        
         container.innerHTML = '';
+
+        if (this.shopItems.length === 0) {
+            container.innerHTML = '<div class="no-items">No items available for this shop.</div>';
+            return;
+        }
 
         this.shopItems.forEach(item => {
             if (item.is_available == 1) {
