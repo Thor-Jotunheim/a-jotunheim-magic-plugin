@@ -477,3 +477,20 @@
     font-size: 12px;
     margin: 2px;
 }
+
+/* Prevent text wrapping in table cells */
+.shop-table td {
+    white-space: nowrap;
+}
+
+/* Allow wrapping only for item names (which might be long) */
+.shop-table td:nth-child(2) {
+    white-space: normal;
+    min-width: 150px;
+}
+
+/* Ensure action column has enough space for buttons */
+.shop-table td:last-child {
+    white-space: normal;
+    min-width: 120px;
+}
