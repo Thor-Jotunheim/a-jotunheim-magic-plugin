@@ -530,11 +530,16 @@ class UnifiedTeller {
                     item_name: masterItem?.item_name || shopItem.item_name || 'Unknown Item',
                     event_points: shopItem.event_points || 0,
                     category: masterItem?.category || 'Uncategorized',
-                    description: masterItem?.description || ''
+                    description: masterItem?.description || '',
+                    unit_price: 0, // Turn-in items don't have prices
+                    stack_price: 0,
+                    is_available: 1 // Make sure they show as available
                 };
             });
 
-            this.displayTurninItems();
+            // Set shopItems to turninItems so they display in main interface
+            this.shopItems = this.turninItems;
+            this.renderShopItems();
         } catch (error) {
             console.error('Error loading turn-in items:', error);
             this.showStatus('Failed to load turn-in items', 'error');
@@ -557,6 +562,7 @@ class UnifiedTeller {
         const card = document.createElement('div');
         // Only mark as out-of-stock if stock_quantity exists and is exactly 0 (not null, undefined, or -1 for infinite)
         const isOutOfStock = item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity === 0;
+        const isTurnInItem = item.event_points !== undefined && item.event_points !== null;
         card.className = `item-card ${isOutOfStock ? 'out-of-stock' : ''}`;
         card.dataset.itemId = item.id;
         
@@ -569,36 +575,71 @@ class UnifiedTeller {
             (item.prefab_name ? `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name.toLowerCase()}.png` : 
             '/wp-content/uploads/Jotunheim-magic/icons/default-item.png');
         
-        card.innerHTML = `
-            <div class="item-header" style="opacity: 1;">
-                <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
-                <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
-            </div>
-            <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
-                ${item.icon_image ? `
-                    <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
-                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
-                             onerror="this.parentElement.style.display='none'">
+        // Different display for turn-in items vs regular items
+        if (isTurnInItem) {
+            card.innerHTML = `
+                <div class="item-header" style="opacity: 1;">
+                    <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
+                    <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Turn-In Item'}</div>
+                </div>
+                <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
+                    ${item.icon_image ? `
+                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
+                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
+                                 onerror="this.parentElement.style.display='none'">
+                        </div>
+                    ` : ''}
+                    <div class="price-row" style="opacity: 1;">
+                        <span class="price-label" style="opacity: 1;">Event Points:</span>
+                        <span class="price-value" style="opacity: 1; color: #007cba; font-weight: bold;">${item.event_points || 0}</span>
                     </div>
-                ` : ''}
-                <div class="price-row" style="opacity: 1;">
-                    <span class="price-label" style="opacity: 1;">Unit:</span>
-                    <span class="price-value" style="opacity: 1;">${unitPrice}</span>
+                    ${item.turn_in_requirement ? `
+                        <div class="price-row" style="opacity: 1;">
+                            <span class="price-label" style="opacity: 1;">Required:</span>
+                            <span class="price-value" style="opacity: 1;">${item.turn_in_requirement}</span>
+                        </div>
+                    ` : ''}
+                    <div class="item-tech" style="opacity: 1;">Category: ${item.category || 'Uncategorized'}</div>
                 </div>
-                <div class="price-row" style="opacity: 1;">
-                    <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
-                    <span class="price-value" style="opacity: 1;">${stackPrice}</span>
+                <div class="item-actions">
+                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItem(${item.shop_item_id})">
+                        Turn In
+                    </button>
                 </div>
-                <div class="item-tech" style="opacity: 1;">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
-            </div>
-            <div class="item-actions">
-                ${this.generateItemActionButtons(item)}
-            </div>
-        `;
-
-        // Add event listeners for all button types
-        this.addItemCardEventListeners(card, item, unitPrice, stackPrice);
+            `;
+        } else {
+            card.innerHTML = `
+                <div class="item-header" style="opacity: 1;">
+                    <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
+                    <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
+                </div>
+                <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
+                    ${item.icon_image ? `
+                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
+                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
+                                 onerror="this.parentElement.style.display='none'">
+                        </div>
+                    ` : ''}
+                    <div class="price-row" style="opacity: 1;">
+                        <span class="price-label" style="opacity: 1;">Unit:</span>
+                        <span class="price-value" style="opacity: 1;">${unitPrice}</span>
+                    </div>
+                    <div class="price-row" style="opacity: 1;">
+                        <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
+                        <span class="price-value" style="opacity: 1;">${stackPrice}</span>
+                    </div>
+                    <div class="item-tech" style="opacity: 1;">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
+                </div>
+                <div class="item-actions">
+                    ${this.generateItemActionButtons(item)}
+                </div>
+            `;
+            
+            // Add event listeners for regular shop items
+            this.addItemCardEventListeners(card, item, unitPrice, stackPrice);
+        }
 
         return card;
     }
