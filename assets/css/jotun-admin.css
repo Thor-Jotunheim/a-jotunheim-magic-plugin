@@ -27,18 +27,32 @@
 }
 
 /* Button Styles */
-.jotun-btn {
+.jotun-btn, .btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 6px;
     padding: 8px 16px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    user-select: none;
+}
+
+.jotun-btn:hover, .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    text-decoration: none;
+}
+
+.jotun-btn:active, .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .jotun-btn-primary {
@@ -65,27 +79,45 @@
     color: #1d2327;
 }
 
-.jotun-btn-danger {
-    background: #d63638;
-    border-color: #d63638;
+/* Primary Button - Blue */
+.jotun-btn-primary, .btn-primary {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: white;
+    font-weight: 500;
+}
+
+.jotun-btn-primary:hover, .btn-primary:hover {
+    background: #135e96;
+    border-color: #135e96;
     color: white;
 }
 
-.jotun-btn-danger:hover {
-    background: #b32d2e;
-    border-color: #b32d2e;
+/* Danger Button - Red */
+.jotun-btn-danger, .btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    font-weight: 500;
+}
+
+.jotun-btn-danger:hover, .btn-danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
     color: white;
 }
 
+/* Warning Button - Orange */
 .jotun-btn-warning, .btn-warning {
-    background: #dba617;
-    border-color: #dba617;
+    background: #f0ad4e;
+    border-color: #f0ad4e;
     color: white;
+    font-weight: 500;
 }
 
 .jotun-btn-warning:hover, .btn-warning:hover {
-    background: #b8941a;
-    border-color: #b8941a;
+    background: #ec971f;
+    border-color: #d58512;
     color: white;
 }
 
@@ -535,10 +567,35 @@
 
 /* Shop Table Action Buttons */
 .shop-table .btn-sm {
-    min-width: 70px;
-    padding: 4px 8px;
-    font-size: 12px;
-    margin: 2px;
+    min-width: 80px;
+    padding: 6px 12px;
+    font-size: 13px;
+    margin: 2px 1px;
+    border-radius: 4px;
+    border: 1px solid;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Make buttons consistent height and spacing */
+.shop-table td:last-child {
+    white-space: nowrap;
+    padding: 8px 12px;
+}
+
+/* Ensure all action buttons have same base styling */
+.shop-table .btn-sm:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
+.shop-table .btn-sm:active {
+    transform: translateY(1px);
 }
 
 /* Simple table styling - let browser handle natural layout */
