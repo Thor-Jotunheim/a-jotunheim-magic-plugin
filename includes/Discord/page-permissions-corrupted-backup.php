@@ -218,14 +218,33 @@ class JotunheimPagePermissions {
     }
     
     /**
-     * Get all plugin pages that can have permissions
-     * Now dynamically pulls from Dashboard Manager's shortcode detection + hardcoded admin pages
+     * Get currently configured plugin pages for the UI table
+     * This only shows pages that are already in the permissions system
      */
     private function get_plugin_pages() {
-        $pages = [];
+        $current_permissions = $this->get_page_permissions();
+        $configured_page_keys = array_keys($current_permissions);
         
-        // First add core admin pages (non-shortcode)
-        $admin_pages = [
+        // Always include admin pages (they should always be visible)
+        $admin_pages = $this->get_admin_pages();
+        $pages = $admin_pages;
+        
+        // Add shortcode pages that are configured in permissions
+        $all_available = $this->get_all_available_pages();
+        foreach ($configured_page_keys as $page_key) {
+            if (isset($all_available[$page_key]) && !isset($admin_pages[$page_key])) {
+                $pages[$page_key] = $all_available[$page_key];
+            }
+        }
+        
+        return $pages;
+    }
+    
+    /**
+     * Get all admin pages (always shown)
+     */
+    private function get_admin_pages() {
+        return [
             'jotunheim_magic' => [
                 'title' => 'Overview Dashboard',
                 'description' => 'Main dashboard overview page'
@@ -255,32 +274,213 @@ class JotunheimPagePermissions {
                 'description' => 'Configure event zone fields'
             ]
         ];
+    }
+    
+    /**
+     * Get all available pages that CAN have permissions (for scanning)
+     * Uses comprehensive detection like Dashboard Manager
+     */
+    private function get_all_available_pages() {
+        global $shortcode_tags;
         
-        // Add admin pages
-        $pages = array_merge($pages, $admin_pages);
+        // Start with admin pages
+        $pages = $this->get_admin_pages();
         
-        // Now dynamically add all detected shortcode pages
-        // Use the same predefined shortcodes as Dashboard Manager
+        // Use comprehensive shortcode detection like Dashboard Manager
         $predefined_shortcodes = [
             'shop_manager' => [
                 'title' => 'Shop Manager',
-                'description' => 'Manage shop inventory and pricing',
-                'category' => 'commerce'
+                'description' => 'Complete shop management interface for all Jotunheim shops'
             ],
             'unified_teller' => [
                 'title' => 'Unified Teller',
-                'description' => 'Point of sale and transaction interface',
-                'category' => 'commerce'
+                'description' => 'Unified point of sale interface for transactions'
+            ],
+            'legacy_shop_teller' => [
+                'title' => 'Legacy Shop Teller',
+                'description' => 'Google Sheets replacement shop interface'
+            ],
+            'pos_interface' => [
+                'title' => 'Point of Sale Interface',
+                'description' => 'Point of sale system for transaction processing'
             ],
             'itemlist_editor' => [
                 'title' => 'Item List Editor',
-                'description' => 'Edit and manage game items',
-                'category' => 'content'
+                'description' => 'Edit and manage game item database'
             ],
-            'item_list_editor' => [
-                'title' => 'Item List Editor (Alt)',
-                'description' => 'Alternative item list editor interface',
-                'category' => 'content'
+            'eventzones_editor' => [
+                'title' => 'Event Zones Editor',
+                'description' => 'Edit and manage event zones'
+            ],
+            'eventzones_add_new_zone' => [
+                'title' => 'Add New Event Zone',
+                'description' => 'Create new event zones'
+            ],
+            'jotunheim_add_new_zone' => [
+                'title' => 'Add New Zone',
+                'description' => 'Add new zones to the system'
+            ],
+            'jotunheim_add_new_item' => [
+                'title' => 'Add New Item',
+                'description' => 'Add new items to the game database'
+            ],
+            'jotunheim_item_types' => [
+                'title' => 'Item Types Manager',
+                'description' => 'Manage item types and price multipliers'
+            ],
+            'jotunheim_trade_page' => [
+                'title' => 'Trade Page',
+                'description' => 'Trading interface for players'
+            ],
+            'jotunheim_barter_page' => [
+                'title' => 'Barter Page',
+                'description' => 'Barter system interface'
+            ],
+            'barter' => [
+                'title' => 'Barter System (Alt)',
+                'description' => 'Alternative barter interface'
+            ],
+            'jotun_shop_creation' => [
+                'title' => 'Shop Creation UI',
+                'description' => 'Interface for creating new shops'
+            ],
+            'universal_editor_ui' => [
+                'title' => 'Universal Editor UI',
+                'description' => 'Universal editing interface'
+            ],
+            'universal_add_ui' => [
+                'title' => 'Universal Add UI',
+                'description' => 'Universal add interface'
+            ],
+            'eventzones_code_output' => [
+                'title' => 'Event Zones Code Output',
+                'description' => 'Generate code output for event zones'
+            ],
+            'eventzone_goto_output' => [
+                'title' => 'Event Zone Goto Output',
+                'description' => 'Generate goto commands for event zones'
+            ],
+            'section2_items' => [
+                'title' => 'Section 2 Items',
+                'description' => 'Display section 2 items from pricelist'
+            ],
+            'section2and3_items' => [
+                'title' => 'Section 2 & 3 Items',
+                'description' => 'Display section 2 and 3 items from pricelist'
+            ],
+            'prefabdb_image_import' => [
+                'title' => 'Prefab Image Import',
+                'description' => 'Import prefab images into the database'
+            ],
+            'enhanced_icon_import' => [
+                'title' => 'Enhanced Icon Import',
+                'description' => 'Import icons from multiple sources (Jotunn, Commands.gg, existing URLs)'
+            ],
+            'valheim_weather' => [
+                'title' => 'Valheim Weather System',
+                'description' => 'Weather prediction and calendar system'
+            ],
+            'jotun-playerlist' => [
+                'title' => 'Jotun Player List',
+                'description' => 'Player list management and display'
+            ]
+        ];
+        
+        // Auto-detect ALL shortcodes, with intelligent filtering (same as dashboard)
+        foreach ($shortcode_tags as $shortcode_tag => $callback) {
+            // Skip WordPress core shortcodes and common third-party plugin shortcodes
+            $skip_patterns = [
+                'gallery', 'audio', 'video', 'playlist', 'embed', 'wp_caption', 'caption',
+                'contact-form-7', 'cf7', 'gravityform', 'wpforms', 'elementor-template',
+                'woocommerce', 'wc_', 'vc_', 'et_pb_', 'fusion_'
+            ];
+            
+            $should_skip = false;
+            foreach ($skip_patterns as $pattern) {
+                if (strpos($shortcode_tag, $pattern) !== false) {
+                    $should_skip = true;
+                    break;
+                }
+            }
+            
+            // Additional check: skip very short shortcodes (likely core WP)
+            if (strlen($shortcode_tag) < 3) {
+                $should_skip = true;
+            }
+            
+            if ($should_skip) continue;
+            
+            // If not already defined, auto-detect ALL remaining shortcodes
+            if (!isset($predefined_shortcodes[$shortcode_tag])) {
+                // Enhanced detection: include ALL non-core shortcodes, with special handling for plugin shortcodes
+                $is_plugin_shortcode = (
+                    strpos($shortcode_tag, 'jotun') !== false || 
+                    strpos($shortcode_tag, 'eventzones') !== false ||
+                    strpos($shortcode_tag, '_editor') !== false ||
+                    strpos($shortcode_tag, '_interface') !== false ||
+                    strpos($shortcode_tag, '_ui') !== false ||
+                    strpos($shortcode_tag, 'section') !== false ||
+                    strpos($shortcode_tag, 'shop') !== false ||
+                    strpos($shortcode_tag, 'trade') !== false ||
+                    strpos($shortcode_tag, 'barter') !== false ||
+                    strpos($shortcode_tag, 'prefab') !== false ||
+                    strpos($shortcode_tag, 'icon') !== false ||
+                    strpos($shortcode_tag, 'import') !== false ||
+                    strpos($shortcode_tag, 'enhanced') !== false ||
+                    strpos($shortcode_tag, 'weather') !== false ||
+                    strpos($shortcode_tag, 'valheim') !== false ||
+                    strpos($shortcode_tag, 'pos') !== false ||
+                    strpos($shortcode_tag, 'legacy') !== false ||
+                    strpos($shortcode_tag, 'unified') !== false ||
+                    strpos($shortcode_tag, 'universal') !== false
+                );
+                
+                // For plugin shortcodes, add them automatically
+                if ($is_plugin_shortcode) {
+                    $predefined_shortcodes[$shortcode_tag] = [
+                        'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
+                        'description' => 'Plugin shortcode interface (auto-detected)'
+                    ];
+                } else {
+                    // For other shortcodes, add them but mark as third-party
+                    $predefined_shortcodes[$shortcode_tag] = [
+                        'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
+                        'description' => 'Third-party shortcode (auto-detected)'
+                    ];
+                }
+            }
+        }
+        
+        // Add all detected shortcodes to pages (but only if they actually exist)
+        foreach ($predefined_shortcodes as $shortcode => $definition) {
+            if (shortcode_exists($shortcode)) {
+                $pages[$shortcode] = [
+                    'title' => $definition['title'],
+                    'description' => $definition['description'],
+                    'is_shortcode' => true,
+                    'registered' => true
+                ];
+            }
+        }
+        
+        $admin_count = count($this->get_admin_pages());
+        $shortcode_count = count($pages) - $admin_count;
+        error_log('Jotunheim Page Permissions: Available pages scan - ' . count($pages) . ' total (' . $admin_count . ' admin, ' . $shortcode_count . ' shortcodes)');
+        
+        return $pages;
+    }
+    
+    /**
+     * Get current page permissions
+     */
+    private function get_page_permissions() {
+        return get_option('jotunheim_page_permissions', []);
+    }
+    
+    /**
+     * AJAX handler for saving page permissions
+     */
+    public function ajax_save_page_permissions() {
             ],
             'item_list_add_new_item' => [
                 'title' => 'Add New Item',
@@ -389,7 +589,72 @@ class JotunheimPagePermissions {
             ]
         ];
         
-        // Only add shortcodes that are actually registered
+        // Auto-detect ALL shortcodes, with intelligent filtering (same as dashboard)
+        foreach ($shortcode_tags as $shortcode_tag => $callback) {
+            // Skip WordPress core shortcodes and common third-party plugin shortcodes
+            $skip_patterns = [
+                'gallery', 'audio', 'video', 'playlist', 'embed', 'wp_caption', 'caption',
+                'contact-form-7', 'cf7', 'gravityform', 'wpforms', 'elementor-template',
+                'woocommerce', 'wc_', 'vc_', 'et_pb_', 'fusion_'
+            ];
+            
+            $should_skip = false;
+            foreach ($skip_patterns as $pattern) {
+                if (strpos($shortcode_tag, $pattern) !== false) {
+                    $should_skip = true;
+                    break;
+                }
+            }
+            
+            // Additional check: skip very short shortcodes (likely core WP)
+            if (strlen($shortcode_tag) < 3) {
+                $should_skip = true;
+            }
+            
+            if ($should_skip) continue;
+            
+            // If not already defined, auto-detect ALL remaining shortcodes
+            if (!isset($predefined_shortcodes[$shortcode_tag])) {
+                // Enhanced detection: include ALL non-core shortcodes, with special handling for plugin shortcodes
+                $is_plugin_shortcode = (
+                    strpos($shortcode_tag, 'jotun') !== false || 
+                    strpos($shortcode_tag, 'eventzones') !== false ||
+                    strpos($shortcode_tag, '_editor') !== false ||
+                    strpos($shortcode_tag, '_interface') !== false ||
+                    strpos($shortcode_tag, '_ui') !== false ||
+                    strpos($shortcode_tag, 'section') !== false ||
+                    strpos($shortcode_tag, 'shop') !== false ||
+                    strpos($shortcode_tag, 'trade') !== false ||
+                    strpos($shortcode_tag, 'barter') !== false ||
+                    strpos($shortcode_tag, 'prefab') !== false ||
+                    strpos($shortcode_tag, 'icon') !== false ||
+                    strpos($shortcode_tag, 'import') !== false ||
+                    strpos($shortcode_tag, 'enhanced') !== false ||
+                    strpos($shortcode_tag, 'weather') !== false ||
+                    strpos($shortcode_tag, 'valheim') !== false ||
+                    strpos($shortcode_tag, 'pos') !== false ||
+                    strpos($shortcode_tag, 'legacy') !== false ||
+                    strpos($shortcode_tag, 'unified') !== false ||
+                    strpos($shortcode_tag, 'universal') !== false
+                );
+                
+                // For plugin shortcodes, add them automatically
+                if ($is_plugin_shortcode) {
+                    $predefined_shortcodes[$shortcode_tag] = [
+                        'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
+                        'description' => 'Plugin shortcode interface (auto-detected)'
+                    ];
+                } else {
+                    // For other shortcodes, add them but mark as third-party
+                    $predefined_shortcodes[$shortcode_tag] = [
+                        'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
+                        'description' => 'Third-party shortcode (auto-detected)'
+                    ];
+                }
+            }
+        }
+        
+        // Add all detected shortcodes to pages (but only if they actually exist)
         foreach ($predefined_shortcodes as $shortcode => $definition) {
             if (shortcode_exists($shortcode)) {
                 $pages[$shortcode] = [
@@ -401,9 +666,9 @@ class JotunheimPagePermissions {
             }
         }
         
-        error_log('Jotunheim Page Permissions: Detected ' . count($pages) . ' total pages for permissions');
-        error_log('Jotunheim Page Permissions: Admin pages: ' . count($admin_pages));
-        error_log('Jotunheim Page Permissions: Shortcode pages: ' . (count($pages) - count($admin_pages)));
+        $admin_count = count($this->get_admin_pages());
+        $shortcode_count = count($pages) - $admin_count;
+        error_log('Jotunheim Page Permissions: Available pages scan - ' . count($pages) . ' total (' . $admin_count . ' admin, ' . $shortcode_count . ' shortcodes)');
         
         return $pages;
     }
@@ -484,7 +749,7 @@ class JotunheimPagePermissions {
         $configured_pages = array_keys($current_permissions);
         
         // Get all available pages (including newly detected ones)
-        $all_pages = $this->get_plugin_pages();
+        $all_pages = $this->get_all_available_pages();
         $all_page_keys = array_keys($all_pages);
         
         // Find new pages
