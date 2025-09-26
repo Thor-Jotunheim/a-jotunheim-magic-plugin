@@ -974,8 +974,8 @@ class ShopManager {
                     ${this.escapeHtml(item.master_item_name || item.item_name)}
                     ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
                 </td>
-                <td>${this.formatPrice(defaultPrice)}</td>
-                <td>${this.formatPrice(shopPrice)}</td>
+                <td>${defaultPrice} Coins</td>
+                <td>${shopPrice} Coins</td>
                 <td class="stock-cell">${(() => {
                     console.log('DEBUG - Stock quantity for item:', item.master_item_name || item.item_name, 'stock_quantity:', item.stock_quantity, 'type:', typeof item.stock_quantity);
                     return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
