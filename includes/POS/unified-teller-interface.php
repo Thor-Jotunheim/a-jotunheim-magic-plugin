@@ -49,43 +49,136 @@ function unified_teller_interface() {
             </div>
         </div>
         
-        <!-- Compact Shop and Customer Selection -->
-        <div class="teller-card compact-config-card">
-            <div class="card-content">
-                <div class="compact-config-grid single-column">
-                    <div class="config-section">
-                        <div class="form-field">
-                            <label for="customer-name" class="field-label">Customer Name</label>
-                            <div class="customer-search-container">
-                                <div class="input-group">
-                                    <input 
-                                        type="text" 
-                                        id="customer-name" 
-                                        class="field-input" 
-                                        placeholder="Start typing player name... (auto-validates)"
-                                        autocomplete="off"
-                                    >
-                                </div>
-                                <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
+        <!-- Customer and Payment Row -->
+        <div class="customer-payment-row">
+            <!-- Customer Selection -->
+            <div class="teller-card customer-card">
+                <div class="card-header">
+                    <h2 class="card-title">Customer Name</h2>
+                </div>
+                <div class="card-content">
+                    <div class="form-field">
+                        <div class="customer-search-container">
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    id="customer-name" 
+                                    class="field-input" 
+                                    placeholder="Start typing player name... (auto-validates)"
+                                    autocomplete="off"
+                                >
+                            </div>
+                            <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div id="customer-status" class="status-message"></div>
+                    <div id="customer-info" class="customer-info-card" style="display: none;">
+                        <div class="customer-details">
+                            <div class="customer-detail">
+                                <span class="detail-label">Player:</span>
+                                <span id="customer-display-name" class="detail-value"></span>
+                            </div>
+                            <div class="customer-detail">
+                                <span class="detail-label">Status:</span>
+                                <span id="customer-active-status" class="detail-value"></span>
+                            </div>
+                            <div class="customer-detail">
+                                <span class="detail-label">Registered:</span>
+                                <span id="customer-registration" class="detail-value"></span>
                             </div>
                         </div>
-                        <div id="customer-status" class="status-message"></div>
-                        <div id="customer-info" class="customer-info-card" style="display: none;">
-                            <div class="customer-details">
-                                <div class="customer-detail">
-                                    <span class="detail-label">Player:</span>
-                                    <span id="customer-display-name" class="detail-value"></span>
-                                </div>
-                                <div class="customer-detail">
-                                    <span class="detail-label">Status:</span>
-                                    <span id="customer-active-status" class="detail-value"></span>
-                                </div>
-                                <div class="customer-detail">
-                                    <span class="detail-label">Registered:</span>
-                                    <span id="customer-registration" class="detail-value"></span>
-                                </div>
+                        <button id="register-new-player-btn" class="btn btn-outline btn-sm">Register New Player</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Tracking -->
+            <div class="teller-card payment-card">
+                <div class="card-header">
+                    <h2 class="card-title">Payment Tracking</h2>
+                </div>
+                <div class="card-content">
+                    <div class="payment-grid-compact">
+                        <div class="form-field">
+                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh</label>
+                            <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
+                        </div>
+                        <div class="form-field">
+                            <label for="gold-total" class="field-label">Gold</label>
+                            <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div class="payment-summary-compact">
+                        <div class="summary-row">
+                            <span class="summary-label">Cost:</span>
+                            <span id="item-total-cost" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Paid:</span>
+                            <span id="amount-paid-display" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Diff:</span>
+                            <span id="payment-difference" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Status:</span>
+                            <span id="payment-status" class="payment-status pending">Pending</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status Warnings and Change Due -->
+                    <div id="payment-warnings" class="payment-warnings" style="display: none;">
+                        <div id="overpaid-warning" class="payment-warning overpaid" style="display: none;">
+                            <div class="warning-icon">⚠️</div>
+                            <div class="warning-content">
+                                <div class="warning-title">Overpaid</div>
+                                <div class="warning-message">Change due</div>
                             </div>
-                            <button id="register-new-player-btn" class="btn btn-outline btn-sm">Register New Player</button>
+                        </div>
+                        
+                        <div id="underpaid-warning" class="payment-warning underpaid" style="display: none;">
+                            <div class="warning-icon">❌</div>
+                            <div class="warning-content">
+                                <div class="warning-title">Underpaid</div>
+                                <div class="warning-message">More payment needed</div>
+                            </div>
+                        </div>
+                        
+                        <div id="balanced-confirmation" class="payment-warning balanced" style="display: none;">
+                            <div class="warning-icon">✅</div>
+                            <div class="warning-content">
+                                <div class="warning-title">Balanced</div>
+                                <div class="warning-message">Ready to record</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Due Section (only shows when overpaid) -->
+                    <div id="change-due-section" class="change-due-section" style="display: none;">
+                        <div class="change-due-header">
+                            <h4>Change Due</h4>
+                        </div>
+                        <div class="change-due-grid">
+                            <div class="form-field">
+                                <label for="change-ymir-flesh" class="field-label">Ymir Flesh</label>
+                                <input type="number" id="change-ymir-flesh" class="field-input" min="0" step="1" placeholder="0">
+                            </div>
+                            <div class="form-field">
+                                <label for="change-gold" class="field-label">Gold</label>
+                                <input type="number" id="change-gold" class="field-input" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="change-summary">
+                            <div class="summary-row">
+                                <span class="summary-label">Change Given:</span>
+                                <span id="total-change-given" class="summary-value">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Remaining:</span>
+                                <span id="remaining-change-due" class="summary-value">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,98 +261,7 @@ function unified_teller_interface() {
                 </div>
             </div>
 
-            <!-- Payment Tracking -->
-            <div class="teller-card payment-card">
-                <div class="card-header">
-                    <h2 class="card-title">Payment Tracking</h2>
-                    <p class="card-description">Track customer payment and balance status</p>
-                </div>
-                <div class="card-content">
-                    <div class="payment-grid">
-                        <div class="form-field">
-                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh Received</label>
-                            <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
-                        </div>
-                        <div class="form-field">
-                            <label for="gold-total" class="field-label">Gold Received</label>
-                            <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
-                        </div>
-                    </div>
-                    
-                    <div class="payment-summary">
-                        <div class="summary-row">
-                            <span class="summary-label">Total Cost:</span>
-                            <span id="item-total-cost" class="summary-value">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Amount Paid:</span>
-                            <span id="amount-paid-display" class="summary-value">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Difference:</span>
-                            <span id="payment-difference" class="summary-value">0</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Payment Status:</span>
-                            <span id="payment-status" class="payment-status pending">Pending</span>
-                        </div>
-                    </div>
 
-                    <!-- Payment Status Warnings and Change Due -->
-                    <div id="payment-warnings" class="payment-warnings" style="display: none;">
-                        <div id="overpaid-warning" class="payment-warning overpaid" style="display: none;">
-                            <div class="warning-icon">⚠️</div>
-                            <div class="warning-content">
-                                <div class="warning-title">Customer Overpaid</div>
-                                <div class="warning-message">Change due to customer</div>
-                            </div>
-                        </div>
-                        
-                        <div id="underpaid-warning" class="payment-warning underpaid" style="display: none;">
-                            <div class="warning-icon">❌</div>
-                            <div class="warning-content">
-                                <div class="warning-title">Customer Underpaid</div>
-                                <div class="warning-message">Additional payment required</div>
-                            </div>
-                        </div>
-                        
-                        <div id="balanced-confirmation" class="payment-warning balanced" style="display: none;">
-                            <div class="warning-icon">✅</div>
-                            <div class="warning-content">
-                                <div class="warning-title">Payment Balanced</div>
-                                <div class="warning-message">Transaction ready to record</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Change Due Section (only shows when overpaid) -->
-                    <div id="change-due-section" class="change-due-section" style="display: none;">
-                        <div class="change-due-header">
-                            <h4>Change Due to Customer</h4>
-                        </div>
-                        <div class="change-due-grid">
-                            <div class="form-field">
-                                <label for="change-ymir-flesh" class="field-label">Ymir Flesh Given</label>
-                                <input type="number" id="change-ymir-flesh" class="field-input" min="0" step="1" placeholder="0">
-                            </div>
-                            <div class="form-field">
-                                <label for="change-gold" class="field-label">Gold Given</label>
-                                <input type="number" id="change-gold" class="field-input" min="0" step="1" placeholder="0">
-                            </div>
-                        </div>
-                        <div class="change-summary">
-                            <div class="summary-row">
-                                <span class="summary-label">Total Change Given:</span>
-                                <span id="total-change-given" class="summary-value">0</span>
-                            </div>
-                            <div class="summary-row">
-                                <span class="summary-label">Remaining Change Due:</span>
-                                <span id="remaining-change-due" class="summary-value">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Transaction Actions -->
             <div class="teller-card actions-card">
