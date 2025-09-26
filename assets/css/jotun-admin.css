@@ -29,7 +29,28 @@
 /* Button Styles */
 .jotun-btn, .btn {
     display: inline-flex;
-    align/* Shortcode Reference Section */
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: #0073aa;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.jotun-btn:hover, .btn:hover {
+    background: #005a87;
+    color: white;
+    text-decoration: none;
+}
+
+/* Shortcode Reference Section */
 .shortcodes-reference-section {
     margin-top: 40px;
     padding: 20px;
@@ -673,8 +694,9 @@
 
 /* Shop Table Action Buttons - ONLY for main shops table */
 #shops-table .btn-sm {
-    min-width: 70px;
-    padding: 5px 10px;
+    min-width: 80px;
+    width: 80px;
+    padding: 5px 8px;
     font-size: 12px;
     margin: 1px 2px;
     border-radius: 3px;
@@ -896,6 +918,101 @@
     font-size: 13px;
     color: #d63384;
     word-break: break-all;
+}
+
+/* Shop Shortcodes Tab Styles */
+.shortcode-reference {
+    padding: 20px;
+}
+
+.shortcode-reference h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1.3em;
+    border-bottom: 2px solid #007cba;
+    padding-bottom: 8px;
+}
+
+.shortcode-reference h4 {
+    margin: 20px 0 10px 0;
+    color: #555;
+    font-size: 1.1em;
+}
+
+.shortcode-reference h5 {
+    margin: 15px 0 8px 0;
+    color: #666;
+    font-size: 1em;
+}
+
+.shortcode-example {
+    margin: 15px 0;
+}
+
+.shortcode-copy-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.shortcode-copy-container code {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #d63384;
+    padding: 0;
+}
+
+.copy-shortcode-btn {
+    background: #007cba;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.copy-shortcode-btn:hover {
+    background: #005a87;
+}
+
+.shortcode-attr-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.shortcode-attr-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.shortcode-attr-list li:last-child {
+    border-bottom: none;
+}
+
+.shortcode-attr-list strong {
+    color: #007cba;
+    font-family: 'Courier New', monospace;
+}
+
+.shortcode-notes ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.shortcode-notes li {
+    margin: 5px 0;
+    color: #666;
 }
 
 .copy-btn {

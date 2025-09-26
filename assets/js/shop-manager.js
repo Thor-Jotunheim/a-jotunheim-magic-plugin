@@ -1841,13 +1841,17 @@ class ShopManager {
         document.querySelectorAll('.copy-shortcode-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
-                const shortcode = button.getAttribute('data-shortcode');
+                
+                // Get shortcode text from the code element in the same container
+                const container = button.closest('.shortcode-copy-container');
+                const codeElement = container.querySelector('code');
+                const shortcode = codeElement ? codeElement.textContent : button.getAttribute('data-shortcode');
                 
                 // Copy to clipboard
                 navigator.clipboard.writeText(shortcode).then(() => {
                     // Visual feedback
                     const originalText = button.textContent;
-                    button.textContent = 'Copied!';
+                    button.textContent = '✓ Copied!';
                     button.style.background = '#28a745';
                     
                     // Reset after 2 seconds
