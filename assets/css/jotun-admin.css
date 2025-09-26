@@ -390,9 +390,12 @@
     opacity: 1 !important;
     height: auto !important;
     max-height: none !important;
-    padding: 15px 0 !important;
+    padding: 15px !important;
     overflow: visible !important;
     transition: all 0.3s ease;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 #advanced-settings-content.collapsed {
@@ -411,6 +414,9 @@
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
 }
 
 .advanced-settings-content .form-row:last-child {
@@ -418,19 +424,40 @@
     margin-bottom: 0;
 }
 
+.advanced-settings-content .form-group {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
 .advanced-settings-content .form-group label {
     font-weight: 600;
     color: #495057;
     margin-bottom: 8px;
+    display: block;
+    width: 100%;
+}
+
+.advanced-settings-content .form-control,
+.advanced-settings-content input,
+.advanced-settings-content select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .advanced-settings-content .checkbox-label {
     font-weight: 500;
     color: #6c757d;
+    display: block;
+    width: 100%;
 }
 
 .advanced-settings-content small {
     color: #6c757d !important;
+    display: block;
+    width: 100%;
+    word-wrap: break-word;
 }
 
 /* Shop Manager Table Enhancements */

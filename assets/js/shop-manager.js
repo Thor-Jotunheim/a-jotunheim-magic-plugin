@@ -1241,6 +1241,9 @@ class ShopManager {
             // Update conditional field visibility for new checkboxes
             this.updateConditionalFieldVisibility();
             
+            // Check if advanced settings should be expanded
+            this.checkAndExpandAdvancedSettings(item);
+            
             // Update form button
             const submitButton = document.querySelector('#add-shop-item-form button[type="submit"]');
             console.log('DEBUG - Submit button found:', submitButton);
@@ -1264,6 +1267,51 @@ class ShopManager {
         } catch (error) {
             console.error('Error loading shop item for edit:', error);
             this.showStatus('Failed to load item data', 'error');
+        }
+    }
+
+    checkAndExpandAdvancedSettings(item) {
+        // Check if any advanced settings are configured
+        const hasAdvancedSettings = 
+            (item.rotation && item.rotation !== 1) ||
+            (item.stock_quantity !== -1) ||
+            (item.is_available == '0' || item.is_available === false) ||
+            (item.turn_in_quantity && item.turn_in_quantity > 0) ||
+            (item.turn_in_requirement && item.turn_in_requirement > 0) ||
+            (item.daily_limit_enabled == 1) ||
+            (item.buy_daily_limit_enabled == 1) ||
+            (item.turnin_daily_limit_enabled == 1);
+            
+        console.log('DEBUG - hasAdvancedSettings:', hasAdvancedSettings);
+        
+        if (hasAdvancedSettings) {
+            this.expandAdvancedSettings();
+        }
+    }
+    
+    expandAdvancedSettings() {
+        const content = document.getElementById('advanced-settings-content');
+        const icon = document.querySelector('.advanced-settings-arrow');
+        const header = document.querySelector('.advanced-settings-header');
+        
+        if (content && content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            if (icon) icon.classList.remove('collapsed');
+            if (header) header.classList.remove('collapsed');
+            console.log('DEBUG - Advanced settings expanded for editing');
+        }
+    }
+    
+    collapseAdvancedSettings() {
+        const content = document.getElementById('advanced-settings-content');
+        const icon = document.querySelector('.advanced-settings-arrow');
+        const header = document.querySelector('.advanced-settings-header');
+        
+        if (content && !content.classList.contains('collapsed')) {
+            content.classList.add('collapsed');
+            if (icon) icon.classList.add('collapsed');
+            if (header) header.classList.add('collapsed');
+            console.log('DEBUG - Advanced settings collapsed after editing');
         }
     }
 
@@ -1348,6 +1396,9 @@ class ShopManager {
         if (suggestionsDiv) {
             suggestionsDiv.style.display = 'none';
         }
+        
+        // Collapse advanced settings when cancelling edit
+        this.collapseAdvancedSettings();
     }
 
     filterShops() {
