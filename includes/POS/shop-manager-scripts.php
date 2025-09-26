@@ -25,6 +25,14 @@ function shop_manager_scripts_shortcode($atts) {
         'rest_url' => rest_url('jotun-api/v1/')
     ]);
 
+    // Enqueue admin styles for shop manager
+    wp_enqueue_style(
+        'jotun-admin-styles',
+        plugin_dir_url(__FILE__) . '../../assets/css/jotun-admin.css',
+        [],
+        filemtime(plugin_dir_path(__FILE__) . '../../assets/css/jotun-admin.css')
+    );
+
     // Enqueue quick add item modal script
     wp_enqueue_script(
         'quick-add-item-modal',

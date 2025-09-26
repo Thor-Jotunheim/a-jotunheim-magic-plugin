@@ -1043,14 +1043,16 @@ class ShopManager {
                 </td>
                 <td>${this.formatPrice(defaultPrice)}</td>
                 <td>${this.formatPrice(shopPrice)}</td>
-                <td>${(() => {
+                <td class="stock-cell">${(() => {
                     console.log('DEBUG - Stock quantity for item:', item.master_item_name || item.item_name, 'stock_quantity:', item.stock_quantity, 'type:', typeof item.stock_quantity);
-                    return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '∞' : (item.stock_quantity || 0);
+                    return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
                 })()}</td>
                 <td><span class="rotation-badge">${(item.rotation === 1 || !item.rotation) ? 'none' : item.rotation}</span></td>
                 <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
+                ${item.turn_in == 1 ? `<td class="turnin-progress">${item.turn_in_quantity || 0}</td>` : '<td class="no-turnin"><span class="red-x">✗</span></td>'}
+                ${item.turn_in == 1 ? `<td class="turnin-required">${item.turn_in_requirement || 0}</td>` : '<td class="no-turnin"><span class="red-x">✗</span></td>'}
                 <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_buy_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>

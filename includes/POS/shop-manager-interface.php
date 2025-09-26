@@ -584,6 +584,8 @@ function shop_manager_interface() {
                                     <th>Sell</th>
                                     <th>Buy</th>
                                     <th>Turn-In</th>
+                                    <th>Turn-In Progress</th>
+                                    <th>Turn-In Required</th>
                                     <th>Daily Sell Limit</th>
                                     <th>Daily Buy Limit</th>
                                     <th>Daily Turn-in Limit</th>
