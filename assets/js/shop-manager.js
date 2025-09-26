@@ -1179,12 +1179,14 @@ class ShopManager {
             document.getElementById('custom-price').value = item.custom_price || '';
             
             // Handle stock quantity checkbox and field
-            const hasCustomStock = item.stock_quantity !== -1;
+            const stockQuantityValue = parseInt(item.stock_quantity);
+            const hasCustomStock = stockQuantityValue !== -1;
             const customStockCheckbox = document.getElementById('custom-stock-enabled');
             const stockQuantityField = document.getElementById('stock-quantity');
             
+            console.log('DEBUG - Stock quantity value:', stockQuantityValue, 'hasCustomStock:', hasCustomStock);
             if (customStockCheckbox) customStockCheckbox.checked = hasCustomStock;
-            if (stockQuantityField) stockQuantityField.value = hasCustomStock ? (item.stock_quantity || 0) : 0;
+            if (stockQuantityField) stockQuantityField.value = hasCustomStock ? stockQuantityValue : 0;
             
             // Handle rotation checkbox and field  
             const rotationValue = parseInt(item.rotation) || 1;

@@ -373,7 +373,10 @@ function shop_manager_interface() {
                                     </div>
                                     <div class="form-group" id="stock-quantity-group" style="display: none;">
                                         <label for="stock-quantity">Stock Quantity</label>
-                                        <input type="number" id="stock-quantity" name="stock_quantity" value="0" min="0">
+                                        <input type="number" id="stock-quantity" name="stock_quantity" value="0">
+                                        <small style="display: block; color: #666; margin-top: 4px;">
+                                            Enter 0 or positive number for limited stock
+                                        </small>
                                     </div>
                                 </div>
                                 
