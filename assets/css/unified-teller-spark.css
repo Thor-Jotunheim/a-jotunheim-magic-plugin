@@ -172,7 +172,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: var(--font-size-3);
     line-height: var(--line-height-5);
-    max-width: 1200px;
+    max-width: 95vw;
     margin: 0 auto;
     padding: var(--space-6);
     gap: var(--space-6);
@@ -572,6 +572,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--space-3);
     width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
 }
 
 /* Force proper layout flow */
@@ -853,6 +855,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         height: auto !important;
         grid-template-columns: 1fr;
         gap: var(--space-4);
+        max-width: 100%;
     }
 }
 
