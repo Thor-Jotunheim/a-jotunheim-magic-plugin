@@ -403,22 +403,36 @@ class UnifiedTeller {
 
             // Check if this is a turn-in only shop
             const shopType = selectedOption.dataset.shopType;
-            if (shopType === 'turn-in-only') {
-                // Show turn-in interface
-                document.getElementById('teller-turnin-interface').style.display = 'block';
-                document.getElementById('teller-main-interface').style.display = 'none';
+            const isTurnInOnly = shopType === 'turn-in_only';
+            
+            // Always show main interface, but hide payment tracking for turn-in only shops
+            document.getElementById('teller-main-interface').style.display = 'block';
+            document.getElementById('teller-turnin-interface').style.display = 'none';
+            
+            // Hide/show payment tracking section based on shop type
+            const paymentCard = document.querySelector('.payment-card');
+            if (paymentCard) {
+                paymentCard.style.display = isTurnInOnly ? 'none' : 'block';
+            }
+            
+            // Load appropriate items
+            if (isTurnInOnly) {
                 await this.loadTurninItems(shopId);
             } else {
-                // Show regular shop interface
-                document.getElementById('teller-main-interface').style.display = 'block';
-                document.getElementById('teller-turnin-interface').style.display = 'none';
                 await this.loadShopItems(shopId);
             }
         } else {
-            // Hide all interfaces
+            // Hide all interfaces and reset payment tracking visibility
             document.getElementById('shop-info').style.display = 'none';
             document.getElementById('teller-main-interface').style.display = 'none';
             document.getElementById('teller-turnin-interface').style.display = 'none';
+            
+            // Show payment tracking section (default state)
+            const paymentCard = document.querySelector('.payment-card');
+            if (paymentCard) {
+                paymentCard.style.display = 'block';
+            }
+            
             this.clearCart();
         }
     }
