@@ -567,11 +567,11 @@
 
 /* Shop Table Action Buttons */
 .shop-table .btn-sm {
-    min-width: 80px;
-    padding: 6px 12px;
-    font-size: 13px;
-    margin: 2px 1px;
-    border-radius: 4px;
+    min-width: 70px;
+    padding: 5px 10px;
+    font-size: 12px;
+    margin: 1px 2px;
+    border-radius: 3px;
     border: 1px solid;
     text-decoration: none;
     display: inline-block;
@@ -579,13 +579,28 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
-    line-height: 1.2;
+    line-height: 1.1;
 }
 
-/* Make buttons consistent height and spacing */
+/* Make buttons fit properly in Actions column */
 .shop-table td:last-child {
     white-space: nowrap;
-    padding: 8px 12px;
+    padding: 6px 8px;
+    text-align: left;
+}
+
+/* Stack buttons on very narrow screens */
+@media (max-width: 768px) {
+    .shop-table td:last-child {
+        white-space: normal;
+    }
+    
+    .shop-table .btn-sm {
+        display: block;
+        margin: 2px 0;
+        width: 100%;
+        min-width: auto;
+    }
 }
 
 /* Ensure all action buttons have same base styling */
@@ -598,10 +613,56 @@
     transform: translateY(1px);
 }
 
-/* Simple table styling - let browser handle natural layout */
+/* Shop table with proper scrolling and layout */
 .shop-table {
     width: 100%;
-    table-layout: auto;
+    table-layout: fixed;
+    min-width: 1200px; /* Ensure minimum width for all columns */
+}
+
+/* Shop table container with horizontal scroll */
+#shops-table-container {
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Shop table column widths */
+.shop-table th:nth-child(1), /* Shop Name */
+.shop-table td:nth-child(1) { 
+    width: 20%; 
+    min-width: 150px;
+}
+
+.shop-table th:nth-child(2), /* Type */
+.shop-table td:nth-child(2) { 
+    width: 15%; 
+    min-width: 120px;
+}
+
+.shop-table th:nth-child(3), /* Current Rotation */
+.shop-table td:nth-child(3) { 
+    width: 20%; 
+    min-width: 150px;
+}
+
+.shop-table th:nth-child(4), /* Status */
+.shop-table td:nth-child(4) { 
+    width: 10%; 
+    min-width: 80px;
+}
+
+.shop-table th:nth-child(5), /* Created */
+.shop-table td:nth-child(5) { 
+    width: 12%; 
+    min-width: 100px;
+}
+
+.shop-table th:nth-child(6), /* Actions */
+.shop-table td:nth-child(6) { 
+    width: 23%; 
+    min-width: 280px; /* Enough space for 3 buttons */
 }
 
 /* Add horizontal scroll for small screens instead of aggressive wrapping */
