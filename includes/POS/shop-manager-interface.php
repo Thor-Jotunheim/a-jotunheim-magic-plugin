@@ -384,7 +384,7 @@ function shop_manager_interface() {
                                         <div class="checkbox-group">
                                             <label class="checkbox-label">
                                                 <input type="checkbox" id="custom-rotation-enabled" name="custom_rotation_enabled">
-                                                <span>Set Custom Rotation</span>
+                                                <span>Set Rotation</span>
                                             </label>
                                         </div>
                                         <small style="display: block; color: #666; margin-top: 4px;">
@@ -404,7 +404,7 @@ function shop_manager_interface() {
                                         <div class="checkbox-group">
                                             <label class="checkbox-label">
                                                 <input type="checkbox" id="custom-availability-enabled" name="custom_availability_enabled">
-                                                <span>Set Custom Availability</span>
+                                                <span>Set Availability</span>
                                             </label>
                                         </div>
                                         <small style="display: block; color: #666; margin-top: 4px;">

@@ -1187,20 +1187,24 @@ class ShopManager {
             if (stockQuantityField) stockQuantityField.value = hasCustomStock ? (item.stock_quantity || 0) : 0;
             
             // Handle rotation checkbox and field  
-            const hasCustomRotation = item.rotation && item.rotation !== 1;
+            const rotationValue = parseInt(item.rotation) || 1;
+            const hasCustomRotation = rotationValue !== 1;
             const customRotationCheckbox = document.getElementById('custom-rotation-enabled');
             const rotationField = document.getElementById('item-rotation');
             
+            console.log('DEBUG - Rotation value:', rotationValue, 'hasCustomRotation:', hasCustomRotation);
             if (customRotationCheckbox) customRotationCheckbox.checked = hasCustomRotation;
-            if (rotationField) rotationField.value = item.rotation || 1;
+            if (rotationField) rotationField.value = rotationValue;
             
             // Handle availability checkbox and field
-            const hasCustomAvailability = item.is_available == '0' || item.is_available === false;
+            const availabilityValue = item.is_available === false || item.is_available === '0' || item.is_available === 0;
+            const hasCustomAvailability = availabilityValue; // Only check if item is NOT available (non-default)
             const customAvailabilityCheckbox = document.getElementById('custom-availability-enabled');
             const availabilityField = document.getElementById('item-available');
             
+            console.log('DEBUG - Availability value:', item.is_available, 'hasCustomAvailability:', hasCustomAvailability);
             if (customAvailabilityCheckbox) customAvailabilityCheckbox.checked = hasCustomAvailability;
-            if (availabilityField) availabilityField.value = item.is_available || '1';
+            if (availabilityField) availabilityField.value = availabilityValue ? '0' : '1';
             
             // Populate turn-in fields
             document.getElementById('turn-in-quantity').value = item.turn_in_quantity || 0;
