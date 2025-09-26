@@ -281,6 +281,57 @@ function shop_manager_interface() {
                         </table>
                     </div>
                 </div>
+                
+                <!-- Universal Shortcodes Reference -->
+                <div class="shortcodes-reference-section">
+                    <h3>Universal Turn-In Tracker Shortcodes</h3>
+                    <div class="shortcode-cards">
+                        <div class="shortcode-card">
+                            <h4>Basic Universal Tracker</h4>
+                            <div class="shortcode-display">
+                                <code>[universal_turn_in_tracker]</code>
+                                <button class="copy-shortcode-btn" data-shortcode="[universal_turn_in_tracker]">Copy</button>
+                            </div>
+                            <p class="shortcode-description">Shows all active turn-in shops in a 2-column layout</p>
+                        </div>
+                        
+                        <div class="shortcode-card">
+                            <h4>Single Column Layout</h4>
+                            <div class="shortcode-display">
+                                <code>[universal_turn_in_tracker columns="1"]</code>
+                                <button class="copy-shortcode-btn" data-shortcode='[universal_turn_in_tracker columns="1"]'>Copy</button>
+                            </div>
+                            <p class="shortcode-description">Full-width single column display</p>
+                        </div>
+                        
+                        <div class="shortcode-card">
+                            <h4>Three Column Layout</h4>
+                            <div class="shortcode-display">
+                                <code>[universal_turn_in_tracker columns="3"]</code>
+                                <button class="copy-shortcode-btn" data-shortcode='[universal_turn_in_tracker columns="3"]'>Copy</button>
+                            </div>
+                            <p class="shortcode-description">Compact 3-column grid layout</p>
+                        </div>
+                        
+                        <div class="shortcode-card">
+                            <h4>Show Completed Items</h4>
+                            <div class="shortcode-display">
+                                <code>[universal_turn_in_tracker show_completed="true"]</code>
+                                <button class="copy-shortcode-btn" data-shortcode='[universal_turn_in_tracker show_completed="true"]'>Copy</button>
+                            </div>
+                            <p class="shortcode-description">Include completed turn-in items in display</p>
+                        </div>
+                        
+                        <div class="shortcode-card">
+                            <h4>Custom Title</h4>
+                            <div class="shortcode-display">
+                                <code>[universal_turn_in_tracker title="Community Objectives"]</code>
+                                <button class="copy-shortcode-btn" data-shortcode='[universal_turn_in_tracker title="Community Objectives"]'>Copy</button>
+                            </div>
+                            <p class="shortcode-description">Custom header title for the tracker</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

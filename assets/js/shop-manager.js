@@ -16,6 +16,7 @@ class ShopManager {
         this.loadedRotations = new Set(); // Track which shops have rotations loaded
         this.initializeEventListeners();
         this.loadInitialData();
+        this.setupShortcodeCopyButtons();
     }
 
     getShopTypeLabel(shopTypeKey) {
@@ -1833,6 +1834,49 @@ class ShopManager {
         if (!dateString) return '';
         const date = new Date(dateString);
         return date.toLocaleDateString();
+    }
+
+    setupShortcodeCopyButtons() {
+        // Add event listeners for shortcode copy buttons
+        document.querySelectorAll('.copy-shortcode-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const shortcode = button.getAttribute('data-shortcode');
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(shortcode).then(() => {
+                    // Visual feedback
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.style.background = '#28a745';
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.background = '#007cba';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy shortcode:', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = shortcode;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    // Visual feedback
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.style.background = '#28a745';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.background = '#007cba';
+                    }, 2000);
+                });
+            });
+        });
     }
 }
 

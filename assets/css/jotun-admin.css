@@ -29,6 +29,112 @@
 /* Button Styles */
 .jotun-btn, .btn {
     display: inline-flex;
+    align/* Shortcode Reference Section */
+.shortcodes-reference-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.shortcodes-reference-section h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.4em;
+    border-bottom: 2px solid #007cba;
+    padding-bottom: 10px;
+}
+
+.shortcode-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.shortcode-card {
+    background: white;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.shortcode-card h4 {
+    margin: 0 0 10px 0;
+    color: #555;
+    font-size: 1.1em;
+}
+
+.shortcode-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.shortcode-display code {
+    flex: 1;
+    background: none;
+    padding: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #d63384;
+}
+
+.copy-shortcode-btn {
+    background: #007cba;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.copy-shortcode-btn:hover {
+    background: #005a87;
+}
+
+.shortcode-description {
+    margin: 5px 0 0 0;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #shops-table td:last-child {
+        white-space: normal;
+    }
+    
+    #shops-table .btn-sm {
+        display: block;
+        margin: 2px 0;
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .shortcode-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .shortcode-display {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+    }
+}
+
+/* Button Base Styles */
+.jotun-btn, .btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -565,8 +671,8 @@
     font-size: 14px;
 }
 
-/* Shop Table Action Buttons */
-.shop-table .btn-sm {
+/* Shop Table Action Buttons - ONLY for main shops table */
+#shops-table .btn-sm {
     min-width: 70px;
     padding: 5px 10px;
     font-size: 12px;
@@ -582,11 +688,27 @@
     line-height: 1.1;
 }
 
-/* Make buttons fit properly in Actions column */
-.shop-table td:last-child {
+/* Make buttons fit properly in Actions column - ONLY main shops table */
+#shops-table td:last-child {
     white-space: nowrap;
     padding: 6px 8px;
     text-align: left;
+}
+
+/* General button styling for other tables */
+.shop-table .btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 2px;
+    border-radius: 3px;
+    border: 1px solid;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    line-height: 1.2;
 }
 
 /* Stack buttons on very narrow screens */
@@ -613,11 +735,17 @@
     transform: translateY(1px);
 }
 
-/* Shop table with proper scrolling and layout */
-.shop-table {
+/* Shop table with proper scrolling and layout - ONLY for main shops table */
+#shops-table {
     width: 100%;
     table-layout: fixed;
     min-width: 1200px; /* Ensure minimum width for all columns */
+}
+
+/* General shop table styling (other tables use auto layout) */
+.shop-table {
+    width: 100%;
+    table-layout: auto; /* Auto layout for other tables */
 }
 
 /* Shop table container with horizontal scroll */
@@ -628,39 +756,39 @@
     border-radius: 4px;
 }
 
-/* Shop table column widths */
-.shop-table th:nth-child(1), /* Shop Name */
-.shop-table td:nth-child(1) { 
+/* Shop table column widths - ONLY for main shops table */
+#shops-table th:nth-child(1), /* Shop Name */
+#shops-table td:nth-child(1) { 
     width: 20%; 
     min-width: 150px;
 }
 
-.shop-table th:nth-child(2), /* Type */
-.shop-table td:nth-child(2) { 
+#shops-table th:nth-child(2), /* Type */
+#shops-table td:nth-child(2) { 
     width: 15%; 
     min-width: 120px;
 }
 
-.shop-table th:nth-child(3), /* Current Rotation */
-.shop-table td:nth-child(3) { 
+#shops-table th:nth-child(3), /* Current Rotation */
+#shops-table td:nth-child(3) { 
     width: 20%; 
     min-width: 150px;
 }
 
-.shop-table th:nth-child(4), /* Status */
-.shop-table td:nth-child(4) { 
+#shops-table th:nth-child(4), /* Status */
+#shops-table td:nth-child(4) { 
     width: 10%; 
     min-width: 80px;
 }
 
-.shop-table th:nth-child(5), /* Created */
-.shop-table td:nth-child(5) { 
+#shops-table th:nth-child(5), /* Created */
+#shops-table td:nth-child(5) { 
     width: 12%; 
     min-width: 100px;
 }
 
-.shop-table th:nth-child(6), /* Actions */
-.shop-table td:nth-child(6) { 
+#shops-table th:nth-child(6), /* Actions */
+#shops-table td:nth-child(6) { 
     width: 23%; 
     min-width: 280px; /* Enough space for 3 buttons */
 }
