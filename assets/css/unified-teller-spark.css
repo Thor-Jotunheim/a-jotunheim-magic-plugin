@@ -208,16 +208,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: var(--radius-4);
     box-shadow: var(--shadow-2);
     margin-bottom: var(--space-6);
-    overflow: visible;
-}
-
-/* Items card should grow to contain all items without scrolling */
-.teller-card.items-card {
-    overflow: visible;
-}
-
-.teller-card.items-card .card-content {
-    overflow: visible;
 }
 
 .card-header {
@@ -573,17 +563,26 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Items Grid */
 .items-container {
     min-height: 300px;
-    max-height: none;
-    overflow: visible;
     height: auto;
+    overflow: visible;
 }
 
 .items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--space-3);
-    height: auto;
-    overflow: visible;
+    width: 100%;
+}
+
+/* Force proper layout flow */
+.items-card {
+    height: auto !important;
+    min-height: auto !important;
+}
+
+.items-card .card-content {
+    height: auto !important;
+    overflow: visible !important;
 }
 
 .item-card {
@@ -823,12 +822,37 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         margin-bottom: var(--space-8);
         position: relative;
         z-index: auto;
+        display: block;
+        width: 100%;
+        height: auto !important;
+        min-height: auto !important;
     }
     
-    /* Items card should clear properly on mobile */
+    /* Items card should expand properly on mobile */
     .teller-card.items-card {
         margin-bottom: var(--space-8);
         clear: both;
+        overflow: visible !important;
+        height: auto !important;
+    }
+    
+    .teller-card.items-card .card-content {
+        overflow: visible !important;
+        height: auto !important;
+    }
+    
+    /* Force grid to expand properly */
+    .items-container {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    .items-grid {
+        overflow: visible !important;
+        height: auto !important;
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
     }
 }
 
@@ -1090,7 +1114,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex-shrink: 0;
     width: 280px;
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
 }
 
 .shop-selection-box {
@@ -1114,7 +1138,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex-shrink: 0;
     width: 280px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .teller-info {

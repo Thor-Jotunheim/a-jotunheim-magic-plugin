@@ -1090,6 +1090,14 @@ class UnifiedTeller {
         const dailyTotal = this.getDailyTurninTotal(item.item_name);
         const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
         
+        console.log('DEBUG - getMaxAllowedTurnin:', {
+            itemName: item.item_name,
+            dailyTotal,
+            turnInRequirement,
+            remaining: turnInRequirement > 0 ? Math.max(0, turnInRequirement - dailyTotal) : 999,
+            dailyTurninDataExists: !!this.dailyTurninData
+        });
+        
         if (turnInRequirement > 0) {
             return Math.max(0, turnInRequirement - dailyTotal);
         }
