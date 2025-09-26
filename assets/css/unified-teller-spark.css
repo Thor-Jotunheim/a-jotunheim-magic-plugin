@@ -129,11 +129,19 @@
     --shadow-5: 0 16px 32px rgba(0, 0, 0, 0.04);
 }
 
-/* Hide WordPress page title on unified teller pages */
-.entry-header {
+/* Hide WordPress page title on unified teller pages - nuclear approach */
+.entry-header,
+.page-header,
+.site-header .entry-title,
+.content-area .entry-title,
+.main .entry-title,
+#main .entry-title,
+.content .entry-title,
+#content .entry-title {
     display: none !important;
 }
 
+/* Target all possible title elements */
 body.page h1.entry-title,
 body.page h1.page-title,
 .entry-header h1,
@@ -143,7 +151,17 @@ h1.wp-block-post-title,
 .entry-title,
 .page-title,
 article h1:first-child,
-.hentry h1:first-child {
+.hentry h1:first-child,
+.single-post .entry-title,
+.page .entry-title,
+header h1,
+.site-main h1:first-of-type,
+.content-area h1:first-of-type {
+    display: none !important;
+}
+
+/* Nuclear option - hide any h1 that might be the page title */
+body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: none !important;
 }
 
