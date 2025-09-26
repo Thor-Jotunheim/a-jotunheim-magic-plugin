@@ -615,19 +615,9 @@ class ShopManager {
                 // Show/hide fields based on shop type
                 this.toggleFieldsForShopType(isTurnInOnly);
                 
-                // Show/hide appropriate sections
-                if (isTurnInOnly) {
-                    // For Turn-In Only shops, show BOTH the items grid and turn-in controls
-                    document.getElementById('shop-items-table-container').style.display = 'block';
-                    document.getElementById('turn-in-controls').style.display = 'block';
-                    this.loadTurnInTracker(shopId);
-                    await this.loadShopItems(shopId); // Also load items for editing/deleting
-                } else {
-                    // For regular shops, show only items grid
-                    document.getElementById('shop-items-table-container').style.display = 'block';
-                    document.getElementById('turn-in-controls').style.display = 'none';
-                    await this.loadShopItems(shopId);
-                }
+                // Show shop items table
+                document.getElementById('shop-items-table-container').style.display = 'block';
+                await this.loadShopItems(shopId);
                 
                 document.getElementById('shop-items-list').style.display = 'block';
             } catch (error) {
@@ -944,65 +934,7 @@ class ShopManager {
         }
     }
 
-    async loadTurnInTracker(shopId) {
-        try {
-            // Load turn-in count for this shop
-            const response = await JotunAPI.getTurnInCount(shopId);
-            const count = response.data?.total_count || 0;
-            document.getElementById('turn-in-count').textContent = count;
-        } catch (error) {
-            console.error('Error loading turn-in tracker:', error);
-            document.getElementById('turn-in-count').textContent = '0';
-        }
-    }
 
-    async handleRecordTurnIn(e) {
-        e.preventDefault();
-        
-        if (!this.selectedShop) {
-            this.showStatus('No shop selected', 'error');
-            return;
-        }
-        
-        const formData = new FormData(e.target);
-        const turnInData = {
-            shop_id: this.selectedShop,
-            item_name: formData.get('item_name'),
-            quantity: parseInt(formData.get('quantity') || '1'),
-            player_name: formData.get('player_name') || null
-        };
-        
-        try {
-            await JotunAPI.recordTurnIn(turnInData);
-            this.showStatus('Turn-in recorded successfully', 'success');
-            e.target.reset();
-            // Reload tracker count
-            await this.loadTurnInTracker(this.selectedShop);
-        } catch (error) {
-            console.error('Error recording turn-in:', error);
-            this.showStatus('Failed to record turn-in', 'error');
-        }
-    }
-
-    async resetTurnInTracker() {
-        if (!this.selectedShop) {
-            this.showStatus('No shop selected', 'error');
-            return;
-        }
-        
-        if (!confirm('Are you sure you want to reset the turn-in tracker for this shop? This action cannot be undone.')) {
-            return;
-        }
-        
-        try {
-            await JotunAPI.resetTurnInTracker(this.selectedShop);
-            this.showStatus('Turn-in tracker reset successfully', 'success');
-            await this.loadTurnInTracker(this.selectedShop);
-        } catch (error) {
-            console.error('Error resetting turn-in tracker:', error);
-            this.showStatus('Failed to reset turn-in tracker', 'error');
-        }
-    }
 
     async loadShopItems(shopId) {
         console.log('loadShopItems called with shopId:', shopId);
@@ -1036,12 +968,12 @@ class ShopManager {
             const isCustomItem = item.is_custom_item == 1;
             
             row.innerHTML = `
+                <td><span class="rotation-badge">${(item.rotation === 1 || !item.rotation) ? 'none' : item.rotation}</span></td>
                 <td>
                     ${item.icon_image ? `<img src="${this.escapeHtml(item.icon_image)}" alt="${this.escapeHtml(item.master_item_name || item.item_name)}" class="item-icon">` : ''}
                     ${this.escapeHtml(item.master_item_name || item.item_name)}
                     ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
                 </td>
-                <td><span class="rotation-badge">${(item.rotation === 1 || !item.rotation) ? 'none' : item.rotation}</span></td>
                 <td>${this.formatPrice(defaultPrice)}</td>
                 <td>${this.formatPrice(shopPrice)}</td>
                 <td class="stock-cell">${(() => {
@@ -1051,8 +983,8 @@ class ShopManager {
                 <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
                 <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
-                ${item.turn_in == 1 ? `<td class="turnin-progress">${item.turn_in_quantity || 0}</td>` : '<td class="no-turnin"><span class="red-x">✗</span></td>'}
-                ${item.turn_in == 1 ? `<td class="turnin-required">${item.turn_in_requirement || 0}</td>` : '<td class="no-turnin"><span class="red-x">✗</span></td>'}
+                ${item.turn_in == 1 ? `<td class="turnin-progress">${item.turn_in_quantity || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
+                ${item.turn_in == 1 ? `<td class="turnin-required">${item.turn_in_requirement || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
                 <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_buy_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
                 <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>

@@ -464,6 +464,12 @@
     font-weight: bold;
 }
 
+.shop-table .na-text {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 14px;
+}
+
 /* Shop Table Action Buttons */
 .shop-table .btn-sm {
     min-width: 70px;

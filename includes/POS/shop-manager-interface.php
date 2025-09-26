@@ -157,35 +157,7 @@ function shop_manager_interface() {
             font-style: italic;
         }
         
-        /* Turn-in tracker styles */
-        .turn-in-controls {
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .turn-in-stats {
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .tracker-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-        
-        .total-count {
-            font-size: 16px;
-        }
-        
-        .turn-in-form h4 {
-            margin-bottom: 12px;
-        }
+
         
         /* Custom item badge */
         .custom-item-badge {
@@ -540,44 +512,13 @@ function shop_manager_interface() {
                 <div id="shop-items-list" class="shop-items-list" style="display: none;">
                     <h3>Items in Selected Shop</h3>
                     
-                    <!-- Turn-In Only Shop Controls -->
-                    <div id="turn-in-controls" class="turn-in-controls" style="display: none;">
-                        <div class="turn-in-stats">
-                            <h4>Turn-In Tracker</h4>
-                            <div class="tracker-info">
-                                <span class="total-count">Total Turned In: <strong id="turn-in-count">0</strong></span>
-                                <button type="button" id="reset-turn-in-tracker" class="btn btn-warning">Reset Tracker</button>
-                            </div>
-                        </div>
-                        <div class="turn-in-form">
-                            <h4>Record Turn-In</h4>
-                            <form id="record-turn-in-form">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="turn-in-item">Item Being Turned In</label>
-                                        <input type="text" id="turn-in-item" name="item_name" required placeholder="Enter item name">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="record-turn-in-quantity">Quantity</label>
-                                        <input type="number" id="record-turn-in-quantity" name="quantity" value="1" min="1" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="turn-in-player">Player Name (optional)</label>
-                                        <input type="text" id="turn-in-player" name="player_name" placeholder="Player who turned in">
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Record Turn-In</button>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- Regular Shop Items Table -->
+                    <!-- Shop Items Table -->
                     <div id="shop-items-table-container">
                         <table id="shop-items-table" class="shop-table">
                             <thead>
                                 <tr>
-                                    <th>Item Name</th>
                                     <th>Rotation</th>
+                                    <th>Item Name</th>
                                     <th>Default Price (Coins)</th>
                                     <th>Shop Price (Coins)</th>
                                     <th>Stock</th>
