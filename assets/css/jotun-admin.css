@@ -503,23 +503,39 @@
     white-space: nowrap;
 }
 
-/* Slightly shrink turn-in columns to make room for daily limit columns */
-.shop-table td:nth-child(9),  /* Turn-In Progress */
-.shop-table td:nth-child(10) /* Turn-In Required */ {
-    max-width: 95px;
+/* Compact column widths to fit all content */
+.shop-table td:nth-child(1) { /* Rotation */
+    max-width: 60px;
     text-align: center;
 }
 
-/* Style daily limit columns to prevent wrapping */
+.shop-table td:nth-child(5), /* Stock */
+.shop-table td:nth-child(6), /* Sell */
+.shop-table td:nth-child(7)  /* Buy */ {
+    max-width: 50px;
+    text-align: center;
+}
+
+/* Shrink turn-in columns */
+.shop-table td:nth-child(8),  /* Turn-In */
+.shop-table td:nth-child(9),  /* Turn-In Progress */
+.shop-table td:nth-child(10) /* Turn-In Required */ {
+    max-width: 70px;
+    text-align: center;
+}
+
+/* Compact daily limit columns */
 .shop-table td:nth-child(11), /* Daily Sell Limit */
 .shop-table td:nth-child(12), /* Daily Buy Limit */
 .shop-table td:nth-child(13)  /* Daily Turn-in Limit */ {
-    min-width: 65px;
+    max-width: 60px;
     white-space: nowrap;
     text-align: center;
+    font-size: 13px;
 }
 
-/* Center the Available column */
+/* Center and compact Available column */
 .shop-table td:nth-child(14) { /* Available */
+    max-width: 60px;
     text-align: center;
 }
