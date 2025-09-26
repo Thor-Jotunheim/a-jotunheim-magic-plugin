@@ -53,11 +53,7 @@ class ShopManager {
             this.handleAddShopItem(e);
         });
 
-        // Turn-in form submission
-        document.getElementById('record-turn-in-form').addEventListener('submit', (e) => this.handleRecordTurnIn(e));
-        
-        // Reset turn-in tracker
-        document.getElementById('reset-turn-in-tracker').addEventListener('click', () => this.resetTurnInTracker());
+        // Turn-in form elements removed - no longer needed
         
         // Item autocomplete
         this.setupItemAutocomplete();
