@@ -1207,38 +1207,30 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     }
     
     .teller-header {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
         gap: var(--space-3);
-    }
-    
-    /* Create top row with shop selection and teller */
-    .header-shop-selection,
-    .header-teller {
-        width: 48%;
-        display: inline-block;
-        vertical-align: top;
+        grid-template-areas: 
+            "shop-selection teller"
+            "main-title main-title";
     }
     
     .header-shop-selection {
-        float: left;
+        grid-area: shop-selection;
+        width: 100%;
     }
     
     .header-teller {
-        float: right;
-    }
-    
-    /* Shop and teller row container */
-    .teller-header::after {
-        content: "";
-        display: table;
-        clear: both;
-    }
-    
-    /* Main title section goes full width below */
-    .header-main {
+        grid-area: teller;
         width: 100%;
-        margin-top: var(--space-4);
-        clear: both;
+        justify-content: center;
+    }
+    
+    .header-main {
+        grid-area: main-title;
+        width: 100%;
+        text-align: center;
     }
     
     .teller-info {
