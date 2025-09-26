@@ -776,7 +776,7 @@ span.item-action.turnin,
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 8px;
+    padding: 2px;
 }
 
 /* Mobile responsive */
@@ -790,7 +790,7 @@ span.item-action.turnin,
     .shop-items-grid {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 12px;
-        padding: 12px;
+        padding: 4px;
     }
 }
 
