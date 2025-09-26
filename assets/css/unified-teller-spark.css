@@ -1209,7 +1209,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     .teller-header {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: minmax(100px, auto) auto;
         gap: var(--space-3);
         grid-template-areas: 
             "shop-selection teller"
@@ -1221,6 +1221,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         width: 100%;
         display: flex;
         align-items: stretch;
+        min-height: 100px;
     }
     
     .header-teller {
@@ -1229,6 +1230,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         justify-content: center;
         display: flex;
         align-items: stretch;
+        min-height: 100px;
     }
     
     .header-main {
@@ -1240,11 +1242,15 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     .teller-info {
         align-items: center;
         text-align: center;
-        min-height: 80px;
+        min-height: 100px;
+        width: 100%;
+        height: 100%;
     }
     
     .shop-selection-box {
-        min-height: 80px;
+        min-height: 100px;
+        height: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
