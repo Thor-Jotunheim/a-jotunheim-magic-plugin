@@ -24,7 +24,7 @@ class TurnInTracker {
         
         // Get shop details
         $shop = $wpdb->get_row($wpdb->prepare(
-            "SELECT shop_name, shop_type FROM {$wpdb->prefix}jotun_shops WHERE shop_id = %d",
+            "SELECT shop_name, shop_type FROM jotun_shops WHERE shop_id = %d",
             $shop_id
         ));
         
@@ -57,7 +57,7 @@ class TurnInTracker {
         
         // Get shop details and items
         $shop = $wpdb->get_row($wpdb->prepare(
-            "SELECT shop_name, shop_type FROM {$wpdb->prefix}jotun_shops WHERE shop_id = %d",
+            "SELECT shop_name, shop_type FROM jotun_shops WHERE shop_id = %d",
             $atts['shop_id']
         ));
         
@@ -68,8 +68,8 @@ class TurnInTracker {
         // Get turn-in items for this shop
         $items = $wpdb->get_results($wpdb->prepare("
             SELECT si.*, ml.item_name as master_item_name
-            FROM {$wpdb->prefix}jotun_shop_items si
-            LEFT JOIN {$wpdb->prefix}jotun_master_item_list ml ON si.item_id = ml.item_id
+            FROM jotun_shop_items si
+            LEFT JOIN jotun_itemlist ml ON si.item_id = ml.id
             WHERE si.shop_id = %d 
             AND si.turn_in = 1 
             AND si.turn_in_requirement > 0
@@ -153,7 +153,7 @@ class TurnInTracker {
         
         // Reset all turn-in quantities for this shop
         $result = $wpdb->update(
-            "{$wpdb->prefix}jotun_shop_items",
+            "jotun_shop_items",
             array('turn_in_quantity' => 0),
             array('shop_id' => $shop_id, 'turn_in' => 1),
             array('%d'),

@@ -2017,7 +2017,7 @@ function jotun_api_get_shop_items($request) {
     
     $sql = "SELECT si.*, il.item_name as master_item_name, il.unit_price as default_price, il.icon_image 
             FROM $table_name si 
-            LEFT JOIN {$wpdb->prefix}jotun_master_item_list il ON si.item_id = il.item_id";
+            LEFT JOIN jotun_itemlist il ON si.item_id = il.id";
     $params = [];
     $where_clauses = [];
     
@@ -2103,7 +2103,7 @@ function jotun_api_add_shop_item($request) {
     $item_name = '';
     if (!$is_custom_item) {
         $item = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}jotun_master_item_list WHERE item_id = %d", 
+            "SELECT * FROM jotun_itemlist WHERE id = %d", 
             (int)$data['item_id']
         ));
         
@@ -2737,7 +2737,7 @@ function jotun_api_delete_transaction($request) {
 function jotun_api_get_itemlist($request) {
     global $wpdb;
     
-    $table_name = "{$wpdb->prefix}jotun_master_item_list";
+    $table_name = "jotun_itemlist";
     $search = $request->get_param('search');
     $category = $request->get_param('category');
     
@@ -2790,7 +2790,7 @@ function jotun_api_add_item($request) {
     global $wpdb;
     
     $data = $request->get_json_params();
-    $table_name = "{$wpdb->prefix}jotun_master_item_list";
+    $table_name = "jotun_itemlist";
     
     if (empty($data['item_name'])) {
         return new WP_REST_Response(['error' => 'Item name is required'], 400);
@@ -2819,7 +2819,7 @@ function jotun_api_update_item($request) {
     
     $id = (int) $request['id'];
     $data = $request->get_json_params();
-    $table_name = "{$wpdb->prefix}jotun_master_item_list";
+    $table_name = "jotun_itemlist";
     
     if (empty($data['item_name'])) {
         return new WP_REST_Response(['error' => 'Item name is required'], 400);
@@ -2847,9 +2847,9 @@ function jotun_api_delete_item($request) {
     global $wpdb;
     
     $id = (int) $request['id'];
-    $table_name = "{$wpdb->prefix}jotun_master_item_list";
+    $table_name = "jotun_itemlist";
     
-    $result = $wpdb->delete($table_name, ['item_id' => $id]);
+    $result = $wpdb->delete($table_name, ['id' => $id]);
     
     if ($result === false) {
         return new WP_REST_Response(['error' => 'Failed to delete item: ' . $wpdb->last_error], 500);
