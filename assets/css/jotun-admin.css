@@ -478,34 +478,20 @@
     margin: 2px;
 }
 
-/* Make shop table responsive */
+/* Simple table styling - let browser handle natural layout */
 .shop-table {
-    table-layout: auto;
     width: 100%;
-    word-wrap: break-word;
+    table-layout: auto;
 }
 
-/* Allow all table cells to wrap when needed */
-.shop-table td, .shop-table th {
-    word-wrap: break-word;
-    word-break: break-word;
-    max-width: 0;
-    overflow-wrap: break-word;
+/* Add horizontal scroll for small screens instead of aggressive wrapping */
+#shop-items-table-container {
+    overflow-x: auto;
+    margin: 20px 0;
 }
 
-/* Specific column widths as percentages for responsive behavior */
-.shop-table td:nth-child(1), .shop-table th:nth-child(1) { width: 8%; }   /* Rotation */
-.shop-table td:nth-child(2), .shop-table th:nth-child(2) { width: 15%; }  /* Item Name */
-.shop-table td:nth-child(3), .shop-table th:nth-child(3) { width: 10%; }  /* Default Price */
-.shop-table td:nth-child(4), .shop-table th:nth-child(4) { width: 10%; }  /* Shop Price */
-.shop-table td:nth-child(5), .shop-table th:nth-child(5) { width: 6%; }   /* Stock */
-.shop-table td:nth-child(6), .shop-table th:nth-child(6) { width: 5%; }   /* Sell */
-.shop-table td:nth-child(7), .shop-table th:nth-child(7) { width: 5%; }   /* Buy */
-.shop-table td:nth-child(8), .shop-table th:nth-child(8) { width: 6%; }   /* Turn-In */
-.shop-table td:nth-child(9), .shop-table th:nth-child(9) { width: 8%; }   /* Turn-In Progress */
-.shop-table td:nth-child(10), .shop-table th:nth-child(10) { width: 8%; } /* Turn-In Required */
-.shop-table td:nth-child(11), .shop-table th:nth-child(11) { width: 8%; } /* Daily Sell Limit */
-.shop-table td:nth-child(12), .shop-table th:nth-child(12) { width: 8%; } /* Daily Buy Limit */
-.shop-table td:nth-child(13), .shop-table th:nth-child(13) { width: 8%; } /* Daily Turn-in Limit */
-.shop-table td:nth-child(14), .shop-table th:nth-child(14) { width: 7%; } /* Available */
-.shop-table td:nth-child(15), .shop-table th:nth-child(15) { width: 12%; } /* Actions */
+/* Only allow wrapping for very long item names */
+.shop-table td:nth-child(2) {
+    max-width: 200px;
+    word-wrap: break-word;
+}
