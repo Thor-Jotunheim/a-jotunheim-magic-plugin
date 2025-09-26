@@ -615,6 +615,9 @@ class ShopManager {
                 document.getElementById('shop-items-table-container').style.display = 'block';
                 await this.loadShopItems(shopId);
                 
+                // Show/hide turn-in shortcode for turn-in only shops
+                this.updateTurnInShortcodeDisplay(isTurnInOnly, this.selectedShopData);
+                
                 document.getElementById('shop-items-list').style.display = 'block';
             } catch (error) {
                 console.error('Error getting shop data:', error);
@@ -628,6 +631,66 @@ class ShopManager {
     hideShopItemsSection() {
         document.getElementById('add-item-section').style.display = 'none';
         document.getElementById('shop-items-list').style.display = 'none';
+        document.getElementById('turn-in-shortcode-display').style.display = 'none';
+    }
+    
+    updateTurnInShortcodeDisplay(isTurnInOnly, shopData) {
+        const shortcodeDisplay = document.getElementById('turn-in-shortcode-display');
+        const shortcodeText = document.getElementById('turn-in-shortcode-text');
+        
+        if (isTurnInOnly && shopData) {
+            // Generate shortcode for turn-in shop
+            const shopName = shopData.shop_name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const shortcode = `[turn_in_progress shop_id="${shopData.shop_id}" shop_name="${shopName}"]`;
+            
+            shortcodeText.textContent = shortcode;
+            shortcodeDisplay.style.display = 'block';
+            
+            // Setup copy button functionality
+            this.setupShortcodeCopy();
+        } else {
+            shortcodeDisplay.style.display = 'none';
+        }
+    }
+    
+    setupShortcodeCopy() {
+        const copyBtn = document.getElementById('copy-shortcode-btn');
+        const shortcodeText = document.getElementById('turn-in-shortcode-text');
+        
+        if (copyBtn && shortcodeText) {
+            // Remove existing event listeners
+            copyBtn.replaceWith(copyBtn.cloneNode(true));
+            const newCopyBtn = document.getElementById('copy-shortcode-btn');
+            
+            newCopyBtn.addEventListener('click', () => {
+                // Copy to clipboard
+                navigator.clipboard.writeText(shortcodeText.textContent).then(() => {
+                    // Show success feedback
+                    const originalText = newCopyBtn.textContent;
+                    newCopyBtn.textContent = 'Copied!';
+                    newCopyBtn.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        newCopyBtn.textContent = originalText;
+                        newCopyBtn.classList.remove('copied');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy shortcode:', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = shortcodeText.textContent;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    newCopyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        newCopyBtn.textContent = 'Copy';
+                    }, 2000);
+                });
+            });
+        }
     }
 
     toggleFieldsForShopType(isTurnInOnly) {

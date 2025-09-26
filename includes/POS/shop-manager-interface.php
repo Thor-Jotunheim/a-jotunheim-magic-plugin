@@ -430,7 +430,7 @@ function shop_manager_interface() {
                                         <input type="number" id="turn-in-quantity" name="turn_in_quantity" value="0" min="0" title="Current amount turned in by players">
                                     </div>
                                     <div class="form-group">
-                                        <label for="turn-in-requirement">Turn-In Requirement</label>
+                                        <label for="turn-in-requirement">Turn-In Goal</label>
                                         <input type="number" id="turn-in-requirement" name="turn_in_requirement" value="0" min="0" title="Total amount needed to complete this turn-in event">
                                     </div>
                                 </div>
@@ -515,6 +515,19 @@ function shop_manager_interface() {
                 <div id="shop-items-list" class="shop-items-list" style="display: none;">
                     <h3>Items in Selected Shop</h3>
                     
+                    <!-- Turn-In Shortcode Display -->
+                    <div id="turn-in-shortcode-display" class="shortcode-display" style="display: none;">
+                        <div class="shortcode-box">
+                            <h4>Turn-In Progress Shortcode</h4>
+                            <p>Use this shortcode to display turn-in progress for this shop:</p>
+                            <div class="shortcode-container">
+                                <code id="turn-in-shortcode-text"></code>
+                                <button type="button" id="copy-shortcode-btn" class="copy-btn">Copy</button>
+                            </div>
+                            <small>Place this shortcode on any page or post to show the turn-in progress tracker.</small>
+                        </div>
+                    </div>
+                    
                     <!-- Shop Items Table -->
                     <div id="shop-items-table-container">
                         <table id="shop-items-table" class="shop-table">
@@ -529,7 +542,7 @@ function shop_manager_interface() {
                                     <th>Buy</th>
                                     <th>Turn-In</th>
                                     <th>Turn-In Progress</th>
-                                    <th>Turn-In Required</th>
+                                    <th>Turn-In Goal</th>
                                     <th>Daily Sell Limit</th>
                                     <th>Daily Buy Limit</th>
                                     <th>Daily Turn-in Limit</th>

@@ -4,7 +4,7 @@
 /*
 Plugin Name: A Jotunheim Magic Plugin
 Description: A plugin to manage the item list and editor for Jotunheim.
- * Version: 0.9.4.9.28
+ * Version: 0.9.4.9.29
 Author: Thor
 */
 
@@ -197,6 +197,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/POS/pos-scripts.php');
 // Include Shop Manager and Unified Teller
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/shop-manager-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/shop-manager-scripts.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/POS/turn-in-tracker.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/unified-teller-interface.php');
 include_once(plugin_dir_path(__FILE__) . 'includes/POS/unified-teller-scripts.php');
 
