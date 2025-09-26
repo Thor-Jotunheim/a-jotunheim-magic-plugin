@@ -103,6 +103,17 @@ class UnifiedTeller {
             goldInput.addEventListener('input', () => this.updatePaymentCalculations());
         }
 
+        // Change due tracking
+        const changeYmirInput = document.getElementById('change-ymir-flesh');
+        if (changeYmirInput) {
+            changeYmirInput.addEventListener('input', () => this.updateChangeCalculation());
+        }
+
+        const changeGoldInput = document.getElementById('change-gold');
+        if (changeGoldInput) {
+            changeGoldInput.addEventListener('input', () => this.updateChangeCalculation());
+        }
+
         // Turn-in specific event listeners
         const turninValidateBtn = document.getElementById('turnin-validate-customer-btn');
         if (turninValidateBtn) {
@@ -1923,37 +1934,152 @@ class UnifiedTeller {
     updatePaymentCalculations() {
         const ymirFlesh = parseFloat(document.getElementById('ymir-flesh-total')?.value || 0);
         const gold = parseFloat(document.getElementById('gold-total')?.value || 0);
-        const totalCost = parseFloat(document.getElementById('item-total-cost')?.textContent || 0);
+        const rawTotalCost = parseFloat(document.getElementById('item-total-cost')?.textContent || 0);
+        
+        // For payment tracking, we always want the absolute cost that customer needs to pay
+        const absoluteCost = Math.abs(rawTotalCost);
+        
+        // Determine transaction type based on cost sign
+        const isSelling = rawTotalCost < 0; // Negative cost means shop is selling to customer
+        const isBuying = rawTotalCost > 0;  // Positive cost means shop is buying from customer
+        
+        // Calculate Ymir Flesh equivalent (120 gold = 1 Ymir Flesh)
+        const ymirRate = 120;
+        const totalYmirEquivalent = Math.floor(absoluteCost / ymirRate);
+        const remainingGold = absoluteCost % ymirRate;
+        
+        // Update cost display with both formats
+        const costElement = document.getElementById('item-total-cost');
+        if (costElement) {
+            let costDisplay = `${absoluteCost}g`;
+            if (totalYmirEquivalent > 0) {
+                costDisplay += ` or ${totalYmirEquivalent} Ymir & ${remainingGold}g`;
+            }
+            costElement.textContent = costDisplay;
+        }
 
-        // Calculate total amount paid (assuming some conversion rate if needed)
-        const amountPaid = ymirFlesh + gold; // Simplistic calculation
-        const changeDue = amountPaid - totalCost;
+        // Calculate total amount paid (Ymir Flesh * 120 + Gold)
+        const amountPaid = (ymirFlesh * ymirRate) + gold;
+        const difference = amountPaid - absoluteCost;
 
-        // Update display with null checks
+        // Update amount paid display
         const amountPaidDisplay = document.getElementById('amount-paid-display');
         if (amountPaidDisplay) {
-            amountPaidDisplay.textContent = amountPaid.toFixed(0);
+            amountPaidDisplay.textContent = amountPaid.toFixed(0) + 'g';
         }
         
-        const changeDueElement = document.getElementById('change-due');
-        if (changeDueElement) {
-            changeDueElement.textContent = changeDue.toFixed(0);
-            changeDueElement.className = `summary-value change-amount ${changeDue < 0 ? 'negative' : ''}`;
+        // Update difference display
+        const differenceElement = document.getElementById('payment-difference');
+        if (differenceElement) {
+            differenceElement.textContent = difference.toFixed(0) + 'g';
+            differenceElement.className = `summary-value ${difference < 0 ? 'negative' : difference > 0 ? 'positive' : ''}`;
         }
 
-        // Update status with null check
-        const statusElement = document.getElementById('payment-balance');
+        // Update payment status
+        const statusElement = document.getElementById('payment-status');
         if (statusElement) {
-            if (changeDue === 0) {
-                statusElement.textContent = 'Balanced';
-                statusElement.className = 'summary-status balanced';
-            } else if (changeDue > 0) {
-                statusElement.textContent = 'Overpaid';
-                statusElement.className = 'summary-status overpaid';
+            if (difference === 0) {
+                statusElement.textContent = 'Fair Trade! ✓';
+                statusElement.className = 'payment-status balanced';
+                this.hidePaymentWarnings();
+            } else if (difference > 0) {
+                statusElement.textContent = `Overpaid: ${difference.toFixed(0)}g`;
+                statusElement.className = 'payment-status overpaid';
+                this.showPaymentWarning('overpaid', difference);
             } else {
-                statusElement.textContent = 'Underpaid';
-                statusElement.className = 'summary-status underpaid';
+                statusElement.textContent = `Underpaid: ${Math.abs(difference).toFixed(0)}g`;
+                statusElement.className = 'payment-status underpaid';
+                this.showPaymentWarning('underpaid', Math.abs(difference));
             }
+        }
+    }
+
+    showPaymentWarning(type, amount) {
+        // Hide all warnings first
+        this.hidePaymentWarnings();
+        
+        const warningsContainer = document.getElementById('payment-warnings');
+        if (warningsContainer) {
+            warningsContainer.style.display = 'block';
+            
+            if (type === 'overpaid') {
+                const overpaidWarning = document.getElementById('overpaid-warning');
+                if (overpaidWarning) {
+                    overpaidWarning.style.display = 'block';
+                }
+                // Show change due section
+                this.showChangeDueSection(amount);
+            } else if (type === 'underpaid') {
+                const underpaidWarning = document.getElementById('underpaid-warning');
+                if (underpaidWarning) {
+                    underpaidWarning.style.display = 'block';
+                }
+                this.hideChangeDueSection();
+            }
+        }
+    }
+
+    hidePaymentWarnings() {
+        const warningsContainer = document.getElementById('payment-warnings');
+        if (warningsContainer) {
+            warningsContainer.style.display = 'none';
+        }
+        
+        ['overpaid-warning', 'underpaid-warning', 'balanced-confirmation'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.style.display = 'none';
+        });
+        
+        this.hideChangeDueSection();
+    }
+
+    showChangeDueSection(changeDue) {
+        const changeDueSection = document.getElementById('change-due-section');
+        if (changeDueSection) {
+            changeDueSection.style.display = 'block';
+            
+            // Calculate suggested change
+            const ymirRate = 120;
+            const suggestedYmir = Math.floor(changeDue / ymirRate);
+            const suggestedGold = changeDue % ymirRate;
+            
+            // Pre-fill suggested amounts
+            const ymirInput = document.getElementById('change-ymir-flesh');
+            const goldInput = document.getElementById('change-gold');
+            
+            if (ymirInput) ymirInput.value = suggestedYmir;
+            if (goldInput) goldInput.value = suggestedGold;
+            
+            this.updateChangeCalculation();
+        }
+    }
+
+    hideChangeDueSection() {
+        const changeDueSection = document.getElementById('change-due-section');
+        if (changeDueSection) {
+            changeDueSection.style.display = 'none';
+        }
+    }
+
+    updateChangeCalculation() {
+        const changeYmir = parseFloat(document.getElementById('change-ymir-flesh')?.value || 0);
+        const changeGold = parseFloat(document.getElementById('change-gold')?.value || 0);
+        const ymirRate = 120;
+        
+        const totalChangeGiven = (changeYmir * ymirRate) + changeGold;
+        const difference = parseFloat(document.getElementById('payment-difference')?.textContent || 0);
+        const remainingChange = difference - totalChangeGiven;
+        
+        const totalChangeElement = document.getElementById('total-change-given');
+        const remainingChangeElement = document.getElementById('remaining-change-due');
+        
+        if (totalChangeElement) {
+            totalChangeElement.textContent = totalChangeGiven.toFixed(0) + 'g';
+        }
+        
+        if (remainingChangeElement) {
+            remainingChangeElement.textContent = remainingChange.toFixed(0) + 'g';
+            remainingChangeElement.className = `summary-value ${remainingChange > 0 ? 'positive' : remainingChange < 0 ? 'negative' : ''}`;
         }
     }
 
@@ -2478,6 +2604,9 @@ class UnifiedTeller {
         // Update total cost display
         document.getElementById('item-total-cost').textContent = totalCost.toFixed(0);
         document.getElementById('record-transaction-btn').disabled = false;
+        
+        // Update payment calculations
+        this.updatePaymentCalculations();
     }
 
     updateCartItemQuantity(cartIndex, newQuantity) {

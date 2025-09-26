@@ -1312,3 +1312,52 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-weight: 600;
     color: var(--foreground);
 }
+
+.payment-summary-compact .summary-value.negative {
+    color: var(--red-9);
+}
+
+.payment-summary-compact .summary-value.positive {
+    color: var(--green-9);
+}
+
+/* Payment Status Styling */
+.payment-status.balanced {
+    color: var(--green-9);
+    font-weight: 600;
+}
+
+.payment-status.overpaid {
+    color: var(--red-9);
+    font-weight: 600;
+}
+
+.payment-status.underpaid {
+    color: var(--red-9);
+    font-weight: 600;
+}
+
+.payment-status.pending {
+    color: var(--gray-9);
+    font-weight: 500;
+}
+
+/* Change Due Section Compact Styling */
+.change-due-section h4 {
+    font-size: var(--font-size-3);
+    margin-bottom: var(--space-2);
+}
+
+.change-due-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.change-summary .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-1);
+    font-size: var(--font-size-2);
+}
