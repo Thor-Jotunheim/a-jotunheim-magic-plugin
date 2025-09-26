@@ -1330,8 +1330,19 @@ class UnifiedTeller {
                 document.getElementById('customer-status').style.display = 'none';
                 document.getElementById('transaction-notes').value = '';
                 
-                // Reload shop items (to update stock) and transaction history
-                await this.loadShopItems(this.selectedShop);
+                // Reload shop items based on shop type
+                const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+                
+                if (shopType === 'turn-in_only') {
+                    await this.loadTurninItems(this.selectedShop);
+                    // Reload daily turn-in data to update counts
+                    if (this.currentCustomer) {
+                        await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
+                    }
+                } else {
+                    await this.loadShopItems(this.selectedShop);
+                }
                 await this.loadTransactionHistory();
                 
                 this.closeTellerModal();

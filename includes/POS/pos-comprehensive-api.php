@@ -2439,13 +2439,25 @@ function jotun_api_update_shop_rotation($request) {
 function jotun_api_get_transactions($request) {
     global $wpdb;
     
-    $table_name = 'jotun_transactions';
+    // Determine table based on transaction type
+    $transaction_type = $request->get_param('transaction_type');
+    if ($transaction_type === 'turnin') {
+        $table_name = 'jotun_turn_ins';
+        $date_column = 'recorded_at';
+        $customer_column = 'player_name';
+    } else {
+        $table_name = 'jotun_transactions';
+        $date_column = 'transaction_date';
+        $customer_column = 'customer_name';
+    }
+    
     $shop_name = $request->get_param('shop_name');
     $customer_name = $request->get_param('customer_name');
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
     $date_from = $request->get_param('date_from');
     $date_to = $request->get_param('date_to');
+    $hours = $request->get_param('hours'); // For last X hours filtering
     
     $sql = "SELECT * FROM $table_name";
     $params = [];
@@ -2457,25 +2469,27 @@ function jotun_api_get_transactions($request) {
     }
     
     if ($customer_name) {
-        $conditions[] = "customer_name LIKE %s";
+        $conditions[] = "$customer_column LIKE %s";
         $params[] = '%' . $wpdb->esc_like($customer_name) . '%';
     }
-    
-    if ($date_from) {
-        $conditions[] = "transaction_date >= %s";
+
+    // Handle hours parameter for last X hours filtering
+    if ($hours) {
+        $conditions[] = "$date_column >= DATE_SUB(NOW(), INTERVAL %d HOUR)";
+        $params[] = (int)$hours;
+    } elseif ($date_from) {
+        $conditions[] = "$date_column >= %s";
         $params[] = $date_from;
     }
-    
+
     if ($date_to) {
-        $conditions[] = "transaction_date <= %s";
+        $conditions[] = "$date_column <= %s";
         $params[] = $date_to;
-    }
-    
-    if (!empty($conditions)) {
+    }    if (!empty($conditions)) {
         $sql .= " WHERE " . implode(' AND ', $conditions);
     }
     
-    $sql .= " ORDER BY transaction_date DESC LIMIT %d OFFSET %d";
+    $sql .= " ORDER BY $date_column DESC LIMIT %d OFFSET %d";
     $params[] = $limit;
     $params[] = $offset;
     
