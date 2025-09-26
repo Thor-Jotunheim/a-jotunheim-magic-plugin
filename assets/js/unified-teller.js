@@ -518,6 +518,11 @@ class UnifiedTeller {
             console.log('Turn-in items response:', response);
             this.turninItems = response.data || [];
             
+            // Load daily turn-in data for current customer if available
+            if (this.currentCustomer) {
+                await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
+            }
+            
             // Also load Item Database for reference
             const itemsResponse = await JotunAPI.getItemlist();
             const masterItems = itemsResponse.data || [];
@@ -547,6 +552,32 @@ class UnifiedTeller {
         } catch (error) {
             console.error('Error loading turn-in items:', error);
             this.showStatus('Failed to load turn-in items', 'error');
+        }
+    }
+
+    async loadDailyTurninData(playerName) {
+        try {
+            // Load turn-in transactions from last 24 hours for this player
+            const response = await JotunAPI.getTransactions({
+                customer_name: playerName,
+                transaction_type: 'turnin',
+                hours: 24
+            });
+            
+            this.dailyTurninData = {};
+            if (response.data) {
+                response.data.forEach(transaction => {
+                    const itemName = transaction.item_name;
+                    if (!this.dailyTurninData[itemName]) {
+                        this.dailyTurninData[itemName] = 0;
+                    }
+                    this.dailyTurninData[itemName] += parseInt(transaction.quantity) || 0;
+                });
+            }
+            console.log('Daily turn-in data loaded:', this.dailyTurninData);
+        } catch (error) {
+            console.error('Error loading daily turn-in data:', error);
+            this.dailyTurninData = {};
         }
     }
 
@@ -607,12 +638,12 @@ class UnifiedTeller {
                     <div class="price-row" style="opacity: 1;">
                         <span class="price-label" style="opacity: 1;">Unit(s):</span>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" 
+                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
                                    style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
                             <span class="price-value" style="opacity: 1;">of ${item.turn_in_requirement || 1} required</span>
                         </div>
                     </div>
-                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
                     <div class="item-tech" style="opacity: 1;">Category: ${item.item_type || 'Turn-In Item'}</div>
                 </div>
                 <div class="item-actions">
@@ -707,8 +738,9 @@ class UnifiedTeller {
                     <button class="btn btn-default-gray turn-in-item" data-type="turn-in">Turn In</button>
                 </div>`;
             
-            // Add stack turn-in controls only if item is stackable
-            if (isStackable) {
+            // Add stack turn-in controls only if item is stackable AND turn-in requirement is >= stack size
+            const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
+            if (isStackable && turnInRequirement >= stackSize) {
                 buttonsHTML += `
                     <div class="quantity-controls turn-in-section">
                         <label>Stack (${stackSize}):</label>
@@ -900,6 +932,14 @@ class UnifiedTeller {
                 this.displayCustomerInfo(player);
                 this.showCustomerStatus('Customer validated successfully', 'valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
+                
+                // Load daily turn-in data for this customer
+                await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
+                
+                // Re-render items to update limits
+                if (this.selectedShop && this.shopItems.length > 0) {
+                    this.renderShopItems();
+                }
             } else {
                 // Show register option for new customers
                 this.currentCustomer = null;
@@ -1001,6 +1041,20 @@ class UnifiedTeller {
             });
             this.updateCartDisplay();
         }
+    }
+
+    getDailyTurninTotal(itemName) {
+        return this.dailyTurninData ? (this.dailyTurninData[itemName] || 0) : 0;
+    }
+
+    getMaxAllowedTurnin(item) {
+        const dailyTotal = this.getDailyTurninTotal(item.item_name);
+        const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
+        
+        if (turnInRequirement > 0) {
+            return Math.max(0, turnInRequirement - dailyTotal);
+        }
+        return 999; // No limit set
     }
 
     updateCartDisplay() {
@@ -1962,6 +2016,13 @@ class UnifiedTeller {
             return;
         }
 
+        // Check daily limits
+        const maxAllowed = this.getMaxAllowedTurnin(item);
+        if (quantity > maxAllowed) {
+            this.showStatus(`Cannot turn in ${quantity} ${item.item_name}. Daily limit: ${maxAllowed} remaining (${this.getDailyTurninTotal(item.item_name)} already turned in today)`, 'error');
+            return;
+        }
+
         // Add to main cart with 'turnin' action type
         const existingItem = this.cart.find(cartItem => 
             cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin'
@@ -2355,7 +2416,9 @@ class UnifiedTeller {
                 <div class="item-quantity">
                     <input type="number" class="cart-qty-input" value="${cartItem.quantity}" 
                            min="1" onchange="window.unifiedTeller.updateCartItemQuantity(${index}, this.value)">
-                    <span class="stack-info">/ ${cartItem.stack_size}</span>
+                    ${cartItem.action === 'turnin' ? 
+                        `<span class="daily-limit-info">Last 24h: ${this.getDailyTurninTotal(cartItem.item_name)}</span>` : 
+                        `<span class="stack-info">/ ${cartItem.stack_size}</span>`}
                 </div>
                 ${pricingSection}
                 <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
