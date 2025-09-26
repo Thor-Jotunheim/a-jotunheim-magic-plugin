@@ -663,7 +663,7 @@ class UnifiedTeller {
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
                                    style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
-                            <span class="price-value" style="opacity: 1;">of ${item.turn_in_requirement || 1} required</span>
+                            <span class="price-value" style="opacity: 1;">of ${this.getMaxAllowedTurnin(item)} required</span>
                         </div>
                     </div>
                     <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
@@ -2421,16 +2421,20 @@ class UnifiedTeller {
                 
                 const currentProgress = parseInt(cartItem.turn_in_quantity || 0) + parseInt(cartItem.quantity || 0);
                 const required = parseInt(cartItem.turn_in_requirement || 0);
+                const dailyTotal = this.getDailyTurninTotal(cartItem.item_name);
+                const remaining = Math.max(0, required - dailyTotal);
                 
                 console.log('DEBUG - Fixed progress calculation:', {
                     currentProgress,
-                    required
+                    required,
+                    dailyTotal,
+                    remaining
                 });
                 
                 pricingSection = `
                     <div class="item-pricing">
-                        <span class="unit-price">${required} required</span>
-                        <span class="total-price">${currentProgress} / ${required}</span>
+                        <span class="unit-price">${remaining} remaining</span>
+                        <span class="total-price">${dailyTotal + currentProgress} / ${required}</span>
                     </div>
                 `;
             } else {
