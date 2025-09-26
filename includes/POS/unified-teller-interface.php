@@ -20,11 +20,20 @@ function unified_teller_interface() {
     ob_start();
     ?>
     <div id="unified-teller-interface" class="teller-app">
-        <!-- Header with Teller Info -->
+        <!-- Header with Shop Selection, Dynamic Title, and Teller Info -->
         <div class="teller-header">
+            <div class="header-shop-selection">
+                <div class="form-field">
+                    <label for="teller-shop-selector" class="field-label">Shop Selection</label>
+                    <select id="teller-shop-selector" class="field-select">
+                        <option value="">Select a shop to begin...</option>
+                        <!-- Shops will be loaded here -->
+                    </select>
+                </div>
+            </div>
             <div class="header-main">
-                <h1 class="teller-title">Transaction Manager</h1>
-                <p class="teller-subtitle">Process player transactions and manage shop operations</p>
+                <h1 id="dynamic-shop-title" class="teller-title">Transaction Manager</h1>
+                <p id="dynamic-shop-subtitle" class="teller-subtitle">Process player transactions and manage shop operations</p>
             </div>
             <div class="header-teller">
                 <div class="teller-info">
@@ -41,22 +50,7 @@ function unified_teller_interface() {
         <!-- Compact Shop and Customer Selection -->
         <div class="teller-card compact-config-card">
             <div class="card-content">
-                <div class="compact-config-grid">
-                    <div class="config-section">
-                        <div class="form-field">
-                            <label for="teller-shop-selector" class="field-label">Active Shop</label>
-                            <select id="teller-shop-selector" class="field-select">
-                                <option value="">Select a shop to begin...</option>
-                                <!-- Shops will be loaded here -->
-                            </select>
-                        </div>
-                        <div id="shop-info" class="shop-info-display" style="display: none;">
-                            <div class="info-badge">
-                                <span id="shop-name-display" class="shop-name"></span>
-                                <span id="shop-type-display" class="shop-type-badge"></span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="compact-config-grid single-column">
                     <div class="config-section">
                         <div class="form-field">
                             <label for="customer-name" class="field-label">Customer Name</label>

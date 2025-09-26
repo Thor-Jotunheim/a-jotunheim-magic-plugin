@@ -1023,12 +1023,21 @@
     border: 1px solid var(--gray-6);
 }
 
+.header-shop-selection {
+    flex-shrink: 0;
+    width: 250px;
+}
+
 .header-main {
     flex: 1;
+    text-align: center;
 }
 
 .header-teller {
     flex-shrink: 0;
+    width: 200px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .teller-info {
@@ -1064,6 +1073,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
+}
+
+.compact-config-grid.single-column {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .config-section {

@@ -393,16 +393,22 @@ class UnifiedTeller {
     async selectShop(shopId) {
         this.selectedShop = shopId;
         
+        // Clear transaction summary when shop changes
+        this.clearCart();
+        
         if (shopId) {
-            // Show shop info
+            // Update dynamic header with shop info
             const selectedOption = document.querySelector(`#teller-shop-selector option[value="${shopId}"]`);
-            document.getElementById('shop-name-display').textContent = selectedOption.dataset.shopName;
-            document.getElementById('shop-type-display').textContent = selectedOption.dataset.shopType;
-            document.getElementById('shop-type-display').className = `shop-type-badge ${selectedOption.dataset.shopType}`;
-            document.getElementById('shop-info').style.display = 'flex';
+            const shopName = selectedOption.dataset.shopName;
+            const shopType = selectedOption.dataset.shopType;
+            
+            // Format shop type for display
+            const formattedShopType = this.formatShopType(shopType);
+            
+            document.getElementById('dynamic-shop-title').textContent = shopName;
+            document.getElementById('dynamic-shop-subtitle').textContent = formattedShopType;
 
             // Check if this is a turn-in only shop
-            const shopType = selectedOption.dataset.shopType;
             const isTurnInOnly = shopType === 'turn-in_only';
             
             // Always show main interface, but hide payment tracking for turn-in only shops
@@ -422,8 +428,11 @@ class UnifiedTeller {
                 await this.loadShopItems(shopId);
             }
         } else {
+            // Reset dynamic header to default
+            document.getElementById('dynamic-shop-title').textContent = 'Transaction Manager';
+            document.getElementById('dynamic-shop-subtitle').textContent = 'Process player transactions and manage shop operations';
+            
             // Hide all interfaces and reset payment tracking visibility
-            document.getElementById('shop-info').style.display = 'none';
             document.getElementById('teller-main-interface').style.display = 'none';
             document.getElementById('teller-turnin-interface').style.display = 'none';
             
@@ -434,6 +443,19 @@ class UnifiedTeller {
             }
             
             this.clearCart();
+        }
+    }
+
+    formatShopType(shopType) {
+        switch(shopType) {
+            case 'turn-in_only':
+                return 'Turn-In Only';
+            case 'aesir':
+                return 'Aesir Shop';
+            case 'staff':
+                return 'Staff Shop';
+            default:
+                return shopType.charAt(0).toUpperCase() + shopType.slice(1);
         }
     }
 
@@ -1172,7 +1194,7 @@ class UnifiedTeller {
         let summary = `
             <div class="transaction-summary">
                 <h4>Transaction Details</h4>
-                <p><strong>Shop:</strong> ${document.getElementById('shop-name-display').textContent}</p>
+                <p><strong>Shop:</strong> ${document.getElementById('dynamic-shop-title').textContent}</p>
                 <p><strong>Customer:</strong> ${this.currentCustomer.playerName || this.currentCustomer.player_name}</p>
                 <p><strong>Type:</strong> ${isTurnIn ? 'Turn-In' : this.transactionMode.charAt(0).toUpperCase() + this.transactionMode.slice(1)}</p>
                 
@@ -1255,7 +1277,7 @@ class UnifiedTeller {
             }
             
             // Get shop and customer names for legacy API
-            const shopName = document.getElementById('shop-name-display').textContent;
+            const shopName = document.getElementById('dynamic-shop-title').textContent;
             const customerName = this.currentCustomer.playerName || this.currentCustomer.player_name;
             
             // Detect transaction type from cart items
