@@ -1260,29 +1260,41 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         flex-wrap: wrap;
     }
     
-    /* Mobile stacking for customer-payment row */
-    .customer-payment-row {
+    /* Mobile stacking for customer-payment-actions row */
+    .customer-payment-actions-row {
         flex-direction: column;
         gap: var(--space-4);
     }
     
     .customer-card,
-    .payment-card {
+    .payment-card,
+    .actions-card {
         width: 100%;
+        flex: none;
+        min-width: auto;
     }
 }
 
-/* Customer and Payment Side-by-Side Layout */
-.customer-payment-row {
+/* Customer, Payment, and Actions Three-Column Layout */
+.customer-payment-actions-row {
     display: flex;
-    gap: var(--space-6);
+    gap: var(--space-4);
     margin-bottom: var(--space-6);
 }
 
-.customer-card,
+.customer-card {
+    flex: 1.2;
+    min-width: 0; /* Allows flex shrinking */
+}
+
 .payment-card {
-    flex: 1;
-    width: 48%;
+    flex: 1.5;
+    min-width: 0; /* Allows flex shrinking */
+}
+
+.actions-card {
+    flex: 0.8;
+    min-width: 200px; /* Minimum width for buttons */
 }
 
 /* Compact Payment Grid */
@@ -1291,6 +1303,19 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
     margin-bottom: var(--space-4);
+}
+
+/* Vertical Transaction Actions */
+.transaction-actions-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: stretch;
+}
+
+.transaction-actions-vertical .btn {
+    width: 100%;
+    justify-content: center;
 }
 
 .payment-summary-compact {

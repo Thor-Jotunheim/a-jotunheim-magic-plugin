@@ -49,8 +49,8 @@ function unified_teller_interface() {
             </div>
         </div>
         
-        <!-- Customer and Payment Row -->
-        <div class="customer-payment-row">
+        <!-- Customer, Payment, and Actions Row -->
+        <div class="customer-payment-actions-row">
             <!-- Customer Selection -->
             <div class="teller-card customer-card">
                 <div class="card-header">
@@ -183,6 +183,23 @@ function unified_teller_interface() {
                     </div>
                 </div>
             </div>
+
+            <!-- Transaction Actions -->
+            <div class="teller-card actions-card">
+                <div class="card-header">
+                    <h2 class="card-title">Transaction Actions</h2>
+                </div>
+                <div class="card-content">
+                    <div class="transaction-actions-vertical">
+                        <button id="clear-transaction-btn" class="btn btn-outline btn-lg">
+                            Clear Transaction
+                        </button>
+                        <button id="record-transaction-btn" class="btn btn-primary btn-lg" disabled>
+                            Record Transaction
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Main Transaction Interface (hidden until shop is selected) -->
@@ -263,19 +280,7 @@ function unified_teller_interface() {
 
 
 
-            <!-- Transaction Actions -->
-            <div class="teller-card actions-card">
-                <div class="card-content">
-                    <div class="transaction-actions">
-                        <button id="clear-transaction-btn" class="btn btn-outline btn-lg">
-                            Clear Transaction
-                        </button>
-                        <button id="record-transaction-btn" class="btn btn-primary btn-lg" disabled>
-                            Record Transaction
-                        </button>
-                    </div>
-                </div>
-            </div>
+
         </div>
 
         <!-- Turn-in Only Shop Interface (hidden until turn-in shop is selected) -->
