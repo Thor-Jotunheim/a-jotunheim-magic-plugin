@@ -514,7 +514,7 @@
 .shop-table td:nth-child(11), /* Daily Sell Limit */
 .shop-table td:nth-child(12), /* Daily Buy Limit */
 .shop-table td:nth-child(13)  /* Daily Turn-in Limit */ {
-    min-width: 80px;
+    min-width: 65px;
     white-space: nowrap;
     text-align: center;
 }
