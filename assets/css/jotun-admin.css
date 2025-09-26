@@ -510,6 +510,15 @@
     text-align: center;
 }
 
+/* Style daily limit columns to prevent wrapping */
+.shop-table td:nth-child(11), /* Daily Sell Limit */
+.shop-table td:nth-child(12), /* Daily Buy Limit */
+.shop-table td:nth-child(13)  /* Daily Turn-in Limit */ {
+    min-width: 80px;
+    white-space: nowrap;
+    text-align: center;
+}
+
 /* Center the Available column */
 .shop-table td:nth-child(14) { /* Available */
     text-align: center;
