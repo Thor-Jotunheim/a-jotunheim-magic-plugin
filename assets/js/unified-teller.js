@@ -528,12 +528,16 @@ class UnifiedTeller {
                 return {
                     ...shopItem,
                     item_name: masterItem?.item_name || shopItem.item_name || 'Unknown Item',
+                    item_type: masterItem?.item_type || 'Turn-In Item',
+                    tech_name: masterItem?.tech_name || 'Unknown',
+                    tech_tier: masterItem?.tech_tier || 0,
                     event_points: shopItem.event_points || 0,
                     category: masterItem?.category || 'Uncategorized',
                     description: masterItem?.description || '',
                     unit_price: 0, // Turn-in items don't have prices
                     stack_price: 0,
-                    is_available: 1 // Make sure they show as available
+                    is_available: 1, // Make sure they show as available
+                    icon_image: masterItem?.icon_image || shopItem.icon_image || null
                 };
             });
 
@@ -608,7 +612,8 @@ class UnifiedTeller {
                             <span class="price-value" style="opacity: 1;">of ${item.turn_in_requirement || 1} required</span>
                         </div>
                     </div>
-                    <div class="item-tech" style="opacity: 1;">Category: ${item.category || item.item_type || 'Trophies'}</div>
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
+                    <div class="item-tech" style="opacity: 1;">Category: ${item.item_type || 'Turn-In Item'}</div>
                 </div>
                 <div class="item-actions">
                     <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
@@ -638,7 +643,8 @@ class UnifiedTeller {
                         <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
                         <span class="price-value" style="opacity: 1;">${stackPrice}</span>
                     </div>
-                    <div class="item-tech" style="opacity: 1;">Tech: ${item.tech_name || 'N/A'} (Tier ${item.tech_tier || 0})</div>
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
+                    <div class="item-tech" style="opacity: 1;">Category: ${item.item_type || 'Item'}</div>
                 </div>
                 <div class="item-actions">
                     ${this.generateItemActionButtons(item)}
@@ -1214,6 +1220,7 @@ class UnifiedTeller {
                 const shopType = selectedOption ? selectedOption.dataset.shopType : null;
                 
                 const individualTransactionData = {
+                    shop_id: this.selectedShop, // Include shop_id for foreign key constraint
                     shop_name: shopName,
                     shop_type: shopType, // Add shop type for backend routing
                     item_name: cartItem.item_name,
@@ -1985,46 +1992,7 @@ class UnifiedTeller {
         this.showStatus(`Added ${quantity} ${item.item_name} to turn-in cart`, 'success');
     }
 
-    addTurninItemWithQuantity(shopItemId, quantity) {
-        // Initialize turninItems if not loaded
-        if (!this.turninItems) {
-            this.turninItems = this.shopItems || [];
-        }
-        
-        const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || this.shopItems.find(i => i.shop_item_id == shopItemId);
-        if (!item) {
-            console.log('Item not found for turn-in:', shopItemId);
-            return;
-        }
 
-        // Add to main cart with 'turnin' action type
-        const existingItem = this.cart.find(cartItem => 
-            cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin'
-        );
-
-        if (existingItem) {
-            existingItem.quantity += quantity;
-            existingItem.total_price = existingItem.unit_price * existingItem.quantity;
-        } else {
-            this.cart.push({
-                shop_item_id: shopItemId,
-                item_name: item.item_name,
-                action: 'turnin',
-                quantity: quantity,
-                price: item.event_points || 0,
-                unit_price: item.event_points || 0,
-                total_price: (item.event_points || 0) * quantity,
-                stack_size: item.stack_size || 1,
-                turn_in_quantity: item.turn_in_quantity || 0,
-                turn_in_requirement: item.turn_in_requirement || 0,
-                item: item
-            });
-        }
-
-        console.log('Added turn-in item to cart:', item.item_name, 'Quantity:', quantity, 'Cart now has', this.cart.length, 'items');
-        this.updateCartDisplay();
-        this.showStatus(`Added ${quantity} ${item.item_name} to turn-in cart`, 'success');
-    }
 
     updateTurninDisplay() {
         const container = document.getElementById('turnin-selected-items');
