@@ -601,19 +601,17 @@ class UnifiedTeller {
                         </div>
                     ` : ''}
                     <div class="price-row" style="opacity: 1;">
-                        <span class="price-label" style="opacity: 1;">Event Points:</span>
-                        <span class="price-value" style="opacity: 1; color: #007cba; font-weight: bold;">${item.event_points || 0}</span>
-                    </div>
-                    ${item.turn_in_requirement ? `
-                        <div class="price-row" style="opacity: 1;">
-                            <span class="price-label" style="opacity: 1;">Required:</span>
-                            <span class="price-value" style="opacity: 1;">${item.turn_in_requirement}</span>
+                        <span class="price-label" style="opacity: 1;">Unit(s):</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" 
+                                   style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
+                            <span class="price-value" style="opacity: 1;">of ${item.turn_in_requirement || 1} required</span>
                         </div>
-                    ` : ''}
-                    <div class="item-tech" style="opacity: 1;">Category: ${item.category || 'Uncategorized'}</div>
+                    </div>
+                    <div class="item-tech" style="opacity: 1;">Category: ${item.category || item.item_type || 'Trophies'}</div>
                 </div>
                 <div class="item-actions">
-                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItem(${item.shop_item_id})">
+                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
                         Turn In
                     </button>
                 </div>
@@ -1092,12 +1090,12 @@ class UnifiedTeller {
 
     showTransactionModal() {
         if (!this.currentCustomer) {
-            this.showStatus('Please validate a customer first', 'error', true);
+            this.showStatus('Please validate a customer first', 'error', false);
             return;
         }
 
         if (this.cart.length === 0) {
-            this.showStatus('Please add items to cart', 'error', true);
+            this.showStatus('Please add items to cart', 'error', false);
             return;
         }
 
@@ -1939,6 +1937,52 @@ class UnifiedTeller {
         console.log('Added turn-in item to cart:', item.item_name, 'Cart now has', this.cart.length, 'items');
         this.updateCartDisplay();
         this.showStatus(`Added ${item.item_name} to turn-in cart`, 'success');
+    }
+
+    addTurninItemWithQuantity(shopItemId) {
+        // Get quantity from input field
+        const quantityInput = document.getElementById(`turnin-qty-${shopItemId}`);
+        const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+        
+        // Initialize turninItems if not loaded
+        if (!this.turninItems) {
+            this.turninItems = this.shopItems || [];
+        }
+        
+        const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) {
+            console.log('Item not found for turn-in:', shopItemId);
+            return;
+        }
+
+        // Add to main cart with 'turnin' action type
+        const existingItem = this.cart.find(cartItem => 
+            cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin'
+        );
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+            existingItem.total_price = existingItem.unit_price * existingItem.quantity;
+        } else {
+            this.cart.push({
+                shop_item_id: shopItemId,
+                item_name: item.item_name,
+                action: 'turnin',
+                quantity: quantity,
+                price: 0, // Turn-in items don't have prices
+                unit_price: 0,
+                total_price: 0,
+                stack_size: item.stack_size || 1,
+                turn_in_quantity: parseInt(item.turn_in_quantity || 0),
+                turn_in_requirement: parseInt(item.turn_in_requirement || 0),
+                item: item,
+                shop_id: this.selectedShop // Make sure shop_id is included
+            });
+        }
+
+        console.log('Added turn-in item to cart:', item.item_name, 'quantity:', quantity, 'Cart now has', this.cart.length, 'items');
+        this.updateCartDisplay();
+        this.showStatus(`Added ${quantity} ${item.item_name} to turn-in cart`, 'success');
     }
 
     addTurninItemWithQuantity(shopItemId, quantity) {
