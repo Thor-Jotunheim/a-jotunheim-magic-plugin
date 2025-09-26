@@ -1219,12 +1219,16 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     .header-shop-selection {
         grid-area: shop-selection;
         width: 100%;
+        display: flex;
+        align-items: stretch;
     }
     
     .header-teller {
         grid-area: teller;
         width: 100%;
         justify-content: center;
+        display: flex;
+        align-items: stretch;
     }
     
     .header-main {
@@ -1236,10 +1240,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     .teller-info {
         align-items: center;
         text-align: center;
+        min-height: 80px;
     }
     
     .shop-selection-box {
-        min-height: 50px;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     
     .quantity-row {
