@@ -495,3 +495,10 @@
     max-width: 200px;
     word-wrap: break-word;
 }
+
+/* Ensure price columns have enough width to prevent wrapping */
+.shop-table td:nth-child(3), /* Default Price column */
+.shop-table td:nth-child(4)  /* Shop Price column */ {
+    min-width: 100px;
+    white-space: nowrap;
+}
