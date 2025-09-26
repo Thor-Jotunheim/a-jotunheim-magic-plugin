@@ -503,19 +503,10 @@
     white-space: nowrap;
 }
 
-/* Shrink turn-in columns slightly to make room for daily limit columns */
+/* Slightly shrink turn-in columns to make room for daily limit columns */
 .shop-table td:nth-child(9),  /* Turn-In Progress */
 .shop-table td:nth-child(10) /* Turn-In Required */ {
-    max-width: 80px;
-    text-align: center;
-}
-
-/* Ensure daily limit columns have enough space for "No limit" */
-.shop-table td:nth-child(11), /* Daily Sell Limit */
-.shop-table td:nth-child(12), /* Daily Buy Limit */
-.shop-table td:nth-child(13)  /* Daily Turn-in Limit */ {
-    min-width: 70px;
-    white-space: nowrap;
+    max-width: 95px;
     text-align: center;
 }
 
