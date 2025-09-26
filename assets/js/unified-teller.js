@@ -668,8 +668,8 @@ class UnifiedTeller {
         
         let buttonsHTML = '';
         
-        // Generate Buy button and unit controls (sell=1 means customers can buy from shop)
-        if (item.sell == 1 || item.sell === true) {
+        // Generate Buy button and unit controls (buy=1 means customers can buy from shop)
+        if (item.buy == 1 || item.buy === true) {
             buttonsHTML += `
                 <div class="quantity-controls buy-section">
                     <label>Unit(s):</label>
@@ -688,8 +688,8 @@ class UnifiedTeller {
             }
         }
         
-        // Generate Sell button (buy=1 means shop will buy from customers)
-        if (item.buy == 1 || item.buy === true) {
+        // Generate Sell button (sell=1 means shop will buy from customers)
+        if (item.sell == 1 || item.sell === true) {
             buttonsHTML += `
                 <div class="quantity-controls sell-section">
                     <label>Unit(s):</label>
