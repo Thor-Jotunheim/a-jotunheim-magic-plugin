@@ -577,10 +577,10 @@ function shop_manager_interface() {
                             <thead>
                                 <tr>
                                     <th>Item Name</th>
+                                    <th>Rotation</th>
                                     <th>Default Price (Coins)</th>
                                     <th>Shop Price (Coins)</th>
                                     <th>Stock</th>
-                                    <th>Rotation</th>
                                     <th>Sell</th>
                                     <th>Buy</th>
                                     <th>Turn-In</th>
