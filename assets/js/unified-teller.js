@@ -377,7 +377,8 @@ class UnifiedTeller {
             if (shop.is_active == 1) {
                 const option = document.createElement('option');
                 option.value = shop.shop_id; // Fixed: was shop.id, should be shop.shop_id
-                option.textContent = `${shop.shop_name} (${shop.shop_type})`;
+                // Show only the shop name in the dropdown
+                option.textContent = shop.shop_name;
                 option.dataset.shopName = shop.shop_name;
                 option.dataset.shopType = shop.shop_type;
                 selector.appendChild(option);
