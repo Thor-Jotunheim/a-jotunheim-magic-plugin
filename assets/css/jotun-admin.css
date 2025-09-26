@@ -478,19 +478,21 @@
     margin: 2px;
 }
 
-/* Prevent text wrapping in table cells */
-.shop-table td {
-    white-space: nowrap;
+/* Price column consistency - ensure uniform width and wrapping */
+.shop-table td:nth-child(3), /* Default Price column */
+.shop-table td:nth-child(4)  /* Shop Price column */ {
+    min-width: 80px;
+    max-width: 80px;
+    word-break: break-word;
+    text-align: center;
 }
 
-/* Allow wrapping only for item names (which might be long) */
-.shop-table td:nth-child(2) {
-    white-space: normal;
-    min-width: 150px;
-}
-
-/* Ensure action column has enough space for buttons */
-.shop-table td:last-child {
-    white-space: normal;
-    min-width: 120px;
+/* Limit columns consistency */
+.shop-table td:nth-child(11), /* Daily Sell Limit */
+.shop-table td:nth-child(12), /* Daily Buy Limit */  
+.shop-table td:nth-child(13)  /* Daily Turn-in Limit */ {
+    min-width: 70px;
+    max-width: 70px;
+    word-break: break-word;
+    text-align: center;
 }
