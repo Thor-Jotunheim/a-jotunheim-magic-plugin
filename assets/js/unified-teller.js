@@ -674,7 +674,8 @@ class UnifiedTeller {
                                  onerror="this.parentElement.style.display='none'">
                         </div>
                     ` : ''}
-                    <div class="price-row" style="opacity: 1;">
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
+                    <div class="price-row" style="opacity: 1; margin-top: 10px;">
                         <span class="price-label" style="opacity: 1;">Unit(s):</span>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
@@ -682,8 +683,6 @@ class UnifiedTeller {
                             <span class="price-value" style="opacity: 1;">of ${this.getMaxAllowedTurnin(item)} remaining</span>
                         </div>
                     </div>
-                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
-                    <div class="item-tech" style="opacity: 1;">Category: ${item.item_type || 'Turn-In Item'}</div>
                 </div>
                 <div class="item-actions">
                     <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
@@ -705,7 +704,8 @@ class UnifiedTeller {
                                  onerror="this.parentElement.style.display='none'">
                         </div>
                     ` : ''}
-                    <div class="price-row" style="opacity: 1;">
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
+                    <div class="price-row" style="opacity: 1; margin-top: 10px;">
                         <span class="price-label" style="opacity: 1;">Unit:</span>
                         <span class="price-value" style="opacity: 1;">${unitPrice}</span>
                     </div>
@@ -713,8 +713,6 @@ class UnifiedTeller {
                         <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
                         <span class="price-value" style="opacity: 1;">${stackPrice}</span>
                     </div>
-                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
-                    <div class="item-tech" style="opacity: 1;">Category: ${item.item_type || 'Item'}</div>
                 </div>
                 <div class="item-actions">
                     ${this.generateItemActionButtons(item)}
