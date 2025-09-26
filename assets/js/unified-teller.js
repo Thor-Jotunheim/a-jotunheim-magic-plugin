@@ -674,7 +674,7 @@ class UnifiedTeller {
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
                                    style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
-                            <span class="price-value" style="opacity: 1;">of ${this.getMaxAllowedTurnin(item)} required</span>
+                            <span class="price-value" style="opacity: 1;">of ${this.getMaxAllowedTurnin(item)} remaining</span>
                         </div>
                     </div>
                     <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>

@@ -1,0 +1,38 @@
+DANGEROUS CODE THAT WAS IN includes/Trade/trade-shops-cleanup.php:
+
+<?php
+
+if ( ! wp_next_scheduled( 'jotun_daily_cleanup' ) ) {
+    wp_schedule_event( time(), 'daily', 'jotun_daily_cleanup' );
+}
+
+add_action( 'jotun_daily_cleanup', 'jotun_delete_inactive_shops' );
+
+function jotun_delete_inactive_shops() {
+    global $wpdb;
+
+    // FIRST QUERY: Delete shop items for shops without transactions in 30 days
+    $wpdb->query("
+        DELETE jotun_shop_items
+        FROM jotun_shop_items
+        INNER JOIN jotun_shops ON jotun_shop_items.shop_id = jotun_shops.shop_id
+        LEFT JOIN jotun_transactions ON jotun_shops.shop_id = jotun_transactions.shop_id
+        AND jotun_transactions.transaction_date > NOW() - INTERVAL 30 DAY
+        WHERE jotun_transactions.shop_id IS NULL
+    ");
+
+    // SECOND QUERY: Delete shops without transactions in 30 days
+    $wpdb->query("
+        DELETE jotun_shops
+        FROM jotun_shops
+        LEFT JOIN jotun_transactions ON jotun_shops.shop_id = jotun_transactions.shop_id
+        AND jotun_transactions.transaction_date > NOW() - INTERVAL 30 DAY
+        WHERE jotun_transactions.shop_id IS NULL
+    ");
+}
+
+ANALYSIS:
+- The FIRST query deletes ALL items from jotun_shop_items for any shop that hasn't had transactions in 30 days
+- The SECOND query deletes the shops themselves from jotun_shops
+- This was running DAILY via WordPress cron
+- It would wipe out entire shops and all their inventory if they were inactive for 30 days

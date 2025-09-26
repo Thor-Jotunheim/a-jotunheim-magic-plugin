@@ -208,7 +208,16 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: var(--radius-4);
     box-shadow: var(--shadow-2);
     margin-bottom: var(--space-6);
-    overflow: hidden;
+    overflow: visible;
+}
+
+/* Items card should grow to contain all items without scrolling */
+.teller-card.items-card {
+    overflow: visible;
+}
+
+.teller-card.items-card .card-content {
+    overflow: visible;
 }
 
 .card-header {
@@ -564,12 +573,17 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Items Grid */
 .items-container {
     min-height: 300px;
+    max-height: none;
+    overflow: visible;
+    height: auto;
 }
 
 .items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--space-3);
+    height: auto;
+    overflow: visible;
 }
 
 .item-card {
