@@ -129,6 +129,14 @@
     --shadow-5: 0 16px 32px rgba(0, 0, 0, 0.04);
 }
 
+/* Hide WordPress page title on unified teller pages */
+body.page h1.entry-title,
+body.page h1.page-title,
+.entry-header h1,
+.page-header h1 {
+    display: none !important;
+}
+
 /* Base Layout */
 .teller-app {
     background: var(--background);
