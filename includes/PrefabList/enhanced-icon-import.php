@@ -18,6 +18,7 @@ class EnhancedIconImport {
         add_action('wp_ajax_enhanced_icon_import_start', [$this, 'ajax_start_import']);
         add_action('wp_ajax_enhanced_icon_import_batch', [$this, 'ajax_process_batch']);
         add_action('wp_ajax_enhanced_icon_import_status', [$this, 'ajax_get_status']);
+        add_action('wp_ajax_enhanced_icon_import_reset_failed', [$this, 'ajax_reset_failed_items']);
     }
     
     /**
@@ -219,9 +220,21 @@ class EnhancedIconImport {
             return true;
         }
         
-        // If marked as 'not_found' - skip it
+        // If marked as 'not_found' with timestamp - check if it's time to retry (30 days)
+        if (strpos($icon_image, 'not_found_') === 0) {
+            $date_part = substr($icon_image, 10); // Remove 'not_found_' prefix
+            $failed_date = DateTime::createFromFormat('Y-m-d', $date_part);
+            if ($failed_date) {
+                $now = new DateTime();
+                $days_since_failed = $now->diff($failed_date)->days;
+                return $days_since_failed >= 30; // Retry after 30 days
+            }
+            return false; // Invalid date format, skip
+        }
+        
+        // Legacy 'not_found' without timestamp - convert to timestamped version
         if ($icon_image === 'not_found') {
-            return false;
+            return false; // Skip for now, but should be converted
         }
         
         // If has a URL, check if the file actually exists
@@ -328,11 +341,12 @@ class EnhancedIconImport {
                 'source' => $source_used
             ];
         } else {
-            // Mark as processed (failed) so it doesn't get picked up again
+            // Mark as processed (failed) with timestamp so it can be retried later
             $table_name = ($table_type === 'itemlist') ? 'jotun_itemlist' : 'jotun_prefablist';
+            $timestamp = date('Y-m-d');
             $wpdb->update(
                 $table_name,
-                ['icon_image' => 'not_found'],  // Mark as processed but failed
+                ['icon_image' => 'not_found_' . $timestamp],  // Mark with date for future retry
                 ['id' => $item_id],
                 ['%s'],
                 ['%d']
@@ -480,6 +494,46 @@ class EnhancedIconImport {
         
         wp_send_json_success($status);
     }
+    
+    /**
+     * Reset failed items to allow retry
+     */
+    public function ajax_reset_failed_items() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized access');
+            return;
+        }
+        
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'enhanced_icon_import_nonce')) {
+            wp_send_json_error('Invalid security token');
+            return;
+        }
+        
+        global $wpdb;
+        
+        // Reset failed items in both tables
+        $itemlist_reset = $wpdb->query("
+            UPDATE jotun_itemlist 
+            SET icon_image = NULL 
+            WHERE icon_image LIKE 'not_found%'
+        ");
+        
+        $prefablist_reset = $wpdb->query("
+            UPDATE jotun_prefablist 
+            SET icon_image = NULL 
+            WHERE icon_image LIKE 'not_found%'
+        ");
+        
+        $total_reset = ($itemlist_reset !== false ? $itemlist_reset : 0) + 
+                       ($prefablist_reset !== false ? $prefablist_reset : 0);
+        
+        wp_send_json_success([
+            'message' => "Reset $total_reset failed items for retry",
+            'itemlist_reset' => $itemlist_reset !== false ? $itemlist_reset : 0,
+            'prefablist_reset' => $prefablist_reset !== false ? $prefablist_reset : 0,
+            'total_reset' => $total_reset
+        ]);
+    }
 }
 
 /**
@@ -520,6 +574,18 @@ function enhanced_icon_import_interface() {
             <button type="button" id="stop-import-btn" class="button" style="display: none;">
                 ⏹️ Stop Import
             </button>
+            <button type="button" id="reset-failed-btn" class="button" style="margin-left: 10px;">
+                🔄 Reset Failed Items
+            </button>
+        </div>
+        
+        <div class="reset-info" style="margin: 10px 0; padding: 10px; background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 4px;">
+            <p><strong>Smart Retry Logic:</strong></p>
+            <ul style="margin: 5px 0 0 20px;">
+                <li>Failed items are automatically retried after 30 days</li>
+                <li>Use "Reset Failed Items" to immediately retry all failed items</li>
+                <li>Deleted image files are automatically detected and reprocessed</li>
+            </ul>
         </div>
         
         <div id="import-status" class="import-status" style="display: none;">

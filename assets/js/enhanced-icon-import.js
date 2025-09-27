@@ -18,6 +18,7 @@ jQuery(document).ready(function($) {
         bindEvents: function() {
             $('#start-import-btn').on('click', this.startImport.bind(this));
             $('#stop-import-btn').on('click', this.stopImport.bind(this));
+            $('#reset-failed-btn').on('click', this.resetFailedItems.bind(this));
         },
 
         startImport: function(e) {
@@ -156,18 +157,34 @@ jQuery(document).ready(function($) {
             $container.scrollTop($container[0].scrollHeight);
         },
 
-        stopImport: function(e) {
-            if (e) {
-                e.preventDefault();
+        stopImport: function() {
+            this.isProcessing = false;
+            $('#start-import-btn').prop('disabled', false);
+            $('#stop-import-btn').prop('disabled', true);
+            this.updateUI('Import stopped by user.');
+        },
+
+        resetFailedItems: function() {
+            if (confirm('Are you sure you want to reset all failed items? This will allow them to be retried on the next import.')) {
+                $.ajax({
+                    url: eiAjax.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'ei_reset_failed_items',
+                        nonce: eiAjax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#import-results').html('<div class="notice notice-success"><p>Failed items have been reset. You can now retry the import.</p></div>');
+                        } else {
+                            $('#import-results').html('<div class="notice notice-error"><p>Error: ' + response.data + '</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $('#import-results').html('<div class="notice notice-error"><p>Failed to reset items. Please try again.</p></div>');
+                    }
+                });
             }
-            
-            this.isRunning = false;
-            this.importId = null;
-            
-            $('#start-import-btn').show();
-            $('#stop-import-btn').hide();
-            
-            this.showMessage('Import stopped by user', 'warning');
         },
 
         completeImport: function(message) {
