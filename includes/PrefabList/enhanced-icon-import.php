@@ -376,9 +376,14 @@ class EnhancedIconImport {
         }
         
         // Generate filename using the item/prefab name
+        error_log("Enhanced Icon Import: Original item_name: '$item_name'");
         $sanitized_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $item_name);
+        error_log("Enhanced Icon Import: After regex: '$sanitized_name'");
+        $sanitized_name = trim($sanitized_name, '_'); // Remove leading/trailing underscores
+        error_log("Enhanced Icon Import: After trim: '$sanitized_name'");
         if (empty($sanitized_name)) {
-            $sanitized_name = 'item';
+            $sanitized_name = 'item_' . $item_id; // Fallback with ID
+            error_log("Enhanced Icon Import: Used fallback: '$sanitized_name'");
         }
         
         $file_extension = pathinfo(parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'png';
