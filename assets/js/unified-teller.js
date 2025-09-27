@@ -566,56 +566,62 @@ class UnifiedTeller {
 
     updateTurninTracking() {
         if (!this.turninItems || this.turninItems.length === 0) {
-            document.getElementById('event-progress-display').textContent = 'No turn-in items';
+            const container = document.getElementById('turnin-tracking-content');
+            if (container) {
+                container.innerHTML = '<div class="no-turnin-items">No turn-in items available</div>';
+            }
             return;
         }
 
-        // Calculate current transaction totals
-        let currentTransactionTotal = 0;
-        let overallProgress = '';
-        const itemProgressData = [];
-
-        // Get current quantities from cart/interface
+        // Generate individual progress displays for each item
+        const progressDisplays = [];
+        
         this.turninItems.forEach(item => {
             const qtyInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
-            const currentQty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
-            currentTransactionTotal += currentQty;
-
-            // Use the same data source as the individual item displays
+            const currentTransactionQty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+            
             const dailyCollected = this.getDailyTurninTotal(item.item_name) || 0;
             const requirement = parseInt(item.turn_in_requirement) || 0;
-            const projected = dailyCollected + currentQty;
-
-
-
-            itemProgressData.push({
-                name: item.item_name,
-                current: dailyCollected,
-                requirement: requirement,
-                projected: projected,
-                transactionAmount: currentQty
-            });
-        });
-
-        // Calculate overall progress
-        const totalCollected = itemProgressData.reduce((sum, item) => sum + item.current, 0);
-        const totalRequired = itemProgressData.reduce((sum, item) => sum + item.requirement, 0);
-        const totalProjected = itemProgressData.reduce((sum, item) => sum + item.projected, 0);
-
-
-
-        // Update displays
-        document.getElementById('event-progress-display').textContent = 
-            `${totalCollected} / ${totalRequired} collected`;
-        
-        document.getElementById('current-transaction-display').textContent = 
-            `${currentTransactionTotal} items`;
+            const projected = dailyCollected + currentTransactionQty;
             
-        document.getElementById('projected-progress-display').textContent = 
-            `${totalProjected} / ${totalRequired}`;
-
-        // Update individual item progress
-        this.updateTurninItemsDisplay(itemProgressData);
+            // Calculate progress percentage
+            const progressPercent = requirement > 0 ? Math.min((dailyCollected / requirement) * 100, 100) : 0;
+            const projectedPercent = requirement > 0 ? Math.min((projected / requirement) * 100, 100) : 0;
+            
+            // Create progress display for this item
+            const progressHtml = `
+                <div class="turnin-progress-item">
+                    <div class="turnin-item-header">
+                        <span class="turnin-item-name">${item.item_name}</span>
+                        <span class="turnin-item-counts">${dailyCollected} / ${requirement}</span>
+                    </div>
+                    <div class="turnin-progress-bar-container">
+                        <div class="turnin-progress-bar">
+                            <div class="turnin-progress-fill" style="width: ${progressPercent}%"></div>
+                            ${currentTransactionQty > 0 ? 
+                                `<div class="turnin-progress-projected" style="width: ${projectedPercent}%; opacity: 0.5"></div>` : 
+                                ''}
+                        </div>
+                        <div class="turnin-progress-percentage">${progressPercent.toFixed(1)}%</div>
+                    </div>
+                    ${currentTransactionQty > 0 ? 
+                        `<div class="turnin-transaction-preview">+${currentTransactionQty} this transaction → ${projected} total</div>` : 
+                        ''}
+                </div>
+            `;
+            
+            progressDisplays.push(progressHtml);
+        });
+        
+        // Update the turn-in tracking container with individual progress displays
+        const container = document.getElementById('turnin-tracking-content');
+        if (container) {
+            container.innerHTML = `
+                <div class="turnin-progress-list">
+                    ${progressDisplays.join('')}
+                </div>
+            `;
+        }
     }
 
     handleQuantityChange(inputId) {
@@ -630,27 +636,7 @@ class UnifiedTeller {
         }
     }
 
-    updateTurninItemsDisplay(itemProgressData) {
-        const container = document.getElementById('turnin-items-summary');
-        if (!container) return;
 
-        container.innerHTML = '';
-        
-        itemProgressData.forEach(item => {
-            const progressElement = document.createElement('div');
-            progressElement.className = 'turnin-item-progress';
-            
-            progressElement.innerHTML = `
-                <div class="turnin-item-name">${item.name}</div>
-                <div class="turnin-item-counts">
-                    <div class="turnin-current-progress">${item.current} / ${item.requirement}</div>
-                    <div class="turnin-projected-progress">+${item.transactionAmount} → ${item.projected}</div>
-                </div>
-            `;
-            
-            container.appendChild(progressElement);
-        });
-    }
 
 
 

@@ -1935,6 +1935,101 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     color: var(--blue-11);
 }
 
+/* New Turn-in Progress Bar Styles */
+.turnin-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.turnin-progress-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.turnin-progress-item:hover {
+    background: #f1f3f4;
+    border-color: #adb5bd;
+}
+
+.turnin-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.turnin-item-name {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.turnin-item-counts {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.turnin-progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.turnin-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.turnin-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.turnin-progress-projected {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #17a2b8, #20c997);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.turnin-progress-percentage {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6c757d;
+    min-width: 35px;
+    text-align: right;
+}
+
+.turnin-transaction-preview {
+    font-size: 12px;
+    color: #17a2b8;
+    font-weight: 500;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.no-turnin-items {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+}
+
 /* ===== CRITICAL BUTTON STYLING OVERRIDES ===== */
 /* FINAL OVERRIDE: Force button colors with maximum specificity */
 .shop-items-grid .item-card .quantity-controls button.btn.btn-success,
