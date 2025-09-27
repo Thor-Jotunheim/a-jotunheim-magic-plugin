@@ -2034,11 +2034,12 @@ class UnifiedTeller {
             progressLines.push(`<div class="progress-line player-progress">${playerDailyTotal} turned in last 24h by player</div>`);
         }
         
-        // Always show: Server total progress
+        // Always show: Server total progress (including current transaction)
+        const projectedTotal = dailyTotal + currentlySelected;
         if (turnInRequirement > 0) {
-            progressLines.push(`<div class="progress-line server-progress">${dailyTotal} / ${turnInRequirement} collected</div>`);
+            progressLines.push(`<div class="progress-line server-progress">${projectedTotal} / ${turnInRequirement} collected</div>`);
         } else {
-            progressLines.push(`<div class="progress-line server-progress">${dailyTotal} collected</div>`);
+            progressLines.push(`<div class="progress-line server-progress">${projectedTotal} collected</div>`);
         }
         
         return progressLines.join('');
