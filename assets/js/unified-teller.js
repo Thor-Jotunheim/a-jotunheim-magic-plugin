@@ -552,12 +552,8 @@ class UnifiedTeller {
             console.log('Turn-in items response:', response);
             this.turninItems = response.data || [];
             
-            // Load daily turn-in data - if customer selected, load for that customer, otherwise load overall daily totals
-            if (this.currentCustomer) {
-                await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
-            } else {
-                await this.loadOverallDailyTurninData();
-            }
+            // The shop items already contain turn_in_quantity field with current daily totals
+            // No need to make separate API calls - data is already embedded
             
             // Also load Item Database for reference
             const itemsResponse = await JotunAPI.getItemlist();
@@ -625,6 +621,8 @@ class UnifiedTeller {
 
     async loadOverallDailyTurninData() {
         try {
+            console.log('Attempting to load overall daily turn-in data...');
+            
             // Load all turn-in transactions from last 24 hours (all players)
             const response = await JotunAPI.getTransactions({
                 transaction_type: 'turnin',
@@ -632,7 +630,7 @@ class UnifiedTeller {
             });
             
             this.dailyTurninData = {};
-            if (response.data) {
+            if (response && response.data) {
                 response.data.forEach(transaction => {
                     const itemName = transaction.item_name;
                     if (!this.dailyTurninData[itemName]) {
@@ -643,7 +641,8 @@ class UnifiedTeller {
             }
             console.log('Overall daily turn-in data loaded:', this.dailyTurninData);
         } catch (error) {
-            console.error('Error loading overall daily turn-in data:', error);
+            console.error('Error loading overall daily turn-in data (403 Forbidden likely due to permissions):', error);
+            console.log('Falling back to empty daily data - progress will show 0 until customer is selected');
             this.dailyTurninData = {};
         }
     }
@@ -1137,13 +1136,19 @@ class UnifiedTeller {
     }
 
     getDailyTurninTotal(itemName) {
-        console.log('DEBUG getDailyTurninTotal:', {
+        // Use the same data source as Transaction Summary - check turn-in items for existing turn_in_quantity
+        const item = this.turninItems.find(i => i.item_name === itemName);
+        const turnInQuantity = item ? parseInt(item.turn_in_quantity || 0) : 0;
+        
+        console.log('DEBUG getDailyTurninTotal (using turn_in_quantity from item):', {
             itemName,
-            dailyTurninData: this.dailyTurninData,
-            hasData: !!this.dailyTurninData,
-            itemTotal: this.dailyTurninData ? (this.dailyTurninData[itemName] || 0) : 0
+            item: item,
+            turn_in_quantity: item?.turn_in_quantity,
+            parsed: turnInQuantity,
+            oldMethod: this.dailyTurninData ? (this.dailyTurninData[itemName] || 0) : 0
         });
-        return this.dailyTurninData ? (this.dailyTurninData[itemName] || 0) : 0;
+        
+        return turnInQuantity;
     }
 
     getMaxAllowedTurnin(item) {
