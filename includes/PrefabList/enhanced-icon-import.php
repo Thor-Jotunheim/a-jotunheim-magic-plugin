@@ -41,6 +41,7 @@ class EnhancedIconImport {
         $itemlist_count = $wpdb->get_var("
             SELECT COUNT(*) FROM jotun_itemlist 
             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+            AND icon_image != 'not_found'
             AND item_name IS NOT NULL 
             AND item_name != ''
         ");
@@ -48,6 +49,7 @@ class EnhancedIconImport {
         $prefablist_count = $wpdb->get_var("
             SELECT COUNT(*) FROM jotun_prefablist 
             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+            AND icon_image != 'not_found'
             AND prefab_name IS NOT NULL 
             AND prefab_name != ''
         ");
@@ -122,6 +124,7 @@ class EnhancedIconImport {
         $items = $wpdb->get_results($wpdb->prepare(
             "SELECT id, item_name as search_name, item_name as file_name, 'itemlist' as table_type FROM jotun_itemlist 
              WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+             AND icon_image != 'not_found'
              AND item_name IS NOT NULL 
              AND item_name != ''
              LIMIT %d OFFSET %d",
@@ -135,6 +138,7 @@ class EnhancedIconImport {
             $itemlist_total = $wpdb->get_var("
                 SELECT COUNT(*) FROM jotun_itemlist 
                 WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+                AND icon_image != 'not_found'
                 AND item_name IS NOT NULL 
                 AND item_name != ''
             ");
@@ -145,6 +149,7 @@ class EnhancedIconImport {
                 $prefabs = $wpdb->get_results($wpdb->prepare(
                     "SELECT id, prefab_name as search_name, prefab_name as file_name, 'prefablist' as table_type FROM jotun_prefablist 
                      WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+                     AND icon_image != 'not_found'
                      AND prefab_name IS NOT NULL 
                      AND prefab_name != ''
                      LIMIT %d OFFSET %d",
@@ -289,6 +294,16 @@ class EnhancedIconImport {
                 'source' => $source_used
             ];
         } else {
+            // Mark as processed (failed) so it doesn't get picked up again
+            $table_name = ($table_type === 'itemlist') ? 'jotun_itemlist' : 'jotun_prefablist';
+            $wpdb->update(
+                $table_name,
+                ['icon_image' => 'not_found'],  // Mark as processed but failed
+                ['id' => $item_id],
+                ['%s'],
+                ['%d']
+            );
+            
             return [
                 'success' => false,
                 'id' => $item_id,
@@ -377,8 +392,8 @@ class EnhancedIconImport {
         }
         
         // Use the database filename as-is (should be clean already like "MashedMeat")
-        error_log("Enhanced Icon Import: Using filename from database: '$item_name'");
-        $sanitized_name = $item_name; // Use database value directly
+        error_log("Enhanced Icon Import: Using filename from database: '$file_name'");
+        $sanitized_name = $file_name; // Use database value directly
         
         // Only fallback if truly empty
         if (empty($sanitized_name)) {
