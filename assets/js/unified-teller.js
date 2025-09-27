@@ -705,7 +705,7 @@ class UnifiedTeller {
                 </div>
                 <div class="item-bottom-section">
                     <div class="turnin-progress" id="progress-${item.shop_item_id}">
-                        ${this.generateProgressText(item, true)}
+                        ${this.generateProgressText(item, false)}
                     </div>
                     <div class="item-actions">
                         <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
@@ -1920,6 +1920,17 @@ class UnifiedTeller {
         }
     }
 
+    updateProgressDisplay(shopItemId, turnInRequirement) {
+        const progressElement = document.getElementById(`progress-${shopItemId}`);
+        if (progressElement) {
+            const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
+                        this.shopItems.find(i => i.shop_item_id == shopItemId);
+            if (item) {
+                progressElement.innerHTML = this.generateProgressText(item, true);
+            }
+        }
+    }
+
     generateProgressText(item, includeCurrent = false) {
         const dailyTotal = this.getDailyTurninTotal(item.item_name);
         const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
@@ -2251,6 +2262,11 @@ class UnifiedTeller {
             // Use the existing createItemCard method which has proper stack support and styling
             const itemCard = this.createItemCard(item);
             container.appendChild(itemCard);
+            
+            // Update progress display now that the card is in the DOM
+            setTimeout(() => {
+                this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
+            }, 0);
         });
     }
 
