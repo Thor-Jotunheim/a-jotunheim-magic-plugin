@@ -1047,7 +1047,16 @@ class UnifiedTeller {
                 console.log('Validation successful for:', player.activePlayerName);
                 this.currentCustomer = player;
                 this.showValidationIcon('valid');
-                document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
+                
+                // Enable transaction processing buttons if they exist
+                const recordBtn = document.getElementById('record-transaction-btn');
+                const turninBtn = document.getElementById('record-turnin-btn');
+                if (recordBtn) {
+                    recordBtn.disabled = this.cart.length === 0;
+                }
+                if (turninBtn) {
+                    turninBtn.disabled = false; // Turn-in button should be enabled when customer is valid
+                }
                 
                 // Load daily turn-in data for this customer
                 await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
@@ -1061,7 +1070,12 @@ class UnifiedTeller {
                 console.log('No player found for:', customerName);
                 this.currentCustomer = null;
                 this.showValidationIcon('register');
-                document.getElementById('process-transaction-btn').disabled = true;
+                
+                // Disable transaction buttons
+                const recordBtn = document.getElementById('record-transaction-btn');
+                const turninBtn = document.getElementById('record-turnin-btn');
+                if (recordBtn) recordBtn.disabled = true;
+                if (turninBtn) turninBtn.disabled = true;
             }
         } catch (error) {
             console.error('Error validating customer:', error);
@@ -1242,7 +1256,10 @@ class UnifiedTeller {
         
         // Update process button state
         const canProcess = this.cart.length > 0 && this.currentCustomer;
-        document.getElementById('process-transaction-btn').disabled = !canProcess;
+        const recordBtn = document.getElementById('record-transaction-btn');
+        const turninBtn = document.getElementById('record-turnin-btn');
+        if (recordBtn) recordBtn.disabled = !canProcess;
+        if (turninBtn) turninBtn.disabled = !canProcess;
     }
 
     updateCartItemQuantity(cartIndex, newQuantity) {
@@ -2131,10 +2148,10 @@ class UnifiedTeller {
                 this.hideCustomerSuggestions();
                 
                 // Enable transaction processing if cart has items
-                const processBtn = document.getElementById('process-transaction-btn');
-                if (processBtn) {
-                    processBtn.disabled = this.cart.length === 0;
-                }
+                const recordBtn = document.getElementById('record-transaction-btn');
+                const turninBtn = document.getElementById('record-turnin-btn');
+                if (recordBtn) recordBtn.disabled = this.cart.length === 0;
+                if (turninBtn) turninBtn.disabled = this.cart.length === 0;
             } else {
                 // Clear validation icons when no exact match
                 this.hideValidationIcon();
@@ -2209,10 +2226,10 @@ class UnifiedTeller {
         this.showValidationIcon('valid');
         
         // Enable transaction processing if cart has items
-        const processBtn = document.getElementById('process-transaction-btn');
-        if (processBtn) {
-            processBtn.disabled = this.cart.length === 0;
-        }
+        const recordBtn = document.getElementById('record-transaction-btn');
+        const turninBtn = document.getElementById('record-turnin-btn');
+        if (recordBtn) recordBtn.disabled = this.cart.length === 0;
+        if (turninBtn) turninBtn.disabled = this.cart.length === 0;
         
         // Clear the flag after a short delay to allow input event to process
         setTimeout(() => {
