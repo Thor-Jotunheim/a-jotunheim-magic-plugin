@@ -679,7 +679,7 @@ class UnifiedTeller {
                     </div>
                 ` : ''}
                 <div class="item-bottom-section">
-                    <div class="item-pricing">
+                    <div class="item-card-pricing">
                         <div class="price-row">
                             <span class="price-label">Unit(s):</span>
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -715,7 +715,7 @@ class UnifiedTeller {
                     </div>
                 ` : ''}
                 <div class="item-bottom-section">
-                    <div class="item-pricing">
+                    <div class="item-card-pricing">
                         <div class="price-row">
                             <span class="price-label">Unit:</span>
                             <span class="price-value">${unitPrice}</span>
