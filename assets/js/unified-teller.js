@@ -552,9 +552,11 @@ class UnifiedTeller {
             console.log('Turn-in items response:', response);
             this.turninItems = response.data || [];
             
-            // Load daily turn-in data for current customer if available
+            // Load daily turn-in data - if customer selected, load for that customer, otherwise load overall daily totals
             if (this.currentCustomer) {
                 await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
+            } else {
+                await this.loadOverallDailyTurninData();
             }
             
             // Also load Item Database for reference
@@ -617,6 +619,31 @@ class UnifiedTeller {
             }
         } catch (error) {
             console.error('Error loading daily turn-in data:', error);
+            this.dailyTurninData = {};
+        }
+    }
+
+    async loadOverallDailyTurninData() {
+        try {
+            // Load all turn-in transactions from last 24 hours (all players)
+            const response = await JotunAPI.getTransactions({
+                transaction_type: 'turnin',
+                hours: 24
+            });
+            
+            this.dailyTurninData = {};
+            if (response.data) {
+                response.data.forEach(transaction => {
+                    const itemName = transaction.item_name;
+                    if (!this.dailyTurninData[itemName]) {
+                        this.dailyTurninData[itemName] = 0;
+                    }
+                    this.dailyTurninData[itemName] += parseInt(transaction.quantity) || 0;
+                });
+            }
+            console.log('Overall daily turn-in data loaded:', this.dailyTurninData);
+        } catch (error) {
+            console.error('Error loading overall daily turn-in data:', error);
             this.dailyTurninData = {};
         }
     }
@@ -1110,6 +1137,12 @@ class UnifiedTeller {
     }
 
     getDailyTurninTotal(itemName) {
+        console.log('DEBUG getDailyTurninTotal:', {
+            itemName,
+            dailyTurninData: this.dailyTurninData,
+            hasData: !!this.dailyTurninData,
+            itemTotal: this.dailyTurninData ? (this.dailyTurninData[itemName] || 0) : 0
+        });
         return this.dailyTurninData ? (this.dailyTurninData[itemName] || 0) : 0;
     }
 
