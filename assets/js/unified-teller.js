@@ -2089,6 +2089,12 @@ class UnifiedTeller {
     async handleCustomerSearch(searchTerm) {
         console.log('handleCustomerSearch called with:', searchTerm);
         
+        // Don't clear validation if we're in the middle of selecting a customer from suggestions
+        if (this.isSelectingCustomer) {
+            console.log('Skipping validation clear - customer being selected from suggestions');
+            return;
+        }
+        
         // Clear validation icons when typing
         this.hideValidationIcon();
         this.currentCustomer = null;
@@ -2174,6 +2180,9 @@ class UnifiedTeller {
     }
 
     selectCustomer(player) {
+        // Set flag to prevent handleCustomerSearch from clearing validation
+        this.isSelectingCustomer = true;
+        
         document.getElementById('customer-name').value = player.activePlayerName;
         this.currentCustomer = player;
         this.hideCustomerSuggestions();
@@ -2184,6 +2193,11 @@ class UnifiedTeller {
         if (processBtn) {
             processBtn.disabled = this.cart.length === 0;
         }
+        
+        // Clear the flag after a short delay to allow input event to process
+        setTimeout(() => {
+            this.isSelectingCustomer = false;
+        }, 100);
     }
 
     selectTurninCustomer(player) {
