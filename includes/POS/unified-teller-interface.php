@@ -206,13 +206,11 @@ function unified_teller_interface() {
                     <h2 class="card-title">Transaction Actions</h2>
                 </div>
                 <div class="card-content">
-                    <div class="transaction-button-container">
-                        <button id="clear-transaction-btn" class="transaction-btn btn-outline">
+                    <div class="transaction-actions-vertical">
+                        <button id="clear-transaction-btn" class="btn btn-outline btn-lg">
                             Clear Transaction
                         </button>
-                    </div>
-                    <div class="transaction-button-container">
-                        <button id="record-transaction-btn" class="transaction-btn btn-primary" disabled>
+                        <button id="record-transaction-btn" class="btn btn-primary btn-lg" disabled>
                             Record Transaction
                         </button>
                     </div>
