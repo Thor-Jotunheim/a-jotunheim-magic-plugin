@@ -260,7 +260,7 @@ class UnifiedTeller {
             
             const filteredPlayers = this.playerList.filter(player => 
                 (player.activePlayerName && player.activePlayerName.toLowerCase().includes(query)) ||
-                (player.player_name && player.player_name.toLowerCase().includes(query))
+                (player.playerName && player.playerName.toLowerCase().includes(query))
             ).slice(0, 10); // Show max 10 suggestions
             
             this.displayPlayerSuggestions(filteredPlayers, suggestionsContainer, customerNameInput);
@@ -1028,23 +1028,23 @@ class UnifiedTeller {
                 // Filter manually for exact matches
                 players = allPlayers.filter(p => {
                     const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
-                    const nameMatch = p.playerName && p.playerName.toLowerCase() === customerName.toLowerCase();
+                    const nameMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
                     return activeMatch || nameMatch;
                 });
                 console.log('Filtered players:', players);
             }
             
-            // Find exact match by activePlayerName or playerName (case-insensitive)
+            // Find exact match by activePlayerName (case-insensitive)
             const player = players.find(p => {
                 const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
-                const nameMatch = p.playerName && p.playerName.toLowerCase() === customerName.toLowerCase();
-                console.log(`Checking player: ${p.activePlayerName || p.playerName}, activeMatch: ${activeMatch}, nameMatch: ${nameMatch}`);
+                const nameMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
+                console.log(`Checking player: ${p.activePlayerName}, activeMatch: ${activeMatch}, nameMatch: ${nameMatch}`);
                 return activeMatch || nameMatch;
             });
             
             console.log('Player found result:', player);
             if (player) {
-                console.log('Validation successful for:', player.activePlayerName || player.playerName);
+                console.log('Validation successful for:', player.activePlayerName);
                 this.currentCustomer = player;
                 this.showValidationIcon('valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
