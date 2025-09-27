@@ -143,6 +143,7 @@ include_once(plugin_dir_path(__FILE__) . 'includes/Test/test-dashboard-page.php'
 
 // Include PrefabList file(s)
 include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/prefabdb-image-import.php');
+include_once(plugin_dir_path(__FILE__) . 'includes/PrefabList/enhanced-icon-import.php');
 
 // Include event zones editor files
 include_once(plugin_dir_path(__FILE__) . 'includes/EventZone/eventzones-permission.php');

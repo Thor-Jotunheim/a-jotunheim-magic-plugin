@@ -22,6 +22,12 @@ jQuery(document).ready(function($) {
             // Clear all permissions  
             $('#clear-all-permissions').on('click', this.clearAllPermissions.bind(this));
             
+            // Scan for new pages
+            $('#scan-new-pages').on('click', this.scanNewPages.bind(this));
+            
+            // Remove pages
+            $('#remove-pages').on('click', this.removePages.bind(this));
+            
             // Individual checkbox changes
             $('.permission-checkbox').on('change', this.handleCheckboxChange.bind(this));
         },
@@ -86,6 +92,103 @@ jQuery(document).ready(function($) {
                 $('.permission-checkbox').prop('checked', false);
                 this.showMessage('All permissions cleared. Don\'t forget to save!', 'info');
             }
+        },
+
+        scanNewPages: function(e) {
+            e.preventDefault();
+            
+            const $button = $(e.target);
+            const originalText = $button.text();
+            
+            // Show loading state
+            $button.html('🔄 Scanning...').prop('disabled', true);
+            
+            $.ajax({
+                url: page_permissions_config.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'scan_new_pages',
+                    nonce: page_permissions_config.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const data = response.data;
+                        if (data.new_count > 0) {
+                            PagePermissions.showMessage(
+                                `Found ${data.new_count} new pages! Reload the page to configure them.`, 
+                                'success'
+                            );
+                        } else {
+                            PagePermissions.showMessage(data.message, 'info');
+                        }
+                    } else {
+                        PagePermissions.showMessage('Error scanning pages: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    PagePermissions.showMessage('Network error occurred while scanning pages.', 'error');
+                },
+                complete: function() {
+                    $button.text(originalText).prop('disabled', false);
+                }
+            });
+        },
+
+        removePages: function(e) {
+            e.preventDefault();
+            
+            // Get selected pages
+            const selectedPages = [];
+            $('.page-select-checkbox:checked').each(function() {
+                selectedPages.push($(this).val());
+            });
+            
+            if (selectedPages.length === 0) {
+                PagePermissions.showMessage('Please select pages to remove.', 'warning');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to remove ${selectedPages.length} page(s) from permissions configuration?`)) {
+                return;
+            }
+            
+            const $button = $(e.target);
+            const originalText = $button.text();
+            
+            // Show loading state
+            $button.html('🗑️ Removing...').prop('disabled', true);
+            
+            $.ajax({
+                url: page_permissions_config.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'remove_pages',
+                    nonce: page_permissions_config.nonce,
+                    pages: selectedPages
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const data = response.data;
+                        PagePermissions.showMessage(
+                            `${data.removed_count} page(s) removed! Reload the page to see changes.`, 
+                            'success'
+                        );
+                        
+                        // Remove rows from table
+                        selectedPages.forEach(function(pageKey) {
+                            $(`input[value="${pageKey}"]`).closest('tr').fadeOut();
+                        });
+                    } else {
+                        PagePermissions.showMessage('Error removing pages: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    PagePermissions.showMessage('Network error occurred while removing pages.', 'error');
+                },
+                complete: function() {
+                    $button.text(originalText).prop('disabled', false);
+                }
+            });
         },
 
         handleCheckboxChange: function(e) {
