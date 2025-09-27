@@ -665,7 +665,7 @@ class UnifiedTeller {
                 <div class="item-header" style="opacity: 1;">
                     <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
                     <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Turn-In Item'}</div>
-                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
+                    <div class="item-biome biome-${(item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'unknown').toLowerCase().replace(/\s+/g, '')}" style="opacity: 1;">${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
                 </div>
                 <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                     ${item.icon_image ? `
@@ -695,7 +695,7 @@ class UnifiedTeller {
                 <div class="item-header" style="opacity: 1;">
                     <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
                     <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
-                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
+                    <div class="item-biome biome-${(item.tech_name || 'unknown').toLowerCase().replace(/\s+/g, '')}" style="opacity: 1;">${item.tech_name || 'Unknown'}</div>
                 </div>
                 <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                     ${item.icon_image ? `
