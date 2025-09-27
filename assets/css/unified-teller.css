@@ -670,6 +670,19 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: 6px;
 }
 
+/* Turn-in quantity input styling */
+.turnin-quantity-input {
+    width: 80px;
+    height: 40px;
+    padding: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid var(--gray-6);
+    border-radius: 6px;
+    background: white;
+}
+
 .item-name {
     font-weight: 500;
     margin-bottom: var(--space-2);
