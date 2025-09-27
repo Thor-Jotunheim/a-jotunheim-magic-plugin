@@ -648,13 +648,28 @@ class JotunheimPagePermissions {
         // Find new pages
         $new_pages = array_diff($all_page_keys, $configured_pages);
         
-        if (empty($new_pages)) {
+        // ALWAYS show selection modal if we found any pages at all
+        if (empty($all_pages)) {
             wp_send_json_success([
                 'new_count' => 0,
-                'message' => 'No new pages found. All available pages are already configured.',
+                'message' => 'No pages found during scan.',
                 'new_pages' => [],
-                'total_scanned' => count($all_pages),
+                'total_scanned' => 0,
                 'already_configured' => count($configured_pages)
+            ]);
+            return;
+        }
+        
+        // If no NEW pages, show ALL pages for re-selection
+        if (empty($new_pages)) {
+            error_log('Jotunheim Page Permissions: No new pages, showing all ' . count($all_pages) . ' pages for re-selection');
+            wp_send_json_success([
+                'new_count' => count($all_pages),
+                'message' => count($all_pages) . ' page(s) available! Select which ones you want in permissions (including re-adding existing ones).',
+                'new_pages' => $all_pages,
+                'total_scanned' => count($all_pages),
+                'already_configured' => count($configured_pages),
+                'show_selection' => true
             ]);
             return;
         }

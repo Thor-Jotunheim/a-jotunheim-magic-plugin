@@ -116,13 +116,16 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     if (response.success) {
                         const data = response.data;
-                        if (data.new_count > 0) {
+                        
+                        // Always show the modal if we have show_selection flag
+                        if (data.show_selection && data.new_pages && Object.keys(data.new_pages).length > 0) {
+                            PagePermissions.showMessage(data.message, 'success');
+                            PagePermissions.showPageSelectionModal(data.new_pages);
+                        } else if (data.new_count > 0) {
                             PagePermissions.showMessage(
                                 `Found ${data.new_count} new pages out of ${data.total_scanned} total!`, 
                                 'success'
                             );
-                            
-                            // Show selection modal like Dashboard Config
                             PagePermissions.showPageSelectionModal(data.new_pages);
                         } else {
                             PagePermissions.showMessage(
