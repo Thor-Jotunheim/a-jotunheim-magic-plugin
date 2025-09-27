@@ -614,7 +614,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: var(--radius-2);
     background: var(--card);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    width: 320px;
+    width: 310px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
