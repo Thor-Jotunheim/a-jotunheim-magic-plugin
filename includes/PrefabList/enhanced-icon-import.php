@@ -352,7 +352,7 @@ class EnhancedIconImport {
     /**
      * Download and save icon from URL
      */
-    private function download_and_save_icon($image_url, $prefab_name, $prefab_id, $icons_dir, $base_url) {
+    private function download_and_save_icon($image_url, $file_name, $item_id, $icons_dir, $base_url) {
         // Fetch image
         $response = wp_remote_get($image_url, [
             'timeout' => 15,
@@ -386,8 +386,8 @@ class EnhancedIconImport {
         }
         
         $file_extension = pathinfo(parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'png';
-        $file_name = $sanitized_name . '.' . $file_extension;
-        $file_path = $icons_dir . '/' . $file_name;
+        $final_filename = $sanitized_name . '.' . $file_extension;
+        $file_path = $icons_dir . '/' . $final_filename;
         
         // Save file
         if (!file_put_contents($file_path, $image_data)) {
@@ -398,11 +398,11 @@ class EnhancedIconImport {
         }
         
         // Return success with file info
-        $relative_file_path = $base_url . '/Jotunheim-magic/icons/' . $file_name;
+        $relative_file_path = $base_url . '/Jotunheim-magic/icons/' . $final_filename;
         
         return [
             'success' => true,
-            'filename' => $file_name,
+            'filename' => $final_filename,
             'saved_url' => $relative_file_path
         ];
     }
