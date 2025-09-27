@@ -2168,14 +2168,30 @@ class UnifiedTeller {
                 if (recordBtn) recordBtn.disabled = this.cart.length === 0;
                 if (turninBtn) turninBtn.disabled = this.cart.length === 0;
             } else {
-                // Clear validation icons when no exact match
-                this.hideValidationIcon();
-                this.currentCustomer = null;
-                this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
+                // Check if we should show register option (no matches at all)
+                if (filteredPlayers.length === 0) {
+                    console.log('No players match search term, showing register option');
+                    this.hideValidationIcon();
+                    this.currentCustomer = null;
+                    this.showValidationIcon('register');
+                } else {
+                    // Show suggestions for partial matches
+                    this.hideValidationIcon();
+                    this.currentCustomer = null;
+                    this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
+                }
             }
         } catch (error) {
             console.error('Error searching customers:', error);
             this.showStatus('Error searching for customers', 'error');
+        }
+        
+        // Also validate after a delay if no exact match was found
+        if (!this.currentCustomer && searchTerm.trim().length >= 2) {
+            clearTimeout(this.validateTimeout);
+            this.validateTimeout = setTimeout(() => {
+                this.validateCustomer(searchTerm.trim());
+            }, 500);
         }
     }
 

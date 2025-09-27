@@ -74,9 +74,14 @@ function unified_teller_interface() {
                             </div>
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
+                        
+                        <!-- Always Visible Registration Button -->
+                        <div class="registration-button-container">
+                            <button id="register-new-player-btn" class="register-new-player-btn">Register New Player</button>
+                        </div>
                     </div>
                     <div id="register-new-player-container" class="register-container" style="display: none;">
-                        <button id="register-new-player-btn" class="btn btn-outline btn-sm">Register New Player</button>
+                        <button class="btn btn-outline btn-sm">Register New Player (Legacy)</button>
                     </div>
                 </div>
             </div>
