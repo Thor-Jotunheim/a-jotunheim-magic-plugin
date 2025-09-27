@@ -661,25 +661,30 @@ class UnifiedTeller {
         
         // Different display for turn-in items vs regular items
         if (isTurnInItem) {
+            const biomeName = item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown';
+            const biomeClass = `biome-${biomeName.toLowerCase().replace(/\s+/g, '')}`;
+            
             card.innerHTML = `
-                <div class="item-header" style="opacity: 1;">
-                    <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
-                    <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Turn-In Item'}</div>
-                    <div class="item-biome biome-${(item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'unknown').toLowerCase().replace(/\s+/g, '')}" style="opacity: 1;">${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
+                <div class="item-header">
+                    <div class="item-name">${this.escapeHtml(item.item_name)}</div>
+                    <div class="item-tags">
+                        <div class="item-type">${item.item_type || 'Trophies'}</div>
+                        <div class="item-biome ${biomeClass}">${biomeName}</div>
+                    </div>
                 </div>
-                <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
-                    ${item.icon_image ? `
-                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10;">
-                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 onerror="this.parentElement.style.display='none'">
-                        </div>
-                    ` : ''}
-                    <div class="price-row" style="opacity: 1; margin-top: 10px;">
-                        <span class="price-label" style="opacity: 1;">Unit(s):</span>
+                ${item.icon_image ? `
+                    <div class="item-icon-container">
+                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                             onerror="this.parentElement.style.display='none'">
+                    </div>
+                ` : ''}
+                <div class="item-pricing">
+                    <div class="price-row">
+                        <span class="price-label">Unit(s):</span>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
                                    style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
-                            <span class="price-value" style="opacity: 1;">of ${this.getMaxAllowedTurnin(item)} remaining</span>
+                            <span class="price-value">of ${this.getMaxAllowedTurnin(item)} remaining</span>
                         </div>
                     </div>
                 </div>
@@ -690,26 +695,31 @@ class UnifiedTeller {
                 </div>
             `;
         } else {
+            const biomeName = item.tech_name || 'Unknown';
+            const biomeClass = `biome-${biomeName.toLowerCase().replace(/\s+/g, '')}`;
+            
             card.innerHTML = `
-                <div class="item-header" style="opacity: 1;">
-                    <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
-                    <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
-                    <div class="item-biome biome-${(item.tech_name || 'unknown').toLowerCase().replace(/\s+/g, '')}" style="opacity: 1;">${item.tech_name || 'Unknown'}</div>
-                </div>
-                <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
-                    ${item.icon_image ? `
-                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10;">
-                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 onerror="this.parentElement.style.display='none'">
-                        </div>
-                    ` : ''}
-                    <div class="price-row" style="opacity: 1; margin-top: 10px;">
-                        <span class="price-label" style="opacity: 1;">Unit:</span>
-                        <span class="price-value" style="opacity: 1;">${unitPrice}</span>
+                <div class="item-header">
+                    <div class="item-name">${this.escapeHtml(item.item_name)}</div>
+                    <div class="item-tags">
+                        <div class="item-type">${item.item_type || 'Item'}</div>
+                        <div class="item-biome ${biomeClass}">${biomeName}</div>
                     </div>
-                    <div class="price-row" style="opacity: 1;">
-                        <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
-                        <span class="price-value" style="opacity: 1;">${stackPrice}</span>
+                </div>
+                ${item.icon_image ? `
+                    <div class="item-icon-container">
+                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                             onerror="this.parentElement.style.display='none'">
+                    </div>
+                ` : ''}
+                <div class="item-pricing">
+                    <div class="price-row">
+                        <span class="price-label">Unit:</span>
+                        <span class="price-value">${unitPrice}</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label">Stack (${item.stack_size || 1}):</span>
+                        <span class="price-value">${stackPrice}</span>
                     </div>
                 </div>
                 <div class="item-actions">

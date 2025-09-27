@@ -614,8 +614,32 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: var(--radius-2);
     background: var(--card);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    max-width: 280px;
+    max-width: 320px;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Icon Container with Frame */
+.item-icon-container {
+    width: 80px;
+    height: 80px;
+    padding: 6px;
+    background: var(--gray-2);
+    border-radius: 6px;
+    border: 1px solid var(--gray-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-2) auto;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.item-icon-container .item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
 }
 
 .item-card:hover {
@@ -929,13 +953,98 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex: 1;
 }
 
+.item-tags {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
 .item-type {
     font-size: 12px;
     color: var(--gray-9);
     background: var(--gray-3);
     padding: 2px 6px;
     border-radius: 4px;
-    margin-left: var(--space-2);
+}
+
+/* Biome Tags */
+.item-biome {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    text-transform: capitalize;
+    text-align: center;
+    min-width: 50px;
+}
+
+/* Biome Color Coding */
+.biome-meadow, .biome-meadows { 
+    background: #90EE90; 
+    color: #2F4F2F; 
+    border: 1px solid #7CCD7C;
+}
+
+.biome-forest { 
+    background: #228B22; 
+    color: #FFFFFF; 
+    border: 1px solid #32CD32;
+}
+
+.biome-blackforest { 
+    background: #1B4B1B; 
+    color: #FFFFFF; 
+    border: 1px solid #006400;
+}
+
+.biome-swamp { 
+    background: #8B4513; 
+    color: #FFFFFF; 
+    border: 1px solid #A0522D;
+}
+
+.biome-mountain { 
+    background: #708090; 
+    color: #FFFFFF; 
+    border: 1px solid #778899;
+}
+
+.biome-plains { 
+    background: #F0E68C; 
+    color: #8B4513; 
+    border: 1px solid #BDB76B;
+}
+
+.biome-mistland, .biome-mistlands { 
+    background: #9370DB; 
+    color: #FFFFFF; 
+    border: 1px solid #8A2BE2;
+}
+
+.biome-ashland, .biome-ashlands { 
+    background: #DC143C; 
+    color: #FFFFFF; 
+    border: 1px solid #B22222;
+}
+
+.biome-deepnorth { 
+    background: #4682B4; 
+    color: #FFFFFF; 
+    border: 1px solid #5F9EA0;
+}
+
+.biome-ocean { 
+    background: #006994; 
+    color: #FFFFFF; 
+    border: 1px solid #4169E1;
+}
+
+.biome-unknown { 
+    background: var(--gray-3); 
+    color: var(--gray-9); 
+    border: 1px solid var(--gray-6);
 }
 
 .item-pricing {
