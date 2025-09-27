@@ -571,8 +571,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .items-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(280px, 45%), 1fr));
-    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: var(--space-4);
     width: 100%;
     height: auto !important;
     min-height: 0 !important;
@@ -614,7 +614,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: var(--radius-2);
     background: var(--card);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    max-width: 400px;
+    max-width: 280px;
     width: 100%;
 }
 

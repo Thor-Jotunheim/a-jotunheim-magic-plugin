@@ -634,19 +634,10 @@ class UnifiedTeller {
             return;
         }
 
-        this.shopItems.forEach(async (item) => {
+        this.shopItems.forEach(item => {
             if (item.is_available == 1) {
                 const itemCard = this.createItemCard(item);
                 container.appendChild(itemCard);
-                
-                // Update event progress display for turn-in items
-                if (item.item_type === 'Turn-In Item' && item.turn_in_requirement > 0) {
-                    const eventRemaining = await this.getEventTotalRemaining(item);
-                    const remainingSpan = itemCard.querySelector('.event-remaining');
-                    if (remainingSpan) {
-                        remainingSpan.textContent = `of ${eventRemaining} remaining`;
-                    }
-                }
             }
         });
     }
@@ -673,29 +664,27 @@ class UnifiedTeller {
             card.innerHTML = `
                 <div class="item-header" style="opacity: 1;">
                     <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
-                    <div class="item-tags">
-                        <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Turn-In Item'}</div>
-                        <div class="item-biome biome-${(item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown').toLowerCase().replace(/\s+/g, '')}">${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
-                    </div>
+                    <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Turn-In Item'}</div>
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown'}</div>
                 </div>
                 <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                     ${item.icon_image ? `
-                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10;">
+                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
                             <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
                                  onerror="this.parentElement.style.display='none'">
                         </div>
                     ` : ''}
-
-                </div>
-                <div class="item-actions">
-                    <div class="quantity-section">
-                        <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
-                            <span class="price-label" style="opacity: 1;">Unit(s):</span>
+                    <div class="price-row" style="opacity: 1; margin-top: 10px;">
+                        <span class="price-label" style="opacity: 1;">Unit(s):</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
                                    style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
-                            <span class="price-value event-remaining" style="opacity: 1;">of ${item.turn_in_requirement || 0} remaining</span>
+                            <span class="price-value" style="opacity: 1;">of ${this.getMaxAllowedTurnin(item)} remaining</span>
                         </div>
                     </div>
+                </div>
+                <div class="item-actions">
                     <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
                         Turn In
                     </button>
@@ -705,19 +694,18 @@ class UnifiedTeller {
             card.innerHTML = `
                 <div class="item-header" style="opacity: 1;">
                     <div class="item-name" style="opacity: 1; color: inherit;">${this.escapeHtml(item.item_name)}</div>
-                    <div class="item-tags">
-                        <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
-                        <div class="item-biome biome-${(item.tech_name || 'Unknown').toLowerCase().replace(/\s+/g, '')}">${item.tech_name || 'Unknown'}</div>
-                    </div>
+                    <div class="item-type" style="opacity: 1; color: inherit;">${item.item_type || 'Trophies'}</div>
+                    <div class="item-biome" style="opacity: 1;">Biome: ${item.tech_name || 'Unknown'}</div>
                 </div>
                 <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                     ${item.icon_image ? `
-                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10;">
+                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
                             <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
                                  onerror="this.parentElement.style.display='none'">
                         </div>
                     ` : ''}
-                    <div class="price-row" style="opacity: 1;">
+                    <div class="price-row" style="opacity: 1; margin-top: 10px;">
                         <span class="price-label" style="opacity: 1;">Unit:</span>
                         <span class="price-value" style="opacity: 1;">${unitPrice}</span>
                     </div>
@@ -725,8 +713,6 @@ class UnifiedTeller {
                         <span class="price-label" style="opacity: 1;">Stack (${item.stack_size || 1}):</span>
                         <span class="price-value" style="opacity: 1;">${stackPrice}</span>
                     </div>
-
-
                 </div>
                 <div class="item-actions">
                     ${this.generateItemActionButtons(item)}
@@ -1114,45 +1100,6 @@ class UnifiedTeller {
             return Math.max(0, turnInRequirement - dailyTotal);
         }
         return 999; // No limit set
-    }
-
-    async getEventTotalRemaining(item) {
-        try {
-            const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
-            if (turnInRequirement <= 0) {
-                return 0; // No event requirement set
-            }
-
-            // Get total turned in by everyone for this item from the database
-            const response = await fetch(`${window.jotunAPI.config.apiUrl}/jotun-api/v1/transactions/event-progress/${encodeURIComponent(item.item_name)}`, {
-                method: 'GET',
-                credentials: 'same-origin',
-                headers: {
-                    'X-WP-Nonce': window.jotunAPI.config.nonce
-                }
-            });
-
-            if (!response.ok) {
-                console.warn('Could not fetch event progress, using total requirement');
-                return turnInRequirement;
-            }
-
-            const data = await response.json();
-            const totalTurnedIn = parseInt(data.total_turned_in) || 0;
-            const remaining = Math.max(0, turnInRequirement - totalTurnedIn);
-            
-            console.log('DEBUG - Event progress:', {
-                itemName: item.item_name,
-                totalRequired: turnInRequirement,
-                totalTurnedIn: totalTurnedIn,
-                remaining: remaining
-            });
-
-            return remaining;
-        } catch (error) {
-            console.warn('Error fetching event progress:', error);
-            return parseInt(item.turn_in_requirement) || 0;
-        }
     }
 
     updateCartDisplay() {

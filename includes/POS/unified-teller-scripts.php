@@ -10,12 +10,12 @@ if (!defined('ABSPATH')) {
 
 // Register the shortcode handler
 function unified_teller_scripts_shortcode($atts) {
-    // Enqueue styles for unified teller - Now using unified CSS file
+    // Enqueue styles for unified teller - Spark Design System
     wp_enqueue_style(
         'unified-teller-css',
-        plugin_dir_url(__FILE__) . '../../assets/css/unified-teller.css',
+        plugin_dir_url(__FILE__) . '../../assets/css/unified-teller-spark.css',
         [],
-        '1.2.0'
+        '1.1.0'
     );
 
     // Enqueue scripts and styles only when shortcode is used
@@ -65,13 +65,13 @@ function maybe_enqueue_teller_scripts() {
     global $post;
     
     if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'unified_teller')) {
-        // Enqueue styles for unified teller (commented out - using shortcode version only)
-        // wp_enqueue_style(
-        //     'unified-teller-css',
-        //     plugin_dir_url(__FILE__) . '../../assets/css/unified-teller.css',
-        //     [],
-        //     '1.0.0'
-        // );
+        // Enqueue styles for unified teller
+        wp_enqueue_style(
+            'unified-teller-css',
+            plugin_dir_url(__FILE__) . '../../assets/css/unified-teller.css',
+            [],
+            '1.0.0'
+        );
 
         wp_enqueue_script(
             'jotun-comprehensive-api',

@@ -590,21 +590,15 @@ class JotunheimDashboardConfig {
                 'title' => 'Prefab Image Import',
                 'description' => 'Import prefab images into the database',
                 'interface_function' => 'prefabdb_image_import_shortcode'
-            ],
-            'enhanced_icon_import' => [
-                'title' => 'Enhanced Icon Import',
-                'description' => 'Import icons from multiple sources (Jotunn, Commands.gg, existing URLs)',
-                'interface_function' => 'enhanced_icon_import_shortcode'
             ]
         ];
         
-        // Auto-detect ALL shortcodes, with intelligent filtering
+        // Auto-detect additional shortcodes that match common patterns
         foreach ($shortcode_tags as $shortcode_tag => $callback) {
-            // Skip WordPress core shortcodes and common third-party plugin shortcodes
+            // Skip WordPress core shortcodes and common plugin shortcodes
             $skip_patterns = [
                 'gallery', 'audio', 'video', 'playlist', 'embed', 'wp_caption', 'caption',
-                'contact-form-7', 'cf7', 'gravityform', 'wpforms', 'elementor-template',
-                'woocommerce', 'wc_', 'vc_', 'et_pb_', 'fusion_'
+                'contact-form-7', 'cf7', 'gravityform', 'wpforms', 'elementor-template'
             ];
             
             $should_skip = false;
@@ -615,18 +609,12 @@ class JotunheimDashboardConfig {
                 }
             }
             
-            // Additional check: skip very short shortcodes (likely core WP)
-            if (strlen($shortcode_tag) < 3) {
-                $should_skip = true;
-            }
-            
             if ($should_skip) continue;
             
-            // If not already defined, auto-detect ALL remaining shortcodes
+            // If not already defined, try to auto-detect based on patterns
             if (!isset($predefined_shortcodes[$shortcode_tag])) {
-                // Enhanced detection: include ALL non-core shortcodes, with special handling for plugin shortcodes
-                $is_plugin_shortcode = (
-                    strpos($shortcode_tag, 'jotun') !== false || 
+                // Look for jotunheim-related shortcodes or common interface patterns
+                if (strpos($shortcode_tag, 'jotun') !== false || 
                     strpos($shortcode_tag, 'eventzones') !== false ||
                     strpos($shortcode_tag, '_editor') !== false ||
                     strpos($shortcode_tag, '_interface') !== false ||
@@ -634,31 +622,15 @@ class JotunheimDashboardConfig {
                     strpos($shortcode_tag, 'section') !== false ||
                     strpos($shortcode_tag, 'shop') !== false ||
                     strpos($shortcode_tag, 'trade') !== false ||
-                    strpos($shortcode_tag, 'barter') !== false ||
-                    strpos($shortcode_tag, 'prefab') !== false ||
-                    strpos($shortcode_tag, 'icon') !== false ||
-                    strpos($shortcode_tag, 'import') !== false ||
-                    strpos($shortcode_tag, 'enhanced') !== false
-                );
-                
-                // For plugin shortcodes, add them automatically
-                if ($is_plugin_shortcode) {
+                    strpos($shortcode_tag, 'barter') !== false) {
+                    
                     $predefined_shortcodes[$shortcode_tag] = [
                         'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
-                        'description' => 'Plugin shortcode interface',
+                        'description' => 'Auto-detected shortcode interface',
                         'interface_function' => is_string($callback) ? $callback : 'shortcode_' . $shortcode_tag
                     ];
                     
-                    error_log('Jotunheim Dashboard: Auto-detected plugin shortcode: ' . $shortcode_tag);
-                } else {
-                    // For other shortcodes, add them but mark as third-party
-                    $predefined_shortcodes[$shortcode_tag] = [
-                        'title' => ucwords(str_replace(['_', '-'], ' ', $shortcode_tag)),
-                        'description' => 'Auto-detected third-party shortcode',
-                        'interface_function' => is_string($callback) ? $callback : 'shortcode_' . $shortcode_tag
-                    ];
-                    
-                    error_log('Jotunheim Dashboard: Auto-detected third-party shortcode: ' . $shortcode_tag);
+                    error_log('Jotunheim Dashboard: Auto-detected shortcode: ' . $shortcode_tag);
                 }
             }
         }
