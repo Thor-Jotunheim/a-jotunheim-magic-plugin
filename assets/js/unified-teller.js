@@ -533,7 +533,7 @@ class UnifiedTeller {
             this.displayShopItems();
             
             // Set up tracking interface based on shop type
-            const isTurnInOnly = this.shopData.shopType === 'turn-in_only';
+            const isTurnInOnly = this.getCurrentShopType() === 'turn-in_only';
             this.setupTrackingInterface(isTurnInOnly);
         } catch (error) {
             console.error('Error loading shop items:', error);
@@ -564,6 +564,12 @@ class UnifiedTeller {
             if (turninContent) turninContent.style.display = 'none';
             if (paymentSummary) paymentSummary.style.display = 'block';
         }
+    }
+
+    getCurrentShopType() {
+        if (!this.selectedShop) return '';
+        const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+        return selectedOption ? selectedOption.dataset.shopType : '';
     }
 
     async initializeTurninTracking() {
@@ -2122,7 +2128,7 @@ class UnifiedTeller {
         }
         
         // Update turn-in tracking if in turn-in mode
-        if (this.shopData.shopType === 'turn-in_only') {
+        if (this.getCurrentShopType() === 'turn-in_only') {
             this.updateTurninTracking();
         }
     }
@@ -2138,7 +2144,7 @@ class UnifiedTeller {
         }
         
         // Update turn-in tracking if in turn-in mode
-        if (this.shopData.shopType === 'turn-in_only') {
+        if (this.getCurrentShopType() === 'turn-in_only') {
             this.updateTurninTracking();
         }
     }
@@ -3184,7 +3190,7 @@ class UnifiedTeller {
         this.updatePaymentCalculations();
         
         // Update turn-in tracking if in turn-in mode
-        if (this.shopData.shopType === 'turn-in_only') {
+        if (this.getCurrentShopType() === 'turn-in_only') {
             this.updateTurninTracking();
         }
     }

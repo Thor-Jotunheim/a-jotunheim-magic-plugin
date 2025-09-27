@@ -1951,16 +1951,16 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .turnin-progress-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    max-height: 200px;
+    gap: 2px;
+    max-height: 140px;
     overflow-y: auto;
 }
 
 .turnin-progress-item {
     background: var(--gray-1);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2);
-    padding: 6px 8px;
+    border-radius: var(--radius-1);
+    padding: 3px 6px;
     transition: all 0.2s ease;
 }
 
@@ -1973,33 +1973,33 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3px;
+    margin-bottom: 1px;
 }
 
 .turnin-item-name {
     font-weight: 500;
     color: var(--foreground);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .turnin-item-counts {
     font-weight: 500;
     color: var(--muted-foreground);
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .turnin-progress-bar-container {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 2px;
+    gap: 4px;
+    margin-bottom: 1px;
 }
 
 .turnin-progress-bar {
     flex: 1;
-    height: 4px;
+    height: 3px;
     background: var(--gray-4);
-    border-radius: 2px;
+    border-radius: 1px;
     position: relative;
     overflow: hidden;
 }
@@ -2007,7 +2007,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .turnin-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--green-9), var(--green-10));
-    border-radius: 2px;
+    border-radius: 1px;
     transition: width 0.3s ease;
 }
 
@@ -2017,23 +2017,23 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     left: 0;
     height: 100%;
     background: linear-gradient(90deg, var(--blue-8), var(--blue-9));
-    border-radius: 2px;
+    border-radius: 1px;
     transition: width 0.3s ease;
 }
 
 .turnin-progress-percentage {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
     color: var(--muted-foreground);
-    min-width: 30px;
+    min-width: 25px;
     text-align: right;
 }
 
 .turnin-transaction-preview {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--blue-11);
     font-weight: 500;
-    margin-top: 2px;
+    margin-top: 1px;
     font-style: italic;
 }
 
