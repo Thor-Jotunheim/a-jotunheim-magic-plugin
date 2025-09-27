@@ -1132,6 +1132,15 @@ add_action('rest_api_init', function() {
         }
     ]);
     
+    // Get event progress for item
+    register_rest_route('jotun-api/v1', '/transactions/event-progress/(?P<item_name>[a-zA-Z0-9-_% ]+)', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_event_progress',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
     // ============================================================================
     // ITEM LIST API ENDPOINTS (jotun_itemlist)
     // ============================================================================
@@ -2742,6 +2751,28 @@ function jotun_api_delete_transaction($request) {
     }
     
     return new WP_REST_Response(['message' => 'Transaction deleted successfully'], 200);
+}
+
+function jotun_api_get_event_progress($request) {
+    global $wpdb;
+    
+    $item_name = sanitize_text_field(urldecode($request['item_name']));
+    
+    // Get total turned in for this item from transactions where transaction_type = 'turn-in'
+    $total_turned_in = $wpdb->get_var($wpdb->prepare(
+        "SELECT COALESCE(SUM(quantity), 0) FROM jotun_transactions 
+         WHERE item_name = %s AND transaction_type = 'turn-in'",
+        $item_name
+    ));
+    
+    if ($total_turned_in === null) {
+        $total_turned_in = 0;
+    }
+    
+    return new WP_REST_Response([
+        'item_name' => $item_name,
+        'total_turned_in' => (int) $total_turned_in
+    ], 200);
 }
 
 // ============================================================================

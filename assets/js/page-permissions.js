@@ -28,6 +28,9 @@ jQuery(document).ready(function($) {
             // Remove pages
             $('#remove-pages').on('click', this.removePages.bind(this));
             
+            // Select all pages checkbox
+            $('#select-all-pages').on('change', this.toggleAllPageSelection.bind(this));
+            
             // Individual checkbox changes
             $('.permission-checkbox').on('change', this.handleCheckboxChange.bind(this));
         },
@@ -100,8 +103,7 @@ jQuery(document).ready(function($) {
             const $button = $(e.target);
             const originalText = $button.text();
             
-            // Show loading state
-            $button.html('🔄 Scanning...').prop('disabled', true);
+            $button.prop('disabled', true).text('Scanning...');
             
             $.ajax({
                 url: page_permissions_config.ajax_url,
@@ -110,26 +112,26 @@ jQuery(document).ready(function($) {
                     action: 'scan_new_pages',
                     nonce: page_permissions_config.nonce
                 },
-                success: function(response) {
+                success: (response) => {
                     if (response.success) {
-                        const data = response.data;
-                        if (data.new_count > 0) {
-                            PagePermissions.showMessage(
-                                `Found ${data.new_count} new pages! Reload the page to configure them.`, 
-                                'success'
-                            );
+                        if (response.data.new_count > 0) {
+                            // Show popup with results
+                            alert(`✅ Scan Complete!\n\n${response.data.message}\n\nThe page will refresh to show the new pages.`);
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
                         } else {
-                            PagePermissions.showMessage(data.message, 'info');
+                            alert(`ℹ️ Scan Complete!\n\n${response.data.message}`);
                         }
                     } else {
-                        PagePermissions.showMessage('Error scanning pages: ' + response.data, 'error');
+                        alert(`❌ Error!\n\n${response.data || 'Unknown error'}`);
                     }
                 },
-                error: function() {
-                    PagePermissions.showMessage('Network error occurred while scanning pages.', 'error');
+                error: (xhr, status, error) => {
+                    alert(`❌ AJAX Error!\n\n${error}`);
                 },
-                complete: function() {
-                    $button.text(originalText).prop('disabled', false);
+                complete: () => {
+                    $button.prop('disabled', false).text(originalText);
                 }
             });
         },
@@ -137,58 +139,56 @@ jQuery(document).ready(function($) {
         removePages: function(e) {
             e.preventDefault();
             
-            // Get selected pages
             const selectedPages = [];
             $('.page-select-checkbox:checked').each(function() {
                 selectedPages.push($(this).val());
             });
             
             if (selectedPages.length === 0) {
-                PagePermissions.showMessage('Please select pages to remove.', 'warning');
+                alert('Please select pages to remove by checking the boxes in the first column.');
                 return;
             }
             
-            if (!confirm(`Are you sure you want to remove ${selectedPages.length} page(s) from permissions configuration?`)) {
+            const pageNames = selectedPages.join(', ');
+            if (!confirm(`Are you sure you want to remove these ${selectedPages.length} page(s) from permissions configuration?\n\n${pageNames}\n\nThis will delete their permission settings and they will fall back to WordPress permissions.`)) {
                 return;
             }
             
             const $button = $(e.target);
             const originalText = $button.text();
             
-            // Show loading state
-            $button.html('🗑️ Removing...').prop('disabled', true);
+            $button.prop('disabled', true).text('Removing...');
             
             $.ajax({
                 url: page_permissions_config.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'remove_pages',
-                    nonce: page_permissions_config.nonce,
-                    pages: selectedPages
+                    pages: selectedPages,
+                    nonce: page_permissions_config.nonce
                 },
-                success: function(response) {
+                success: (response) => {
                     if (response.success) {
-                        const data = response.data;
-                        PagePermissions.showMessage(
-                            `${data.removed_count} page(s) removed! Reload the page to see changes.`, 
-                            'success'
-                        );
-                        
-                        // Remove rows from table
-                        selectedPages.forEach(function(pageKey) {
-                            $(`input[value="${pageKey}"]`).closest('tr').fadeOut();
-                        });
+                        alert(`✅ Success!\n\n${response.data.message}\n\nThe page will refresh to show changes.`);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
                     } else {
-                        PagePermissions.showMessage('Error removing pages: ' + response.data, 'error');
+                        alert(`❌ Error!\n\n${response.data || 'Unknown error'}`);
                     }
                 },
-                error: function() {
-                    PagePermissions.showMessage('Network error occurred while removing pages.', 'error');
+                error: (xhr, status, error) => {
+                    alert(`❌ AJAX Error!\n\n${error}`);
                 },
-                complete: function() {
-                    $button.text(originalText).prop('disabled', false);
+                complete: () => {
+                    $button.prop('disabled', false).text(originalText);
                 }
             });
+        },
+
+        toggleAllPageSelection: function(e) {
+            const isChecked = $(e.target).is(':checked');
+            $('.page-select-checkbox').prop('checked', isChecked);
         },
 
         handleCheckboxChange: function(e) {

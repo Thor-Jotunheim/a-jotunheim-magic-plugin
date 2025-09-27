@@ -1,0 +1,1026 @@
+/**
+ * Unified Teller Interface Styles
+ * Based on PRD design specifications from Spark
+ * Professional, enterprise-like interface with triadic color scheme
+ */
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CSS Variables based on PRD color scheme */
+:root {
+    /* Primary Colors */
+    --primary-blue: oklch(0.45 0.15 240);
+    --primary-blue-dark: oklch(0.25 0.05 240);
+    --secondary-slate: oklch(0.35 0.02 240);
+    --secondary-steel: oklch(0.55 0.12 240);
+    --accent-amber: oklch(0.75 0.15 60);
+    --background-white: oklch(0.98 0.01 240);
+    --success-green: oklch(0.65 0.15 140);
+    --error-red: oklch(0.55 0.15 15);
+    
+    /* Spacing based on PRD (16px base, 8px tight, 24px section) */
+    --spacing-tight: 8px;
+    --spacing-base: 16px;
+    --spacing-section: 24px;
+    --spacing-large: 32px;
+    
+    /* Typography based on PRD */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-small: 14px;
+    --font-size-base: 16px;
+    --font-size-h3: 18px;
+    --font-size-h2: 24px;
+    --font-size-h1: 32px;
+    
+    /* Border radius for modern look */
+    --border-radius: 8px;
+    --border-radius-small: 4px;
+    
+    /* Shadows for depth */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Base styles */
+.teller-container {
+    font-family: var(--font-family);
+    color: var(--primary-blue-dark);
+    background-color: var(--background-white);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-section);
+}
+
+.teller-container h1 {
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 var(--spacing-large) 0;
+    color: var(--primary-blue);
+}
+
+.teller-container h2 {
+    font-size: var(--font-size-h2);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-base) 0;
+    color: var(--primary-blue);
+}
+
+.teller-container h3 {
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    margin: 0 0 var(--spacing-base) 0;
+    color: var(--primary-blue-dark);
+}
+
+/* Section styling */
+.shop-selection-section,
+.teller-info-section,
+.player-section,
+.player-payment-section,
+.shop-items-section,
+.transaction-summary-section {
+    background: white;
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-section);
+    margin-bottom: var(--spacing-section);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Form elements */
+.form-group {
+    margin-bottom: var(--spacing-base);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    color: var(--primary-blue-dark);
+    margin-bottom: var(--spacing-tight);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px var(--spacing-base);
+    border: 1px solid oklch(0.8 0.01 240);
+    border-radius: var(--border-radius-small);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    background-color: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px oklch(0.45 0.15 240 / 0.1);
+}
+
+/* Button styling */
+.btn {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    padding: 12px var(--spacing-section);
+    border: none;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-tight);
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: oklch(0.4 0.15 240);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-slate);
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: oklch(0.3 0.02 240);
+}
+
+.btn-success {
+    background-color: var(--success-green) !important;
+    color: white !important;
+}
+
+.btn-success:hover:not(:disabled) {
+    background-color: oklch(0.5 0.15 140) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger {
+    background-color: var(--error-red) !important;
+    color: white !important;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: oklch(0.4 0.15 10) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Ensure button colors work in item cards */
+.quantity-controls .btn.btn-success,
+.btn.btn-success.individual-buy,
+.btn.btn-success.stack-buy,
+button.btn.btn-success {
+    background-color: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+}
+
+/* Even more specific for individual and stack buy buttons */
+.individual-buy.btn-success,
+.stack-buy.btn-success {
+    background-color: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+}
+
+.quantity-controls .btn.btn-danger {
+    background-color: var(--error-red) !important;
+    color: white !important;
+}
+
+.quantity-controls .btn.btn-secondary {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+/* Match the default button gray color shown in Buy button */
+.btn-default-gray {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+
+
+.purchase-button:hover {
+    background: #218838 !important;
+    border-color: #218838 !important;
+    color: #ffffff !important;
+}
+
+.purchase-button:focus,
+.purchase-button:active {
+    background: #1e7e34 !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+    outline: none !important;
+}
+
+.btn-accent {
+    background-color: var(--accent-amber);
+    color: var(--primary-blue-dark);
+}
+
+.btn-accent:hover:not(:disabled) {
+    background-color: oklch(0.7 0.15 60);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.register-btn {
+    background-color: var(--success-green);
+    color: white;
+    padding: var(--spacing-tight) var(--spacing-base);
+    font-size: var(--font-size-small);
+}
+
+/* Shop selector row */
+.shop-selector-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-section);
+    flex-wrap: wrap;
+}
+
+.shop-selector-row .form-group {
+    flex: 1;
+    min-width: 300px;
+    margin-bottom: 0;
+}
+
+.shop-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-base);
+}
+
+.shop-type-badge {
+    background-color: var(--accent-amber);
+    color: var(--primary-blue-dark);
+    padding: 4px var(--spacing-tight);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-small);
+    font-weight: 500;
+}
+
+/* Player info card */
+.player-info-card {
+    background-color: oklch(0.96 0.01 240);
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius-small);
+    padding: var(--spacing-base);
+    margin-top: var(--spacing-base);
+}
+
+.player-info-card p {
+    margin: 0 0 var(--spacing-tight) 0;
+}
+
+.player-info-card p:last-child {
+    margin-bottom: 0;
+}
+
+/* Payment grid */
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-base);
+    align-items: start;
+}
+
+.payment-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-item label {
+    font-weight: 500;
+    color: var(--primary-blue-dark);
+    margin-bottom: var(--spacing-tight);
+}
+
+.payment-item input {
+    padding: var(--spacing-tight) 12px;
+    border: 1px solid oklch(0.8 0.01 240);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-base);
+}
+
+.payment-summary {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: oklch(0.96 0.01 240);
+    padding: var(--spacing-base);
+    border-radius: var(--border-radius-small);
+    margin-top: var(--spacing-base);
+}
+
+.total-cost {
+    font-size: var(--font-size-base);
+    color: var(--primary-blue-dark);
+}
+
+.payment-status {
+    font-weight: 500;
+    color: var(--success-green);
+}
+
+/* Items controls */
+.items-controls {
+    display: flex;
+    gap: var(--spacing-base);
+    margin-bottom: var(--spacing-section);
+    align-items: center;
+}
+
+.item-search {
+    flex: 1;
+    max-width: 300px;
+}
+
+/* Items table */
+.items-table-container {
+    overflow-x: auto;
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius);
+}
+
+.shop-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-base);
+}
+
+.shop-items-table th {
+    background-color: var(--secondary-slate);
+    color: white;
+    padding: 12px var(--spacing-base);
+    text-align: left;
+    font-weight: 500;
+    border-bottom: 1px solid oklch(0.9 0.01 240);
+}
+
+.shop-items-table td {
+    padding: 12px var(--spacing-base);
+    border-bottom: 1px solid oklch(0.95 0.01 240);
+}
+
+.shop-items-table tbody tr:hover {
+    background-color: oklch(0.98 0.01 240);
+}
+
+/* Item action buttons */
+.item-action-btn {
+    padding: 6px 12px;
+    font-size: var(--font-size-small);
+    border: 1px solid oklch(0.8 0.01 240);
+    background-color: white;
+    color: var(--primary-blue-dark);
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.item-action-btn:hover {
+    background-color: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.item-action-btn.active {
+    background-color: var(--accent-amber);
+    color: var(--primary-blue-dark);
+    border-color: var(--accent-amber);
+}
+
+/* Transaction summary */
+.transaction-items {
+    border: 1px solid oklch(0.9 0.01 240);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.transaction-header {
+    background-color: var(--secondary-slate);
+    color: white;
+    padding: 12px var(--spacing-base);
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: var(--spacing-base);
+    font-weight: 500;
+}
+
+.transaction-items-list {
+    min-height: 100px;
+    background-color: white;
+}
+
+.transaction-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: var(--spacing-base);
+    padding: 12px var(--spacing-base);
+    border-bottom: 1px solid oklch(0.95 0.01 240);
+    align-items: center;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+/* Action label styles */
+.item-action {
+    padding: 4px 8px;
+    border-radius: var(--border-radius-small);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.item-action.buy,
+.transaction-item .item-action.buy,
+span.item-action.buy,
+.transaction-item span.item-action.buy,
+.transaction-items .transaction-item .item-action.buy,
+.transaction-summary .item-action.buy {
+    background-color: #28a745 !important;
+    background-color: var(--success-green) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.item-action.sell,
+.transaction-item .item-action.sell,
+span.item-action.sell,
+.transaction-item span.item-action.sell,
+.transaction-items .transaction-item .item-action.sell,
+.transaction-summary .item-action.sell {
+    background-color: #dc3545 !important;
+    background-color: var(--error-red) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.item-action.turnin,
+.transaction-item .item-action.turnin,
+span.item-action.turnin,
+.transaction-item span.item-action.turnin,
+.transaction-items .transaction-item .item-action.turnin,
+.transaction-summary .item-action.turnin {
+    background-color: #6c757d !important;
+    background-color: var(--secondary-slate) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Turn-in progress styles */
+.item-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.progress-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    width: 100px;
+    height: 8px;
+    background-color: var(--secondary-slate);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--success-green);
+    transition: width 0.3s ease;
+}
+
+.transaction-actions {
+    display: flex;
+    gap: var(--spacing-base);
+    justify-content: flex-end;
+    margin-top: var(--spacing-section);
+}
+
+/* Status messages */
+.customer-status {
+    padding: var(--spacing-tight) var(--spacing-base);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-small);
+    font-weight: 500;
+    margin-top: var(--spacing-tight);
+}
+
+.customer-status.success {
+    background-color: oklch(0.9 0.1 140);
+    color: oklch(0.3 0.15 140);
+    border: 1px solid oklch(0.8 0.1 140);
+}
+
+.customer-status.error {
+    background-color: oklch(0.9 0.1 15);
+    color: oklch(0.3 0.15 15);
+    border: 1px solid oklch(0.8 0.1 15);
+}
+
+.customer-status.warning {
+    background-color: oklch(0.9 0.1 60);
+    color: oklch(0.3 0.15 60);
+    border: 1px solid oklch(0.8 0.1 60);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .teller-container {
+        padding: var(--spacing-base);
+    }
+    
+    .shop-selector-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .items-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .transaction-actions {
+        flex-direction: column;
+    }
+    
+    .transaction-header,
+    .transaction-item {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-tight);
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Validation states */
+.form-group.error input,
+.form-group.error select {
+    border-color: var(--error-red);
+    box-shadow: 0 0 0 3px oklch(0.55 0.15 15 / 0.1);
+}
+
+.form-group.success input,
+.form-group.success select {
+    border-color: var(--success-green);
+    box-shadow: 0 0 0 3px oklch(0.65 0.15 140 / 0.1);
+}
+
+/* Item Cards - Barter Page Style */
+.item-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    position: relative;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 4px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    min-height: 80px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.item-card:hover {
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-blue);
+}
+
+.item-card.out-of-stock {
+    opacity: 0.6;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+}
+
+.item-image-container {
+    width: 64px;
+    height: 64px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.item-image {
+    max-width: 56px;
+    max-height: 56px;
+    object-fit: contain;
+}
+
+.item-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.item-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item-pricing {
+    background: #f0f8ff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.unit-price, .stack-price {
+    font-size: 13px;
+    margin: 1px 0;
+    color: #555;
+}
+
+.unit-price strong, .stack-price strong {
+    color: #2c5aa0;
+    font-weight: 600;
+}
+
+.item-meta {
+    font-size: 11px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+.tech-info {
+    margin-bottom: 2px;
+}
+
+.stock-info {
+    font-weight: 500;
+    color: #28a745;
+}
+
+.item-actions {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    min-height: 32px;
+}
+
+.quantity-controls label {
+    min-width: 80px;
+    font-weight: 500;
+    color: #555;
+    font-size: 11px;
+    text-align: left;
+}
+
+.quantity-input, .stack-input, .sell-quantity-input, .turn-in-quantity-input, .turn-in-stack-input {
+    width: 40px;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 12px;
+    height: 24px;
+    box-sizing: border-box;
+}
+
+.quantity-controls .btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Removed conflicting .item-card button overrides to allow proper color classes */
+
+/* Item grid container - FORCE CONTAINER EXPANSION */
+.items-container {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+}
+
+.shop-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 45%), 1fr));
+    gap: 8px;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-sizing: border-box;
+    padding: 8px;
+    justify-items: center;
+}
+
+/* FORCE ALL PARENT CONTAINERS TO FIT CONTENT */
+.teller-card.items-card {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.teller-card.items-card .card-content {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .item-card {
+        width: 100%;
+        max-width: 300px;
+        margin: 4px auto;
+    }
+    
+    .shop-items-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .items-container {
+        height: auto !important;
+        overflow: visible !important;
+    }
+}
+
+/* Hidden state */
+.hidden {
+    display: none !important;
+}
+
+/* FINAL OVERRIDE: Force button colors with maximum specificity */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success,
+.shop-items-grid .item-card button.btn.btn-success.individual-buy,
+.shop-items-grid .item-card button.btn.btn-success.stack-buy,
+.item-card .quantity-controls .btn.btn-success,
+button.btn.btn-success.individual-buy,
+button.btn.btn-success.stack-buy,
+input[type="button"].btn.btn-success,
+[class*="btn-success"] {
+    background-color: #28a745 !important;
+    background-image: none !important;
+    background: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+    border-color: #28a745 !important;
+    box-shadow: none !important;
+}
+
+/* Force normal state explicitly */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success:not(:hover),
+button.btn.btn-success.individual-buy:not(:hover),
+button.btn.btn-success.stack-buy:not(:hover) {
+    background-color: #28a745 !important;
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+}
+
+/* Force hover state */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success:hover,
+button.btn.btn-success.individual-buy:hover,
+button.btn.btn-success.stack-buy:hover {
+    background-color: #218838 !important;
+    border-color: #218838 !important;
+    color: white !important;
+}
+
+/* FINAL OVERRIDE: Action labels with maximum force */
+span.item-action[class*="sell"],
+.item-action[class*="sell"],
+*[class*="item-action"][class*="sell"] {
+    background: #dc3545 !important;
+    background-color: #dc3545 !important;
+    color: white !important;
+    border: none !important;
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+span.item-action[class*="buy"],
+.item-action[class*="buy"],
+*[class*="item-action"][class*="buy"] {
+    background: #28a745 !important;
+    background-color: #28a745 !important;
+    color: white !important;
+    border: none !important;
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+span.item-action[class*="turnin"],
+.item-action[class*="turnin"],
+*[class*="item-action"][class*="turnin"] {
+    background: #6c757d !important;
+    background-color: #6c757d !important;
+    color: white !important;
+    border: none !important;
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+/* Status Message Styles - Smart Positioning */
+#teller-status {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    line-height: 1.4;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: statusSlideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+/* Default positioning - top right for regular messages */
+#teller-status:not(.critical) {
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: normal;
+    text-align: left;
+    min-width: 200px;
+    max-width: 400px;
+}
+
+/* Critical positioning - centered modal for important messages */
+#teller-status.critical {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 300px;
+    max-width: 600px;
+}
+
+@keyframes statusSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes statusPopIn {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Critical status messages get the pop-in animation */
+#teller-status.critical {
+    animation: statusPopIn 0.3s ease-out;
+}
+
+/* Status message types */
+#teller-status.success {
+    background: linear-gradient(135deg, var(--success-green), oklch(0.70 0.18 140));
+    color: white;
+    border: 2px solid oklch(0.75 0.20 140);
+}
+
+#teller-status.error {
+    background: linear-gradient(135deg, var(--error-red), oklch(0.60 0.18 15));
+    color: white;
+    border: 2px solid oklch(0.65 0.20 15);
+}
+
+#teller-status.warning {
+    background: linear-gradient(135deg, var(--accent-amber), oklch(0.80 0.18 60));
+    color: var(--primary-blue-dark);
+    border: 2px solid oklch(0.85 0.20 60);
+}
+
+#teller-status.info {
+    background: linear-gradient(135deg, var(--primary-blue), oklch(0.50 0.18 240));
+    color: white;
+    border: 2px solid oklch(0.55 0.20 240);
+}
+
+/* Overlay for status messages */
+#status-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: none;
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}

@@ -20,9 +20,8 @@ class JotunheimPagePermissions {
      * Manage admin page capabilities based on Discord permissions
      */
     public function manage_admin_capabilities() {
-        // Only run in admin area for logged-in users
-        if (!is_admin() || !is_user_logged_in()) {
-            return;
+        if (is_admin()) {
+            add_action('admin_init', [$this, 'check_admin_page_access']);
         }
 
         $current_user = wp_get_current_user();
@@ -61,357 +60,138 @@ class JotunheimPagePermissions {
             }, 10, 4);
         }
     }
-
-    /**
-     * Render the page permissions configuration page
-     */
-    public function render() {
-        // Enqueue scripts and styles
-        wp_enqueue_script(
-            'page-permissions-js',
-            plugin_dir_url(__FILE__) . '../../assets/js/page-permissions.js',
-            ['jquery'],
-            '1.0.0',
-            true
-        );
-        
-        // Localize script with AJAX data
-        wp_localize_script('page-permissions-js', 'page_permissions_config', [
-            'nonce' => wp_create_nonce('page_permissions_nonce'),
-            'ajax_url' => admin_url('admin-ajax.php')
-        ]);
-        
-        // Add custom CSS for larger checkboxes
-        ?>
-        <style>
-        .permission-checkbox {
-            width: 20px !important;
-            height: 20px !important;
-            transform: scale(1.5);
-            margin: 8px !important;
-            cursor: pointer;
-        }
-        
-        .wp-list-table td {
-            vertical-align: middle !important;
-        }
-        
-        .page-permissions-config .wp-list-table th {
-            text-align: center;
-            padding: 15px 8px;
-        }
-        
-        .page-permissions-config .wp-list-table td {
-            padding: 15px 8px;
-        }
-        </style>
-        <?php
-        
-        // Get Discord roles
-        $discord_roles = $this->get_discord_roles();
-        
-        // Get plugin pages
-        $plugin_pages = $this->get_plugin_pages();
-        
-        // Get current permissions
-        $current_permissions = $this->get_page_permissions();
-        
-        ?>
-        <div class="wrap">
-            <h1>Page Permissions Configuration</h1>
-            <div class="page-permissions-config">
-                
-                <div class="description">
-                    <p>Configure which Discord roles can access specific plugin pages. Check the boxes to grant access to each role.</p>
-                </div>
-                
-                <!-- Action buttons at the top -->
-                <div class="permissions-actions" style="margin: 20px 0; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <button type="button" class="button" id="select-all-permissions">Select All</button>
-                    <button type="button" class="button" id="clear-all-permissions">Clear All</button>
-                    <button type="button" class="button" id="scan-new-pages">🔍 Scan for New Pages</button>
-                    <button type="button" class="button" id="remove-pages">🗑️ Remove Pages</button>
-                    <button type="button" class="button button-primary" id="save-page-permissions">Save Permissions</button>
-                </div>
-                
-                <?php if (empty($discord_roles)): ?>
-                    <div class="notice notice-warning">
-                        <p><strong>No Discord roles configured.</strong> Please configure Discord roles first in the <a href="<?php echo admin_url('admin.php?page=discord_auth_config'); ?>">Discord Auth Configuration</a> page.</p>
-                    </div>
-                <?php else: ?>
-                    
-                    <form id="page-permissions-form">
-                        <table class="wp-list-table widefat fixed striped">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">
-                                        <input type="checkbox" id="select-all-pages" title="Select All Pages">
-                                    </th>
-                                    <th style="width: 300px;"><strong>Plugin Page</strong></th>
-                                    <?php foreach ($discord_roles as $role_key => $role_data): ?>
-                                        <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
-                                            <th style="text-align: center; width: 120px;">
-                                                <strong><?php echo esc_html($role_data['name']); ?></strong>
-                                                <br><small>ID: <?php echo esc_html($role_data['id']); ?></small>
-                                            </th>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($plugin_pages as $page_key => $page_data): ?>
-                                    <tr>
-                                        <td style="text-align: center;">
-                                            <input type="checkbox" class="page-select-checkbox" value="<?php echo esc_attr($page_key); ?>" name="selected_pages[]">
-                                        </td>
-                                        <td>
-                                            <strong><?php echo esc_html($page_data['title']); ?></strong>
-                                            <br><small><?php echo esc_html($page_data['description']); ?></small>
-                                            <br><em>Slug: <?php echo esc_html($page_key); ?></em>
-                                        </td>
-                                        <?php foreach ($discord_roles as $role_key => $role_data): ?>
-                                            <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
-                                                <td style="text-align: center;">
-                                                    <?php 
-                                                    $is_checked = isset($current_permissions[$page_key][$role_key]) ? $current_permissions[$page_key][$role_key] : false;
-                                                    ?>
-                                                    <input 
-                                                        type="checkbox" 
-                                                        name="permissions[<?php echo esc_attr($page_key); ?>][<?php echo esc_attr($role_key); ?>]"
-                                                        value="1"
-                                                        <?php checked($is_checked, true); ?>
-                                                        class="permission-checkbox"
-                                                        data-page="<?php echo esc_attr($page_key); ?>"
-                                                        data-role="<?php echo esc_attr($role_key); ?>"
-                                                    />
-                                                </td>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </form>
-                    
-                <?php endif; ?>
-                
-            </div>
-        </div>
-        <?php
     }
     
     /**
-     * Get Discord roles from the auth config
+     * Check access to admin pages
      */
-    private function get_discord_roles() {
-        $discord_roles = get_option('jotunheim_discord_roles', []);
+    public function check_admin_page_access() {
+        global $pagenow;
         
-        // Filter out empty roles
-        $valid_roles = [];
-        foreach ($discord_roles as $key => $role) {
-            if (!empty($role['name']) && !empty($role['id'])) {
-                $valid_roles[$key] = $role;
-            }
+        // Skip for AJAX requests
+        if (wp_doing_ajax()) {
+            return;
         }
         
-        return $valid_roles;
+        // Skip for WordPress core pages
+        $core_pages = ['index.php', 'update-core.php', 'plugins.php', 'themes.php', 'users.php', 'options-general.php'];
+        if (in_array($pagenow, $core_pages)) {
+            return;
+        }
+        
+        $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+        
+        if ($current_page && !$this->user_can_access_page($current_page)) {
+            wp_die('You do not have permission to access this page.');
+        }
     }
     
     /**
-     * Get all plugin pages that can have permissions
-     * Now dynamically pulls from Dashboard Manager's shortcode detection + hardcoded admin pages
+     * Get all available pages - includes shortcodes like dashboard config
      */
-    private function get_plugin_pages() {
-        $pages = [];
+    public function get_all_available_pages() {
+        global $wpdb;
         
-        // First add core admin pages (non-shortcode)
-        $admin_pages = [
-            'jotunheim_magic' => [
-                'title' => 'Overview Dashboard',
-                'description' => 'Main dashboard overview page'
-            ],
-            'dashboard_config' => [
-                'title' => 'Dashboard Configuration',
-                'description' => 'Configure dashboard layout'
-            ],
-            'discord_auth_config' => [
-                'title' => 'Discord Auth Configuration',
-                'description' => 'Configure Discord authentication'
-            ],
-            'page_permissions_config' => [
-                'title' => 'Page Permissions Config',
-                'description' => 'Configure Discord role-based page access permissions'
-            ],
-            'universal_ui_table_config' => [
-                'title' => 'Universal UI Table Config',
-                'description' => 'Configure UI table settings'
-            ],
-            'weather_calendar_config' => [
-                'title' => 'Weather Calendar Config',
-                'description' => 'Configure weather and calendar'
-            ],
-            'eventzone_field_config' => [
-                'title' => 'EventZone Field Config',
-                'description' => 'Configure event zone fields'
-            ]
-        ];
+        $all_pages = [];
         
-        // Add admin pages
-        $pages = array_merge($pages, $admin_pages);
+        // Get admin menu pages
+        global $admin_page_hooks, $submenu;
         
-        // Now dynamically add all detected shortcode pages
-        // Use the same predefined shortcodes as Dashboard Manager
-        $predefined_shortcodes = [
-            'shop_manager' => [
-                'title' => 'Shop Manager',
-                'description' => 'Manage shop inventory and pricing',
-                'category' => 'commerce'
-            ],
-            'unified_teller' => [
-                'title' => 'Unified Teller',
-                'description' => 'Point of sale and transaction interface',
-                'category' => 'commerce'
-            ],
-            'itemlist_editor' => [
-                'title' => 'Item List Editor',
-                'description' => 'Edit and manage game items',
-                'category' => 'content'
-            ],
-            'item_list_editor' => [
-                'title' => 'Item List Editor (Alt)',
-                'description' => 'Alternative item list editor interface',
-                'category' => 'content'
-            ],
-            'item_list_add_new_item' => [
-                'title' => 'Add New Item',
-                'description' => 'Add new items to the game',
-                'category' => 'content'
-            ],
-            'eventzones_editor' => [
-                'title' => 'Event Zones Editor',
-                'description' => 'Edit and manage event zones',
-                'category' => 'content'
-            ],
-            'event_zone_editor' => [
-                'title' => 'Event Zone Editor (Alt)',
-                'description' => 'Alternative event zone editor interface',
-                'category' => 'content'
-            ],
-            'add_event_zone' => [
-                'title' => 'Add Event Zone',
-                'description' => 'Create new event zones',
-                'category' => 'content'
-            ],
-            'pos_interface' => [
-                'title' => 'Point of Sale Interface',
-                'description' => 'POS interface for transactions',
-                'category' => 'commerce'
-            ],
-            'jotunheim_trade_page' => [
-                'title' => 'Trade Management',
-                'description' => 'Manage trading system',
-                'category' => 'commerce'
-            ],
-            'trade' => [
-                'title' => 'Trade System (Alt)',
-                'description' => 'Alternative trade system interface',
-                'category' => 'commerce'
-            ],
-            'jotunheim_barter_page' => [
-                'title' => 'Barter System',
-                'description' => 'Manage barter and exchange system',
-                'category' => 'commerce'
-            ],
-            'barter' => [
-                'title' => 'Barter System (Alt)',
-                'description' => 'Alternative barter system interface',
-                'category' => 'commerce'
-            ],
-            'universal_editor_ui' => [
-                'title' => 'Universal Editor UI',
-                'description' => 'Universal content editing interface',
-                'category' => 'content'
-            ],
-            'eventzones_code_output' => [
-                'title' => 'Event Zones Code Output',
-                'description' => 'Event zone code generation and output',
-                'category' => 'utility'
-            ],
-            'section2_items' => [
-                'title' => 'Section 2 Items',
-                'description' => 'Manage section 2 item collections',
-                'category' => 'content'
-            ],
-            'prefabdb_image_import' => [
-                'title' => 'Prefab Database Image Import',
-                'description' => 'Import and manage prefab images',
-                'category' => 'content'
-            ],
-            'prefab_image_import' => [
-                'title' => 'Prefab Image Import (Alt)',
-                'description' => 'Alternative prefab image import interface',
-                'category' => 'content'
-            ],
-            'valheim_weather' => [
-                'title' => 'Valheim Weather System',
-                'description' => 'Weather prediction and calendar system',
-                'category' => 'utility'
-            ],
-            'jotunheim_kb' => [
-                'title' => 'Knowledge Base',
-                'description' => 'Knowledge base and documentation system',
-                'category' => 'content'
-            ],
-            'jotunheim_kb_direct' => [
-                'title' => 'Direct Knowledge Base',
-                'description' => 'Direct access knowledge base interface',
-                'category' => 'content'
-            ],
-            'popup_shop' => [
-                'title' => 'Popup Shop',
-                'description' => 'Popup shop interface for quick purchases',
-                'category' => 'commerce'
-            ],
-            'legacy_shop_teller' => [
-                'title' => 'Legacy Shop Teller',
-                'description' => 'Legacy shop and teller interface',
-                'category' => 'commerce'
-            ],
-            'playerlist_interface' => [
-                'title' => 'Player List Interface',
-                'description' => 'Manage registered players and user data',
-                'category' => 'content'
-            ],
-            'jotun-playerlist' => [
-                'title' => 'Jotun Player List',
-                'description' => 'Jotun player list management',
-                'category' => 'content'
-            ]
-        ];
-        
-        // Only add shortcodes that are actually registered
-        foreach ($predefined_shortcodes as $shortcode => $definition) {
-            if (shortcode_exists($shortcode)) {
-                $pages[$shortcode] = [
-                    'title' => $definition['title'],
-                    'description' => $definition['description'],
-                    'is_shortcode' => true,
-                    'registered' => true
+        if (!empty($admin_page_hooks)) {
+            foreach ($admin_page_hooks as $page => $hook) {
+                $all_pages["page_{$page}"] = [
+                    'title' => $page,
+                    'type' => 'admin_page',
+                    'source' => 'WordPress Admin'
                 ];
             }
         }
         
-        error_log('Jotunheim Page Permissions: Detected ' . count($pages) . ' total pages for permissions');
-        error_log('Jotunheim Page Permissions: Admin pages: ' . count($admin_pages));
-        error_log('Jotunheim Page Permissions: Shortcode pages: ' . (count($pages) - count($admin_pages)));
+        // Get submenu pages
+        if (!empty($submenu)) {
+            foreach ($submenu as $parent => $items) {
+                if (is_array($items)) {
+                    foreach ($items as $item) {
+                        if (isset($item[2])) {
+                            $page_slug = $item[2];
+                            $all_pages["page_{$page_slug}"] = [
+                                'title' => isset($item[0]) ? $item[0] : $page_slug,
+                                'type' => 'admin_submenu',
+                                'source' => 'WordPress Admin'
+                            ];
+                        }
+                    }
+                }
+            }
+        }
         
-        return $pages;
+        // Get all posts and pages with content
+        $posts = $wpdb->get_results("
+            SELECT ID, post_title, post_content, post_name, post_type 
+            FROM {$wpdb->posts} 
+            WHERE post_status = 'publish' 
+            AND post_type IN ('page', 'post')
+            AND post_content LIKE '%[%'
+        ");
+        
+        foreach ($posts as $post) {
+            // Add page itself
+            $all_pages["page_id_{$post->ID}"] = [
+                'title' => $post->post_title,
+                'type' => 'wordpress_page',
+                'source' => 'WordPress Page'
+            ];
+            
+            // Extract shortcodes using same logic as dashboard config
+            $shortcode_pattern = '/\[([^\]\/\s]+)(?:[^\]]*)\]/';
+            if (preg_match_all($shortcode_pattern, $post->post_content, $matches)) {
+                foreach ($matches[1] as $shortcode_name) {
+                    $shortcode_name = trim($shortcode_name);
+                    
+                    // Skip common WordPress shortcodes
+                    $wp_shortcodes = ['gallery', 'audio', 'video', 'embed', 'caption'];
+                    if (!in_array($shortcode_name, $wp_shortcodes)) {
+                        $all_pages["shortcode_{$shortcode_name}"] = [
+                            'title' => "[{$shortcode_name}] Shortcode",
+                            'type' => 'shortcode',
+                            'source' => "Page: {$post->post_title}",
+                            'post_id' => $post->ID
+                        ];
+                    }
+                }
+            }
+        }
+        
+        // Get registered shortcodes that might not be in content
+        global $shortcode_tags;
+        if (!empty($shortcode_tags)) {
+            foreach ($shortcode_tags as $tag => $function) {
+                // Skip WordPress core shortcodes
+                $wp_shortcodes = ['gallery', 'audio', 'video', 'embed', 'caption', 'wp_caption'];
+                if (!in_array($tag, $wp_shortcodes)) {
+                    if (!isset($all_pages["shortcode_{$tag}"])) {
+                        $all_pages["shortcode_{$tag}"] = [
+                            'title' => "[{$tag}] Shortcode",
+                            'type' => 'shortcode',
+                            'source' => 'Registered Shortcode'
+                        ];
+                    }
+                }
+            }
+        }
+        
+        // Sort by title
+        uasort($all_pages, function($a, $b) {
+            return strcmp($a['title'], $b['title']);
+        });
+        
+        return $all_pages;
     }
     
     /**
-     * Get current page permissions
+     * Get configured page permissions
      */
-    private function get_page_permissions() {
+    public function get_page_permissions() {
         return get_option('jotunheim_page_permissions', []);
     }
     
@@ -484,7 +264,7 @@ class JotunheimPagePermissions {
         $configured_pages = array_keys($current_permissions);
         
         // Get all available pages (including newly detected ones)
-        $all_pages = $this->get_plugin_pages();
+        $all_pages = $this->get_all_available_pages();
         $all_page_keys = array_keys($all_pages);
         
         // Find new pages
@@ -567,32 +347,17 @@ class JotunheimPagePermissions {
             return true;
         }
         
-        // Get user's Discord roles from stored metadata
-        $user_discord_roles = self::get_user_discord_roles($user_id);
-        
-        // If user has no Discord roles, check if they have editor role as fallback
-        if (empty($user_discord_roles)) {
-            // Allow editors access to core Jotunheim pages as fallback
-            if (user_can($user_id, 'edit_posts')) {
-                $allowed_pages_for_editors = [
-                    'jotunheim_magic',
-                    'item_list_editor',
-                    'eventzones_editor', 
-                    'event_zone_editor',
-                    'pos_interface',
-                    'jotun-playerlist',
-                    'jotunheim_barter_page',
-                    'barter'
-                ];
-                return in_array($page_slug, $allowed_pages_for_editors);
-            }
-            return false; // No Discord roles and not editor = no access
-        }
-        
-        // Get page permissions
+        // Get page permissions configuration
         $page_permissions = get_option('jotunheim_page_permissions', []);
         
+        // If this page isn't configured, use WordPress permissions as fallback
         if (!isset($page_permissions[$page_slug])) {
+            // Get user Discord roles for fallback check
+            $user_discord_roles = get_user_meta($user_id, 'discord_roles', true);
+            if (!is_array($user_discord_roles)) {
+                $user_discord_roles = [];
+            }
+            
             // If page not configured, fall back to WordPress permissions
             error_log("Jotunheim Page Permissions: Page {$page_slug} not configured, checking WordPress fallback permissions for user {$user_id}");
             
@@ -623,55 +388,208 @@ class JotunheimPagePermissions {
             return false; // Page not configured and no WordPress permissions = no access
         }
         
-        // Check if user has any role that grants access to this page
-        foreach ($user_discord_roles as $role_key) {
-            if (isset($page_permissions[$page_slug][$role_key]) && $page_permissions[$page_slug][$role_key]) {
-                error_log("Jotunheim Page Permissions: Granting access to page {$page_slug} for Discord role {$role_key}");
+        // Check Discord permissions for configured pages
+        $user_discord_roles = get_user_meta($user_id, 'discord_roles', true);
+        if (!is_array($user_discord_roles)) {
+            $user_discord_roles = [];
+        }
+        
+        $required_roles = $page_permissions[$page_slug];
+        
+        // Check if user has any of the required roles
+        foreach ($required_roles as $role => $required) {
+            if ($required && in_array($role, $user_discord_roles)) {
                 return true;
             }
         }
         
-        error_log("Jotunheim Page Permissions: Denying access to page {$page_slug} for user {$user_id} with roles: " . implode(', ', $user_discord_roles));
         return false;
+    }
+
+    /**
+     * Render the page permissions configuration page
+     */
+    public function render() {
+        // Enqueue scripts and styles
+        wp_enqueue_script(
+            'page-permissions-js',
+            plugin_dir_url(__FILE__) . '../../assets/js/page-permissions.js',
+            ['jquery'],
+            '1.0.0',
+            true
+        );
+        
+        // Localize script with AJAX data
+        wp_localize_script('page-permissions-js', 'page_permissions_config', [
+            'nonce' => wp_create_nonce('page_permissions_nonce'),
+            'ajax_url' => admin_url('admin-ajax.php')
+        ]);
+        
+        // Add custom CSS for larger checkboxes
+        ?>
+        <style>
+        .permission-checkbox {
+            width: 20px !important;
+            height: 20px !important;
+            transform: scale(1.5);
+            margin: 8px !important;
+            cursor: pointer;
+        }
+        
+        .wp-list-table td {
+            vertical-align: middle !important;
+        }
+        
+        .page-permissions-config .wp-list-table th {
+            text-align: center;
+            padding: 15px 8px;
+        }
+        
+        .page-permissions-config .wp-list-table td {
+            padding: 15px 8px;
+        }
+        </style>
+        <?php
+        
+        // Get Discord roles
+        $discord_roles = $this->get_discord_roles();
+        
+        // Get plugin pages for display
+        $plugin_pages = $this->get_plugin_pages();
+        
+        // Display the interface
+        ?>
+        <div class="wrap page-permissions-config">
+            <h1>Discord Role-Based Page Access Control</h1>
+            <p>Configure which Discord roles can access specific pages and shortcodes. Unconfigured pages use WordPress permissions as fallback.</p>
+            
+            <div style="margin-bottom: 20px;">
+                <button type="button" id="scan-new-pages-btn" class="button button-primary">🔍 Scan for New Pages</button>
+                <button type="button" id="remove-pages-btn" class="button button-secondary">🗑️ Remove Selected Pages</button>
+                <button type="button" id="save-permissions-btn" class="button button-primary">💾 Save Permissions</button>
+            </div>
+            
+            <div id="scan-results" style="margin-bottom: 20px;"></div>
+            
+            <form id="permissions-form">
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="select-all"></th>
+                            <th style="width: 300px;">Page/Shortcode</th>
+                            <th style="width: 200px;">Type</th>
+                            <?php foreach ($discord_roles as $role): ?>
+                                <th style="text-align: center;"><?php echo esc_html(ucfirst($role)); ?></th>
+                            <?php endforeach; ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($plugin_pages as $page_key => $page_info): ?>
+                            <tr>
+                                <td><input type="checkbox" name="selected_pages[]" value="<?php echo esc_attr($page_key); ?>" class="page-selector"></td>
+                                <td>
+                                    <strong><?php echo esc_html($page_info['title']); ?></strong>
+                                    <?php if (isset($page_info['description'])): ?>
+                                        <br><small><?php echo esc_html($page_info['description']); ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <span class="page-type-badge"><?php echo esc_html($page_info['type'] ?? 'Unknown'); ?></span>
+                                </td>
+                                <?php foreach ($discord_roles as $role): ?>
+                                    <td style="text-align: center;">
+                                        <input 
+                                            type="checkbox" 
+                                            name="permissions[<?php echo esc_attr($page_key); ?>][<?php echo esc_attr($role); ?>]" 
+                                            value="1" 
+                                            class="permission-checkbox"
+                                            <?php 
+                                            $permissions = $this->get_page_permissions();
+                                            echo isset($permissions[$page_key][$role]) && $permissions[$page_key][$role] ? 'checked' : ''; 
+                                            ?>
+                                        >
+                                    </td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </form>
+            
+            <p><em>Note: Administrators can always access all pages regardless of Discord role settings.</em></p>
+        </div>
+        <?php
     }
     
     /**
-     * Get user's Discord roles from stored user meta
+     * Get plugin pages for display (shows configured pages plus admin pages)
      */
-    private static function get_user_discord_roles($user_id) {
-        // Get stored Discord roles from user meta
-        $discord_roles = get_user_meta($user_id, 'discord_roles', true);
+    private function get_plugin_pages() {
+        $current_permissions = $this->get_page_permissions();
+        $configured_page_keys = array_keys($current_permissions);
         
-        if (empty($discord_roles) || !is_array($discord_roles)) {
-            return [];
-        }
+        // Always include admin pages (they should always be visible)
+        $admin_pages = $this->get_admin_pages();
+        $pages = $admin_pages;
         
-        // Get configured Discord roles to map IDs to role keys
-        $configured_roles = get_option('jotunheim_discord_roles', []);
-        $user_role_keys = [];
-        
-        // Map Discord role IDs to our role keys
-        foreach ($configured_roles as $role_key => $role_data) {
-            if (isset($role_data['id']) && in_array($role_data['id'], $discord_roles)) {
-                $user_role_keys[] = $role_key;
+        // Add shortcode pages that are configured in permissions
+        $all_available = $this->get_all_available_pages();
+        foreach ($configured_page_keys as $page_key) {
+            if (isset($all_available[$page_key]) && !isset($admin_pages[$page_key])) {
+                $pages[$page_key] = $all_available[$page_key];
             }
         }
         
-        error_log("Jotunheim Page Permissions: User {$user_id} has Discord role IDs: " . implode(', ', $discord_roles));
-        error_log("Jotunheim Page Permissions: Mapped to role keys: " . implode(', ', $user_role_keys));
+        return $pages;
+    }
+    
+    /**
+     * Get admin pages (always shown in interface)
+     */
+    private function get_admin_pages() {
+        return [
+            'jotunheim_magic' => [
+                'title' => 'Overview Dashboard',
+                'description' => 'Main dashboard overview page',
+                'type' => 'admin_page'
+            ],
+            'dashboard_config' => [
+                'title' => 'Dashboard Configuration',
+                'description' => 'Configure dashboard layout',
+                'type' => 'admin_page'
+            ],
+            'discord_auth_config' => [
+                'title' => 'Discord Auth Configuration',
+                'description' => 'Configure Discord authentication',
+                'type' => 'admin_page'
+            ],
+            'page_permissions_config' => [
+                'title' => 'Page Permissions Config',
+                'description' => 'Configure Discord role-based page access permissions',
+                'type' => 'admin_page'
+            ]
+        ];
+    }
+    
+    /**
+     * Get Discord roles from configuration
+     */
+    private function get_discord_roles() {
+        $roles = get_option('jotunheim_discord_roles', [
+            'norn', 'aesir', 'admin', 'staff', 'valkyrie', 'vithar', 'chosen'
+        ]);
         
-        return $user_role_keys;
+        // Ensure it's an array
+        if (!is_array($roles)) {
+            $roles = ['norn', 'aesir', 'admin', 'staff', 'valkyrie', 'vithar', 'chosen'];
+        }
+        
+        return $roles;
     }
 }
 
-// Helper function for easy permission checking throughout the plugin
-function jotunheim_user_can_access_page($page_slug, $user_id = null) {
-    return JotunheimPagePermissions::user_can_access_page($page_slug, $user_id);
-}
-
 /**
- * Universal shortcode permission check
- * Use this in all shortcodes to enforce Discord-based permissions
+ * Check shortcode permissions - used by other parts of the plugin
  */
 function jotunheim_check_shortcode_permission($shortcode_name, $return_login_button = true) {
     // Check if user is logged in
@@ -683,18 +601,28 @@ function jotunheim_check_shortcode_permission($shortcode_name, $return_login_but
     }
     
     // Check Discord permissions using the page permissions system
-    if (!jotunheim_user_can_access_page($shortcode_name)) {
+    if (!JotunheimPagePermissions::user_can_access_page("shortcode_{$shortcode_name}")) {
         return '<div class="jotunheim-error">You do not have permission to access this feature. Please contact an administrator if you believe this is an error.</div>';
     }
     
     return null; // Permission granted
 }
 
-// Function to render the page permissions config page
+/**
+ * Helper function for compatibility
+ */
+function jotunheim_user_can_access_page($page_slug) {
+    return JotunheimPagePermissions::user_can_access_page($page_slug);
+}
+
+/**
+ * Function to render the page permissions config page
+ */
 function render_page_permissions_config_page() {
     $page_permissions = new JotunheimPagePermissions();
     $page_permissions->render();
 }
 
-// Initialize the class
-new JotunheimPagePermissions();
+// Initialize the permissions system
+global $jotunheim_page_permissions;
+$jotunheim_page_permissions = new JotunheimPagePermissions();
