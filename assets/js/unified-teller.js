@@ -2120,13 +2120,40 @@ class UnifiedTeller {
         this.turninItems.forEach(item => {
             const itemCard = document.createElement('div');
             itemCard.className = 'item-card';
+            
+            const biomeName = item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown';
+            const biomeClass = `biome-${biomeName.toLowerCase().replace(/\s+/g, '')}`;
+            
             itemCard.innerHTML = `
-                <div class="item-name">${item.item_name}</div>
-                <div class="item-points">Points: ${item.event_points || 0}</div>
-                <div class="item-actions">
-                    <button class="btn btn-secondary item-btn" onclick="window.unifiedTeller.addTurninItem(${item.shop_item_id})">
-                        Turn In
-                    </button>
+                <div class="item-header">
+                    <div class="item-name">${this.escapeHtml(item.item_name)}</div>
+                    <div class="item-tags">
+                        <div class="item-type">${item.item_type || 'Trophies'}</div>
+                        <div class="item-biome ${biomeClass}">${biomeName}</div>
+                    </div>
+                </div>
+                ${item.icon_image ? `
+                    <div class="item-icon-container">
+                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                             onerror="this.parentElement.style.display='none'">
+                    </div>
+                ` : ''}
+                <div class="item-bottom-section">
+                    <div class="item-card-pricing">
+                        <div class="price-row">
+                            <span class="price-label">Unit(s):</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
+                                       style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
+                                <span class="price-value">of ${this.getMaxAllowedTurnin(item)} remaining</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
+                            Turn In
+                        </button>
+                    </div>
                 </div>
             `;
             container.appendChild(itemCard);
