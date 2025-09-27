@@ -753,6 +753,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-weight: bold;
     -moz-appearance: textfield; /* Firefox */
     appearance: textfield; /* Standard */
+    background-color: #f8f9fa; /* Light gray default */
+    color: #495057;
+    cursor: pointer;
 }
 
 /* Hide Chrome, Safari, Edge arrows */
@@ -767,6 +770,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .large-quantity-input:focus, .turnin-large-quantity-input:focus {
     outline: none;
     border-color: #6c757d;
+    background-color: white; /* White when focused/editing */
+    cursor: text;
 }
 
 .remaining-text {

@@ -712,7 +712,8 @@ class UnifiedTeller {
                             <div class="quantity-controls">
                                 <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
                                 <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                       class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
+                                       class="turnin-large-quantity-input" onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                                       onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                                 <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                             </div>
                         </div>
@@ -722,7 +723,8 @@ class UnifiedTeller {
                             <div class="quantity-controls">
                                 <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
                                 <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="1" value="1" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
-                                       class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
+                                       class="turnin-large-quantity-input" onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                                       onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                                 <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
                             </div>
                         </div>
@@ -1965,6 +1967,37 @@ class UnifiedTeller {
                         this.shopItems.find(i => i.shop_item_id == shopItemId);
             if (item) {
                 progressElement.innerHTML = this.generateProgressText(item, true);
+            }
+        }
+    }
+
+    handleQuantityKeyPress(event, inputElement) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            inputElement.blur(); // Trigger blur event to validate and sync
+        }
+    }
+
+    handleQuantityBlur(inputElement) {
+        const min = parseInt(inputElement.min) || 1;
+        const max = parseInt(inputElement.max) || 999;
+        let value = parseInt(inputElement.value) || min;
+        
+        // Validate and constrain the value
+        if (value < min) value = min;
+        if (value > max) value = max;
+        
+        inputElement.value = value;
+        
+        // Sync with related inputs and update progress
+        this.syncQuantityInputs(inputElement.id);
+        
+        // Update progress display if this is a turn-in item
+        if (inputElement.id.includes('turnin-qty-')) {
+            const shopItemId = inputElement.id.replace('turnin-qty-', '');
+            const item = this.turninItems.find(i => i.shop_item_id == shopItemId);
+            if (item) {
+                this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
             }
         }
     }
