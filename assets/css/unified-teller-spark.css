@@ -619,7 +619,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 280px;
+    min-height: 320px;
 }
 
 /* Icon Container with Frame */
@@ -790,6 +790,34 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     background: var(--gray-1);
     border-radius: 4px;
     border: 1px solid var(--gray-4);
+}
+
+/* Multi-line progress display styles */
+.progress-line {
+    margin-bottom: 4px;
+    font-size: 13px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.progress-line:last-child {
+    margin-bottom: 0;
+}
+
+.transaction-progress {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.player-progress {
+    color: #6f42c1;
+    font-weight: 600;
+}
+
+.server-progress {
+    color: #495057;
+    font-weight: 700;
+    font-size: 14px;
 }
 
 /* Legacy turn-in quantity input styling - keep for backwards compatibility */

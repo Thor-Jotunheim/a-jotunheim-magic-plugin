@@ -15,7 +15,7 @@ function unified_teller_scripts_shortcode($atts) {
         'unified-teller-css',
         plugin_dir_url(__FILE__) . '../../assets/css/unified-teller-spark.css',
         [],
-        '2.0.0'
+        '2.1.0'
     );
 
     // Enqueue scripts and styles only when shortcode is used

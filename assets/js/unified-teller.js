@@ -2004,6 +2004,7 @@ class UnifiedTeller {
 
     generateProgressText(item, includeCurrent = false) {
         const dailyTotal = this.getDailyTurninTotal(item.item_name);
+        const playerDailyTotal = this.getPlayerDailyTurninTotal(item.item_name);
         const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
         
         let currentlySelected = 0;
@@ -2012,13 +2013,33 @@ class UnifiedTeller {
             currentlySelected = input ? parseInt(input.value) || 0 : 0;
         }
         
-        const totalCollected = dailyTotal + currentlySelected;
+        const progressLines = [];
         
-        if (turnInRequirement > 0) {
-            return `${totalCollected} / ${turnInRequirement} collected`;
-        } else {
-            return `${totalCollected} collected`;
+        // Always show: Current transaction quantity
+        if (currentlySelected > 0) {
+            progressLines.push(`<div class="progress-line transaction-progress">${currentlySelected} turned in this transaction</div>`);
         }
+        
+        // Conditional: Player's 24h total (only if player has turned items in)
+        if (playerDailyTotal > 0) {
+            progressLines.push(`<div class="progress-line player-progress">${playerDailyTotal} turned in last 24h by player</div>`);
+        }
+        
+        // Always show: Server total progress
+        if (turnInRequirement > 0) {
+            progressLines.push(`<div class="progress-line server-progress">${dailyTotal} / ${turnInRequirement} collected</div>`);
+        } else {
+            progressLines.push(`<div class="progress-line server-progress">${dailyTotal} collected</div>`);
+        }
+        
+        return progressLines.join('');
+    }
+
+    getPlayerDailyTurninTotal(itemName) {
+        // This would need to be implemented based on your data structure
+        // For now, return 0 until we can implement proper player-specific tracking
+        // TODO: Implement player-specific daily turnin tracking
+        return 0;
     }
 
     formatDate(dateString) {
