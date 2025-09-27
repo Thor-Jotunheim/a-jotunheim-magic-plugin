@@ -172,7 +172,7 @@ function pos_admin_record($request) {
             // Add player_id if the column exists and we can find the player
             if (POS_Database_Utils::column_exists('jotun_transactions', 'player_id')) {
                 $player_record = $wpdb->get_row($wpdb->prepare(
-                    "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+                    "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR playerName = %s LIMIT 1",
                     $player_name, $player_name
                 ));
                 if ($player_record) {
@@ -249,7 +249,7 @@ function pos_spell_record($request) {
             // Add player_id if the column exists and we can find the player
             if (POS_Database_Utils::column_exists('jotun_transactions', 'player_id')) {
                 $player_record = $wpdb->get_row($wpdb->prepare(
-                    "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+                    "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR playerName = %s LIMIT 1",
                     $player_name, $player_name
                 ));
                 if ($player_record) {

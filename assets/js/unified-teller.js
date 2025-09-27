@@ -1028,23 +1028,23 @@ class UnifiedTeller {
                 // Filter manually for exact matches
                 players = allPlayers.filter(p => {
                     const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
-                    const nameMatch = p.player_name && p.player_name.toLowerCase() === customerName.toLowerCase();
+                    const nameMatch = p.playerName && p.playerName.toLowerCase() === customerName.toLowerCase();
                     return activeMatch || nameMatch;
                 });
                 console.log('Filtered players:', players);
             }
             
-            // Find exact match by activePlayerName or player_name (case-insensitive)
+            // Find exact match by activePlayerName or playerName (case-insensitive)
             const player = players.find(p => {
                 const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
-                const nameMatch = p.player_name && p.player_name.toLowerCase() === customerName.toLowerCase();
-                console.log(`Checking player: ${p.activePlayerName || p.player_name}, activeMatch: ${activeMatch}, nameMatch: ${nameMatch}`);
+                const nameMatch = p.playerName && p.playerName.toLowerCase() === customerName.toLowerCase();
+                console.log(`Checking player: ${p.activePlayerName || p.playerName}, activeMatch: ${activeMatch}, nameMatch: ${nameMatch}`);
                 return activeMatch || nameMatch;
             });
             
             console.log('Player found result:', player);
             if (player) {
-                console.log('Validation successful for:', player.activePlayerName || player.player_name);
+                console.log('Validation successful for:', player.activePlayerName || player.playerName);
                 this.currentCustomer = player;
                 this.showValidationIcon('valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
@@ -1086,7 +1086,7 @@ class UnifiedTeller {
 
         try {
             const playerData = {
-                player_name: customerName,
+                playerName: customerName,
                 activePlayerName: customerName,
                 is_active: true
             };

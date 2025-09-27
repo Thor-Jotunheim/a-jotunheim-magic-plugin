@@ -37,7 +37,7 @@ function unified_teller_scripts_shortcode($atts) {
         'unified-teller-js',
         plugin_dir_url(__FILE__) . '../../assets/js/unified-teller.js',
         ['jquery', 'jotun-comprehensive-api'],
-        '1.9.2',
+        '1.9.3',
         true
     );
 
@@ -91,7 +91,7 @@ function maybe_enqueue_teller_scripts() {
             'unified-teller-js',
             plugin_dir_url(__FILE__) . '../../assets/js/unified-teller.js',
             ['jquery', 'jotun-comprehensive-api'],
-            '1.9.2',
+            '1.9.3',
             true
         );
 

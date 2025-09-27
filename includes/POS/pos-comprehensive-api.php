@@ -1283,7 +1283,7 @@ function jotun_api_get_playerlist($request) {
     $params = [];
     
     if ($search) {
-        $sql .= " WHERE activePlayerName LIKE %s OR player_name LIKE %s";
+        $sql .= " WHERE activePlayerName LIKE %s OR playerName LIKE %s";
         $params[] = '%' . $wpdb->esc_like($search) . '%';
         $params[] = '%' . $wpdb->esc_like($search) . '%';
     }
@@ -2668,7 +2668,7 @@ function jotun_api_add_transaction($request) {
         if (POS_Database_Utils::column_exists($table_name, 'player_id')) {
             $customer_name = sanitize_text_field($data['customer_name']);
             $player_record = $wpdb->get_row($wpdb->prepare(
-                "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR player_name = %s LIMIT 1",
+                "SELECT id FROM jotun_playerlist WHERE activePlayerName = %s OR playerName = %s LIMIT 1",
                 $customer_name, $customer_name
             ));
             if ($player_record) {
