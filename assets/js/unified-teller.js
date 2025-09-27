@@ -574,6 +574,9 @@ class UnifiedTeller {
         let currentTransactionTotal = 0;
         let overallProgress = '';
         const itemProgressData = [];
+        
+        // Debug logging
+        console.log('Turn-in Items:', this.turninItems);
 
         // Get current quantities from cart/interface
         this.turninItems.forEach(item => {
@@ -584,6 +587,8 @@ class UnifiedTeller {
             const dailyCollected = this.getDailyTurninCount(item.item_name) || 0;
             const requirement = item.turn_in_requirement || 0;
             const projected = dailyCollected + currentQty;
+
+            console.log(`Item: ${item.item_name}, Requirement: ${requirement}, Daily: ${dailyCollected}, Current: ${currentQty}`);
 
             itemProgressData.push({
                 name: item.item_name,
@@ -598,6 +603,8 @@ class UnifiedTeller {
         const totalCollected = itemProgressData.reduce((sum, item) => sum + item.current, 0);
         const totalRequired = itemProgressData.reduce((sum, item) => sum + item.requirement, 0);
         const totalProjected = itemProgressData.reduce((sum, item) => sum + item.projected, 0);
+
+        console.log(`Totals - Collected: ${totalCollected}, Required: ${totalRequired}, Projected: ${totalProjected}`);
 
         // Update displays
         document.getElementById('event-progress-display').textContent = 
