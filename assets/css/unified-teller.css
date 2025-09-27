@@ -279,12 +279,41 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Enhanced Customer Name Input */
+.customer-search-container .field-input {
+    padding: var(--space-4) var(--space-4);
+    font-size: var(--font-size-4);
+    font-weight: 500;
+    line-height: var(--line-height-3);
+    border: 2px solid var(--input);
+    border-radius: var(--radius-3);
+    background: var(--gray-1);
+    min-height: 56px;
+    box-shadow: var(--shadow-1);
+}
+
 .field-input:focus,
 .field-select:focus,
 .field-textarea:focus {
     outline: none;
     border-color: var(--ring);
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhanced Customer Name Input Focus */
+.customer-search-container .field-input:focus {
+    border-color: var(--blue-8);
+    background: white;
+    box-shadow: 0 0 0 3px var(--blue-4), var(--shadow-2);
+    transform: translateY(-1px);
+}
+
+/* Enhanced Customer Name Placeholder */
+.customer-search-container .field-input::placeholder {
+    color: var(--gray-9);
+    font-size: var(--font-size-3);
+    font-weight: 400;
+    opacity: 0.7;
 }
 
 .field-textarea {
