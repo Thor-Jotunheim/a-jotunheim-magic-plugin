@@ -751,11 +751,22 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: 4px;
     font-size: 16px;
     font-weight: bold;
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield; /* Standard */
+}
+
+/* Hide Chrome, Safari, Edge arrows */
+.large-quantity-input::-webkit-outer-spin-button,
+.large-quantity-input::-webkit-inner-spin-button,
+.turnin-large-quantity-input::-webkit-outer-spin-button,
+.turnin-large-quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .large-quantity-input:focus, .turnin-large-quantity-input:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: #6c757d;
 }
 
 .remaining-text {
