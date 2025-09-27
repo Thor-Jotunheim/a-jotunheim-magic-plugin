@@ -683,13 +683,15 @@ class UnifiedTeller {
                         <div class="quantity-controls">
                             <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                   class="turnin-large-quantity-input" readonly>
+                                   class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
                             <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                         </div>
-                        <div class="remaining-text">of ${this.getMaxAllowedTurnin(item)} remaining</div>
                     </div>
                 </div>
                 <div class="item-bottom-section">
+                    <div class="turnin-progress" id="progress-${item.shop_item_id}">
+                        ${this.generateProgressText(item)}
+                    </div>
                     <div class="item-actions">
                         <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
                             Turn In
@@ -1816,6 +1818,8 @@ class UnifiedTeller {
             const currentValue = parseInt(input.value) || 1;
             if (currentValue < maxValue) {
                 input.value = currentValue + 1;
+                // Update progress display when quantity changes
+                this.updateProgressFromInput(inputId);
             }
         }
     }
@@ -1826,7 +1830,53 @@ class UnifiedTeller {
             const currentValue = parseInt(input.value) || 1;
             if (currentValue > 1) {
                 input.value = currentValue - 1;
+                // Update progress display when quantity changes
+                this.updateProgressFromInput(inputId);
             }
+        }
+    }
+
+    increaseQuantity(inputId, maxValue) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            const currentValue = parseInt(input.value) || 1;
+            if (currentValue < maxValue) {
+                input.value = currentValue + 1;
+                // Update progress display when quantity changes
+                this.updateProgressFromInput(inputId);
+            }
+        }
+    }
+
+    updateProgressFromInput(inputId) {
+        // Extract shop item id from input id (e.g., "turnin-qty-123" -> "123")
+        const shopItemId = inputId.replace('turnin-qty-', '');
+        const progressElement = document.getElementById(`progress-${shopItemId}`);
+        if (progressElement) {
+            const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
+                        this.shopItems.find(i => i.shop_item_id == shopItemId);
+            if (item) {
+                progressElement.innerHTML = this.generateProgressText(item, true);
+            }
+        }
+    }
+
+    generateProgressText(item, includeCurrent = false) {
+        const dailyTotal = this.getDailyTurninTotal(item.item_name);
+        const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
+        
+        let currentlySelected = 0;
+        if (includeCurrent) {
+            const input = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+            currentlySelected = input ? parseInt(input.value) || 0 : 0;
+        }
+        
+        const totalCollected = dailyTotal + currentlySelected;
+        
+        if (turnInRequirement > 0) {
+            return `${totalCollected} / ${turnInRequirement} collected`;
+        } else {
+            return `${totalCollected} collected`;
         }
     }
 
@@ -2164,13 +2214,15 @@ class UnifiedTeller {
                         <div class="quantity-controls">
                             <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
                             <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                   class="turnin-large-quantity-input" readonly>
+                                   class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
                             <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                         </div>
-                        <div class="remaining-text">of ${this.getMaxAllowedTurnin(item)} remaining</div>
                     </div>
                 </div>
                 <div class="item-bottom-section">
+                    <div class="turnin-progress" id="progress-${item.shop_item_id}">
+                        ${this.generateProgressText(item)}
+                    </div>
                     <div class="item-actions">
                         <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
                             Turn In

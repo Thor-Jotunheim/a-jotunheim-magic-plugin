@@ -756,6 +756,18 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     text-align: center;
 }
 
+.turnin-progress {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-11);
+    text-align: center;
+    margin-bottom: var(--space-2);
+    padding: var(--space-1);
+    background: var(--gray-1);
+    border-radius: 4px;
+    border: 1px solid var(--gray-4);
+}
+
 /* Legacy turn-in quantity input styling - keep for backwards compatibility */
 .turnin-quantity-input {
     width: 80px;
