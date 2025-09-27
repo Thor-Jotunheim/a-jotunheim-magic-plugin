@@ -434,6 +434,17 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     overflow-y: auto;
 }
 
+/* Force hidden class to override any display issues */
+.customer-suggestions.force-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+
 .customer-suggestion {
     padding: var(--space-2) var(--space-3);
     cursor: pointer;

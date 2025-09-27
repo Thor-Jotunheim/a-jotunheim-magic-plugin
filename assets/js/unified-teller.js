@@ -2221,6 +2221,15 @@ class UnifiedTeller {
             return;
         }
 
+        // Remove force-hidden class and reset styles when showing
+        container.classList.remove('force-hidden');
+        container.style.display = 'block';
+        container.style.visibility = 'visible';
+        container.style.opacity = '1';
+        container.style.height = 'auto';
+        container.style.maxHeight = '300px';
+        container.style.overflow = 'auto';
+
         container.innerHTML = '';
         players.slice(0, 50).forEach((player, index) => {
             const suggestion = document.createElement('div');
@@ -2284,7 +2293,15 @@ class UnifiedTeller {
 
     hideCustomerSuggestions() {
         const container = document.getElementById('customer-suggestions');
-        if (container) container.style.display = 'none';
+        if (container) {
+            container.style.display = 'none';
+            container.style.visibility = 'hidden';
+            container.style.opacity = '0';
+            container.style.height = '0';
+            container.style.maxHeight = '0';
+            container.style.overflow = 'hidden';
+            container.classList.add('force-hidden');
+        }
     }
 
     hideTurninCustomerSuggestions() {
