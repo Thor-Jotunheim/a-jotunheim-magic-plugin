@@ -136,11 +136,23 @@ class JotunheimPagePermissions {
         // Get Discord roles
         $discord_roles = $this->get_discord_roles();
         
-        // Get plugin pages
-        $plugin_pages = $this->get_plugin_pages();
+        // Get plugin pages from hardcoded list
+        $detected_pages = $this->get_plugin_pages();
         
         // Get current permissions
         $current_permissions = $this->get_page_permissions();
+        
+        // Combine detected pages with any pages that exist in permissions but not in detected list
+        $plugin_pages = $detected_pages;
+        foreach ($current_permissions as $page_key => $roles) {
+            if (!isset($plugin_pages[$page_key])) {
+                // This page exists in permissions but not in our detected list - add it
+                $plugin_pages[$page_key] = [
+                    'title' => ucwords(str_replace('_', ' ', $page_key)),
+                    'description' => 'Added via permissions interface'
+                ];
+            }
+        }
         
         ?>
         <div class="wrap">
@@ -722,6 +734,7 @@ class JotunheimPagePermissions {
         
         // Get current permissions
         $current_permissions = $this->get_page_permissions();
+        error_log('Current permissions count before adding: ' . count($current_permissions));
         
         // Add selected pages with no roles (user will need to configure them)
         $added_count = 0;
@@ -729,11 +742,20 @@ class JotunheimPagePermissions {
             if (!isset($current_permissions[$page_key])) {
                 $current_permissions[$page_key] = []; // Empty = no roles have access yet
                 $added_count++;
+                error_log('Added page to permissions: ' . $page_key);
+            } else {
+                error_log('Page already exists in permissions: ' . $page_key);
             }
         }
         
         // Save updated permissions
-        update_option('jotunheim_page_permissions', $current_permissions);
+        $result = update_option('jotunheim_page_permissions', $current_permissions);
+        error_log('Update option result: ' . ($result ? 'success' : 'failed'));
+        error_log('Current permissions count after adding: ' . count($current_permissions));
+        
+        // Verify the data was saved
+        $saved_permissions = get_option('jotunheim_page_permissions', []);
+        error_log('Saved permissions count: ' . count($saved_permissions));
         
         wp_send_json_success([
             'added_count' => $added_count,
