@@ -636,6 +636,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin: 0 0 var(--space-3) 0;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    flex-shrink: 0; /* Prevent compression by quantity controls */
+    min-width: 140px; /* Ensure minimum width */
+    max-width: 140px; /* Prevent expansion */
 }
 
 .item-icon-container .item-image {
@@ -677,15 +680,19 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: 6px;
 }
 
-/* Turn-in item main content layout */
+/* Turn-in item main content layout with fixed columns */
 .item-main-content {
     display: flex;
     gap: var(--space-3);
     margin-bottom: var(--space-3);
+    align-items: flex-start;
 }
+
+
 
 .item-quantity-section {
     flex: 1;
+    min-width: 0; /* Allow proper flex behavior */
     display: flex;
     flex-direction: column;
     justify-content: center;
