@@ -125,7 +125,7 @@ function unified_teller_interface() {
                         </div>
                     </div>
                     
-                    <div class="payment-summary-compact">
+                    <div id="payment-summary-section" class="payment-summary-compact">
                         <div class="summary-row">
                             <span class="summary-label">Cost:</span>
                             <span id="item-total-cost" class="summary-value">0</span>

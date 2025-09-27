@@ -531,6 +531,10 @@ class UnifiedTeller {
 
             console.log('Enriched shop items:', this.shopItems);
             this.displayShopItems();
+            
+            // Set up tracking interface based on shop type
+            const isTurnInOnly = this.shopData.shopType === 'turn-in_only';
+            this.setupTrackingInterface(isTurnInOnly);
         } catch (error) {
             console.error('Error loading shop items:', error);
             console.error('Error stack:', error.stack);
@@ -542,12 +546,14 @@ class UnifiedTeller {
         const trackingTitle = document.getElementById('tracking-title');
         const paymentContent = document.getElementById('payment-tracking-content');
         const turninContent = document.getElementById('turnin-tracking-content');
+        const paymentSummary = document.getElementById('payment-summary-section');
         
         if (isTurnInOnly) {
             // Switch to Turn-in Tracking
             if (trackingTitle) trackingTitle.textContent = 'Turn-in Tracking';
             if (paymentContent) paymentContent.style.display = 'none';
             if (turninContent) turninContent.style.display = 'block';
+            if (paymentSummary) paymentSummary.style.display = 'none';
             
             // Initialize turn-in tracking
             this.initializeTurninTracking();
@@ -556,6 +562,7 @@ class UnifiedTeller {
             if (trackingTitle) trackingTitle.textContent = 'Payment Tracking';
             if (paymentContent) paymentContent.style.display = 'block';
             if (turninContent) turninContent.style.display = 'none';
+            if (paymentSummary) paymentSummary.style.display = 'block';
         }
     }
 
