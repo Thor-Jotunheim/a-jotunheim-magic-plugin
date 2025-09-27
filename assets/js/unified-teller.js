@@ -1129,12 +1129,10 @@ class UnifiedTeller {
         // Hide both icons first
         const successIcon = document.getElementById('validation-success-icon');
         const errorIcon = document.getElementById('validation-error-icon');
-        const registerContainer = document.getElementById('register-new-player-container');
         const registerBtn = document.getElementById('register-new-player-btn');
         
         if (successIcon) successIcon.style.display = 'none';
         if (errorIcon) errorIcon.style.display = 'none';
-        if (registerContainer) registerContainer.style.display = 'none';
         
         // Always show register button but control its enabled state
         if (registerBtn) {
@@ -1149,7 +1147,6 @@ class UnifiedTeller {
             errorIcon.style.display = 'flex';
         } else if (type === 'register') {
             if (errorIcon) errorIcon.style.display = 'flex';
-            if (registerContainer) registerContainer.style.display = 'block';
             if (registerBtn) {
                 registerBtn.classList.add('enabled');
                 registerBtn.disabled = false;

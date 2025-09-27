@@ -80,9 +80,6 @@ function unified_teller_interface() {
                             <button id="register-new-player-btn" class="register-new-player-btn">Register New Player</button>
                         </div>
                     </div>
-                    <div id="register-new-player-container" class="register-container" style="display: none;">
-                        <button class="btn btn-outline btn-sm">Register New Player (Legacy)</button>
-                    </div>
                 </div>
             </div>
 
