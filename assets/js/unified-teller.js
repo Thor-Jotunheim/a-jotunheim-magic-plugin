@@ -1009,16 +1009,42 @@ class UnifiedTeller {
 
         try {
             // Search for player using the comprehensive API
-            const response = await JotunAPI.getPlayers({ search: customerName });
-            const players = response.data || [];
+            console.log('Validating customer:', customerName);
+            
+            // Try search first
+            const searchResponse = await JotunAPI.getPlayers({ search: customerName });
+            console.log('Search API response:', searchResponse);
+            let players = searchResponse.data || [];
+            console.log('Players found from search:', players);
+            
+            // If no results from search, try getting all players (as fallback)
+            if (players.length === 0) {
+                console.log('No search results, trying to get all players...');
+                const allResponse = await JotunAPI.getPlayers();
+                console.log('All players response:', allResponse);
+                const allPlayers = allResponse.data || [];
+                console.log('All players count:', allPlayers.length);
+                
+                // Filter manually for exact matches
+                players = allPlayers.filter(p => {
+                    const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
+                    const nameMatch = p.player_name && p.player_name.toLowerCase() === customerName.toLowerCase();
+                    return activeMatch || nameMatch;
+                });
+                console.log('Filtered players:', players);
+            }
             
             // Find exact match by activePlayerName or player_name (case-insensitive)
-            const player = players.find(p => 
-                (p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase()) ||
-                (p.player_name && p.player_name.toLowerCase() === customerName.toLowerCase())
-            );
+            const player = players.find(p => {
+                const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
+                const nameMatch = p.player_name && p.player_name.toLowerCase() === customerName.toLowerCase();
+                console.log(`Checking player: ${p.activePlayerName || p.player_name}, activeMatch: ${activeMatch}, nameMatch: ${nameMatch}`);
+                return activeMatch || nameMatch;
+            });
             
+            console.log('Player found result:', player);
             if (player) {
+                console.log('Validation successful for:', player.activePlayerName || player.player_name);
                 this.currentCustomer = player;
                 this.showValidationIcon('valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
@@ -1032,6 +1058,7 @@ class UnifiedTeller {
                 }
             } else {
                 // Show register option for new customers
+                console.log('No player found for:', customerName);
                 this.currentCustomer = null;
                 this.showValidationIcon('register');
                 document.getElementById('process-transaction-btn').disabled = true;
