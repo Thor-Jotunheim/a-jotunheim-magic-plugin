@@ -83,20 +83,45 @@ function unified_teller_interface() {
                 </div>
             </div>
 
-            <!-- Payment Tracking -->
+            <!-- Payment Tracking / Turn-in Tracking -->
             <div class="teller-card payment-card">
                 <div class="card-header">
-                    <h2 class="card-title">Payment Tracking</h2>
+                    <h2 id="tracking-title" class="card-title">Payment Tracking</h2>
                 </div>
                 <div class="card-content">
-                    <div class="payment-grid-compact">
-                        <div class="form-field">
-                            <label for="ymir-flesh-total" class="field-label">Ymir Flesh</label>
-                            <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
+                    <!-- Payment Tracking (Default) -->
+                    <div id="payment-tracking-content" class="tracking-content">
+                        <div class="payment-grid-compact">
+                            <div class="form-field">
+                                <label for="ymir-flesh-total" class="field-label">Ymir Flesh</label>
+                                <input type="number" id="ymir-flesh-total" class="field-input" min="0" step="1" placeholder="0">
+                            </div>
+                            <div class="form-field">
+                                <label for="gold-total" class="field-label">Gold</label>
+                                <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
+                            </div>
                         </div>
-                        <div class="form-field">
-                            <label for="gold-total" class="field-label">Gold</label>
-                            <input type="number" id="gold-total" class="field-input" min="0" step="1" placeholder="0">
+                    </div>
+
+                    <!-- Turn-in Tracking (Turn-in Only Shops) -->
+                    <div id="turnin-tracking-content" class="tracking-content" style="display: none;">
+                        <div class="turnin-summary-grid">
+                            <div class="turnin-summary-item">
+                                <div class="summary-label">Event Progress</div>
+                                <div id="event-progress-display" class="summary-value">Loading...</div>
+                            </div>
+                            <div class="turnin-summary-item">
+                                <div class="summary-label">Current Transaction</div>
+                                <div id="current-transaction-display" class="summary-value">0 items</div>
+                            </div>
+                            <div class="turnin-summary-item">
+                                <div class="summary-label">After Transaction</div>
+                                <div id="projected-progress-display" class="summary-value">0 / 0</div>
+                            </div>
+                        </div>
+                        
+                        <div class="turnin-items-summary" id="turnin-items-summary">
+                            <!-- Individual turn-in item progress will be populated here -->
                         </div>
                     </div>
                     

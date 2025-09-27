@@ -424,11 +424,8 @@ class UnifiedTeller {
             document.getElementById('teller-main-interface').style.display = 'block';
             document.getElementById('teller-turnin-interface').style.display = 'none';
             
-            // Hide/show payment tracking section based on shop type
-            const paymentCard = document.querySelector('.payment-card');
-            if (paymentCard) {
-                paymentCard.style.display = isTurnInOnly ? 'none' : 'block';
-            }
+            // Switch between Payment Tracking and Turn-in Tracking
+            this.setupTrackingInterface(isTurnInOnly);
             
             // Load appropriate items
             if (isTurnInOnly) {
@@ -539,6 +536,124 @@ class UnifiedTeller {
             console.error('Error stack:', error.stack);
             this.showStatus('Failed to load shop items: ' + error.message, 'error');
         }
+    }
+
+    setupTrackingInterface(isTurnInOnly) {
+        const trackingTitle = document.getElementById('tracking-title');
+        const paymentContent = document.getElementById('payment-tracking-content');
+        const turninContent = document.getElementById('turnin-tracking-content');
+        
+        if (isTurnInOnly) {
+            // Switch to Turn-in Tracking
+            if (trackingTitle) trackingTitle.textContent = 'Turn-in Tracking';
+            if (paymentContent) paymentContent.style.display = 'none';
+            if (turninContent) turninContent.style.display = 'block';
+            
+            // Initialize turn-in tracking
+            this.initializeTurninTracking();
+        } else {
+            // Switch to Payment Tracking
+            if (trackingTitle) trackingTitle.textContent = 'Payment Tracking';
+            if (paymentContent) paymentContent.style.display = 'block';
+            if (turninContent) turninContent.style.display = 'none';
+        }
+    }
+
+    async initializeTurninTracking() {
+        // Initialize turn-in tracking displays
+        this.updateTurninTracking();
+    }
+
+    updateTurninTracking() {
+        if (!this.turninItems || this.turninItems.length === 0) {
+            document.getElementById('event-progress-display').textContent = 'No turn-in items';
+            return;
+        }
+
+        // Calculate current transaction totals
+        let currentTransactionTotal = 0;
+        let overallProgress = '';
+        const itemProgressData = [];
+
+        // Get current quantities from cart/interface
+        this.turninItems.forEach(item => {
+            const qtyInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+            const currentQty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+            currentTransactionTotal += currentQty;
+
+            const dailyCollected = this.getDailyTurninCount(item.item_name) || 0;
+            const requirement = item.turn_in_requirement || 0;
+            const projected = dailyCollected + currentQty;
+
+            itemProgressData.push({
+                name: item.item_name,
+                current: dailyCollected,
+                requirement: requirement,
+                projected: projected,
+                transactionAmount: currentQty
+            });
+        });
+
+        // Calculate overall progress
+        const totalCollected = itemProgressData.reduce((sum, item) => sum + item.current, 0);
+        const totalRequired = itemProgressData.reduce((sum, item) => sum + item.requirement, 0);
+        const totalProjected = itemProgressData.reduce((sum, item) => sum + item.projected, 0);
+
+        // Update displays
+        document.getElementById('event-progress-display').textContent = 
+            `${totalCollected} / ${totalRequired} collected`;
+        
+        document.getElementById('current-transaction-display').textContent = 
+            `${currentTransactionTotal} items`;
+            
+        document.getElementById('projected-progress-display').textContent = 
+            `${totalProjected} / ${totalRequired}`;
+
+        // Update individual item progress
+        this.updateTurninItemsDisplay(itemProgressData);
+    }
+
+    handleQuantityChange(inputId) {
+        // Handle both turn-in quantity changes and regular shop quantity changes
+        if (inputId.includes('turnin-')) {
+            this.updateProgressFromInput(inputId);
+        }
+        
+        // Also handle cart updates if this is a regular shop item
+        if (!inputId.includes('turnin-')) {
+            this.updateCartDisplay();
+        }
+    }
+
+    updateTurninItemsDisplay(itemProgressData) {
+        const container = document.getElementById('turnin-items-summary');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        itemProgressData.forEach(item => {
+            const progressElement = document.createElement('div');
+            progressElement.className = 'turnin-item-progress';
+            
+            progressElement.innerHTML = `
+                <div class="turnin-item-name">${item.name}</div>
+                <div class="turnin-item-counts">
+                    <div class="turnin-current-progress">${item.current} / ${item.requirement}</div>
+                    <div class="turnin-projected-progress">+${item.transactionAmount} → ${item.projected}</div>
+                </div>
+            `;
+            
+            container.appendChild(progressElement);
+        });
+    }
+
+    getDailyTurninCount(itemName) {
+        // This would integrate with your existing daily turnin tracking system
+        // For now, return mock data - this should be replaced with actual API call
+        if (this.dailyTurninData && this.dailyTurninData[itemName]) {
+            return this.dailyTurninData[itemName].total || 0;
+        }
+        return 0;
     }
 
     async loadTurninItems(shopId) {
@@ -2014,6 +2129,11 @@ class UnifiedTeller {
                 progressElement.innerHTML = this.generateProgressText(item, true);
             }
         }
+        
+        // Update turn-in tracking if in turn-in mode
+        if (this.shopData.shopType === 'turn-in_only') {
+            this.updateTurninTracking();
+        }
     }
 
     updateProgressDisplay(shopItemId, turnInRequirement) {
@@ -2024,6 +2144,11 @@ class UnifiedTeller {
             if (item) {
                 progressElement.innerHTML = this.generateProgressText(item, true);
             }
+        }
+        
+        // Update turn-in tracking if in turn-in mode
+        if (this.shopData.shopType === 'turn-in_only') {
+            this.updateTurninTracking();
         }
     }
 
@@ -3066,6 +3191,11 @@ class UnifiedTeller {
         
         // Update payment calculations
         this.updatePaymentCalculations();
+        
+        // Update turn-in tracking if in turn-in mode
+        if (this.shopData.shopType === 'turn-in_only') {
+            this.updateTurninTracking();
+        }
     }
 
     updateCartItemQuantity(cartIndex, newQuantity) {

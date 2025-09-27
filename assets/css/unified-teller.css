@@ -1859,6 +1859,82 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-size: var(--font-size-2);
 }
 
+/* Turn-in Tracking Styling */
+.tracking-content {
+    width: 100%;
+}
+
+.turnin-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.turnin-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2);
+    background: var(--gray-2);
+    border-radius: var(--radius-2);
+}
+
+.turnin-summary-item .summary-label {
+    font-size: var(--font-size-2);
+    font-weight: 500;
+    color: var(--muted-foreground);
+}
+
+.turnin-summary-item .summary-value {
+    font-size: var(--font-size-3);
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.turnin-items-summary {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-3);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.turnin-item-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--border);
+}
+
+.turnin-item-progress:last-child {
+    border-bottom: none;
+}
+
+.turnin-item-name {
+    font-size: var(--font-size-2);
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.turnin-item-counts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+}
+
+.turnin-current-progress {
+    font-size: var(--font-size-1);
+    color: var(--muted-foreground);
+}
+
+.turnin-projected-progress {
+    font-size: var(--font-size-2);
+    font-weight: 600;
+    color: var(--blue-11);
+}
+
 /* ===== CRITICAL BUTTON STYLING OVERRIDES ===== */
 /* FINAL OVERRIDE: Force button colors with maximum specificity */
 .shop-items-grid .item-card .quantity-controls button.btn.btn-success,
