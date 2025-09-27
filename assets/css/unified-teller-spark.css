@@ -570,8 +570,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-4);
     width: 100%;
     height: auto !important;
@@ -579,7 +579,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     max-height: none !important;
     overflow: visible !important;
     box-sizing: border-box;
-    justify-items: center;
+    justify-content: flex-start;
 }
 
 /* FORCE ALL PARENT CONTAINERS TO FIT CONTENT */
@@ -614,8 +614,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: var(--radius-2);
     background: var(--card);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    max-width: 320px;
-    width: 100%;
+    width: 320px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
 }
