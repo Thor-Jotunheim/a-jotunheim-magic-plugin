@@ -41,7 +41,7 @@ class EnhancedIconImport {
         $itemlist_count = $wpdb->get_var("
             SELECT COUNT(*) FROM jotun_itemlist 
             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-            AND icon_image != 'not_found'
+            AND (icon_image IS NULL OR icon_image != 'not_found')
             AND item_name IS NOT NULL 
             AND item_name != ''
         ");
@@ -49,7 +49,7 @@ class EnhancedIconImport {
         $prefablist_count = $wpdb->get_var("
             SELECT COUNT(*) FROM jotun_prefablist 
             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-            AND icon_image != 'not_found'
+            AND (icon_image IS NULL OR icon_image != 'not_found')
             AND prefab_name IS NOT NULL 
             AND prefab_name != ''
         ");
@@ -124,7 +124,7 @@ class EnhancedIconImport {
         $items = $wpdb->get_results($wpdb->prepare(
             "SELECT id, item_name as search_name, item_name as file_name, 'itemlist' as table_type FROM jotun_itemlist 
              WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-             AND icon_image != 'not_found'
+             AND (icon_image IS NULL OR icon_image != 'not_found')
              AND item_name IS NOT NULL 
              AND item_name != ''
              LIMIT %d OFFSET %d",
@@ -138,7 +138,7 @@ class EnhancedIconImport {
             $itemlist_total = $wpdb->get_var("
                 SELECT COUNT(*) FROM jotun_itemlist 
                 WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-                AND icon_image != 'not_found'
+                AND (icon_image IS NULL OR icon_image != 'not_found')
                 AND item_name IS NOT NULL 
                 AND item_name != ''
             ");
@@ -149,7 +149,7 @@ class EnhancedIconImport {
                 $prefabs = $wpdb->get_results($wpdb->prepare(
                     "SELECT id, prefab_name as search_name, prefab_name as file_name, 'prefablist' as table_type FROM jotun_prefablist 
                      WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-                     AND icon_image != 'not_found'
+                     AND (icon_image IS NULL OR icon_image != 'not_found')
                      AND prefab_name IS NOT NULL 
                      AND prefab_name != ''
                      LIMIT %d OFFSET %d",
