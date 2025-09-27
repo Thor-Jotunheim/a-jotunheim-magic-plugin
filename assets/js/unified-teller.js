@@ -1870,7 +1870,7 @@ class UnifiedTeller {
     increaseQuantity(inputId, maxValue) {
         const input = document.getElementById(inputId);
         if (input) {
-            const currentValue = parseInt(input.value) || 1;
+            const currentValue = parseInt(input.value) || 0;
             if (currentValue < maxValue) {
                 input.value = currentValue + 1;
                 // Update progress display when quantity changes
@@ -1882,8 +1882,8 @@ class UnifiedTeller {
     decreaseQuantity(inputId) {
         const input = document.getElementById(inputId);
         if (input) {
-            const currentValue = parseInt(input.value) || 1;
-            if (currentValue > 1) {
+            const currentValue = parseInt(input.value) || 0;
+            if (currentValue > 0) {
                 input.value = currentValue - 1;
                 
                 // Handle syncing between unit and stack inputs
