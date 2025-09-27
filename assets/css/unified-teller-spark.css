@@ -667,6 +667,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-2);
 }
 
+/* DEBUGGING: Make this very obvious */
+.item-card {
+    border: 3px solid red !important;
+    background: yellow !important;
+}
+
 .item-btn {
     flex: 1;
     padding: var(--space-1) var(--space-2);
