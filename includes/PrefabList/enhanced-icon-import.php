@@ -117,49 +117,30 @@ class EnhancedIconImport {
         
         global $wpdb;
         
-        // Get next batch from both tables
+        // Get next batch using a simpler approach - union both tables and use single offset
         $offset = $status['processed'];
+        error_log("Enhanced Icon Import: Batch processing - offset: $offset, batch_size: $batch_size");
         
-        // First get items from itemlist table
-        $items = $wpdb->get_results($wpdb->prepare(
-            "SELECT id, item_name as search_name, item_name as file_name, 'itemlist' as table_type FROM jotun_itemlist 
+        // Union query to get items from both tables in order
+        $items = $wpdb->get_results($wpdb->prepare("
+            (SELECT id, item_name as search_name, item_name as file_name, 'itemlist' as table_type 
+             FROM jotun_itemlist 
              WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
              AND (icon_image IS NULL OR icon_image != 'not_found')
              AND item_name IS NOT NULL 
-             AND item_name != ''
-             LIMIT %d OFFSET %d",
-            $batch_size, $offset
-        ));
+             AND item_name != '')
+            UNION ALL
+            (SELECT id, prefab_name as search_name, prefab_name as file_name, 'prefablist' as table_type 
+             FROM jotun_prefablist 
+             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+             AND (icon_image IS NULL OR icon_image != 'not_found')
+             AND prefab_name IS NOT NULL 
+             AND prefab_name != '')
+            ORDER BY table_type, id
+            LIMIT %d OFFSET %d
+        ", $batch_size, $offset));
         
-        // If we still need more items and haven't filled the batch, get from prefablist
-        $remaining = $batch_size - count($items);
-        if ($remaining > 0) {
-            // Calculate offset for prefablist (subtract itemlist total)
-            $itemlist_total = $wpdb->get_var("
-                SELECT COUNT(*) FROM jotun_itemlist 
-                WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-                AND (icon_image IS NULL OR icon_image != 'not_found')
-                AND item_name IS NOT NULL 
-                AND item_name != ''
-            ");
-            
-            $prefab_offset = max(0, $offset - $itemlist_total);
-            
-            if ($prefab_offset >= 0) {
-                $prefabs = $wpdb->get_results($wpdb->prepare(
-                    "SELECT id, prefab_name as search_name, prefab_name as file_name, 'prefablist' as table_type FROM jotun_prefablist 
-                     WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-                     AND (icon_image IS NULL OR icon_image != 'not_found')
-                     AND prefab_name IS NOT NULL 
-                     AND prefab_name != ''
-                     LIMIT %d OFFSET %d",
-                    $remaining, $prefab_offset
-                ));
-                
-                // Merge the results
-                $items = array_merge($items, $prefabs);
-            }
-        }
+        error_log("Enhanced Icon Import: Found " . count($items) . " total items from union query");
         
         if (empty($items)) {
             // Import complete
