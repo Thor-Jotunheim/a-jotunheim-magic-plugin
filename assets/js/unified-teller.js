@@ -240,7 +240,7 @@ class UnifiedTeller {
         // Show all players when input is focused and empty
         customerNameInput.addEventListener('focus', (e) => {
             if (e.target.value.trim() === '' && this.playerList.length > 0) {
-                this.displayPlayerSuggestions(this.playerList.slice(0, 10), suggestionsContainer, customerNameInput);
+                this.displayPlayerSuggestions(this.playerList.slice(0, 50), suggestionsContainer, customerNameInput);
             }
         });
         
@@ -249,7 +249,7 @@ class UnifiedTeller {
             
             if (query.length === 0) {
                 // Show all players when empty
-                this.displayPlayerSuggestions(this.playerList.slice(0, 10), suggestionsContainer, customerNameInput);
+                this.displayPlayerSuggestions(this.playerList.slice(0, 50), suggestionsContainer, customerNameInput);
                 return;
             }
             
@@ -261,7 +261,7 @@ class UnifiedTeller {
             const filteredPlayers = this.playerList.filter(player => 
                 (player.activePlayerName && player.activePlayerName.toLowerCase().includes(query)) ||
                 (player.playerName && player.playerName.toLowerCase().includes(query))
-            ).slice(0, 10); // Show max 10 suggestions
+            ).slice(0, 50); // Show max 50 suggestions
             
             this.displayPlayerSuggestions(filteredPlayers, suggestionsContainer, customerNameInput);
         });
@@ -2095,9 +2095,7 @@ class UnifiedTeller {
             return;
         }
         
-        // Clear validation icons when typing
-        this.hideValidationIcon();
-        this.currentCustomer = null;
+        // Only clear validation if no exact match will be found - we'll check this later in the function
         
         if (searchTerm.length < 2) {
             this.hideCustomerSuggestions();
@@ -2120,7 +2118,29 @@ class UnifiedTeller {
             );
 
             console.log('Filtered players:', filteredPlayers);
-            this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
+            
+            // Check for exact match and auto-validate
+            const exactMatch = filteredPlayers.find(player => 
+                player.activePlayerName && player.activePlayerName.toLowerCase() === searchTerm.toLowerCase()
+            );
+            
+            if (exactMatch) {
+                console.log('Exact match found:', exactMatch.activePlayerName);
+                this.currentCustomer = exactMatch;
+                this.showValidationIcon('valid');
+                this.hideCustomerSuggestions();
+                
+                // Enable transaction processing if cart has items
+                const processBtn = document.getElementById('process-transaction-btn');
+                if (processBtn) {
+                    processBtn.disabled = this.cart.length === 0;
+                }
+            } else {
+                // Clear validation icons when no exact match
+                this.hideValidationIcon();
+                this.currentCustomer = null;
+                this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
+            }
         } catch (error) {
             console.error('Error searching customers:', error);
             this.showStatus('Error searching for customers', 'error');
@@ -2157,7 +2177,7 @@ class UnifiedTeller {
         }
 
         container.innerHTML = '';
-        players.slice(0, 10).forEach((player, index) => {
+        players.slice(0, 50).forEach((player, index) => {
             const suggestion = document.createElement('div');
             suggestion.className = 'customer-suggestion';
             suggestion.innerHTML = `
