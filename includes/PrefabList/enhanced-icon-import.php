@@ -38,21 +38,32 @@ class EnhancedIconImport {
         global $wpdb;
         
         // Get count from both tables that need icons
-        $itemlist_count = $wpdb->get_var("
-            SELECT COUNT(*) FROM jotun_itemlist 
-            WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-            AND (icon_image IS NULL OR icon_image != 'not_found')
-            AND item_name IS NOT NULL 
-            AND item_name != ''
+        // Count items that need icons (NULL/empty OR file doesn't exist)
+        $itemlist_items = $wpdb->get_results("
+            SELECT id, icon_image FROM jotun_itemlist 
+            WHERE item_name IS NOT NULL AND item_name != ''
         ");
         
-        $prefablist_count = $wpdb->get_var("
-            SELECT COUNT(*) FROM jotun_prefablist 
-            WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-            AND (icon_image IS NULL OR icon_image != 'not_found')
-            AND prefab_name IS NOT NULL 
-            AND prefab_name != ''
+        $prefablist_items = $wpdb->get_results("
+            SELECT id, icon_image FROM jotun_prefablist 
+            WHERE prefab_name IS NOT NULL AND prefab_name != ''
         ");
+        
+        // Check which items actually need processing
+        $itemlist_count = 0;
+        $prefablist_count = 0;
+        
+        foreach ($itemlist_items as $item) {
+            if ($this->needs_icon_processing($item->icon_image)) {
+                $itemlist_count++;
+            }
+        }
+        
+        foreach ($prefablist_items as $item) {
+            if ($this->needs_icon_processing($item->icon_image)) {
+                $prefablist_count++;
+            }
+        }
         
         $count = $itemlist_count + $prefablist_count;
         
@@ -121,24 +132,28 @@ class EnhancedIconImport {
         $offset = $status['processed'];
         error_log("Enhanced Icon Import: Batch processing - offset: $offset, batch_size: $batch_size");
         
-        // Union query to get items from both tables in order
-        $items = $wpdb->get_results($wpdb->prepare("
-            (SELECT id, item_name as search_name, item_name as file_name, 'itemlist' as table_type 
+        // Get all items and filter them properly
+        $all_items = $wpdb->get_results("
+            (SELECT id, item_name as search_name, item_name as file_name, icon_image, 'itemlist' as table_type 
              FROM jotun_itemlist 
-             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-             AND (icon_image IS NULL OR icon_image != 'not_found')
-             AND item_name IS NOT NULL 
-             AND item_name != '')
+             WHERE item_name IS NOT NULL AND item_name != '')
             UNION ALL
-            (SELECT id, prefab_name as search_name, prefab_name as file_name, 'prefablist' as table_type 
+            (SELECT id, prefab_name as search_name, prefab_name as file_name, icon_image, 'prefablist' as table_type 
              FROM jotun_prefablist 
-             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-             AND (icon_image IS NULL OR icon_image != 'not_found')
-             AND prefab_name IS NOT NULL 
-             AND prefab_name != '')
+             WHERE prefab_name IS NOT NULL AND prefab_name != '')
             ORDER BY table_type, id
-            LIMIT %d OFFSET %d
-        ", $batch_size, $offset));
+        ");
+        
+        // Filter items that need processing and apply offset/limit
+        $items_needing_processing = [];
+        foreach ($all_items as $item) {
+            if ($this->needs_icon_processing($item->icon_image)) {
+                $items_needing_processing[] = $item;
+            }
+        }
+        
+        // Apply offset and limit to filtered results
+        $items = array_slice($items_needing_processing, $offset, $batch_size);
         
         error_log("Enhanced Icon Import: Found " . count($items) . " total items from union query");
         
@@ -193,6 +208,41 @@ class EnhancedIconImport {
             'results' => $results,
             'status' => $status
         ]);
+    }
+    
+    /**
+     * Check if an item needs icon processing
+     */
+    private function needs_icon_processing($icon_image) {
+        // If null, empty, or 'null' - definitely needs processing
+        if (empty($icon_image) || $icon_image === 'null') {
+            return true;
+        }
+        
+        // If marked as 'not_found' - skip it
+        if ($icon_image === 'not_found') {
+            return false;
+        }
+        
+        // If has a URL, check if the file actually exists
+        if (filter_var($icon_image, FILTER_VALIDATE_URL)) {
+            // Convert URL to local file path
+            $upload_dir = wp_upload_dir();
+            $base_url = $upload_dir['baseurl'];
+            
+            // Check if URL starts with our upload URL
+            if (strpos($icon_image, $base_url) === 0) {
+                // Convert URL to local file path
+                $relative_path = str_replace($base_url, '', $icon_image);
+                $file_path = $upload_dir['basedir'] . $relative_path;
+                
+                // Return true if file doesn't exist (needs reprocessing)
+                return !file_exists($file_path);
+            }
+        }
+        
+        // If we have some other non-URL value, assume it needs processing
+        return true;
     }
     
     /**
