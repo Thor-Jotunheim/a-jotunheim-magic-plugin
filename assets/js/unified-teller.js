@@ -576,7 +576,8 @@ class UnifiedTeller {
                     unit_price: 0, // Turn-in items don't have prices
                     stack_price: 0,
                     is_available: 1, // Make sure they show as available
-                    icon_image: masterItem?.icon_image || shopItem.icon_image || null
+                    icon_image: masterItem?.icon_image || shopItem.icon_image || null,
+                    stack_size: masterItem?.stack_size || shopItem.stack_size || 1 // Include stack_size from master item data
                 };
             });
 
@@ -689,25 +690,17 @@ class UnifiedTeller {
                                 <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                             </div>
                         </div>
-                        ${(() => {
-                            console.log('DEBUG Stack Check - Item:', item.item_name, 'stack_size:', item.stack_size, 'type:', typeof item.stack_size);
-                            // Default stack sizes for common trophy items (these are typically stackable to 20)
-                            const stackableItems = ['trophy', 'hide', 'hair', 'fang', 'bone', 'scale', 'carapace'];
-                            const isStackableType = stackableItems.some(type => item.item_name.toLowerCase().includes(type));
-                            const stackSize = parseInt(item.stack_size) || (isStackableType ? 20 : 1);
-                            
-                            return (stackSize > 1) ? `
-                            <div class="quantity-control-group">
-                                <div class="quantity-label">Stack(s) (${stackSize}):</div>
-                                <div class="quantity-controls">
-                                    <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
-                                    <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="1" value="1" max="${Math.floor(this.getMaxAllowedTurnin(item) / stackSize)}"
-                                           class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
-                                    <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / stackSize)})">+</button>
-                                </div>
+                        ${(item.stack_size && parseInt(item.stack_size) > 1) ? `
+                        <div class="quantity-control-group">
+                            <div class="quantity-label">Stack(s) (${item.stack_size}):</div>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
+                                <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="1" value="1" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
+                                       class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
+                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
                             </div>
-                            ` : '';
-                        })()}
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
                 <div class="item-bottom-section">
@@ -1886,14 +1879,9 @@ class UnifiedTeller {
         // Find the item to get stack size
         const item = this.turninItems.find(i => i.shop_item_id == itemId) || 
                     this.shopItems.find(i => i.shop_item_id == itemId);
-        if (!item) return;
+        if (!item || !item.stack_size || parseInt(item.stack_size) <= 1) return;
         
-        // Default stack sizes for common trophy items (these are typically stackable to 20)
-        const stackableItems = ['trophy', 'hide', 'hair', 'fang', 'bone', 'scale', 'carapace'];
-        const isStackableType = stackableItems.some(type => item.item_name.toLowerCase().includes(type));
-        const stackSize = parseInt(item.stack_size) || (isStackableType ? 20 : 1);
-        
-        if (stackSize <= 1) return;
+        const stackSize = parseInt(item.stack_size);
         
         // Determine which type of input was changed and sync the other
         if (inputId.includes('stack-qty')) {
