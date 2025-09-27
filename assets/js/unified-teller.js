@@ -678,20 +678,22 @@ class UnifiedTeller {
                              onerror="this.parentElement.style.display='none'">
                     </div>
                 ` : ''}
-                <div class="item-pricing">
-                    <div class="price-row">
-                        <span class="price-label">Unit(s):</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                   style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
-                            <span class="price-value">of ${this.getMaxAllowedTurnin(item)} remaining</span>
+                <div class="item-bottom-section">
+                    <div class="item-pricing">
+                        <div class="price-row">
+                            <span class="price-label">Unit(s):</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
+                                       style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 3px;">
+                                <span class="price-value">of ${this.getMaxAllowedTurnin(item)} remaining</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="item-actions">
-                    <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
-                        Turn In
-                    </button>
+                    <div class="item-actions">
+                        <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
+                            Turn In
+                        </button>
+                    </div>
                 </div>
             `;
         } else {
@@ -712,18 +714,19 @@ class UnifiedTeller {
                              onerror="this.parentElement.style.display='none'">
                     </div>
                 ` : ''}
-                <div class="item-pricing">
-                    <div class="price-row">
-                        <span class="price-label">Unit:</span>
-                        <span class="price-value">${unitPrice}</span>
+                <div class="item-bottom-section">
+                    <div class="item-pricing">
+                        <div class="price-row">
+                            <span class="price-label">Unit:</span>
+                            <span class="price-value">${unitPrice}</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label">Stack (${item.stack_size || 1}):</span>
+                            <span class="price-value">${stackPrice}</span>
+                        </div>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Stack (${item.stack_size || 1}):</span>
-                        <span class="price-value">${stackPrice}</span>
-                    </div>
-                </div>
-                <div class="item-actions">
-                    ${this.generateItemActionButtons(item)}
+                    <div class="item-actions">
+                        ${this.generateItemActionButtons(item)}
                 </div>
             `;
             
