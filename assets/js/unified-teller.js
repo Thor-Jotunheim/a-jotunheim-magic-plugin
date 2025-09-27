@@ -1948,8 +1948,8 @@ class UnifiedTeller {
     }
 
     updateProgressFromInput(inputId) {
-        // Extract shop item id from input id (e.g., "turnin-qty-123" -> "123")
-        const shopItemId = inputId.replace('turnin-qty-', '');
+        // Extract shop item id from input id (works with both "turnin-qty-123" and "turnin-stack-qty-123")
+        const shopItemId = inputId.replace('turnin-qty-', '').replace('turnin-stack-qty-', '');
         const progressElement = document.getElementById(`progress-${shopItemId}`);
         if (progressElement) {
             const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
