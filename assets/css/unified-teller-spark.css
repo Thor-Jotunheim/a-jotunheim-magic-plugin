@@ -435,7 +435,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 /* Force hidden class to override any display issues */
-.customer-suggestions.force-hidden {
+.customer-suggestions.force-hidden,
+.player-suggestions.force-hidden {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;

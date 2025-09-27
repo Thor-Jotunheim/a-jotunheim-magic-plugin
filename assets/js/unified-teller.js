@@ -2292,16 +2292,23 @@ class UnifiedTeller {
     }
 
     hideCustomerSuggestions() {
-        const container = document.getElementById('customer-suggestions');
-        if (container) {
-            container.style.display = 'none';
-            container.style.visibility = 'hidden';
-            container.style.opacity = '0';
-            container.style.height = '0';
-            container.style.maxHeight = '0';
-            container.style.overflow = 'hidden';
-            container.classList.add('force-hidden');
-        }
+        // Hide both suggestion containers
+        const containers = [
+            document.getElementById('customer-suggestions'),
+            document.getElementById('player-suggestions')
+        ];
+        
+        containers.forEach(container => {
+            if (container) {
+                container.style.display = 'none';
+                container.style.visibility = 'hidden';
+                container.style.opacity = '0';
+                container.style.height = '0';
+                container.style.maxHeight = '0';
+                container.style.overflow = 'hidden';
+                container.classList.add('force-hidden');
+            }
+        });
     }
 
     hideTurninCustomerSuggestions() {
