@@ -618,7 +618,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     position: relative;
-    width: 300px;
+    width: 305px;
     flex-shrink: 0;
     justify-content: space-between;
     min-height: 280px;
