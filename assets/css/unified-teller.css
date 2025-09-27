@@ -1796,6 +1796,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-4);
     align-items: stretch;
     justify-content: center;
+    flex: 1;
     height: 100%;
 }
 
