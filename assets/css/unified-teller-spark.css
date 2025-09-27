@@ -1807,9 +1807,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex-direction: column;
     gap: var(--space-4);
     align-items: stretch;
-    justify-content: center;
+    justify-content: flex-start;
     flex: 1;
-    height: 100%;
+    padding-top: var(--space-4);
 }
 
 .transaction-actions-vertical .btn {
