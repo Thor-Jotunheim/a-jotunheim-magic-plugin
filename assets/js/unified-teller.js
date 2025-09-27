@@ -672,23 +672,24 @@ class UnifiedTeller {
                         <div class="item-biome ${biomeClass}">${biomeName}</div>
                     </div>
                 </div>
-                ${item.icon_image ? `
-                    <div class="item-icon-container">
-                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                             onerror="this.parentElement.style.display='none'">
-                    </div>
-                ` : ''}
-                <div class="item-bottom-section">
-                    <div class="item-card-pricing">
-                        <div class="price-row">
-                            <span class="price-label">Unit(s):</span>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                       class="turnin-quantity-input">
-                                <span class="price-value">of ${this.getMaxAllowedTurnin(item)} remaining</span>
-                            </div>
+                <div class="item-main-content">
+                    ${item.icon_image ? `
+                        <div class="item-icon-container">
+                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 onerror="this.parentElement.style.display='none'">
                         </div>
+                    ` : ''}
+                    <div class="item-quantity-section">
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
+                                   class="turnin-large-quantity-input" readonly>
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
+                        </div>
+                        <div class="remaining-text">of ${this.getMaxAllowedTurnin(item)} remaining</div>
                     </div>
+                </div>
+                <div class="item-bottom-section">
                     <div class="item-actions">
                         <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
                             Turn In
@@ -1809,6 +1810,26 @@ class UnifiedTeller {
         return div.innerHTML;
     }
 
+    increaseQuantity(inputId, maxValue) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            const currentValue = parseInt(input.value) || 1;
+            if (currentValue < maxValue) {
+                input.value = currentValue + 1;
+            }
+        }
+    }
+
+    decreaseQuantity(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            const currentValue = parseInt(input.value) || 1;
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+            }
+        }
+    }
+
     formatDate(dateString) {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -2132,23 +2153,24 @@ class UnifiedTeller {
                         <div class="item-biome ${biomeClass}">${biomeName}</div>
                     </div>
                 </div>
-                ${item.icon_image ? `
-                    <div class="item-icon-container">
-                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                             onerror="this.parentElement.style.display='none'">
-                    </div>
-                ` : ''}
-                <div class="item-bottom-section">
-                    <div class="item-card-pricing">
-                        <div class="price-row">
-                            <span class="price-label">Unit(s):</span>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                       class="turnin-quantity-input">
-                                <span class="price-value">of ${this.getMaxAllowedTurnin(item)} remaining</span>
-                            </div>
+                <div class="item-main-content">
+                    ${item.icon_image ? `
+                        <div class="item-icon-container">
+                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 onerror="this.parentElement.style.display='none'">
                         </div>
+                    ` : ''}
+                    <div class="item-quantity-section">
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
+                                   class="turnin-large-quantity-input" readonly>
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
+                        </div>
+                        <div class="remaining-text">of ${this.getMaxAllowedTurnin(item)} remaining</div>
                     </div>
+                </div>
+                <div class="item-bottom-section">
                     <div class="item-actions">
                         <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
                             Turn In
