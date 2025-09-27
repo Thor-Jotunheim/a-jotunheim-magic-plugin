@@ -120,7 +120,7 @@ class EnhancedIconImport {
         
         // First get items from itemlist table
         $items = $wpdb->get_results($wpdb->prepare(
-            "SELECT id, item_name as name, 'itemlist' as table_type FROM jotun_itemlist 
+            "SELECT id, item_name as search_name, item_name as file_name, 'itemlist' as table_type FROM jotun_itemlist 
              WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
              AND item_name IS NOT NULL 
              AND item_name != ''
@@ -143,7 +143,7 @@ class EnhancedIconImport {
             
             if ($prefab_offset >= 0) {
                 $prefabs = $wpdb->get_results($wpdb->prepare(
-                    "SELECT id, prefab_name as name, 'prefablist' as table_type FROM jotun_prefablist 
+                    "SELECT id, prefab_name as search_name, prefab_name as file_name, 'prefablist' as table_type FROM jotun_prefablist 
                      WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
                      AND prefab_name IS NOT NULL 
                      AND prefab_name != ''
@@ -213,8 +213,9 @@ class EnhancedIconImport {
         global $wpdb;
         
         $item_id = $item->id;
-        $item_name = $item->name;  // This is now either item_name or prefab_name
-        $table_type = $item->table_type;  // 'itemlist' or 'prefablist'
+        $search_name = $item->search_name;  // Name to search for on external sites
+        $file_name = $item->file_name;      // Name to use for the file (as-is from database)
+        $table_type = $item->table_type;    // 'itemlist' or 'prefablist'
         
         // Search sources in order of preference
         $sources = [
@@ -228,7 +229,7 @@ class EnhancedIconImport {
         
         // Try Jotunn sources first
         foreach (['jotunn_items', 'jotunn_pieces'] as $source_key) {
-            $found_url = $this->search_jotunn_source($item_name, $sources[$source_key]);
+            $found_url = $this->search_jotunn_source($search_name, $sources[$source_key]);
             if ($found_url) {
                 $source_used = $source_key;
                 break;
@@ -237,7 +238,7 @@ class EnhancedIconImport {
         
         // If not found in Jotunn, try commands.gg
         if (!$found_url) {
-            $found_url = $this->search_commands_gg($item_name);
+            $found_url = $this->search_commands_gg($search_name);
             if ($found_url) {
                 $source_used = 'commands_gg';
             }
@@ -248,14 +249,14 @@ class EnhancedIconImport {
             return [
                 'success' => false,
                 'id' => $item_id,
-                'name' => $item_name,
+                'name' => $search_name,
                 'table' => $table_type,
                 'error' => 'No icon found in any source (Jotunn items, Jotunn pieces, commands.gg)'
             ];
         }
         
-        // Download and save the icon
-        $download_result = $this->download_and_save_icon($found_url, $item_name, $item_id, $icons_dir, $base_url);
+        // Download and save the icon (use file_name for the actual filename)
+        $download_result = $this->download_and_save_icon($found_url, $file_name, $item_id, $icons_dir, $base_url);
         
         if ($download_result['success']) {
             // Update the correct database table
@@ -273,7 +274,7 @@ class EnhancedIconImport {
                 return [
                     'success' => false,
                     'id' => $item_id,
-                    'name' => $item_name,
+                    'name' => $search_name,
                     'table' => $table_type,
                     'error' => 'Database update failed: ' . $wpdb->last_error
                 ];
@@ -282,7 +283,7 @@ class EnhancedIconImport {
             return [
                 'success' => true,
                 'id' => $item_id,
-                'name' => $item_name,
+                'name' => $search_name,
                 'table' => $table_type,
                 'file' => $download_result['filename'],
                 'source' => $source_used
@@ -291,7 +292,7 @@ class EnhancedIconImport {
             return [
                 'success' => false,
                 'id' => $item_id,
-                'name' => $item_name,
+                'name' => $search_name,
                 'table' => $table_type,
                 'error' => $download_result['error']
             ];
@@ -375,14 +376,13 @@ class EnhancedIconImport {
             ];
         }
         
-        // Generate filename using the item/prefab name
-        error_log("Enhanced Icon Import: Original item_name: '$item_name'");
-        $sanitized_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $item_name);
-        error_log("Enhanced Icon Import: After regex: '$sanitized_name'");
-        $sanitized_name = trim($sanitized_name, '_'); // Remove leading/trailing underscores
-        error_log("Enhanced Icon Import: After trim: '$sanitized_name'");
+        // Use the database filename as-is (should be clean already like "MashedMeat")
+        error_log("Enhanced Icon Import: Using filename from database: '$item_name'");
+        $sanitized_name = $item_name; // Use database value directly
+        
+        // Only fallback if truly empty
         if (empty($sanitized_name)) {
-            $sanitized_name = 'item_' . $item_id; // Fallback with ID
+            $sanitized_name = 'item_' . $item_id;
             error_log("Enhanced Icon Import: Used fallback: '$sanitized_name'");
         }
         
