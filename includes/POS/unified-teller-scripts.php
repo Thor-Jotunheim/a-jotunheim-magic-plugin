@@ -15,7 +15,7 @@ function unified_teller_scripts_shortcode($atts) {
         'unified-teller-css',
         plugin_dir_url(__FILE__) . '../../assets/css/unified-teller-spark.css',
         [],
-        '1.2.0'
+        '2.0.0'
     );
 
     // Enqueue scripts and styles only when shortcode is used
@@ -67,10 +67,10 @@ function maybe_enqueue_teller_scripts() {
     if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'unified_teller')) {
         // Enqueue styles for unified teller
         wp_enqueue_style(
-            'unified-teller-css',
+            'unified-teller-css-fallback',
             plugin_dir_url(__FILE__) . '../../assets/css/unified-teller.css',
             [],
-            '1.2.0'
+            '2.0.0'
         );
 
         wp_enqueue_script(
