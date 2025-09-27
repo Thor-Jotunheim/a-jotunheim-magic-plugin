@@ -2298,15 +2298,40 @@ class UnifiedTeller {
         if (e.key === 'Enter') {
             e.preventDefault();
             
-            // Hide dropdown suggestions
-            this.hideCustomerSuggestions();
-            
             // Get current input value
             const customerName = e.target.value.trim();
             
             if (customerName) {
-                // Trigger validation which will show appropriate button state
-                this.validateCustomer(customerName);
+                // First check for exact match in our player list
+                let exactMatch = null;
+                if (this.playerList && this.playerList.length > 0) {
+                    exactMatch = this.playerList.find(p => 
+                        p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase()
+                    );
+                }
+                
+                if (exactMatch) {
+                    console.log('Enter key - exact match found:', exactMatch.activePlayerName);
+                    // Set the customer directly
+                    this.currentCustomer = exactMatch;
+                    this.showValidationIcon('valid');
+                    
+                    // Hide dropdown and prevent it from showing again
+                    this.hideCustomerSuggestions();
+                    this.isSelectingCustomer = true;
+                    
+                    // Clear the flag after a delay
+                    setTimeout(() => {
+                        this.isSelectingCustomer = false;
+                    }, 100);
+                } else {
+                    console.log('Enter key - no exact match, triggering validation');
+                    // No exact match, trigger full validation
+                    this.validateCustomer(customerName);
+                }
+                
+                // Always hide dropdown when Enter is pressed
+                this.hideCustomerSuggestions();
             }
             
             return false;
