@@ -2898,7 +2898,7 @@ class UnifiedTeller {
         this.updatePaymentCalculations();
         
         // Clear customer name field
-        const customerInput = document.getElementById('customer-search');
+        const customerInput = document.getElementById('customer-name');
         if (customerInput) {
             customerInput.value = '';
         }
