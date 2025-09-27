@@ -1752,21 +1752,33 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     gap: var(--space-4);
     margin-bottom: var(--space-6);
+    align-items: stretch;
 }
 
 .customer-card {
     flex: 1;
     min-width: 0; /* Allows flex shrinking */
+    display: flex;
+    flex-direction: column;
 }
 
 .payment-card {
     flex: 1;
     min-width: 0; /* Allows flex shrinking */
+    display: flex;
+    flex-direction: column;
 }
 
 .actions-card {
     flex: 1;
     min-width: 200px; /* Minimum width for buttons */
+    display: flex;
+    flex-direction: column;
+}
+
+.actions-card .card-content {
+    flex: 1;
+    display: flex;
 }
 
 /* Compact Payment Grid */
