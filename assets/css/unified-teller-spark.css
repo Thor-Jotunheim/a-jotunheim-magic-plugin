@@ -624,24 +624,26 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Icon Container with Frame */
 .item-icon-container {
-    width: 120px;
-    height: 120px;
-    padding: 8px;
+    width: 140px;
+    height: 140px;
+    padding: 6px;
     background: var(--gray-2);
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid var(--gray-6);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 0 var(--space-3) 0;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 .item-icon-container .item-image {
-    width: 100%;
-    height: 100%;
+    width: 120%;
+    height: 120%;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: 4px;
+    transform: scale(1.1);
 }
 
 .item-card:hover {
