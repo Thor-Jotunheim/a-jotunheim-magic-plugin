@@ -178,9 +178,12 @@ class EnhancedIconImport {
             }
         }
         
-        // Update status
-        $status['processed'] += $processed;
+        // Update status - add TOTAL items processed (successful + failed) to advance offset
+        $total_processed_this_batch = count($items);
+        $status['processed'] += $total_processed_this_batch;
         $status['errors'] += $errors;
+        
+        error_log("Enhanced Icon Import: Processed $total_processed_this_batch items this batch. Total processed now: " . $status['processed']);
         set_transient($import_id . '_status', $status, HOUR_IN_SECONDS);
         
         wp_send_json_success([
