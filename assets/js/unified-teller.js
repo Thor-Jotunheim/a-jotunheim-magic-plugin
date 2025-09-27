@@ -725,33 +725,11 @@ class UnifiedTeller {
                         <div class="item-biome ${biomeClass}">${biomeName}</div>
                     </div>
                 </div>
-                <div class="item-main-content">
-                    <div class="item-icon-container">
-                        ${item.icon_image ? `
-                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 onerror="this.style.display='none'">
-                        ` : ''}
-                    </div>
-                    <div class="item-quantity-section">
-                        <div class="quantity-control-group">
-                            <div class="quantity-label">Unit(s):</div>
-                            <div class="quantity-controls">
-                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('qty-${item.shop_item_id}')">−</button>
-                                <input type="number" id="qty-${item.shop_item_id}" min="1" value="1" class="large-quantity-input" readonly>
-                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('qty-${item.shop_item_id}', ${item.stock_quantity || 999999})">+</button>
-                            </div>
-                        </div>
-                        ${(item.stack_size && item.stack_size > 1) ? `
-                        <div class="quantity-control-group">
-                            <div class="quantity-label">Stack(s) (${item.stack_size}):</div>
-                            <div class="quantity-controls">
-                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('stack-qty-${item.shop_item_id}')">−</button>
-                                <input type="number" id="stack-qty-${item.shop_item_id}" min="1" value="1" class="large-quantity-input" readonly>
-                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('stack-qty-${item.shop_item_id}', 999)">+</button>
-                            </div>
-                        </div>
-                        ` : ''}
-                    </div>
+                <div class="item-icon-container">
+                    ${item.icon_image ? `
+                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                             onerror="this.style.display='none'">
+                    ` : ''}
                 </div>
                 <div class="item-bottom-section">
                     <div class="item-card-pricing">

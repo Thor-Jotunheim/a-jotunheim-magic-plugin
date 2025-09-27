@@ -1214,7 +1214,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .qty-btn {
-    background-color: #4CAF50;
+    background-color: #6c757d;
     color: white;
     border: none;
     width: 50px;
@@ -1229,7 +1229,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .qty-btn:hover {
-    background-color: #45a049;
+    background-color: #5a6268;
 }
 
 .qty-btn:disabled {
