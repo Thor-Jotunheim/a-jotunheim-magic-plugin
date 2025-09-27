@@ -697,19 +697,25 @@ class JotunheimPagePermissions {
      * AJAX handler for adding selected pages to permissions
      */
     public function ajax_add_selected_pages() {
+        error_log('Jotunheim Page Permissions: ajax_add_selected_pages called');
+        error_log('POST data: ' . print_r($_POST, true));
+        
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized access');
             return;
         }
         
         if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'page_permissions_nonce')) {
+            error_log('Jotunheim Page Permissions: Nonce verification failed');
             wp_send_json_error('Invalid security token');
             return;
         }
         
         $selected_pages = isset($_POST['selected_pages']) ? (array) $_POST['selected_pages'] : [];
+        error_log('Selected pages: ' . print_r($selected_pages, true));
         
         if (empty($selected_pages)) {
+            error_log('Jotunheim Page Permissions: No pages selected');
             wp_send_json_error('No pages selected');
             return;
         }

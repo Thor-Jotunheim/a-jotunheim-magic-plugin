@@ -352,6 +352,7 @@ jQuery(document).ready(function($) {
         },
 
         addSelectedPages: function(selectedPages) {
+            console.log('Adding selected pages:', selectedPages);
             $.ajax({
                 url: page_permissions_config.ajax_url,
                 type: 'POST',
