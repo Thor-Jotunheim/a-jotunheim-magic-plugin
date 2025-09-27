@@ -669,9 +669,8 @@ class UnifiedTeller {
                 </div>
                 <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                     ${item.icon_image ? `
-                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
+                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10;">
                             <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
                                  onerror="this.parentElement.style.display='none'">
                         </div>
                     ` : ''}
@@ -699,9 +698,8 @@ class UnifiedTeller {
                 </div>
                 <div class="item-pricing" style="position: relative; opacity: 1; color: inherit;">
                     ${item.icon_image ? `
-                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10; width: 100px; height: 100px;">
+                        <div class="item-icon" style="position: absolute; left: 5px; top: -10px; z-index: 10;">
                             <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"
                                  onerror="this.parentElement.style.display='none'">
                         </div>
                     ` : ''}

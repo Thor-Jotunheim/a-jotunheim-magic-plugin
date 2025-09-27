@@ -611,20 +611,23 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .item-card {
     background: white;
-    border: 1px solid var(--border-color, #ddd);
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: var(--space-3);
-    min-height: 248px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.2s ease;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
     position: relative;
+    max-width: 280px;
+    width: 100%;
+    margin: 8px;
 }
 
 .item-card:hover {
-    border-color: var(--ring);
-    box-shadow: var(--shadow-2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #007cba;
 }
 
 .item-name {
