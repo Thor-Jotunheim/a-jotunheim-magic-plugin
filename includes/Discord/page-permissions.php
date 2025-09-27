@@ -242,6 +242,135 @@ class JotunheimPagePermissions {
     }
     
     /**
+     * Comprehensive page scan using dashboard config methodology
+     */
+    private function comprehensive_page_scan() {
+        global $wpdb;
+        
+        $all_pages = [];
+        
+        error_log('Jotunheim Page Permissions: Starting comprehensive page scan...');
+        
+        // Get admin menu pages
+        global $admin_page_hooks, $submenu;
+        
+        if (!empty($admin_page_hooks)) {
+            foreach ($admin_page_hooks as $page => $hook) {
+                $all_pages["page_{$page}"] = [
+                    'title' => ucwords(str_replace('-', ' ', $page)),
+                    'description' => 'WordPress admin page',
+                    'type' => 'admin_page'
+                ];
+            }
+            error_log('Jotunheim Page Permissions: Found ' . count($admin_page_hooks) . ' admin page hooks');
+        }
+        
+        // Get submenu pages
+        if (!empty($submenu)) {
+            $submenu_count = 0;
+            foreach ($submenu as $parent => $items) {
+                if (is_array($items)) {
+                    foreach ($items as $item) {
+                        if (isset($item[2])) {
+                            $page_slug = $item[2];
+                            $all_pages["page_{$page_slug}"] = [
+                                'title' => isset($item[0]) ? $item[0] : ucwords(str_replace('-', ' ', $page_slug)),
+                                'description' => 'WordPress admin submenu page',
+                                'type' => 'admin_submenu'
+                            ];
+                            $submenu_count++;
+                        }
+                    }
+                }
+            }
+            error_log('Jotunheim Page Permissions: Found ' . $submenu_count . ' submenu items');
+        }
+        
+        // Scan for render functions like dashboard config does
+        $functions = get_defined_functions()['user'];
+        $render_count = 0;
+        
+        foreach ($functions as $function) {
+            if (preg_match('/^render_(.+)_page$/', $function, $matches)) {
+                $page_id = $matches[1];
+                $page_title = ucwords(str_replace('_', ' ', $page_id));
+                
+                if (!isset($all_pages["render_{$page_id}"])) {
+                    $all_pages["render_{$page_id}"] = [
+                        'title' => $page_title,
+                        'description' => "Render function: {$function}",
+                        'type' => 'render_function'
+                    ];
+                    $render_count++;
+                }
+            }
+        }
+        error_log('Jotunheim Page Permissions: Found ' . $render_count . ' render functions');
+        
+        // Get all posts and pages with content
+        $posts = $wpdb->get_results("
+            SELECT ID, post_title, post_content, post_name, post_type 
+            FROM {$wpdb->posts} 
+            WHERE post_status = 'publish' 
+            AND post_type IN ('page', 'post')
+            AND post_content LIKE '%[%'
+        ");
+        
+        $shortcode_count = 0;
+        foreach ($posts as $post) {
+            // Extract shortcodes using same logic as dashboard config
+            $shortcode_pattern = '/\[([^\]\/\s]+)(?:[^\]]*)\]/';
+            if (preg_match_all($shortcode_pattern, $post->post_content, $matches)) {
+                foreach ($matches[1] as $shortcode_name) {
+                    $shortcode_name = trim($shortcode_name);
+                    
+                    // Skip common WordPress shortcodes
+                    $wp_shortcodes = ['gallery', 'audio', 'video', 'embed', 'caption'];
+                    if (!in_array($shortcode_name, $wp_shortcodes)) {
+                        if (!isset($all_pages["shortcode_{$shortcode_name}"])) {
+                            $all_pages["shortcode_{$shortcode_name}"] = [
+                                'title' => "[{$shortcode_name}] Shortcode",
+                                'description' => "Found on page: {$post->post_title}",
+                                'type' => 'shortcode'
+                            ];
+                            $shortcode_count++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Get registered shortcodes that might not be in content
+        global $shortcode_tags;
+        if (!empty($shortcode_tags)) {
+            foreach ($shortcode_tags as $tag => $function) {
+                // Skip WordPress core shortcodes
+                $wp_shortcodes = ['gallery', 'audio', 'video', 'embed', 'caption', 'wp_caption'];
+                if (!in_array($tag, $wp_shortcodes)) {
+                    if (!isset($all_pages["shortcode_{$tag}"])) {
+                        $all_pages["shortcode_{$tag}"] = [
+                            'title' => "[{$tag}] Shortcode",
+                            'description' => 'Registered shortcode',
+                            'type' => 'shortcode'
+                        ];
+                        $shortcode_count++;
+                    }
+                }
+            }
+        }
+        
+        error_log('Jotunheim Page Permissions: Found ' . $shortcode_count . ' shortcodes');
+        error_log('Jotunheim Page Permissions: Total pages detected: ' . count($all_pages));
+        
+        // Sort by title
+        uasort($all_pages, function($a, $b) {
+            return strcmp($a['title'], $b['title']);
+        });
+        
+        return $all_pages;
+    }
+    
+    /**
      * Get all plugin pages that can have permissions
      * Now dynamically pulls from Dashboard Manager's shortcode detection + hardcoded admin pages
      */
@@ -490,7 +619,7 @@ class JotunheimPagePermissions {
     }
     
     /**
-     * AJAX handler for scanning new pages
+     * AJAX handler for scanning new pages - comprehensive like dashboard config
      */
     public function ajax_scan_new_pages() {
         if (!current_user_can('manage_options')) {
@@ -503,12 +632,14 @@ class JotunheimPagePermissions {
             return;
         }
         
+        error_log('Jotunheim Page Permissions: Starting comprehensive scan...');
+        
         // Get currently configured pages
         $current_permissions = $this->get_page_permissions();
         $configured_pages = array_keys($current_permissions);
         
-        // Get all available pages (including newly detected ones)
-        $all_pages = $this->get_plugin_pages();
+        // Do comprehensive scan using dashboard config logic
+        $all_pages = $this->comprehensive_page_scan();
         $all_page_keys = array_keys($all_pages);
         
         // Find new pages
@@ -518,21 +649,36 @@ class JotunheimPagePermissions {
             wp_send_json_success([
                 'new_count' => 0,
                 'message' => 'No new pages found. All available pages are already configured.',
-                'new_pages' => []
+                'new_pages' => [],
+                'total_scanned' => count($all_pages),
+                'already_configured' => count($configured_pages)
             ]);
             return;
         }
         
-        // Prepare new pages data
+        // Prepare new pages data with comprehensive info
         $new_pages_data = [];
         foreach ($new_pages as $page_key) {
             $new_pages_data[$page_key] = $all_pages[$page_key];
         }
         
+        error_log('Jotunheim Page Permissions: Found ' . count($new_pages) . ' new pages out of ' . count($all_pages) . ' total');
+        
+        // Auto-add new pages to permissions with no roles selected
+        $updated_permissions = $current_permissions;
+        foreach ($new_pages as $page_key) {
+            $updated_permissions[$page_key] = []; // Empty = no roles have access
+        }
+        
+        // Save the updated permissions
+        update_option('jotunheim_page_permissions', $updated_permissions);
+        
         wp_send_json_success([
             'new_count' => count($new_pages),
-            'message' => count($new_pages) . ' new page(s) found and ready to configure.',
-            'new_pages' => $new_pages_data
+            'message' => count($new_pages) . ' new page(s) found and added to configuration! You can now set permissions for them.',
+            'new_pages' => $new_pages_data,
+            'total_scanned' => count($all_pages),
+            'refresh_needed' => true
         ]);
     }
     

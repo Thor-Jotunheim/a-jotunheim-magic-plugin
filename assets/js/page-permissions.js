@@ -115,11 +115,19 @@ jQuery(document).ready(function($) {
                         const data = response.data;
                         if (data.new_count > 0) {
                             PagePermissions.showMessage(
-                                `Found ${data.new_count} new pages! Reload the page to configure them.`, 
+                                `Found ${data.new_count} new pages out of ${data.total_scanned} total! Auto-added to configuration. Refreshing page...`, 
                                 'success'
                             );
+                            
+                            // Auto-refresh the page to show new pages
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 2000);
                         } else {
-                            PagePermissions.showMessage(data.message, 'info');
+                            PagePermissions.showMessage(
+                                `${data.message} Scanned ${data.total_scanned} pages, ${data.already_configured} already configured.`, 
+                                'info'
+                            );
                         }
                     } else {
                         PagePermissions.showMessage('Error scanning pages: ' + response.data, 'error');
