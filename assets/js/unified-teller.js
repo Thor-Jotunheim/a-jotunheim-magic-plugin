@@ -2293,9 +2293,34 @@ class UnifiedTeller {
     }
 
     handleCustomerKeydown(e) {
-        // Handle arrow keys and enter for suggestion navigation
         const suggestions = document.querySelectorAll('#customer-suggestions .customer-suggestion');
-        // Implementation for keyboard navigation would go here
+        
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            
+            // Hide dropdown suggestions
+            this.hideCustomerSuggestions();
+            
+            // Get current input value
+            const customerName = e.target.value.trim();
+            
+            if (customerName) {
+                // Trigger validation which will show appropriate button state
+                this.validateCustomer(customerName);
+            }
+            
+            return false;
+        }
+        
+        // Handle arrow keys for suggestion navigation
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            // Implementation for keyboard navigation would go here
+        }
+        
+        if (e.key === 'Escape') {
+            this.hideCustomerSuggestions();
+        }
     }
 
     handleTurninCustomerKeydown(e) {
