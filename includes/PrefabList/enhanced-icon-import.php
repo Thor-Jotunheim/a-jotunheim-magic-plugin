@@ -37,17 +37,24 @@ class EnhancedIconImport {
         
         global $wpdb;
         
-        // Get count of items needing import (items without icons)
-        $table_name = 'jotun_prefablist';
-        
-        $count = $wpdb->get_var("
-            SELECT COUNT(*) FROM $table_name 
+        // Get count from both tables that need icons
+        $itemlist_count = $wpdb->get_var("
+            SELECT COUNT(*) FROM jotun_itemlist 
             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-            AND icon_prefab IS NOT NULL 
-            AND icon_prefab != ''
+            AND item_name IS NOT NULL 
+            AND item_name != ''
         ");
         
-        error_log("Enhanced Icon Import: Found $count items that need icons");
+        $prefablist_count = $wpdb->get_var("
+            SELECT COUNT(*) FROM jotun_prefablist 
+            WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+            AND prefab_name IS NOT NULL 
+            AND prefab_name != ''
+        ");
+        
+        $count = $itemlist_count + $prefablist_count;
+        
+        error_log("Enhanced Icon Import: Found $itemlist_count items + $prefablist_count prefabs = $count total that need icons");
         
         if (!$count) {
             wp_send_json_success([
@@ -108,20 +115,48 @@ class EnhancedIconImport {
         
         global $wpdb;
         
-        // Get next batch of items that need icons
-        $table_name = 'jotun_prefablist';
+        // Get next batch from both tables
         $offset = $status['processed'];
         
-        $prefabs = $wpdb->get_results($wpdb->prepare(
-            "SELECT id, icon_prefab FROM $table_name 
+        // First get items from itemlist table
+        $items = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, item_name as name, 'itemlist' as table_type FROM jotun_itemlist 
              WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
-             AND icon_prefab IS NOT NULL 
-             AND icon_prefab != ''
+             AND item_name IS NOT NULL 
+             AND item_name != ''
              LIMIT %d OFFSET %d",
             $batch_size, $offset
         ));
         
-        if (empty($prefabs)) {
+        // If we still need more items and haven't filled the batch, get from prefablist
+        $remaining = $batch_size - count($items);
+        if ($remaining > 0) {
+            // Calculate offset for prefablist (subtract itemlist total)
+            $itemlist_total = $wpdb->get_var("
+                SELECT COUNT(*) FROM jotun_itemlist 
+                WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+                AND item_name IS NOT NULL 
+                AND item_name != ''
+            ");
+            
+            $prefab_offset = max(0, $offset - $itemlist_total);
+            
+            if ($prefab_offset >= 0) {
+                $prefabs = $wpdb->get_results($wpdb->prepare(
+                    "SELECT id, prefab_name as name, 'prefablist' as table_type FROM jotun_prefablist 
+                     WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+                     AND prefab_name IS NOT NULL 
+                     AND prefab_name != ''
+                     LIMIT %d OFFSET %d",
+                    $remaining, $prefab_offset
+                ));
+                
+                // Merge the results
+                $items = array_merge($items, $prefabs);
+            }
+        }
+        
+        if (empty($items)) {
             // Import complete
             $status['status'] = 'completed';
             set_transient($import_id . '_status', $status, HOUR_IN_SECONDS);
@@ -146,8 +181,8 @@ class EnhancedIconImport {
             mkdir($icons_dir, 0755, true);
         }
         
-        foreach ($prefabs as $prefab) {
-            $result = $this->process_single_icon($prefab, $icons_dir, $upload_dir['baseurl']);
+        foreach ($items as $item) {
+            $result = $this->process_single_icon($item, $icons_dir, $upload_dir['baseurl']);
             $results[] = $result;
             
             if ($result['success']) {
@@ -174,11 +209,12 @@ class EnhancedIconImport {
     /**
      * Process a single icon by searching external sources
      */
-    private function process_single_icon($prefab, $icons_dir, $base_url) {
+    private function process_single_icon($item, $icons_dir, $base_url) {
         global $wpdb;
         
-        $prefab_id = $prefab->id;
-        $prefab_name = $prefab->icon_prefab;
+        $item_id = $item->id;
+        $item_name = $item->name;  // This is now either item_name or prefab_name
+        $table_type = $item->table_type;  // 'itemlist' or 'prefablist'
         
         // Search sources in order of preference
         $sources = [
@@ -192,7 +228,7 @@ class EnhancedIconImport {
         
         // Try Jotunn sources first
         foreach (['jotunn_items', 'jotunn_pieces'] as $source_key) {
-            $found_url = $this->search_jotunn_source($prefab_name, $sources[$source_key]);
+            $found_url = $this->search_jotunn_source($item_name, $sources[$source_key]);
             if ($found_url) {
                 $source_used = $source_key;
                 break;
@@ -201,7 +237,7 @@ class EnhancedIconImport {
         
         // If not found in Jotunn, try commands.gg
         if (!$found_url) {
-            $found_url = $this->search_commands_gg($prefab_name);
+            $found_url = $this->search_commands_gg($item_name);
             if ($found_url) {
                 $source_used = 'commands_gg';
             }
@@ -211,21 +247,24 @@ class EnhancedIconImport {
         if (!$found_url) {
             return [
                 'success' => false,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
+                'id' => $item_id,
+                'name' => $item_name,
+                'table' => $table_type,
                 'error' => 'No icon found in any source (Jotunn items, Jotunn pieces, commands.gg)'
             ];
         }
         
         // Download and save the icon
-        $download_result = $this->download_and_save_icon($found_url, $prefab_name, $prefab_id, $icons_dir, $base_url);
+        $download_result = $this->download_and_save_icon($found_url, $item_name, $item_id, $icons_dir, $base_url);
         
         if ($download_result['success']) {
-            // Update database
+            // Update the correct database table
+            $table_name = ($table_type === 'itemlist') ? 'jotun_itemlist' : 'jotun_prefablist';
+            
             $result = $wpdb->update(
-                'jotun_prefablist',
+                $table_name,
                 ['icon_image' => $download_result['saved_url']],
-                ['id' => $prefab_id],
+                ['id' => $item_id],
                 ['%s'],
                 ['%d']
             );
@@ -233,24 +272,27 @@ class EnhancedIconImport {
             if ($result === false) {
                 return [
                     'success' => false,
-                    'id' => $prefab_id,
-                    'name' => $prefab_name,
+                    'id' => $item_id,
+                    'name' => $item_name,
+                    'table' => $table_type,
                     'error' => 'Database update failed: ' . $wpdb->last_error
                 ];
             }
             
             return [
                 'success' => true,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
+                'id' => $item_id,
+                'name' => $item_name,
+                'table' => $table_type,
                 'file' => $download_result['filename'],
                 'source' => $source_used
             ];
         } else {
             return [
                 'success' => false,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
+                'id' => $item_id,
+                'name' => $item_name,
+                'table' => $table_type,
                 'error' => $download_result['error']
             ];
         }
@@ -333,14 +375,14 @@ class EnhancedIconImport {
             ];
         }
         
-        // Generate filename
-        $sanitized_name = preg_replace('/[^a-zA-Z0-9_-]/', '', $prefab_name);
+        // Generate filename using the item/prefab name
+        $sanitized_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $item_name);
         if (empty($sanitized_name)) {
-            $sanitized_name = 'prefab';
+            $sanitized_name = 'item';
         }
         
         $file_extension = pathinfo(parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'png';
-        $file_name = $sanitized_name . '-' . $prefab_id . '-' . md5($image_url) . '.' . $file_extension;
+        $file_name = $sanitized_name . '.' . $file_extension;
         $file_path = $icons_dir . '/' . $file_name;
         
         // Save file
