@@ -37,33 +37,17 @@ class EnhancedIconImport {
         
         global $wpdb;
         
-        // Get count of items needing import
+        // Get count of items needing import (items without icons)
         $table_name = 'jotun_prefablist';
-        
-        // Debug: Check total items in table
-        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
-        error_log("Enhanced Icon Import: Total items in table: $total_items");
-        
-        // Debug: Check items with image_url
-        $items_with_image_url = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE image_url IS NOT NULL AND image_url != ''");
-        error_log("Enhanced Icon Import: Items with image_url: $items_with_image_url");
-        
-        // Debug: Check items without icon_image
-        $items_without_icon = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE (icon_image IS NULL OR icon_image = '')");
-        error_log("Enhanced Icon Import: Items without icon_image: $items_without_icon");
-        
-        // Debug: Show some sample data
-        $sample_data = $wpdb->get_results("SELECT icon_prefab, image_url, icon_image FROM $table_name WHERE icon_prefab LIKE '%Bear%' OR icon_prefab LIKE '%bear%' LIMIT 5");
-        error_log("Enhanced Icon Import: Sample Bear items: " . print_r($sample_data, true));
         
         $count = $wpdb->get_var("
             SELECT COUNT(*) FROM $table_name 
-            WHERE image_url IS NOT NULL 
-            AND image_url != '' 
-            AND (icon_image IS NULL OR icon_image = '')
+            WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+            AND icon_prefab IS NOT NULL 
+            AND icon_prefab != ''
         ");
         
-        error_log("Enhanced Icon Import: Items needing import: $count");
+        error_log("Enhanced Icon Import: Found $count items that need icons");
         
         if (!$count) {
             wp_send_json_success([
@@ -124,15 +108,15 @@ class EnhancedIconImport {
         
         global $wpdb;
         
-        // Get next batch
+        // Get next batch of items that need icons
         $table_name = 'jotun_prefablist';
         $offset = $status['processed'];
         
         $prefabs = $wpdb->get_results($wpdb->prepare(
-            "SELECT id, icon_prefab, image_url FROM $table_name 
-             WHERE image_url IS NOT NULL 
-             AND image_url != '' 
-             AND (icon_image IS NULL OR icon_image = '') 
+            "SELECT id, icon_prefab FROM $table_name 
+             WHERE (icon_image IS NULL OR icon_image = '' OR icon_image = 'null')
+             AND icon_prefab IS NOT NULL 
+             AND icon_prefab != ''
              LIMIT %d OFFSET %d",
             $batch_size, $offset
         ));
@@ -188,25 +172,145 @@ class EnhancedIconImport {
     }
     
     /**
-     * Process a single icon
+     * Process a single icon by searching external sources
      */
     private function process_single_icon($prefab, $icons_dir, $base_url) {
         global $wpdb;
         
-        $image_url = $prefab->image_url;
         $prefab_id = $prefab->id;
         $prefab_name = $prefab->icon_prefab;
         
-        // Validate URL
-        if (!filter_var($image_url, FILTER_VALIDATE_URL)) {
+        // Search sources in order of preference
+        $sources = [
+            'jotunn_items' => 'https://valheim-modding.github.io/Jotunn/data/objects/item-list.html',
+            'jotunn_pieces' => 'https://valheim-modding.github.io/Jotunn/data/pieces/piece-list.html',
+            'commands_gg' => 'https://commands.gg/valheim/characters'
+        ];
+        
+        $found_url = null;
+        $source_used = '';
+        
+        // Try Jotunn sources first
+        foreach (['jotunn_items', 'jotunn_pieces'] as $source_key) {
+            $found_url = $this->search_jotunn_source($prefab_name, $sources[$source_key]);
+            if ($found_url) {
+                $source_used = $source_key;
+                break;
+            }
+        }
+        
+        // If not found in Jotunn, try commands.gg
+        if (!$found_url) {
+            $found_url = $this->search_commands_gg($prefab_name);
+            if ($found_url) {
+                $source_used = 'commands_gg';
+            }
+        }
+        
+        // If no URL found, return failure
+        if (!$found_url) {
             return [
                 'success' => false,
                 'id' => $prefab_id,
                 'name' => $prefab_name,
-                'error' => 'Invalid URL'
+                'error' => 'No icon found in any source (Jotunn items, Jotunn pieces, commands.gg)'
             ];
         }
         
+        // Download and save the icon
+        $download_result = $this->download_and_save_icon($found_url, $prefab_name, $prefab_id, $icons_dir, $base_url);
+        
+        if ($download_result['success']) {
+            // Update database
+            $result = $wpdb->update(
+                'jotun_prefablist',
+                ['icon_image' => $download_result['saved_url']],
+                ['id' => $prefab_id],
+                ['%s'],
+                ['%d']
+            );
+            
+            if ($result === false) {
+                return [
+                    'success' => false,
+                    'id' => $prefab_id,
+                    'name' => $prefab_name,
+                    'error' => 'Database update failed: ' . $wpdb->last_error
+                ];
+            }
+            
+            return [
+                'success' => true,
+                'id' => $prefab_id,
+                'name' => $prefab_name,
+                'file' => $download_result['filename'],
+                'source' => $source_used
+            ];
+        } else {
+            return [
+                'success' => false,
+                'id' => $prefab_id,
+                'name' => $prefab_name,
+                'error' => $download_result['error']
+            ];
+        }
+    }
+    
+    /**
+     * Search Jotunn source for prefab icon
+     */
+    private function search_jotunn_source($prefab_name, $source_url) {
+        $response = wp_remote_get($source_url, [
+            'timeout' => 10,
+            'sslverify' => false
+        ]);
+        
+        if (is_wp_error($response)) {
+            return false;
+        }
+        
+        $html = wp_remote_retrieve_body($response);
+        if (empty($html)) {
+            return false;
+        }
+        
+        // Parse HTML to find the prefab
+        // Look for table rows containing the prefab name
+        preg_match_all('/<tr[^>]*>.*?<\/tr>/is', $html, $rows);
+        
+        foreach ($rows[0] as $row) {
+            // Check if this row contains our prefab name
+            if (stripos($row, $prefab_name) !== false) {
+                // Extract image URL from this row
+                preg_match('/<img[^>]*src=["\']([^"\']+)["\'][^>]*>/i', $row, $img_matches);
+                if (!empty($img_matches[1])) {
+                    $img_url = $img_matches[1];
+                    // Make sure it's a full URL
+                    if (strpos($img_url, 'http') !== 0) {
+                        $base_jotunn = 'https://valheim-modding.github.io/Jotunn/';
+                        $img_url = $base_jotunn . ltrim($img_url, './');
+                    }
+                    return $img_url;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Search commands.gg for prefab icon  
+     */
+    private function search_commands_gg($prefab_name) {
+        // Commands.gg has a different structure - would need to be implemented based on their actual HTML
+        // For now, return false as we'd need to analyze their page structure
+        return false;
+    }
+    
+    /**
+     * Download and save icon from URL
+     */
+    private function download_and_save_icon($image_url, $prefab_name, $prefab_id, $icons_dir, $base_url) {
         // Fetch image
         $response = wp_remote_get($image_url, [
             'timeout' => 15,
@@ -217,9 +321,7 @@ class EnhancedIconImport {
         if (is_wp_error($response)) {
             return [
                 'success' => false,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
-                'error' => $response->get_error_message()
+                'error' => 'Failed to download: ' . $response->get_error_message()
             ];
         }
         
@@ -227,8 +329,6 @@ class EnhancedIconImport {
         if (empty($image_data)) {
             return [
                 'success' => false,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
                 'error' => 'No image data retrieved'
             ];
         }
@@ -239,7 +339,7 @@ class EnhancedIconImport {
             $sanitized_name = 'prefab';
         }
         
-        $file_extension = pathinfo(parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+        $file_extension = pathinfo(parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'png';
         $file_name = $sanitized_name . '-' . $prefab_id . '-' . md5($image_url) . '.' . $file_extension;
         $file_path = $icons_dir . '/' . $file_name;
         
@@ -247,36 +347,17 @@ class EnhancedIconImport {
         if (!file_put_contents($file_path, $image_data)) {
             return [
                 'success' => false,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
-                'error' => 'Failed to save file'
+                'error' => 'Failed to save file to: ' . $file_path
             ];
         }
         
-        // Update database
+        // Return success with file info
         $relative_file_path = $base_url . '/Jotunheim-magic/icons/' . $file_name;
-        $result = $wpdb->update(
-            'jotun_prefablist',
-            ['icon_image' => $relative_file_path],
-            ['id' => $prefab_id],
-            ['%s'],
-            ['%d']
-        );
-        
-        if ($result === false) {
-            return [
-                'success' => false,
-                'id' => $prefab_id,
-                'name' => $prefab_name,
-                'error' => 'Database update failed: ' . $wpdb->last_error
-            ];
-        }
         
         return [
             'success' => true,
-            'id' => $prefab_id,
-            'name' => $prefab_name,
-            'file' => $file_name
+            'filename' => $file_name,
+            'saved_url' => $relative_file_path
         ];
     }
     
