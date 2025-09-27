@@ -67,26 +67,15 @@ function unified_teller_interface() {
                                     placeholder="Start typing player name... (auto-validates)"
                                     autocomplete="off"
                                 >
+                                <div class="validation-icon-container">
+                                    <div id="validation-success-icon" class="validation-icon success-icon" style="display: none;">✓</div>
+                                    <div id="validation-error-icon" class="validation-icon error-icon" style="display: none;">✗</div>
+                                </div>
                             </div>
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
                     </div>
-                    <div id="customer-status" class="status-message"></div>
-                    <div id="customer-info" class="customer-info-card" style="display: none;">
-                        <div class="customer-details">
-                            <div class="customer-detail">
-                                <span class="detail-label">Player:</span>
-                                <span id="customer-display-name" class="detail-value"></span>
-                            </div>
-                            <div class="customer-detail">
-                                <span class="detail-label">Status:</span>
-                                <span id="customer-active-status" class="detail-value"></span>
-                            </div>
-                            <div class="customer-detail">
-                                <span class="detail-label">Registered:</span>
-                                <span id="customer-registration" class="detail-value"></span>
-                            </div>
-                        </div>
+                    <div id="register-new-player-container" class="register-container" style="display: none;">
                         <button id="register-new-player-btn" class="btn btn-outline btn-sm">Register New Player</button>
                     </div>
                 </div>

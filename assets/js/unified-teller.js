@@ -48,10 +48,7 @@ class UnifiedTeller {
         }
 
         // Register new player button
-        const registerBtn = document.getElementById('register-new-player-btn');
-        if (registerBtn) {
-            registerBtn.addEventListener('click', () => this.registerNewPlayer());
-        }
+        this.setupRegisterButton();
 
         // Item search
         const itemSearch = document.getElementById('item-search');
@@ -1023,8 +1020,7 @@ class UnifiedTeller {
             
             if (player) {
                 this.currentCustomer = player;
-                this.displayCustomerInfo(player);
-                this.showCustomerStatus('Customer validated successfully', 'valid');
+                this.showValidationIcon('valid');
                 document.getElementById('process-transaction-btn').disabled = this.cart.length === 0;
                 
                 // Load daily turn-in data for this customer
@@ -1037,34 +1033,30 @@ class UnifiedTeller {
             } else {
                 // Show register option for new customers
                 this.currentCustomer = null;
-                this.showCustomerStatus('Customer not found. Would you like to register them?', 'register');
-                document.getElementById('customer-info').style.display = 'none';
-                this.showRegisterOption(customerName);
+                this.showValidationIcon('register');
                 document.getElementById('process-transaction-btn').disabled = true;
             }
         } catch (error) {
             console.error('Error validating customer:', error);
-            this.showCustomerStatus('Error validating customer', 'invalid');
+            this.showValidationIcon('invalid');
             this.currentCustomer = null;
         }
     }
 
-    showRegisterOption(customerName) {
-        const statusDiv = document.getElementById('customer-status');
-        statusDiv.innerHTML = `
-            <span>Customer "${customerName}" not found.</span>
-            <button id="register-customer-btn" class="btn btn-primary btn-sm" style="margin-left: 10px;">
-                Register New Customer
-            </button>
-        `;
-        
-        const registerBtn = document.getElementById('register-customer-btn');
+    setupRegisterButton() {
+        const registerBtn = document.getElementById('register-new-player-btn');
         if (registerBtn) {
-            registerBtn.addEventListener('click', () => this.registerNewCustomer(customerName));
+            registerBtn.addEventListener('click', () => this.registerNewPlayer());
         }
     }
 
-    async registerNewCustomer(customerName) {
+    async registerNewPlayer() {
+        const customerName = document.getElementById('customer-name')?.value?.trim();
+        if (!customerName) {
+            this.showStatus('Please enter a customer name first', 'error');
+            return;
+        }
+
         try {
             const playerData = {
                 player_name: customerName,
@@ -1073,7 +1065,7 @@ class UnifiedTeller {
             };
             
             await JotunAPI.addPlayer(playerData);
-            this.showCustomerStatus(`Customer "${customerName}" registered successfully!`, 'valid');
+            this.showStatus(`Customer "${customerName}" registered successfully!`, 'success');
             
             // Reload player list and validate the newly registered customer
             this.playerList = null; // Clear cache
@@ -1081,23 +1073,42 @@ class UnifiedTeller {
             
         } catch (error) {
             console.error('Error registering customer:', error);
-            this.showCustomerStatus('Error registering customer', 'invalid');
+            this.showStatus('Error registering customer', 'error');
+            this.showValidationIcon('invalid');
         }
     }
 
-    displayCustomerInfo(customer) {
-        document.getElementById('customer-display-name').textContent = customer.activePlayerName;
-        document.getElementById('customer-id').textContent = customer.id;
-        document.getElementById('customer-active-status').textContent = customer.is_active ? 'Active' : 'Inactive';
-        document.getElementById('customer-registration').textContent = this.formatDate(customer.registration_date || customer.created_at);
-        document.getElementById('customer-info').style.display = 'block';
+
+
+    showValidationIcon(type) {
+        // Hide both icons first
+        const successIcon = document.getElementById('validation-success-icon');
+        const errorIcon = document.getElementById('validation-error-icon');
+        const registerContainer = document.getElementById('register-new-player-container');
+        
+        if (successIcon) successIcon.style.display = 'none';
+        if (errorIcon) errorIcon.style.display = 'none';
+        if (registerContainer) registerContainer.style.display = 'none';
+        
+        // Show appropriate icon
+        if (type === 'valid' && successIcon) {
+            successIcon.style.display = 'flex';
+        } else if (type === 'invalid' && errorIcon) {
+            errorIcon.style.display = 'flex';
+        } else if (type === 'register' && errorIcon && registerContainer) {
+            errorIcon.style.display = 'flex';
+            registerContainer.style.display = 'block';
+        }
     }
 
-    showCustomerStatus(message, type) {
-        const statusDiv = document.getElementById('customer-status');
-        statusDiv.textContent = message;
-        statusDiv.className = `customer-status ${type}`;
-        statusDiv.style.display = 'block';
+    hideValidationIcon() {
+        const successIcon = document.getElementById('validation-success-icon');
+        const errorIcon = document.getElementById('validation-error-icon');
+        const registerContainer = document.getElementById('register-new-player-container');
+        
+        if (successIcon) successIcon.style.display = 'none';
+        if (errorIcon) errorIcon.style.display = 'none';
+        if (registerContainer) registerContainer.style.display = 'none';
     }
 
     addToCart(item, quantity = 1, price = null) {
@@ -1250,17 +1261,7 @@ class UnifiedTeller {
         }
     }
 
-    registerNewPlayer() {
-        const customerName = document.getElementById('customer-name')?.value?.trim();
-        if (!customerName) {
-            this.showStatus('Please enter a customer name first', 'error');
-            return;
-        }
-        
-        // This would typically open a modal or form for player registration
-        console.log('Register new player:', customerName);
-        this.showStatus('Player registration functionality to be implemented', 'info');
-    }
+
 
     showTransactionModal() {
         if (!this.currentCustomer) {
@@ -1440,8 +1441,7 @@ class UnifiedTeller {
                 this.clearCart();
                 this.currentCustomer = null;
                 document.getElementById('customer-name').value = '';
-                document.getElementById('customer-info').style.display = 'none';
-                document.getElementById('customer-status').style.display = 'none';
+                this.hideValidationIcon();
                 document.getElementById('transaction-notes').value = '';
                 
                 // Reload shop items based on shop type
@@ -2062,6 +2062,10 @@ class UnifiedTeller {
     async handleCustomerSearch(searchTerm) {
         console.log('handleCustomerSearch called with:', searchTerm);
         
+        // Clear validation icons when typing
+        this.hideValidationIcon();
+        this.currentCustomer = null;
+        
         if (searchTerm.length < 2) {
             this.hideCustomerSuggestions();
             return;
@@ -2146,8 +2150,7 @@ class UnifiedTeller {
         document.getElementById('customer-name').value = player.activePlayerName;
         this.currentCustomer = player;
         this.hideCustomerSuggestions();
-        this.displayCustomerInfo(player, 'customer');
-        this.showCustomerStatus('Customer validated successfully', 'valid');
+        this.showValidationIcon('valid');
         
         // Enable transaction processing if cart has items
         const processBtn = document.getElementById('process-transaction-btn');
@@ -2902,6 +2905,10 @@ class UnifiedTeller {
         if (customerInput) {
             customerInput.value = '';
         }
+        
+        // Clear validation icons and customer state
+        this.hideValidationIcon();
+        this.currentCustomer = null;
         
         // Clear all turn-in quantity inputs (units and stacks)
         const turninInputs = document.querySelectorAll('[id^="turnin-qty-"], [id^="turnin-stack-qty-"]');

@@ -15,7 +15,7 @@ function unified_teller_scripts_shortcode($atts) {
         'unified-teller-css',
         plugin_dir_url(__FILE__) . '../../assets/css/unified-teller-spark.css',
         [],
-        '2.1.0'
+        '2.2.0'
     );
 
     // Enqueue scripts and styles only when shortcode is used
@@ -37,7 +37,7 @@ function unified_teller_scripts_shortcode($atts) {
         'unified-teller-js',
         plugin_dir_url(__FILE__) . '../../assets/js/unified-teller.js',
         ['jquery', 'jotun-comprehensive-api'],
-        '1.8.0',
+        '1.9.0',
         true
     );
 
@@ -70,7 +70,7 @@ function maybe_enqueue_teller_scripts() {
             'unified-teller-css-fallback',
             plugin_dir_url(__FILE__) . '../../assets/css/unified-teller.css',
             [],
-            '2.0.0'
+            '2.1.0'
         );
 
         wp_enqueue_script(
@@ -91,7 +91,7 @@ function maybe_enqueue_teller_scripts() {
             'unified-teller-js',
             plugin_dir_url(__FILE__) . '../../assets/js/unified-teller.js',
             ['jquery', 'jotun-comprehensive-api'],
-            '1.0.0',
+            '1.9.0',
             true
         );
 
