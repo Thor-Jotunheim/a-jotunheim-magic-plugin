@@ -2009,8 +2009,17 @@ class UnifiedTeller {
         
         let currentlySelected = 0;
         if (includeCurrent) {
-            const input = document.getElementById(`turnin-qty-${item.shop_item_id}`);
-            currentlySelected = input ? parseInt(input.value) || 0 : 0;
+            // Get units input
+            const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+            const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+            
+            // Get stacks input if it exists
+            const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
+            const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+            const stackSize = parseInt(item.stack_size) || 1;
+            
+            // Calculate total: units + (stacks * stackSize)
+            currentlySelected = units + (stacks * stackSize);
         }
         
         const progressLines = [];
