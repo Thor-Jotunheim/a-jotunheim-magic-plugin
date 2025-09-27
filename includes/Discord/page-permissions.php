@@ -12,6 +12,7 @@ class JotunheimPagePermissions {
         add_action('wp_ajax_scan_new_pages', [$this, 'ajax_scan_new_pages']);
         add_action('wp_ajax_add_selected_pages', [$this, 'ajax_add_selected_pages']);
         add_action('wp_ajax_remove_pages', [$this, 'ajax_remove_pages']);
+        add_action('wp_ajax_reset_permissions', [$this, 'ajax_reset_permissions']);
         
         // Add admin capability management
         add_action('init', [$this, 'manage_admin_capabilities'], 1);
@@ -156,6 +157,7 @@ class JotunheimPagePermissions {
                     <button type="button" class="button" id="clear-all-permissions">Clear All</button>
                     <button type="button" class="button" id="scan-new-pages">🔍 Scan for New Pages</button>
                     <button type="button" class="button" id="remove-pages">🗑️ Remove Pages</button>
+                    <button type="button" class="button" id="reset-permissions" style="background: #dc3232; color: white;">🔄 Reset to Admin Only</button>
                     <button type="button" class="button button-primary" id="save-page-permissions">Save Permissions</button>
                 </div>
                 
@@ -758,6 +760,37 @@ class JotunheimPagePermissions {
         wp_send_json_success([
             'removed_count' => $removed_count,
             'message' => $removed_count . ' page(s) removed from permissions configuration.'
+        ]);
+    }
+    
+    /**
+     * AJAX handler for resetting permissions to just admin pages
+     */
+    public function ajax_reset_permissions() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized access');
+            return;
+        }
+        
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'page_permissions_nonce')) {
+            wp_send_json_error('Invalid security token');
+            return;
+        }
+        
+        // Reset to just the core admin pages
+        $reset_permissions = [
+            'jotunheim_magic' => [],
+            'dashboard_config' => [],
+            'discord_auth_config' => [],
+            'page_permissions_config' => []
+        ];
+        
+        // Save reset permissions
+        update_option('jotunheim_page_permissions', $reset_permissions);
+        
+        wp_send_json_success([
+            'message' => 'Permissions reset to admin pages only. You can now scan and selectively add pages.',
+            'refresh_needed' => true
         ]);
     }
     

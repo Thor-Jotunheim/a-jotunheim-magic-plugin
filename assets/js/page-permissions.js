@@ -28,6 +28,9 @@ jQuery(document).ready(function($) {
             // Remove pages
             $('#remove-pages').on('click', this.removePages.bind(this));
             
+            // Reset permissions
+            $('#reset-permissions').on('click', this.resetPermissions.bind(this));
+            
             // Individual checkbox changes
             $('.permission-checkbox').on('change', this.handleCheckboxChange.bind(this));
         },
@@ -205,6 +208,47 @@ jQuery(document).ready(function($) {
             
             // You could add real-time feedback here if needed
             console.log(`Permission changed: ${page} - ${role} - ${checked}`);
+        },
+
+        resetPermissions: function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Are you sure you want to reset permissions to admin pages only? This will remove all shortcode and other page permissions.')) {
+                return;
+            }
+            
+            const $button = $(e.target);
+            const originalText = $button.text();
+            
+            // Show loading state
+            $button.html('🔄 Resetting...').prop('disabled', true);
+            
+            $.ajax({
+                url: page_permissions_config.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'reset_permissions',
+                    nonce: page_permissions_config.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        PagePermissions.showMessage(response.data.message, 'success');
+                        
+                        // Refresh page to show reset state
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        PagePermissions.showMessage('Error resetting permissions: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    PagePermissions.showMessage('Network error occurred while resetting permissions.', 'error');
+                },
+                complete: function() {
+                    $button.text(originalText).prop('disabled', false);
+                }
+            });
         },
 
         showPageSelectionModal: function(newPages) {
