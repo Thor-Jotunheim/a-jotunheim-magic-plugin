@@ -616,36 +616,28 @@ class UnifiedTeller {
             const progressPercent = requirement > 0 ? Math.min((dailyCollected / requirement) * 100, 100) : 0;
             const projectedPercent = requirement > 0 ? Math.min((projected / requirement) * 100, 100) : 0;
             
-            // Create progress display for this item
+            // Create compact progress display for this item
             const progressHtml = `
-                <div class="turnin-progress-item">
-                    <div class="turnin-item-header">
-                        <span class="turnin-item-name">${item.item_name}</span>
-                        <span class="turnin-item-counts">${dailyCollected} / ${requirement}</span>
-                    </div>
-                    <div class="turnin-progress-bar-container">
-                        <div class="turnin-progress-bar">
-                            <div class="turnin-progress-fill" style="width: ${progressPercent}%"></div>
-                            ${currentTransactionQty > 0 ? 
-                                `<div class="turnin-progress-projected" style="width: ${projectedPercent}%; opacity: 0.5"></div>` : 
-                                ''}
+                <div class="turnin-compact-item">
+                    <div class="turnin-compact-name">${item.item_name}</div>
+                    <div class="turnin-compact-progress">
+                        <div class="turnin-compact-bar">
+                            <div class="turnin-compact-fill" style="width: ${progressPercent}%"></div>
                         </div>
-                        <div class="turnin-progress-percentage">${progressPercent.toFixed(1)}%</div>
                     </div>
-                    ${currentTransactionQty > 0 ? 
-                        `<div class="turnin-transaction-preview">+${currentTransactionQty} this transaction → ${projected} total</div>` : 
-                        ''}
+                    <div class="turnin-compact-counts">${dailyCollected}/${requirement}</div>
+                    <div class="turnin-compact-percent">${progressPercent.toFixed(0)}%</div>
                 </div>
             `;
             
             progressDisplays.push(progressHtml);
         });
         
-        // Update the turn-in tracking container with individual progress displays
+        // Update the turn-in tracking container with compact table display
         const container = document.getElementById('turnin-tracking-content');
         if (container) {
             container.innerHTML = `
-                <div class="turnin-progress-list">
+                <div class="turnin-compact-table">
                     ${progressDisplays.join('')}
                 </div>
             `;

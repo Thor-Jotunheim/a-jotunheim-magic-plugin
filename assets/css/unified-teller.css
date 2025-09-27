@@ -1939,94 +1939,74 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     color: var(--blue-11);
 }
 
-/* New Turn-in Progress Bar Styles */
-.turnin-progress-list {
+/* Compact Turn-in Tracking Styles */
+.turnin-compact-table {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    max-height: 140px;
+    gap: 1px;
+    max-height: 120px;
     overflow-y: auto;
 }
 
-.turnin-progress-item {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 2px;
-    padding: 3px 6px;
-    transition: all 0.2s ease;
-}
-
-.turnin-progress-item:hover {
-    background: #f1f3f4;
-    border-color: #adb5bd;
-}
-
-.turnin-item-header {
-    display: flex;
-    justify-content: space-between;
+.turnin-compact-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 6px;
     align-items: center;
-    margin-bottom: 1px;
+    padding: 2px 4px;
+    background: #f8f9fa;
+    border-radius: 2px;
+    font-size: 10px;
+    line-height: 1.2;
 }
 
-.turnin-item-name {
+.turnin-compact-item:hover {
+    background: #f1f3f4;
+}
+
+.turnin-compact-name {
     font-weight: 500;
     color: #495057;
-    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
-.turnin-item-counts {
-    font-weight: 500;
-    color: #6c757d;
-    font-size: 10px;
+.turnin-compact-progress {
+    width: 40px;
+    height: 8px;
+    flex-shrink: 0;
 }
 
-.turnin-progress-bar-container {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 1px;
-}
-
-.turnin-progress-bar {
-    flex: 1;
-    height: 3px;
+.turnin-compact-bar {
+    width: 100%;
+    height: 100%;
     background: #e9ecef;
     border-radius: 1px;
-    position: relative;
     overflow: hidden;
 }
 
-.turnin-progress-fill {
+.turnin-compact-fill {
     height: 100%;
     background: linear-gradient(90deg, #28a745, #20c997);
     border-radius: 1px;
     transition: width 0.3s ease;
 }
 
-.turnin-progress-projected {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #17a2b8, #20c997);
-    border-radius: 1px;
-    transition: width 0.3s ease;
-}
-
-.turnin-progress-percentage {
+.turnin-compact-counts {
     font-size: 9px;
-    font-weight: 500;
     color: #6c757d;
-    min-width: 25px;
+    white-space: nowrap;
+    min-width: 35px;
     text-align: right;
 }
 
-.turnin-transaction-preview {
+.turnin-compact-percent {
     font-size: 9px;
-    color: #17a2b8;
-    font-weight: 500;
-    margin-top: 1px;
-    font-style: italic;
+    color: #6c757d;
+    min-width: 25px;
+    text-align: right;
 }
 
 .no-turnin-items {
