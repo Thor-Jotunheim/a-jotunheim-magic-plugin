@@ -39,12 +39,31 @@ class EnhancedIconImport {
         
         // Get count of items needing import
         $table_name = 'jotun_prefablist';
+        
+        // Debug: Check total items in table
+        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+        error_log("Enhanced Icon Import: Total items in table: $total_items");
+        
+        // Debug: Check items with image_url
+        $items_with_image_url = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE image_url IS NOT NULL AND image_url != ''");
+        error_log("Enhanced Icon Import: Items with image_url: $items_with_image_url");
+        
+        // Debug: Check items without icon_image
+        $items_without_icon = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE (icon_image IS NULL OR icon_image = '')");
+        error_log("Enhanced Icon Import: Items without icon_image: $items_without_icon");
+        
+        // Debug: Show some sample data
+        $sample_data = $wpdb->get_results("SELECT icon_prefab, image_url, icon_image FROM $table_name WHERE icon_prefab LIKE '%Bear%' OR icon_prefab LIKE '%bear%' LIMIT 5");
+        error_log("Enhanced Icon Import: Sample Bear items: " . print_r($sample_data, true));
+        
         $count = $wpdb->get_var("
             SELECT COUNT(*) FROM $table_name 
             WHERE image_url IS NOT NULL 
             AND image_url != '' 
             AND (icon_image IS NULL OR icon_image = '')
         ");
+        
+        error_log("Enhanced Icon Import: Items needing import: $count");
         
         if (!$count) {
             wp_send_json_success([
