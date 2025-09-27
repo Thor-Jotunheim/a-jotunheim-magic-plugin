@@ -2269,50 +2269,13 @@ class UnifiedTeller {
         }
 
         this.turninItems.forEach(item => {
-            const itemCard = document.createElement('div');
-            itemCard.className = 'item-card';
-            
-            const biomeName = item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown';
-            const biomeClass = `biome-${biomeName.toLowerCase().replace(/\s+/g, '')}`;
-            
-            itemCard.innerHTML = `
-                <div class="item-header">
-                    <div class="item-name">${this.escapeHtml(item.item_name)}</div>
-                    <div class="item-tags">
-                        <div class="item-type">${item.item_type || 'Trophies'}</div>
-                        <div class="item-biome ${biomeClass}">${biomeName}</div>
-                    </div>
-                </div>
-                <div class="item-main-content">
-                    ${item.icon_image ? `
-                        <div class="item-icon-container">
-                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 onerror="this.parentElement.style.display='none'">
-                        </div>
-                    ` : ''}
-                    <div class="item-quantity-section">
-                        <div class="quantity-controls">
-                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
-                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                   class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
-                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="item-bottom-section">
-                    <div class="turnin-progress" id="progress-${item.shop_item_id}">
-                        ${this.generateProgressText(item)}
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
-                            Turn In
-                        </button>
-                    </div>
-                </div>
-            `;
+            // Use the existing createItemCard method which has proper stack support and styling
+            const itemCard = this.createItemCard(item);
             container.appendChild(itemCard);
         });
     }
+
+
 
     addTurninItem(shopItemId) {
         // Initialize turninItems if not loaded

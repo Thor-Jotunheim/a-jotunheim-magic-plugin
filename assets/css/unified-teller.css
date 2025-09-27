@@ -1272,11 +1272,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin-right: var(--space-1);
 }
 
-.qty-btn {
-    padding: 4px 8px;
-    font-size: 11px;
-    min-height: auto;
-}
+
 
 .action-buttons {
     display: flex;
