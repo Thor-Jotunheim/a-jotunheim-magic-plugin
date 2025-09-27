@@ -10,6 +10,7 @@ class JotunheimPagePermissions {
         add_action('wp_ajax_save_page_permissions', [$this, 'ajax_save_page_permissions']);
         add_action('wp_ajax_get_page_permissions', [$this, 'ajax_get_page_permissions']);
         add_action('wp_ajax_scan_new_pages', [$this, 'ajax_scan_new_pages']);
+        add_action('wp_ajax_add_selected_pages', [$this, 'ajax_add_selected_pages']);
         add_action('wp_ajax_remove_pages', [$this, 'ajax_remove_pages']);
         
         // Add admin capability management
@@ -664,20 +665,56 @@ class JotunheimPagePermissions {
         
         error_log('Jotunheim Page Permissions: Found ' . count($new_pages) . ' new pages out of ' . count($all_pages) . ' total');
         
-        // Auto-add new pages to permissions with no roles selected
-        $updated_permissions = $current_permissions;
-        foreach ($new_pages as $page_key) {
-            $updated_permissions[$page_key] = []; // Empty = no roles have access
-        }
-        
-        // Save the updated permissions
-        update_option('jotunheim_page_permissions', $updated_permissions);
-        
+        // Return pages for selection like Dashboard Config does - DON'T auto-add
         wp_send_json_success([
             'new_count' => count($new_pages),
-            'message' => count($new_pages) . ' new page(s) found and added to configuration! You can now set permissions for them.',
+            'message' => count($new_pages) . ' new page(s) found! Select which ones to add to permissions.',
             'new_pages' => $new_pages_data,
             'total_scanned' => count($all_pages),
+            'already_configured' => count($configured_pages),
+            'show_selection' => true
+        ]);
+    }
+    
+    /**
+     * AJAX handler for adding selected pages to permissions
+     */
+    public function ajax_add_selected_pages() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized access');
+            return;
+        }
+        
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'page_permissions_nonce')) {
+            wp_send_json_error('Invalid security token');
+            return;
+        }
+        
+        $selected_pages = isset($_POST['selected_pages']) ? (array) $_POST['selected_pages'] : [];
+        
+        if (empty($selected_pages)) {
+            wp_send_json_error('No pages selected');
+            return;
+        }
+        
+        // Get current permissions
+        $current_permissions = $this->get_page_permissions();
+        
+        // Add selected pages with no roles (user will need to configure them)
+        $added_count = 0;
+        foreach ($selected_pages as $page_key) {
+            if (!isset($current_permissions[$page_key])) {
+                $current_permissions[$page_key] = []; // Empty = no roles have access yet
+                $added_count++;
+            }
+        }
+        
+        // Save updated permissions
+        update_option('jotunheim_page_permissions', $current_permissions);
+        
+        wp_send_json_success([
+            'added_count' => $added_count,
+            'message' => $added_count . ' page(s) added to permissions configuration! You can now set role access for them.',
             'refresh_needed' => true
         ]);
     }

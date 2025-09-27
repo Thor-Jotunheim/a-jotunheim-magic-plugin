@@ -115,14 +115,12 @@ jQuery(document).ready(function($) {
                         const data = response.data;
                         if (data.new_count > 0) {
                             PagePermissions.showMessage(
-                                `Found ${data.new_count} new pages out of ${data.total_scanned} total! Auto-added to configuration. Refreshing page...`, 
+                                `Found ${data.new_count} new pages out of ${data.total_scanned} total!`, 
                                 'success'
                             );
                             
-                            // Auto-refresh the page to show new pages
-                            setTimeout(function() {
-                                window.location.reload();
-                            }, 2000);
+                            // Show selection modal like Dashboard Config
+                            PagePermissions.showPageSelectionModal(data.new_pages);
                         } else {
                             PagePermissions.showMessage(
                                 `${data.message} Scanned ${data.total_scanned} pages, ${data.already_configured} already configured.`, 
@@ -207,6 +205,133 @@ jQuery(document).ready(function($) {
             
             // You could add real-time feedback here if needed
             console.log(`Permission changed: ${page} - ${role} - ${checked}`);
+        },
+
+        showPageSelectionModal: function(newPages) {
+            // Create modal HTML
+            const modalHtml = `
+                <div id="page-selection-modal" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <div style="
+                        background: white;
+                        padding: 30px;
+                        border-radius: 8px;
+                        max-width: 80%;
+                        max-height: 80%;
+                        overflow-y: auto;
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    ">
+                        <h2>Select Pages to Add to Permissions</h2>
+                        <p>Choose which pages you want to add to the permissions system:</p>
+                        
+                        <div style="margin: 20px 0;">
+                            <button type="button" id="select-all-new-pages" class="button">Select All</button>
+                            <button type="button" id="select-none-new-pages" class="button">Select None</button>
+                        </div>
+                        
+                        <div id="new-pages-list" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px;">
+                            <!-- Pages will be inserted here -->
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button type="button" id="cancel-page-selection" class="button">Cancel</button>
+                            <button type="button" id="add-selected-pages-btn" class="button button-primary">Add Selected Pages</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove any existing modal
+            $('#page-selection-modal').remove();
+            
+            // Add modal to page
+            $('body').append(modalHtml);
+            
+            // Populate pages list
+            const $pagesList = $('#new-pages-list');
+            let pagesHtml = '';
+            
+            Object.keys(newPages).forEach(function(pageKey) {
+                const page = newPages[pageKey];
+                pagesHtml += `
+                    <div style="margin: 8px 0; padding: 8px; border: 1px solid #ddd; background: #f9f9f9;">
+                        <label style="display: block; cursor: pointer;">
+                            <input type="checkbox" value="${pageKey}" style="margin-right: 10px;">
+                            <strong>${page.title}</strong>
+                            <br><small style="color: #666;">${page.description || ''} (${page.type || 'unknown'})</small>
+                        </label>
+                    </div>
+                `;
+            });
+            
+            $pagesList.html(pagesHtml);
+            
+            // Bind events
+            $('#select-all-new-pages').on('click', function() {
+                $('#new-pages-list input[type="checkbox"]').prop('checked', true);
+            });
+            
+            $('#select-none-new-pages').on('click', function() {
+                $('#new-pages-list input[type="checkbox"]').prop('checked', false);
+            });
+            
+            $('#cancel-page-selection').on('click', function() {
+                $('#page-selection-modal').remove();
+            });
+            
+            $('#add-selected-pages-btn').on('click', function() {
+                const selectedPages = [];
+                $('#new-pages-list input[type="checkbox"]:checked').each(function() {
+                    selectedPages.push($(this).val());
+                });
+                
+                if (selectedPages.length === 0) {
+                    alert('Please select at least one page to add.');
+                    return;
+                }
+                
+                PagePermissions.addSelectedPages(selectedPages);
+            });
+        },
+
+        addSelectedPages: function(selectedPages) {
+            $.ajax({
+                url: page_permissions_config.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'add_selected_pages',
+                    nonce: page_permissions_config.nonce,
+                    selected_pages: selectedPages
+                },
+                success: function(response) {
+                    $('#page-selection-modal').remove();
+                    
+                    if (response.success) {
+                        PagePermissions.showMessage(response.data.message, 'success');
+                        
+                        // Refresh page to show new pages
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        PagePermissions.showMessage('Error adding pages: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    $('#page-selection-modal').remove();
+                    PagePermissions.showMessage('Network error adding pages', 'error');
+                }
+            });
         },
 
         showMessage: function(message, type) {
