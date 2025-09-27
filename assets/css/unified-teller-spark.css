@@ -1805,7 +1805,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .transaction-actions-vertical {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
     align-items: stretch;
     justify-content: flex-start;
     flex: 1;
