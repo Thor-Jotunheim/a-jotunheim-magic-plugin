@@ -533,7 +533,13 @@ class UnifiedTeller {
             this.displayShopItems();
             
             // Set up tracking interface based on shop type
-            const isTurnInOnly = this.getCurrentShopType() === 'turn-in_only';
+            const shopType = this.getCurrentShopType();
+            const isTurnInOnly = shopType === 'turn-in_only';
+            console.log('Setting up tracking interface:', {
+                selectedShop: this.selectedShop,
+                shopType: shopType,
+                isTurnInOnly: isTurnInOnly
+            });
             this.setupTrackingInterface(isTurnInOnly);
         } catch (error) {
             console.error('Error loading shop items:', error);
@@ -567,9 +573,18 @@ class UnifiedTeller {
     }
 
     getCurrentShopType() {
-        if (!this.selectedShop) return '';
+        if (!this.selectedShop) {
+            console.log('getCurrentShopType: No selectedShop');
+            return '';
+        }
         const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
-        return selectedOption ? selectedOption.dataset.shopType : '';
+        const shopType = selectedOption ? selectedOption.dataset.shopType : '';
+        console.log('getCurrentShopType:', {
+            selectedShop: this.selectedShop,
+            selectedOption: selectedOption,
+            shopType: shopType
+        });
+        return shopType;
     }
 
     async initializeTurninTracking() {
@@ -691,6 +706,10 @@ class UnifiedTeller {
             // Set shopItems to turninItems so they display in main interface
             this.shopItems = this.turninItems;
             this.renderShopItems();
+            
+            // Set up tracking interface for turn-in items
+            console.log('Setting up turn-in tracking after loading items');
+            this.setupTrackingInterface(true);
         } catch (error) {
             console.error('Error loading turn-in items:', error);
             this.showStatus('Failed to load turn-in items', 'error');

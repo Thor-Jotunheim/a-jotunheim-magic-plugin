@@ -1800,6 +1800,10 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .transaction-actions-vertical .btn {
     width: 100%;
     justify-content: center;
+    min-height: 56px;
+    padding: var(--space-4);
+    font-size: var(--font-size-3);
+    font-weight: 600;
 }
 
 .payment-summary-compact {
