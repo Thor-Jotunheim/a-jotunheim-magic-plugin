@@ -2118,9 +2118,9 @@ class UnifiedTeller {
     async handleCustomerSearch(searchTerm) {
         console.log('handleCustomerSearch called with:', searchTerm);
         
-        // Don't clear validation if we're in the middle of selecting a customer from suggestions
-        if (this.isSelectingCustomer) {
-            console.log('Skipping validation clear - customer being selected from suggestions');
+        // Don't clear validation or show suggestions if we're in the middle of selecting a customer
+        if (this.isSelectingCustomer || this.suppressDropdown) {
+            console.log('Skipping search - customer being selected or dropdown suppressed');
             return;
         }
         
@@ -2301,6 +2301,12 @@ class UnifiedTeller {
             // Get current input value
             const customerName = e.target.value.trim();
             
+            // Suppress dropdown for a period after Enter is pressed
+            this.suppressDropdown = true;
+            setTimeout(() => {
+                this.suppressDropdown = false;
+            }, 300);
+            
             if (customerName) {
                 // First check for exact match in our player list
                 let exactMatch = null;
@@ -2316,22 +2322,29 @@ class UnifiedTeller {
                     this.currentCustomer = exactMatch;
                     this.showValidationIcon('valid');
                     
-                    // Hide dropdown and prevent it from showing again
+                    // Aggressively hide dropdown and prevent it from showing again
                     this.hideCustomerSuggestions();
                     this.isSelectingCustomer = true;
+                    
+                    // Force hide dropdown multiple times to ensure it stays hidden
+                    setTimeout(() => this.hideCustomerSuggestions(), 10);
+                    setTimeout(() => this.hideCustomerSuggestions(), 50);
+                    setTimeout(() => this.hideCustomerSuggestions(), 100);
                     
                     // Clear the flag after a delay
                     setTimeout(() => {
                         this.isSelectingCustomer = false;
-                    }, 100);
+                    }, 200);
                 } else {
                     console.log('Enter key - no exact match, triggering validation');
                     // No exact match, trigger full validation
                     this.validateCustomer(customerName);
                 }
                 
-                // Always hide dropdown when Enter is pressed
+                // Always hide dropdown when Enter is pressed - multiple times
                 this.hideCustomerSuggestions();
+                setTimeout(() => this.hideCustomerSuggestions(), 10);
+                setTimeout(() => this.hideCustomerSuggestions(), 50);
             }
             
             return false;
