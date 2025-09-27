@@ -1193,11 +1193,63 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin-bottom: var(--space-1);
 }
 
+/* Quantity controls styling */
+.quantity-control-group {
+    margin-bottom: 10px;
+}
+
+.quantity-label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
+    justify-content: space-between;
+    gap: 3px;
+    width: 100%;
+}
+
+.qty-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    width: 50px;
+    height: 38px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:hover {
+    background-color: #45a049;
+}
+
+.qty-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.large-quantity-input, .turnin-large-quantity-input {
+    width: 100px;
+    height: 38px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.large-quantity-input:focus, .turnin-large-quantity-input:focus {
+    outline: none;
+    border-color: #4CAF50;
 }
 
 .quantity-input, .table-qty-input, .cart-qty-input {

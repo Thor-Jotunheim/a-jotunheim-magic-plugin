@@ -673,24 +673,38 @@ class UnifiedTeller {
                     </div>
                 </div>
                 <div class="item-main-content">
-                    ${item.icon_image ? `
-                        <div class="item-icon-container">
+                    <div class="item-icon-container">
+                        ${item.icon_image ? `
                             <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                                 onerror="this.parentElement.style.display='none'">
-                        </div>
-                    ` : ''}
+                                 onerror="this.style.display='none'">
+                        ` : ''}
+                    </div>
                     <div class="item-quantity-section">
-                        <div class="quantity-controls">
-                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
-                            <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
-                                   class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
-                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
+                        <div class="quantity-control-group">
+                            <div class="quantity-label">Unit(s):</div>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
+                                <input type="number" id="turnin-qty-${item.shop_item_id}" min="1" value="1" max="${this.getMaxAllowedTurnin(item)}"
+                                       class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
+                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
+                            </div>
                         </div>
+                        ${(item.stack_size && item.stack_size > 1) ? `
+                        <div class="quantity-control-group">
+                            <div class="quantity-label">Stack(s) (${item.stack_size}):</div>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
+                                <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="1" value="1" max="${Math.floor(this.getMaxAllowedTurnin(item) / item.stack_size)}"
+                                       class="turnin-large-quantity-input" readonly onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})">
+                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / item.stack_size)})">+</button>
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
                 <div class="item-bottom-section">
                     <div class="turnin-progress" id="progress-${item.shop_item_id}">
-                        ${this.generateProgressText(item)}
+                        ${this.generateProgressText(item, true)}
                     </div>
                     <div class="item-actions">
                         <button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">
@@ -711,12 +725,34 @@ class UnifiedTeller {
                         <div class="item-biome ${biomeClass}">${biomeName}</div>
                     </div>
                 </div>
-                ${item.icon_image ? `
+                <div class="item-main-content">
                     <div class="item-icon-container">
-                        <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
-                             onerror="this.parentElement.style.display='none'">
+                        ${item.icon_image ? `
+                            <img src="${item.icon_image}" alt="${this.escapeHtml(item.item_name)}" class="item-image" 
+                                 onerror="this.style.display='none'">
+                        ` : ''}
                     </div>
-                ` : ''}
+                    <div class="item-quantity-section">
+                        <div class="quantity-control-group">
+                            <div class="quantity-label">Unit(s):</div>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('qty-${item.shop_item_id}')">−</button>
+                                <input type="number" id="qty-${item.shop_item_id}" min="1" value="1" class="large-quantity-input" readonly>
+                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('qty-${item.shop_item_id}', ${item.stock_quantity || 999999})">+</button>
+                            </div>
+                        </div>
+                        ${(item.stack_size && item.stack_size > 1) ? `
+                        <div class="quantity-control-group">
+                            <div class="quantity-label">Stack(s) (${item.stack_size}):</div>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('stack-qty-${item.shop_item_id}')">−</button>
+                                <input type="number" id="stack-qty-${item.shop_item_id}" min="1" value="1" class="large-quantity-input" readonly>
+                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('stack-qty-${item.shop_item_id}', 999)">+</button>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
                 <div class="item-bottom-section">
                     <div class="item-card-pricing">
                         <div class="price-row">
@@ -1830,6 +1866,10 @@ class UnifiedTeller {
             const currentValue = parseInt(input.value) || 1;
             if (currentValue > 1) {
                 input.value = currentValue - 1;
+                
+                // Handle syncing between unit and stack inputs
+                this.syncQuantityInputs(inputId);
+                
                 // Update progress display when quantity changes
                 this.updateProgressFromInput(inputId);
             }
@@ -1842,8 +1882,48 @@ class UnifiedTeller {
             const currentValue = parseInt(input.value) || 1;
             if (currentValue < maxValue) {
                 input.value = currentValue + 1;
+                
+                // Handle syncing between unit and stack inputs
+                this.syncQuantityInputs(inputId);
+                
                 // Update progress display when quantity changes
                 this.updateProgressFromInput(inputId);
+            }
+        }
+    }
+
+    syncQuantityInputs(inputId) {
+        // Extract item ID and type from input ID
+        const itemId = inputId.match(/\d+$/)?.[0];
+        if (!itemId) return;
+        
+        // Find the item to get stack size
+        const item = this.turninItems.find(i => i.shop_item_id == itemId) || 
+                    this.shopItems.find(i => i.shop_item_id == itemId);
+        if (!item || !item.stack_size || item.stack_size <= 1) return;
+        
+        const stackSize = parseInt(item.stack_size);
+        
+        // Determine which type of input was changed and sync the other
+        if (inputId.includes('stack-qty')) {
+            // Stack input changed, update unit input
+            const stackInput = document.getElementById(inputId);
+            const unitInputId = inputId.replace('stack-qty-', 'qty-').replace('turnin-stack-qty-', 'turnin-qty-');
+            const unitInput = document.getElementById(unitInputId);
+            
+            if (stackInput && unitInput) {
+                const stackValue = parseInt(stackInput.value) || 1;
+                unitInput.value = stackValue * stackSize;
+            }
+        } else if (inputId.includes('qty-')) {
+            // Unit input changed, update stack input if it exists
+            const unitInput = document.getElementById(inputId);
+            const stackInputId = inputId.replace('qty-', 'stack-qty-').replace('turnin-qty-', 'turnin-stack-qty-');
+            const stackInput = document.getElementById(stackInputId);
+            
+            if (unitInput && stackInput) {
+                const unitValue = parseInt(unitInput.value) || 1;
+                stackInput.value = Math.floor(unitValue / stackSize);
             }
         }
     }

@@ -699,55 +699,63 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-2);
 }
 
+/* Quantity controls styling */
+.quantity-control-group {
+    margin-bottom: 10px;
+}
+
+.quantity-label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 3px;
+    width: 100%;
 }
 
 .qty-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
     width: 50px;
-    height: 50px;
-    border: 2px solid var(--gray-6);
-    background: white;
-    border-radius: 8px;
+    height: 38px;
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
 }
 
 .qty-btn:hover {
-    background: var(--gray-2);
-    border-color: var(--gray-8);
+    background-color: #45a049;
 }
 
-.qty-btn:active {
-    background: var(--gray-3);
-    transform: scale(0.95);
+.qty-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
-.turnin-large-quantity-input {
+.large-quantity-input, .turnin-large-quantity-input {
     width: 100px;
-    height: 50px;
-    padding: 8px;
-    font-size: 24px;
-    font-weight: bold;
+    height: 38px;
     text-align: center;
-    border: 2px solid var(--gray-6);
-    border-radius: 8px;
-    background: white;
-    -moz-appearance: textfield;
-    appearance: textfield;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
 }
 
-.turnin-large-quantity-input::-webkit-outer-spin-button,
-.turnin-large-quantity-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.large-quantity-input:focus, .turnin-large-quantity-input:focus {
+    outline: none;
+    border-color: #4CAF50;
 }
 
 .remaining-text {
