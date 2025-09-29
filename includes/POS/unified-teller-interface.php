@@ -206,14 +206,9 @@ function unified_teller_interface() {
                     <h2 class="card-title">Transaction Actions</h2>
                 </div>
                 <div class="card-content">
-                    <div class="form-field">
-                        <div class="clear-transaction-container">
-                            <button id="clear-transaction-btn" class="clear-transaction-btn">Clear Transaction</button>
-                        </div>
-                        
-                        <div class="record-transaction-container">
-                            <button id="record-transaction-btn" class="record-transaction-btn" disabled>Record Transaction</button>
-                        </div>
+                    <div class="action-buttons-container">
+                        <button id="clear-transaction-btn" class="action-btn clear-transaction-btn">Clear Transaction</button>
+                        <button id="record-transaction-btn" class="action-btn record-transaction-btn" disabled>Record Transaction</button>
                     </div>
                 </div>
             </div>
@@ -894,6 +889,121 @@ function unified_teller_interface() {
     .shop-type-badge.staff {
         background: #f3e5f5;
         color: #7b1fa2;
+    }
+
+    /* Transaction Actions Card Alignment - Updated styles */
+    .actions-card .card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 140px; /* Match the customer card height */
+        justify-content: space-between; /* Distribute buttons evenly */
+    }
+
+    .action-buttons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        height: 100%; /* Take full height */
+        justify-content: space-between; /* Space buttons to match alignment */
+    }
+
+    .action-btn {
+        width: 100%;
+        padding: 10px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 38px; /* Match input field height */
+    }
+
+    .clear-transaction-btn {
+        background: #fff;
+        color: #333;
+        border-color: #ddd;
+    }
+
+    .clear-transaction-btn:hover {
+        background: #f8f9fa;
+        border-color: #999;
+    }
+
+    .record-transaction-btn {
+        background: #0073aa;
+        color: white;
+        border-color: #0073aa;
+    }
+
+    .record-transaction-btn:hover:not(:disabled) {
+        background: #005a87;
+        border-color: #005a87;
+    }
+
+    .record-transaction-btn:disabled {
+        background: #ccc;
+        border-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Ensure consistent card heights and alignment */
+    .customer-payment-actions-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        align-items: stretch;
+    }
+
+    .customer-payment-actions-row .teller-card {
+        flex: 1;
+    }
+
+    .customer-payment-actions-row .card-content {
+        padding: 15px;
+        min-height: 140px; /* Ensure consistent minimum height */
+    }
+
+    /* Match the customer name input container structure */
+    .customer-card .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        height: 100%;
+        justify-content: space-between;
+    }
+
+    /* Ensure registration button aligns with Record Transaction button */
+    .customer-card .registration-button-container {
+        margin-top: auto; /* Push to bottom */
+    }
+
+    .customer-card .register-new-player-btn,
+    .actions-card .action-btn {
+        width: 100%;
+        padding: 10px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 38px;
+    }
+
+    .register-new-player-btn {
+        background: #fff;
+        color: #333;
+        border-color: #ddd;
+    }
+
+    .register-new-player-btn:hover {
+        background: #f8f9fa;
+        border-color: #999;
     }
     </style>
     
