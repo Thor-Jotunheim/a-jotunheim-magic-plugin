@@ -2644,12 +2644,9 @@ function jotun_api_add_transaction($request) {
             return new WP_REST_Response(['error' => 'Failed to add turn-in transaction: ' . $wpdb->last_error], 500);
         }
         
-        // Update turn-in tracker - ensure column exists for this item
-        jotun_ensure_turnin_tracker_column($item_name);
-        jotun_update_turnin_tracker($shop_id, $item_name, $quantity);
-        
         // CRITICAL FIX: Update turn_in_quantity in jotun_shop_items table
         // This is what the unified teller interface reads for the "collected" display
+        // This replaces the old redundant jotun_turn_in_trackers system
         jotun_update_shop_item_turnin_quantity($shop_id, $item_name, $quantity);
         
         error_log("Turn-in transaction added successfully with ID: " . $wpdb->insert_id);

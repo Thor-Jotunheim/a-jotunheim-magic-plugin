@@ -106,23 +106,16 @@ function turn_in_tracker_shortcode($atts) {
         return '<p><em>Turn-in shop not found or is not a Turn-In Only shop type.</em></p>';
     }
     
-    // Get turn-in count
-    $tracker = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM jotun_turn_in_trackers WHERE shop_id = %d",
+    // Get turn-in count directly from shop items (simplified approach)
+    $total_count = $wpdb->get_var($wpdb->prepare(
+        "SELECT COALESCE(SUM(turn_in_quantity), 0) 
+         FROM jotun_shop_items 
+         WHERE shop_id = %d AND turn_in = 1",
         $shop->shop_id
     ));
     
-    $total_count = 0;
-    if ($tracker) {
-        $total_count = $wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(quantity), 0) FROM jotun_turn_ins 
-             WHERE shop_id = %d AND recorded_at >= %s",
-            $shop->shop_id,
-            $tracker->last_reset
-        ));
-    }
-    
-    $last_reset = $tracker ? $tracker->last_reset : 'Never';
+    // For now, we'll show reset tracking as 'Not Available' until we implement a simpler reset system
+    $last_reset = 'Not Available';
     
     ob_start();
     ?>
