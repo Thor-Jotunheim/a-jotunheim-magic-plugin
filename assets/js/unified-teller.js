@@ -2259,10 +2259,10 @@ class UnifiedTeller {
             shopInventoryCard.style.display = 'none';
         }
         
-        // Show cart buttons in transaction summary header
-        const recordBtn = document.getElementById('record-transaction-btn');
+        // Show cart record transaction button and back button
+        const recordBtnContainer = document.getElementById('cart-record-transaction-container');
         const backBtn = document.getElementById('back-to-shop-btn');
-        if (recordBtn) recordBtn.style.display = 'inline-block';
+        if (recordBtnContainer) recordBtnContainer.style.display = 'block';
         if (backBtn) backBtn.style.display = 'inline-block';
         
         // Update view cart button state
@@ -2285,10 +2285,10 @@ class UnifiedTeller {
             shopInventoryCard.style.display = 'block';
         }
         
-        // Hide cart buttons in transaction summary header
-        const recordBtn = document.getElementById('record-transaction-btn');
+        // Hide cart record transaction button and back button
+        const recordBtnContainer = document.getElementById('cart-record-transaction-container');
         const backBtn = document.getElementById('back-to-shop-btn');
-        if (recordBtn) recordBtn.style.display = 'none';
+        if (recordBtnContainer) recordBtnContainer.style.display = 'none';
         if (backBtn) backBtn.style.display = 'none';
         
         // Show view cart button

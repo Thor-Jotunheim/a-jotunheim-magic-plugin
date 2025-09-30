@@ -216,7 +216,7 @@ function unified_teller_interface() {
                         
                         <!-- Cart View Toggle Button -->
                         <div class="registration-button-container">
-                                <button id="view-cart-btn" class="action-btn view-cart-btn" disabled>View Cart</button>
+                                <button id="view-cart-btn" class="register-new-player-btn" disabled>View Cart</button>
                         </div>
                     </div>
                 </div>
@@ -275,7 +275,6 @@ function unified_teller_interface() {
                         <p class="card-description">Review selected items and complete transaction</p>
                     </div>
                     <div class="card-header-right">
-                        <button id="record-transaction-btn" class="action-btn record-transaction-btn" disabled style="display: none;">Record Transaction</button>
                         <button id="back-to-shop-btn" class="action-btn back-to-shop-btn" style="display: none;">Back to Shop</button>
                     </div>
                 </div>
@@ -301,6 +300,11 @@ function unified_teller_interface() {
                             placeholder="Optional notes about this transaction..." 
                             rows="3"
                         ></textarea>
+                    </div>
+                    
+                    <!-- Record Transaction Button (only visible in cart view) -->
+                    <div class="form-field" style="display: none;" id="cart-record-transaction-container">
+                        <button id="record-transaction-btn" class="register-new-player-btn" disabled>Record Transaction</button>
                     </div>
                 </div>
             </div>
@@ -971,26 +975,7 @@ function unified_teller_interface() {
         opacity: 0.6;
     }
 
-    /* View Cart Button */
-    .view-cart-btn {
-        background: #28a745;
-        color: white;
-        border-color: #28a745;
-        min-height: 38px; /* Match other action buttons */
-    }
 
-    .view-cart-btn:hover:not(:disabled) {
-        background: #218838;
-        border-color: #218838;
-    }
-
-    .view-cart-btn:disabled {
-        background: #ccc;
-        border-color: #ccc;
-        color: #666;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
 
     /* Back to Shop Button */
     .back-to-shop-btn {
@@ -1026,10 +1011,6 @@ function unified_teller_interface() {
     }
 
     /* Item Action Buttons */
-    .view-cart-btn {
-        width: 57px !important;
-    }
-
     .item-btn {
         min-width: 57px;
         padding: 6px 12px;
@@ -1144,6 +1125,14 @@ function unified_teller_interface() {
     .register-new-player-btn:hover {
         background: #f8f9fa;
         border-color: #999;
+    }
+
+    .register-new-player-btn:disabled {
+        background: #ccc;
+        border-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+        opacity: 0.6;
     }
     </style>
     
