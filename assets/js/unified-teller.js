@@ -3750,11 +3750,11 @@ class UnifiedTeller {
             return;
         }
 
-        // Get units input
-        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+        // Get units input (check both turnin and table inputs)
+        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
         
-        // Get stacks input if it exists
+        // Get stacks input if it exists (only exists in turnin view, not table)
         const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
         const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
         
@@ -3961,14 +3961,18 @@ class UnifiedTeller {
         // Dynamic table headers based on what actions are available
         const tableHeader = container.querySelector('thead tr');
         if (tableHeader) {
+            // Check if we're in turn-in mode
+            const isTurninMode = this.currentTab === 'turnin';
+            const priceHeader = isTurninMode ? 'Reward' : 'Price/Points';
+            
             tableHeader.innerHTML = `
                 <th>Item</th>
                 <th>Actions</th>
-                <th>Price/Points</th>
+                <th>${priceHeader}</th>
                 <th>Qty</th>
                 <th>Item</th>
                 <th>Actions</th>
-                <th>Price/Points</th>
+                <th>${priceHeader}</th>
                 <th>Qty</th>
             `;
         }
@@ -4020,24 +4024,28 @@ class UnifiedTeller {
         
         // Check for Turn In button
         if (item.turn_in == 1 || item.turn_in === true) {
-            actionsHTML += `<button class="btn btn-sm btn-info table-action-btn" onclick="window.unifiedTeller.addToTurnin(${item.shop_item_id})" title="Turn in for points">Turn In</button> `;
-        }
-        
-        // If turn-in item with event points, use different method
-        if (item.event_points !== undefined && item.event_points !== null) {
-            actionsHTML = `<button class="btn btn-sm btn-info table-action-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})" title="Turn in for ${item.event_points} points">Turn In</button>`;
+            if (item.event_points !== undefined && item.event_points !== null && item.event_points > 0) {
+                actionsHTML += `<button class="btn btn-sm btn-info table-action-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})" title="Turn in for ${item.event_points} points">Turn In</button> `;
+            } else {
+                actionsHTML += `<button class="btn btn-sm btn-info table-action-btn" onclick="window.unifiedTeller.addToTurnin(${item.shop_item_id})" title="Turn in for points">Turn In</button> `;
+            }
         }
         
         return actionsHTML || '<span class="text-muted">No actions</span>';
     }
 
     getItemPriceDisplay(item) {
-        // For turn-in items, show event points
-        if (item.event_points !== undefined && item.event_points !== null) {
-            return `${item.event_points} pts`;
+        // Check if this is a turn-in item
+        if (item.turn_in == 1 || item.turn_in === true) {
+            // For turn-in items, show event points if available, otherwise show reward info
+            if (item.event_points !== undefined && item.event_points !== null && item.event_points > 0) {
+                return `${item.event_points} pts`;
+            } else {
+                return 'Reward'; // Generic reward text for turn-in items without specific points
+            }
         }
         
-        // For regular items, show unit price
+        // For regular buy/sell items, show unit price
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
         return `${unitPrice}`;
     }
