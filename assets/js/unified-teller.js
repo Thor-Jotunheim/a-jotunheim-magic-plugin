@@ -860,13 +860,13 @@ class UnifiedTeller {
         
         let buttonsHTML = '';
         
-        // Generate Buy button and unit controls (buy=1 means customers can buy from shop)
+        // Generate Sell button and unit controls (buy=1 means customers can buy from shop, so teller sells)
         if (item.buy == 1 || item.buy === true) {
             buttonsHTML += `
                 <div class="quantity-controls buy-section">
                     <label>Unit(s):</label>
                     <input type="number" class="quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}">
-                    <button class="btn purchase-button individual-buy" data-type="individual" style="background-color: #28a745 !important; color: white !important; border: 1px solid #28a745 !important;">Buy</button>
+                    <button class="btn purchase-button individual-buy" data-type="individual" style="background-color: #28a745 !important; color: white !important; border: 1px solid #28a745 !important;">Sell</button>
                 </div>`;
             
             // Add stack controls only if item is stackable
@@ -875,18 +875,18 @@ class UnifiedTeller {
                     <div class="quantity-controls buy-section">
                         <label>Stack (${stackSize}):</label>
                         <input type="number" class="stack-input" id="qty-stack-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
-                        <button class="btn purchase-button stack-buy" data-type="stack" style="background-color: #28a745 !important; color: white !important; border: 1px solid #28a745 !important;">Buy</button>
+                        <button class="btn purchase-button stack-buy" data-type="stack" style="background-color: #28a745 !important; color: white !important; border: 1px solid #28a745 !important;">Sell</button>
                     </div>`;
             }
         }
         
-        // Generate Sell button (sell=1 means shop will buy from customers)
+        // Generate Buy button (sell=1 means shop will buy from customers, so teller buys)
         if (item.sell == 1 || item.sell === true) {
             buttonsHTML += `
                 <div class="quantity-controls sell-section">
                     <label>Unit(s):</label>
                     <input type="number" class="sell-quantity-input" id="qty-individual-${item.shop_item_id}" value="1" min="1" max="999">
-                    <button class="btn btn-danger sell-to-shop" data-type="sell">Sell</button>
+                    <button class="btn btn-danger sell-to-shop" data-type="sell">Buy</button>
                 </div>`;
         }
         
@@ -1149,11 +1149,11 @@ class UnifiedTeller {
             let actionsHTML = '';
             
             if (item.buy == 1 || item.buy === true) {
-                actionsHTML += `<button class="btn btn-success item-btn buy-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')">Buy</button>`;
+                actionsHTML += `<button class="btn btn-success item-btn buy-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')">Sell</button>`;
             }
             
             if (item.sell == 1 || item.sell === true) {
-                actionsHTML += `<button class="btn btn-warning item-btn sell-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')">Sell</button>`;
+                actionsHTML += `<button class="btn btn-warning item-btn sell-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')">Buy</button>`;
             }
             
             if (item.turn_in == 1 || item.turn_in === true) {
@@ -3171,14 +3171,14 @@ class UnifiedTeller {
     generateTableItemActions(item) {
         let actionsHTML = '';
         
-        // Check for Buy button (buy=1 means customers can buy from shop)
+        // Check for Buy button (buy=1 means customers can buy from shop, so teller sells)
         if (item.buy == 1 || item.buy === true) {
-            actionsHTML += `<button class="btn btn-sm btn-success table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')" title="Buy from shop">Buy</button> `;
+            actionsHTML += `<button class="btn btn-sm btn-success table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')" title="Sell to customer">Sell</button> `;
         }
         
-        // Check for Sell button (sell=1 means shop will buy from customers)
+        // Check for Sell button (sell=1 means shop will buy from customers, so teller buys)
         if (item.sell == 1 || item.sell === true) {
-            actionsHTML += `<button class="btn btn-sm btn-warning table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')" title="Sell to shop">Sell</button> `;
+            actionsHTML += `<button class="btn btn-sm btn-warning table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')" title="Buy from customer">Buy</button> `;
         }
         
         // Check for Turn In button
