@@ -214,9 +214,10 @@ function unified_teller_interface() {
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
                         
-                        <!-- Cart View Toggle Button -->
+                        <!-- Cart View Toggle Button / Record Transaction Button -->
                         <div class="registration-button-container">
                                 <button id="view-cart-btn" class="register-new-player-btn" disabled>View Cart</button>
+                                <button id="record-transaction-btn" class="register-new-player-btn" disabled style="display: none;">Record Transaction</button>
                         </div>
                     </div>
                 </div>
@@ -302,10 +303,7 @@ function unified_teller_interface() {
                         ></textarea>
                     </div>
                     
-                    <!-- Record Transaction Button (only visible in cart view) -->
-                    <div class="form-field" style="display: none;" id="cart-record-transaction-container">
-                        <button id="record-transaction-btn" class="register-new-player-btn" disabled>Record Transaction</button>
-                    </div>
+
                 </div>
             </div>
 

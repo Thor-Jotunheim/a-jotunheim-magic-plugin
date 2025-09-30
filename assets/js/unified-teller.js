@@ -2259,17 +2259,14 @@ class UnifiedTeller {
             shopInventoryCard.style.display = 'none';
         }
         
-        // Show cart record transaction button and back button
-        const recordBtnContainer = document.getElementById('cart-record-transaction-container');
-        const backBtn = document.getElementById('back-to-shop-btn');
-        if (recordBtnContainer) recordBtnContainer.style.display = 'block';
-        if (backBtn) backBtn.style.display = 'inline-block';
-        
-        // Update view cart button state
+        // Switch buttons: hide View Cart, show Record Transaction
         const viewCartBtn = document.getElementById('view-cart-btn');
-        if (viewCartBtn) {
-            viewCartBtn.style.display = 'none';
-        }
+        const recordBtn = document.getElementById('record-transaction-btn');
+        const backBtn = document.getElementById('back-to-shop-btn');
+        
+        if (viewCartBtn) viewCartBtn.style.display = 'none';
+        if (recordBtn) recordBtn.style.display = 'inline-block';
+        if (backBtn) backBtn.style.display = 'inline-block';
         
         // Enable/disable record transaction button based on cart contents
         this.updateRecordTransactionButton();
@@ -2285,17 +2282,14 @@ class UnifiedTeller {
             shopInventoryCard.style.display = 'block';
         }
         
-        // Hide cart record transaction button and back button
-        const recordBtnContainer = document.getElementById('cart-record-transaction-container');
-        const backBtn = document.getElementById('back-to-shop-btn');
-        if (recordBtnContainer) recordBtnContainer.style.display = 'none';
-        if (backBtn) backBtn.style.display = 'none';
-        
-        // Show view cart button
+        // Switch buttons: show View Cart, hide Record Transaction
         const viewCartBtn = document.getElementById('view-cart-btn');
-        if (viewCartBtn) {
-            viewCartBtn.style.display = 'inline-block';
-        }
+        const recordBtn = document.getElementById('record-transaction-btn');
+        const backBtn = document.getElementById('back-to-shop-btn');
+        
+        if (viewCartBtn) viewCartBtn.style.display = 'inline-block';
+        if (recordBtn) recordBtn.style.display = 'none';
+        if (backBtn) backBtn.style.display = 'none';
         
         // Update view cart button state
         this.updateViewCartButton();
