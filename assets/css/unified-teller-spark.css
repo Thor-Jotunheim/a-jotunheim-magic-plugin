@@ -2435,12 +2435,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 4px;
 }
 
-/* HTML Table View Styling */
-.table-view-wrapper {
-    padding: 16px;
-    overflow-x: auto;
-}
-
+/* Table View with Working Cards */
 .items-table {
     width: 100%;
     border-collapse: collapse;
@@ -2457,118 +2452,111 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .items-table thead th {
     padding: 12px 16px;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     color: var(--foreground, #333);
     font-size: 14px;
 }
 
-.items-table tbody tr {
-    border-bottom: 1px solid var(--border, #dee2e6);
-    transition: background-color 0.2s ease;
+.table-body-cards {
+    display: table-row-group;
 }
 
-.items-table tbody tr:hover {
+.table-row-card-wrapper {
+    border-bottom: 1px solid var(--border, #dee2e6);
+}
+
+.table-row-card-wrapper:hover {
     background: var(--muted, #f8f9fa);
 }
 
-.items-table tbody tr:last-child {
+.table-row-card-wrapper:last-child {
     border-bottom: none;
 }
 
-.items-table td {
+/* Make cards display as table rows */
+.card-cell {
+    padding: 0;
+    margin: 0;
+}
+
+.card-cell .item-card {
+    /* Remove card styling to make it look like table row */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
     padding: 12px 16px;
-    vertical-align: middle;
-}
-
-/* Column-specific styling */
-.item-cell {
-    min-width: 180px;
-}
-
-.table-item-info .item-name {
-    font-size: 16px;
-    color: var(--foreground, #333);
-    display: block;
-    margin-bottom: 2px;
-}
-
-.table-item-info .item-type {
-    font-size: 12px;
-    color: var(--muted-foreground, #666);
-    font-weight: normal;
-}
-
-.controls-cell {
-    min-width: 200px;
-    text-align: center;
-}
-
-.progress-cell {
-    min-width: 250px;
-}
-
-.calculations-cell {
-    min-width: 150px;
-}
-
-.table-calculations {
-    padding: 8px;
-    background: var(--muted, #f8f9fa);
-    border-radius: 4px;
-    font-size: 13px;
-}
-
-.table-calculations .calc-row {
-    display: flex;
-    justify-content: space-between;
+    
+    /* Use table-row-like layout */
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr 1fr;
+    gap: 16px;
     align-items: center;
+    width: 100%;
+}
+
+/* Arrange card sections as table columns */
+.card-cell .item-header {
+    grid-column: 1;
+    margin: 0;
+    padding: 0;
+}
+
+.card-cell .item-main-content {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.card-cell .quantity-controls {
+    grid-column: 1;
+    justify-content: center;
+    margin: 0;
+}
+
+.card-cell .turnin-progress-container,
+.card-cell .price-info {
+    grid-column: 2;
+    margin: 0;
+}
+
+.card-cell .action-buttons {
+    grid-column: 3;
+    justify-content: center;
+    margin: 0;
+}
+
+.card-cell .item-name {
+    font-size: 16px;
     margin-bottom: 4px;
 }
 
-.table-calculations .calc-row:last-child {
-    margin-bottom: 0;
+.card-cell .item-type {
+    font-size: 12px;
+    color: var(--muted-foreground, #666);
 }
 
-.table-calculations .price-value,
-.table-calculations .total-cost {
-    font-weight: bold;
-    color: var(--primary, #007bff);
-}
-
-.actions-cell {
-    min-width: 120px;
-    text-align: center;
-}
-
-/* Adjust card components for table context */
-.item-table-row .quantity-controls {
-    gap: 6px;
-    margin: 0;
-    justify-content: center;
-}
-
-.item-table-row .turnin-progress-container {
-    margin: 0;
-}
-
-.item-table-row .action-buttons {
-    gap: 8px;
-    margin: 0;
-    justify-content: center;
-}
-
-/* Responsive table */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .table-view-wrapper {
-        padding: 8px;
+    .card-cell .item-card {
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
     
-    .items-table {
-        font-size: 14px;
+    .card-cell .item-main-content {
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
     
-    .items-table td {
-        padding: 8px 12px;
+    .card-cell .quantity-controls,
+    .card-cell .turnin-progress-container,
+    .card-cell .action-buttons {
+        grid-column: 1;
     }
 }
