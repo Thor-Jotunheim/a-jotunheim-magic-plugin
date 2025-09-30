@@ -1614,7 +1614,10 @@ class UnifiedTeller {
     }
 
     clearCart() {
+        console.log('DEBUG: clearCart() called');
         this.cart = [];
+        console.log(`DEBUG: Cart cleared. New length: ${this.cart.length}`);
+        
         this.updateCartDisplay();
         
         // Explicitly update button states after clearing cart
@@ -1626,9 +1629,12 @@ class UnifiedTeller {
         
         // Go back to shop view after clearing cart
         this.showShopView();
+        console.log('DEBUG: clearCart() completed');
     }
 
     resetItemDisplay() {
+        console.log(`DEBUG: resetItemDisplay() called. Cart length: ${this.cart.length}`);
+        
         const gridView = document.getElementById('items-grid-view');
         const tableView = document.getElementById('items-table-view');
         
@@ -1643,6 +1649,7 @@ class UnifiedTeller {
             'input[id^="table-qty-"]'
         ].join(', '));
         
+        console.log(`DEBUG: Clearing ${allInputs.length} input fields`);
         allInputs.forEach(input => {
             input.value = '';
         });
@@ -1656,6 +1663,7 @@ class UnifiedTeller {
         
         // Force button state update to ensure all buttons show default text
         setTimeout(() => {
+            console.log(`DEBUG: About to force button state update. Cart length: ${this.cart.length}`);
             this.forceButtonStateUpdate();
         }, 100);
     }
@@ -1733,21 +1741,36 @@ class UnifiedTeller {
 
     forceButtonStateUpdate() {
         // Find all turn-in buttons and update their text/class based on cart state
-        const turninButtons = document.querySelectorAll('button[onclick*="addTurninItemWithQuantity"], button[onclick*="addTurninItem"]');
+        const turninButtons = document.querySelectorAll([
+            'button[onclick*="addTurninItemWithQuantity"]',
+            'button[onclick*="addTurninItem"]', 
+            'button[onclick*="addToTurnin"]',
+            'button.turn-in-item',
+            'button.turn-in-stack',
+            'button.table-action-btn[onclick*="addTurninItemWithQuantity"]',
+            'button.table-action-btn[onclick*="addToTurnin"]'
+        ].join(', '));
+        
+        console.log(`DEBUG: Found ${turninButtons.length} turn-in buttons to update`);
         
         turninButtons.forEach(button => {
             const onclickAttr = button.getAttribute('onclick');
+            if (!onclickAttr) return;
+            
+            // Extract shop item ID from onclick attribute
             const shopItemIdMatch = onclickAttr.match(/\((\d+)\)/);
             
             if (shopItemIdMatch) {
                 const shopItemId = parseInt(shopItemIdMatch[1]);
                 const inCart = this.cart.some(cartItem => cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin');
                 
-                if (inCart && button.textContent === 'Turn In') {
+                console.log(`DEBUG: Button for item ${shopItemId}: inCart=${inCart}, current text="${button.textContent.trim()}"`);
+                
+                if (inCart && button.textContent.trim() === 'Turn In') {
                     button.textContent = 'Update';
                     button.classList.add('update-btn');
                     console.log(`DEBUG: Updated button text to "Update" for item ${shopItemId}`);
-                } else if (!inCart && button.textContent === 'Update') {
+                } else if (!inCart && button.textContent.trim() === 'Update') {
                     button.textContent = 'Turn In';
                     button.classList.remove('update-btn');
                     console.log(`DEBUG: Updated button text to "Turn In" for item ${shopItemId}`);
