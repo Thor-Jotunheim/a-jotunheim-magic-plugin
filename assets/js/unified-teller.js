@@ -1334,9 +1334,11 @@ class UnifiedTeller {
                 // Load daily turn-in data for this customer
                 await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
                 
-                // Re-render items to update limits
+                // Re-render items to update limits, but preserve current cart quantities
                 if (this.selectedShop && this.shopItems.length > 0) {
-                    this.renderShopItems();
+                    this.preserveAndRestoreCartState(() => {
+                        this.renderShopItems();
+                    });
                 }
             } else {
                 // Show register option for new customers
@@ -2201,6 +2203,40 @@ class UnifiedTeller {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    preserveAndRestoreCartState(callback) {
+        // Save current state of all quantity inputs
+        const cartState = {};
+        
+        // Find all quantity inputs and save their values
+        const quantityInputs = document.querySelectorAll('.quantity-input, .stack-input, .sell-quantity-input, .turn-in-quantity-input, .turn-in-stack-input');
+        quantityInputs.forEach(input => {
+            if (input.value && input.value !== '1') { // Only save if not default value
+                cartState[input.id] = input.value;
+            }
+        });
+        
+        console.log('Preserving cart state:', cartState);
+        
+        // Execute the callback (which will re-render items)
+        callback();
+        
+        // Restore the saved values after re-rendering
+        setTimeout(() => {
+            Object.keys(cartState).forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.value = cartState[inputId];
+                    console.log(`Restored ${inputId} to value:`, cartState[inputId]);
+                    
+                    // Update progress display for turn-in items
+                    if (inputId.includes('turn-in')) {
+                        this.updateProgressFromInput(inputId);
+                    }
+                }
+            });
+        }, 100); // Small delay to ensure DOM is updated
     }
 
     increaseQuantity(inputId, maxValue) {
