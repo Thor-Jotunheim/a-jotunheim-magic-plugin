@@ -1334,11 +1334,14 @@ class UnifiedTeller {
                 // Load daily turn-in data for this customer
                 await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
                 
-                // Re-render items to update limits, but preserve current cart quantities
+                // Re-render items to update limits, then recalculate progress displays
                 if (this.selectedShop && this.shopItems.length > 0) {
-                    this.preserveAndRestoreCartState(() => {
-                        this.renderShopItems();
-                    });
+                    this.renderShopItems();
+                    
+                    // After re-rendering, recalculate all progress displays based on current input values
+                    setTimeout(() => {
+                        this.recalculateAllProgressDisplays();
+                    }, 100);
                 }
             } else {
                 // Show register option for new customers
@@ -2382,6 +2385,32 @@ class UnifiedTeller {
         if (this.getCurrentShopType() === 'turn-in_only') {
             this.updateTurninTracking();
         }
+    }
+
+    recalculateAllProgressDisplays() {
+        console.log('Recalculating all progress displays based on current input values...');
+        
+        // Find all turn-in quantity inputs and trigger their progress calculations
+        const turninInputs = document.querySelectorAll([
+            'input[id^="turnin-qty-"]',
+            'input[id^="turnin-stack-qty-"]'
+        ].join(', '));
+        
+        turninInputs.forEach(input => {
+            if (input.value && parseInt(input.value) > 0) {
+                // Extract shop item ID and trigger progress update
+                const shopItemId = input.id.replace('turnin-qty-', '').replace('turnin-stack-qty-', '');
+                const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
+                            this.shopItems.find(i => i.shop_item_id == shopItemId);
+                
+                if (item) {
+                    console.log(`Recalculating progress for item ${item.item_name} (ID: ${shopItemId})`);
+                    this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
+                }
+            }
+        });
+        
+        console.log('Progress recalculation complete.');
     }
 
     handleQuantityKeyPress(event, inputElement) {
