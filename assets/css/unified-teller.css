@@ -1408,9 +1408,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .cart-qty-input {
-    width: 50px;
-    padding: 2px 4px;
+    width: 140px;
+    height: 60px;
+    padding: 12px;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
     margin-right: var(--space-1);
+    border: 2px solid var(--gray-6);
+    border-radius: 8px;
+    background: white;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 
