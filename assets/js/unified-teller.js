@@ -2824,13 +2824,58 @@ class UnifiedTeller {
 
     increaseQuantity(inputId, maxValue) {
         const input = document.getElementById(inputId);
-        if (input) {
-            const currentValue = parseInt(input.value) || 0;
-            if (currentValue < maxValue) {
-                input.value = currentValue + 1;
-                // Update progress display when quantity changes
-                this.updateProgressFromInput(inputId);
+        if (!input) return;
+        
+        const currentValue = parseInt(input.value) || 0;
+        
+        // For turn-in items, check combined total limits
+        if (inputId.includes('turnin-qty-') || inputId.includes('turnin-stack-qty-')) {
+            const shopItemId = inputId.replace(/^turnin-(stack-)?qty-/, '');
+            const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
+            
+            if (item) {
+                const dynamicMax = this.getMaxAllowedTurnin(item);
+                
+                // Get both inputs
+                const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+                const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+                
+                // Calculate what the total would be after incrementing
+                let newTotalUnits = 0;
+                if (inputId.includes('turnin-qty-')) {
+                    // This is the units input - increment it
+                    const newUnitsValue = currentValue + 1;
+                    newTotalUnits = newUnitsValue + (stacksInput ? (parseInt(stacksInput.value) || 0) * parseInt(item.stack_size) : 0);
+                } else {
+                    // This is the stacks input - increment it
+                    const newStacksValue = currentValue + 1;
+                    newTotalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + newStacksValue * parseInt(item.stack_size);
+                }
+                
+                console.log('🔢 Increase validation check', {
+                    shopItemId,
+                    inputId,
+                    currentValue,
+                    newTotalUnits,
+                    dynamicMax,
+                    stackSize: item.stack_size,
+                    unitsValue: unitsInput ? unitsInput.value : 'no units input',
+                    stacksValue: stacksInput ? stacksInput.value : 'no stacks input'
+                });
+                
+                // Check if the new total would exceed the limit
+                if (newTotalUnits > dynamicMax) {
+                    console.log('🚫 BLOCKING increment - total would exceed limit:', newTotalUnits, '>', dynamicMax);
+                    return; // Don't increment
+                }
             }
+        }
+        
+        // Standard check against individual max
+        if (currentValue < maxValue) {
+            input.value = currentValue + 1;
+            // Update progress display when quantity changes
+            this.updateProgressFromInput(inputId);
         }
     }
 
@@ -2840,25 +2885,6 @@ class UnifiedTeller {
             const currentValue = parseInt(input.value) || 0;
             if (currentValue > 0) {
                 input.value = currentValue - 1;
-                
-                // Note: Syncing disabled - units and stacks are independent
-                // this.syncQuantityInputs(inputId);
-                
-                // Update progress display when quantity changes
-                this.updateProgressFromInput(inputId);
-            }
-        }
-    }
-
-    increaseQuantity(inputId, maxValue) {
-        const input = document.getElementById(inputId);
-        if (input) {
-            const currentValue = parseInt(input.value) || 0;
-            if (currentValue < maxValue) {
-                input.value = currentValue + 1;
-                
-                // Note: Syncing disabled - units and stacks are independent
-                // this.syncQuantityInputs(inputId);
                 
                 // Update progress display when quantity changes
                 this.updateProgressFromInput(inputId);

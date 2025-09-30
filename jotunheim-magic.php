@@ -4,7 +4,7 @@
 /*
 Plugin Name: A Jotunheim Magic Plugin
 Description: A plugin to manage the item list and editor for Jotunheim.
- * Version: 0.9.5.7.18
+ * Version: 0.9.5.7.19
  * Description: A comprehensive plugin that manages a Valheim gaming server with Discord authentication, game mechanics, and player economy systems. [DEBUG-KEYDOWN-EVENTS]
 Author: Thor
 */
