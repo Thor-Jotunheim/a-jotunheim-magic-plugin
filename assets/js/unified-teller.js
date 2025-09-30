@@ -450,6 +450,9 @@ class UnifiedTeller {
             // Initialize button states after shop selection
             this.updateViewCartButton();
             this.updateRecordTransactionButton();
+            
+            // Ensure shop view is shown by default (not cart view)
+            this.showShopView();
         } else {
             // Reset dynamic header to default
             document.getElementById('dynamic-shop-title').textContent = 'Transaction Manager';
@@ -2543,19 +2546,14 @@ class UnifiedTeller {
     }
 
     updateAllProgressDisplays() {
-        console.log('DEBUG: updateAllProgressDisplays() called');
         // Update all visible progress displays to reflect current quantity inputs
         const progressElements = document.querySelectorAll('[id^="progress-"]');
-        console.log(`DEBUG: Found ${progressElements.length} progress elements`);
         progressElements.forEach(progressElement => {
             const shopItemId = progressElement.id.replace('progress-', '');
             const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
                         this.shopItems.find(i => i.shop_item_id == shopItemId);
             if (item) {
-                console.log(`DEBUG: Updating progress for item ${item.item_name} (ID: ${shopItemId})`);
                 progressElement.innerHTML = this.generateProgressText(item, true);
-            } else {
-                console.log(`DEBUG: Could not find item for ID: ${shopItemId}`);
             }
         });
         
@@ -2665,15 +2663,9 @@ class UnifiedTeller {
         const playerDailyTotal = this.getPlayerDailyTurninTotal(item.item_name);
         const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
         
-        console.log(`DEBUG: generateProgressText called for ${item.item_name} (ID: ${item.shop_item_id}), includeCurrent=${includeCurrent}, dailyTotal=${dailyTotal}, requirement=${turnInRequirement}`);
-        console.log(`DEBUG: Current cart:`, this.cart.map(c => ({id: c.shop_item_id, action: c.action, qty: c.quantity, name: c.item_name})));
-        
         let currentlySelected = 0;
         if (includeCurrent) {
             // Check if item is already in cart - if so, use cart quantity
-            console.log(`DEBUG: Searching for cart item with shop_item_id=${item.shop_item_id} and action='turnin'`);
-            console.log(`DEBUG: Available cart items:`, this.cart.map(c => ({shop_item_id: c.shop_item_id, action: c.action, quantity: c.quantity})));
-            
             const cartItem = this.cart.find(cartItem => 
                 cartItem.shop_item_id == item.shop_item_id && cartItem.action === 'turnin'
             );
@@ -2681,7 +2673,6 @@ class UnifiedTeller {
             if (cartItem) {
                 // Item is in cart - use cart quantity as current selection
                 currentlySelected = cartItem.quantity;
-                console.log(`DEBUG: Found cart item - Using cart quantity ${cartItem.quantity} for item ${item.shop_item_id}`);
             } else {
                 // Item not in cart - use input values
                 const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
@@ -2692,7 +2683,6 @@ class UnifiedTeller {
                 const stackSize = parseInt(item.stack_size) || 1;
                 
                 currentlySelected = units + (stacks * stackSize);
-                console.log(`DEBUG: No cart item found - Using input values for item ${item.shop_item_id}: units=${units}, stacks=${stacks}, total=${currentlySelected}`);
             }
         }
         
@@ -2710,7 +2700,6 @@ class UnifiedTeller {
         
         // Always show: Server total progress (including current transaction)
         const projectedTotal = dailyTotal + currentlySelected;
-        console.log(`DEBUG: Final calculation - dailyTotal=${dailyTotal} + currentlySelected=${currentlySelected} = projectedTotal=${projectedTotal}`);
         
         if (turnInRequirement > 0) {
             progressLines.push(`<div class="progress-line server-progress">${projectedTotal} / ${turnInRequirement} collected</div>`);
@@ -2718,7 +2707,6 @@ class UnifiedTeller {
             progressLines.push(`<div class="progress-line server-progress">${projectedTotal} collected</div>`);
         }
         
-        console.log(`DEBUG: Progress text result:`, progressLines.join(''));
         return progressLines.join('');
     }
 
@@ -3276,7 +3264,6 @@ class UnifiedTeller {
     }
 
     addTurninItemWithQuantity(shopItemId) {
-        alert('DEBUG: addTurninItemWithQuantity called for item ' + shopItemId);
         // Get units input
         const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
@@ -3358,9 +3345,7 @@ class UnifiedTeller {
         this.refreshItemDisplay();
         
         // Recalculate progress displays after adding to cart
-        alert('DEBUG: About to call updateAllProgressDisplays()');
         this.updateAllProgressDisplays();
-        alert('DEBUG: updateAllProgressDisplays() completed');
     }
 
 
