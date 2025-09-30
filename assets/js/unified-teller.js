@@ -588,7 +588,8 @@ class UnifiedTeller {
             if (trackingTitle) trackingTitle.textContent = 'Payment Tracking';
             if (paymentContent) paymentContent.style.display = 'block';
             if (turninContent) turninContent.style.display = 'none';
-            if (paymentSummary) paymentSummary.style.display = 'block';
+            // Don't automatically show payment summary - only show in cart view
+            if (paymentSummary) paymentSummary.style.display = 'none';
         }
     }
 
@@ -2330,6 +2331,12 @@ class UnifiedTeller {
         if (recordBtn) recordBtn.style.display = 'inline-block';
         if (backBtn) backBtn.style.display = 'inline-block';
         
+        // Show payment summary in cart view
+        const paymentSummary = document.getElementById('payment-summary-section');
+        if (paymentSummary && this.getCurrentShopType() !== 'turn-in_only') {
+            paymentSummary.style.display = 'block';
+        }
+        
         // Enable/disable record transaction button based on cart contents
         this.updateRecordTransactionButton();
     }
@@ -2352,6 +2359,12 @@ class UnifiedTeller {
         if (viewCartBtn) viewCartBtn.style.display = 'inline-block';
         if (recordBtn) recordBtn.style.display = 'none';
         if (backBtn) backBtn.style.display = 'none';
+        
+        // Hide payment summary when leaving cart view
+        const paymentSummary = document.getElementById('payment-summary-section');
+        if (paymentSummary) {
+            paymentSummary.style.display = 'none';
+        }
         
         // Update view cart button state
         this.updateViewCartButton();
