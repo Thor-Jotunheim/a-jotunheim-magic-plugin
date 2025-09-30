@@ -451,8 +451,8 @@ class UnifiedTeller {
             this.updateViewCartButton();
             this.updateRecordTransactionButton();
             
-            // Ensure shop view is shown by default (not cart view)
-            this.showShopView();
+            // Ensure we're in shop view mode (but don't force display changes)
+            this.isCartView = false;
         } else {
             // Reset dynamic header to default
             document.getElementById('dynamic-shop-title').textContent = 'Transaction Manager';
@@ -2665,24 +2665,29 @@ class UnifiedTeller {
         
         let currentlySelected = 0;
         if (includeCurrent) {
-            // Check if item is already in cart - if so, use cart quantity
-            const cartItem = this.cart.find(cartItem => 
-                cartItem.shop_item_id == item.shop_item_id && cartItem.action === 'turnin'
-            );
+            // Always check input values first for live updates
+            const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+            const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
             
-            if (cartItem) {
-                // Item is in cart - use cart quantity as current selection
-                currentlySelected = cartItem.quantity;
+            const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
+            const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+            const stackSize = parseInt(item.stack_size) || 1;
+            
+            const inputTotal = units + (stacks * stackSize);
+            
+            // If there are input values, use them (for live updates)
+            if (inputTotal > 0) {
+                currentlySelected = inputTotal;
             } else {
-                // Item not in cart - use input values
-                const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
-                const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+                // If no input values, check if item is in cart
+                const cartItem = this.cart.find(cartItem => 
+                    cartItem.shop_item_id == item.shop_item_id && cartItem.action === 'turnin'
+                );
                 
-                const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
-                const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
-                const stackSize = parseInt(item.stack_size) || 1;
-                
-                currentlySelected = units + (stacks * stackSize);
+                if (cartItem) {
+                    // Item is in cart but no input values - use cart quantity
+                    currentlySelected = cartItem.quantity;
+                }
             }
         }
         
