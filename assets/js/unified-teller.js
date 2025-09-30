@@ -3273,6 +3273,7 @@ class UnifiedTeller {
     }
 
     addTurninItemWithQuantity(shopItemId) {
+        alert('DEBUG: addTurninItemWithQuantity called for item ' + shopItemId);
         // Get units input
         const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
@@ -3354,7 +3355,9 @@ class UnifiedTeller {
         this.refreshItemDisplay();
         
         // Recalculate progress displays after adding to cart
+        alert('DEBUG: About to call updateAllProgressDisplays()');
         this.updateAllProgressDisplays();
+        alert('DEBUG: updateAllProgressDisplays() completed');
     }
 
 
