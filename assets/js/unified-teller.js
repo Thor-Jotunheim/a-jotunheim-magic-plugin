@@ -1426,21 +1426,22 @@ class UnifiedTeller {
         const toggleBtn = document.getElementById('toggle-view-btn');
         
         if (gridView && tableView && toggleBtn) {
+            // Button always shows "Toggle View" - just toggle between the two layouts
             if (gridView.style.display === 'none') {
-                // Switch to grid view
+                // Currently showing table, switch back to grid view
                 gridView.style.display = 'grid';
                 tableView.style.display = 'none';
-                toggleBtn.textContent = 'Table View';
                 // Ensure grid is populated
                 this.renderItemsGrid(gridView);
             } else {
-                // Switch to table view
+                // Currently showing grid, switch to table view
                 gridView.style.display = 'none';
                 tableView.style.display = 'block';
-                toggleBtn.textContent = 'Grid View';
                 // Ensure table is populated
                 this.renderItemsTable(tableView);
             }
+            // Button text never changes - always "Toggle View"
+            toggleBtn.textContent = 'Toggle View';
         }
     }
 
@@ -2924,11 +2925,11 @@ class UnifiedTeller {
         const tableContainer = document.getElementById('items-table-view');
         const toggleBtn = document.getElementById('toggle-view-btn');
         
-        // Initialize view state - grid view should be default
+        // Initialize view state - grid view should be default (when button shows "Toggle View")
         if (gridContainer && tableContainer && toggleBtn) {
             gridContainer.style.display = 'grid';
             tableContainer.style.display = 'none';
-            toggleBtn.textContent = 'Table View';
+            toggleBtn.textContent = 'Toggle View';
         }
         
         if (gridContainer) {
