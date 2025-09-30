@@ -58,6 +58,12 @@ class UnifiedTeller {
             itemSearch.addEventListener('input', () => this.filterItems());
         }
 
+        // Turn-in item search
+        const turninItemSearch = document.getElementById('turnin-item-search');
+        if (turninItemSearch) {
+            turninItemSearch.addEventListener('input', () => this.filterTurninItems());
+        }
+
         // Toggle view button
         const toggleViewBtn = document.getElementById('toggle-view-btn');
         if (toggleViewBtn) {
@@ -1289,20 +1295,53 @@ class UnifiedTeller {
     }
 
     filterItems() {
-        const searchTerm = document.getElementById('item-search').value.toLowerCase();
-        const categoryFilter = document.getElementById('item-category-filter').value;
+        const searchInput = document.getElementById('item-search');
+        if (!searchInput) return;
         
-        const cards = document.querySelectorAll('.item-card');
+        const searchTerm = searchInput.value.toLowerCase();
+        console.log('DEBUG: Filtering items with search term:', searchTerm);
         
-        this.shopItems.forEach((item, index) => {
-            const card = cards[index];
-            if (!card) return;
-            
-            const matchesSearch = !searchTerm || item.item_name.toLowerCase().includes(searchTerm);
-            const matchesCategory = !categoryFilter || item.category === categoryFilter;
-            
-            card.style.display = matchesSearch && matchesCategory ? 'block' : 'none';
+        // Filter both grid and table view items
+        const gridCards = document.querySelectorAll('#items-grid-view .item-card');
+        const tableRows = document.querySelectorAll('#items-table-view .item-row');
+        
+        // Filter grid view
+        gridCards.forEach(card => {
+            const itemName = card.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+            const itemDescription = card.querySelector('.item-description')?.textContent?.toLowerCase() || '';
+            const matches = !searchTerm || itemName.includes(searchTerm) || itemDescription.includes(searchTerm);
+            card.style.display = matches ? 'block' : 'none';
         });
+        
+        // Filter table view
+        tableRows.forEach(row => {
+            const itemName = row.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+            const itemDescription = row.querySelector('.item-description')?.textContent?.toLowerCase() || '';
+            const matches = !searchTerm || itemName.includes(searchTerm) || itemDescription.includes(searchTerm);
+            row.style.display = matches ? 'table-row' : 'none';
+        });
+        
+        console.log('DEBUG: Item filtering completed');
+    }
+
+    filterTurninItems() {
+        const searchInput = document.getElementById('turnin-item-search');
+        if (!searchInput) return;
+        
+        const searchTerm = searchInput.value.toLowerCase();
+        console.log('DEBUG: Filtering turn-in items with search term:', searchTerm);
+        
+        // Filter turn-in items
+        const turninCards = document.querySelectorAll('#turnin-shop-items .item-card');
+        
+        turninCards.forEach(card => {
+            const itemName = card.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+            const itemDescription = card.querySelector('.item-description')?.textContent?.toLowerCase() || '';
+            const matches = !searchTerm || itemName.includes(searchTerm) || itemDescription.includes(searchTerm);
+            card.style.display = matches ? 'block' : 'none';
+        });
+        
+        console.log('DEBUG: Turn-in item filtering completed');
     }
 
     setTransactionMode(mode) {

@@ -1160,6 +1160,41 @@ function unified_teller_interface() {
         cursor: not-allowed !important; /* Only show not-allowed when actually disabled */
         opacity: 0.6;
     }
+
+    /* Search Input Fields - Make them taller and more prominent */
+    #item-search, #turnin-item-search {
+        padding: 12px 16px !important;
+        font-size: 16px !important;
+        height: 48px !important;
+        border: 2px solid #ddd !important;
+        border-radius: 6px !important;
+        background: #fff !important;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    #item-search:focus, #turnin-item-search:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* Search field container */
+    .search-field {
+        margin-bottom: 20px !important;
+    }
+
+    /* Items controls layout */
+    .items-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .items-controls .search-field {
+        flex: 1;
+        margin-bottom: 0 !important;
+    }
     </style>
     
     <?php
