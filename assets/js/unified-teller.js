@@ -1736,23 +1736,39 @@ class UnifiedTeller {
                 const newValue = currentValue.slice(0, cursorPos) + event.key + currentValue.slice(cursorPos);
                 const numericValue = parseInt(newValue) || 0;
                 
-                let max = parseInt(inputElement.max) || 999;
-                
-                // For turn-in items, get dynamic max
+                // For turn-in items, check combined total
                 if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
                     const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
                     const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
                     if (item) {
                         const dynamicMax = this.getMaxAllowedTurnin(item);
-                        max = inputElement.id.includes('turnin-stack-qty-') ? 
-                            Math.floor(dynamicMax / parseInt(item.stack_size)) : 
-                            dynamicMax;
+                        
+                        // Get both inputs
+                        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+                        const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+                        
+                        // Calculate what the total would be with the new value
+                        let totalUnits = 0;
+                        if (inputElement.id.includes('turnin-qty-')) {
+                            // This is the units input
+                            totalUnits = numericValue + (stacksInput ? (parseInt(stacksInput.value) || 0) * parseInt(item.stack_size) : 0);
+                        } else {
+                            // This is the stacks input
+                            totalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + numericValue * parseInt(item.stack_size);
+                        }
+                        
+                        if (totalUnits > dynamicMax) {
+                            event.preventDefault();
+                            return false;
+                        }
                     }
-                }
-                
-                if (numericValue > max) {
-                    event.preventDefault();
-                    return false;
+                } else {
+                    // For non-turnin inputs, use the simple max check
+                    let max = parseInt(inputElement.max) || 999;
+                    if (numericValue > max) {
+                        event.preventDefault();
+                        return false;
+                    }
                 }
             }
             return true;
