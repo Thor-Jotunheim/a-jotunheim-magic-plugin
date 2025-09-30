@@ -2209,10 +2209,20 @@ class UnifiedTeller {
         // Save current state of all quantity inputs
         const cartState = {};
         
-        // Find all quantity inputs and save their values
-        const quantityInputs = document.querySelectorAll('.quantity-input, .stack-input, .sell-quantity-input, .turn-in-quantity-input, .turn-in-stack-input');
+        // Find all quantity inputs with the specific ID patterns used in the shop
+        const quantityInputs = document.querySelectorAll([
+            '.turnin-large-quantity-input',  // Turn-in quantity inputs
+            '.large-quantity-input',         // Buy/sell quantity inputs
+            'input[id^="turnin-qty-"]',      // Turn-in unit inputs
+            'input[id^="turnin-stack-qty-"]', // Turn-in stack inputs
+            'input[id^="buy-qty-"]',         // Buy unit inputs
+            'input[id^="buy-stack-qty-"]',   // Buy stack inputs
+            'input[id^="sell-qty-"]',        // Sell unit inputs
+            'input[id^="turnin-reg-qty-"]'   // Regular turn-in inputs
+        ].join(', '));
+        
         quantityInputs.forEach(input => {
-            if (input.value && input.value !== '1') { // Only save if not default value
+            if (input.value && input.value !== '0' && input.value !== '1') { // Save if not default values
                 cartState[input.id] = input.value;
             }
         });
