@@ -2271,3 +2271,107 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-style: italic;
     padding: var(--space-5);
 }
+
+/* Universal Table Layout Styles */
+.table-universal-inputs {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+}
+
+.table-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+}
+
+.table-input-label {
+    font-size: 12px;
+    color: var(--muted-foreground);
+    margin-bottom: var(--space-1);
+    font-weight: 500;
+}
+
+.table-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+}
+
+.table-qty-btn {
+    background: var(--gray-2);
+    border: none;
+    color: var(--foreground);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.table-qty-btn:hover {
+    background: var(--gray-3);
+}
+
+.table-qty-btn:active {
+    background: var(--gray-4);
+}
+
+.table-universal-qty-input {
+    width: 50px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 13px;
+    padding: 0 4px;
+    color: var(--foreground);
+}
+
+.table-universal-qty-input:focus {
+    outline: none;
+    background: var(--gray-1);
+}
+
+.table-universal-calculations {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: 13px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) 0;
+}
+
+.calc-label {
+    color: var(--muted-foreground);
+    font-size: 12px;
+}
+
+.calc-value {
+    color: var(--foreground);
+    font-weight: 500;
+    text-align: right;
+    min-width: 40px;
+}
+
+.table-universal-btn {
+    min-width: 80px;
+    height: 32px;
+    font-size: 13px;
+    padding: var(--space-1) var(--space-3);
+    margin: 1px;
+}
