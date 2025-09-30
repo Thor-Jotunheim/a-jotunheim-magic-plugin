@@ -1117,11 +1117,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 /* Turn-in Progress Display */
-.turnin-progress-info {
+.turnin-progress {
     background-color: var(--blue-2);
     border: 1px solid var(--blue-6);
     padding: var(--space-3);
     border-radius: var(--radius-2);
+    margin-bottom: var(--space-2);
 }
 
 .progress-line {

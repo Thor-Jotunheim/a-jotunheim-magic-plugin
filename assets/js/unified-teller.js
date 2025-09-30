@@ -1091,10 +1091,10 @@ class UnifiedTeller {
 
     generateItemInfoDisplay(item, isTurnInItem) {
         if (isTurnInItem) {
-            // For turn-in items, show live transaction progress
+            // For turn-in items, show live transaction progress (use original ID for compatibility)
             return `
-                <div class="transaction-info turnin-progress-info" id="turnin-display-${item.shop_item_id}">
-                    ${this.generateProgressText(item, true)}
+                <div class="turnin-progress" id="progress-${item.shop_item_id}">
+                    ${this.generateProgressText(item, false)}
                 </div>
             `;
         } else {
@@ -1200,31 +1200,8 @@ class UnifiedTeller {
         }
     }
 
-    // Update turn-in progress display for unified layout
-    updateTurninProgressDisplay(shopItemId) {
-        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
-        if (!item) return;
-        
-        const displayElement = document.getElementById(`turnin-display-${shopItemId}`);
-        if (displayElement) {
-            displayElement.innerHTML = this.generateProgressText(item, true);
-        }
-    }
 
-    // Update progress display method - works with both old and new layout
-    updateProgressDisplay(shopItemId, requirement) {
-        // Try unified layout first
-        this.updateTurninProgressDisplay(shopItemId);
-        
-        // Also update old layout for backward compatibility
-        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
-        if (item) {
-            const progressElement = document.getElementById(`progress-${shopItemId}`);
-            if (progressElement) {
-                progressElement.innerHTML = this.generateProgressText(item, true);
-            }
-        }
-    }
+
 
     sellToShop(item, quantity) {
         // Placeholder for sell functionality
