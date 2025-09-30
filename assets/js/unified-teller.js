@@ -11,6 +11,7 @@ class UnifiedTeller {
         this.cart = [];
         this.shopItems = [];
         this.isTableView = false; // Track current view state
+        this.isCartView = false; // Track cart view state
         
         this.initializeEventListeners();
         this.loadInitialData();
@@ -72,6 +73,17 @@ class UnifiedTeller {
         const recordTransactionBtn = document.getElementById('record-transaction-btn');
         if (recordTransactionBtn) {
             recordTransactionBtn.addEventListener('click', () => this.showTransactionModal());
+        }
+
+        // Cart view toggle
+        const viewCartBtn = document.getElementById('view-cart-btn');
+        if (viewCartBtn) {
+            viewCartBtn.addEventListener('click', () => this.showCartView());
+        }
+
+        const backToShopBtn = document.getElementById('back-to-shop-btn');
+        if (backToShopBtn) {
+            backToShopBtn.addEventListener('click', () => this.showShopView());
         }
 
         // History controls
@@ -1321,12 +1333,11 @@ class UnifiedTeller {
                 this.currentCustomer = player;
                 this.showValidationIcon('valid');
                 
-                // Enable transaction processing buttons if they exist
-                const recordBtn = document.getElementById('record-transaction-btn');
+                // Update all button states when customer is validated
+                this.updateViewCartButton();
+                this.updateRecordTransactionButton();
+                
                 const turninBtn = document.getElementById('record-turnin-btn');
-                if (recordBtn) {
-                    recordBtn.disabled = this.cart.length === 0;
-                }
                 if (turninBtn) {
                     turninBtn.disabled = false; // Turn-in button should be enabled when customer is valid
                 }
@@ -1344,10 +1355,11 @@ class UnifiedTeller {
                 this.currentCustomer = null;
                 this.showValidationIcon('register');
                 
-                // Disable transaction buttons
-                const recordBtn = document.getElementById('record-transaction-btn');
+                // Update button states when customer validation fails
+                this.updateViewCartButton();
+                this.updateRecordTransactionButton();
+                
                 const turninBtn = document.getElementById('record-turnin-btn');
-                if (recordBtn) recordBtn.disabled = true;
                 if (turninBtn) turninBtn.disabled = true;
             }
         } catch (error) {
@@ -1543,8 +1555,12 @@ class UnifiedTeller {
         const canProcess = this.cart.length > 0 && this.currentCustomer;
         const recordBtn = document.getElementById('record-transaction-btn');
         const turninBtn = document.getElementById('record-turnin-btn');
-        if (recordBtn) recordBtn.disabled = !canProcess;
+        if (recordBtn) recordBtn.disabled = !canProcess || !this.isCartView;
         if (turninBtn) turninBtn.disabled = !canProcess;
+        
+        // Update view cart button
+        this.updateViewCartButton();
+        this.updateRecordTransactionButton();
     }
 
     updateCartItemQuantity(cartIndex, newQuantity) {
@@ -2194,6 +2210,76 @@ class UnifiedTeller {
         statusDiv.className = ''; // Reset all classes
         if (overlay) {
             overlay.style.display = 'none';
+        }
+    }
+
+    showCartView() {
+        console.log('Switching to cart view');
+        this.isCartView = true;
+        
+        // Hide shop inventory section
+        const shopInventoryCard = document.querySelector('.items-card');
+        if (shopInventoryCard) {
+            shopInventoryCard.style.display = 'none';
+        }
+        
+        // Show cart buttons in transaction summary header
+        const recordBtn = document.getElementById('record-transaction-btn');
+        const backBtn = document.getElementById('back-to-shop-btn');
+        if (recordBtn) recordBtn.style.display = 'inline-block';
+        if (backBtn) backBtn.style.display = 'inline-block';
+        
+        // Update view cart button state
+        const viewCartBtn = document.getElementById('view-cart-btn');
+        if (viewCartBtn) {
+            viewCartBtn.style.display = 'none';
+        }
+        
+        // Enable/disable record transaction button based on cart contents
+        this.updateRecordTransactionButton();
+    }
+
+    showShopView() {
+        console.log('Switching to shop view');
+        this.isCartView = false;
+        
+        // Show shop inventory section
+        const shopInventoryCard = document.querySelector('.items-card');
+        if (shopInventoryCard) {
+            shopInventoryCard.style.display = 'block';
+        }
+        
+        // Hide cart buttons in transaction summary header
+        const recordBtn = document.getElementById('record-transaction-btn');
+        const backBtn = document.getElementById('back-to-shop-btn');
+        if (recordBtn) recordBtn.style.display = 'none';
+        if (backBtn) backBtn.style.display = 'none';
+        
+        // Show view cart button
+        const viewCartBtn = document.getElementById('view-cart-btn');
+        if (viewCartBtn) {
+            viewCartBtn.style.display = 'inline-block';
+        }
+        
+        // Update view cart button state
+        this.updateViewCartButton();
+    }
+
+    updateViewCartButton() {
+        const viewCartBtn = document.getElementById('view-cart-btn');
+        if (viewCartBtn) {
+            const hasItems = this.cart.length > 0;
+            viewCartBtn.disabled = !hasItems;
+            viewCartBtn.textContent = hasItems ? `View Cart (${this.cart.length})` : 'View Cart';
+        }
+    }
+
+    updateRecordTransactionButton() {
+        const recordBtn = document.getElementById('record-transaction-btn');
+        if (recordBtn) {
+            const hasItems = this.cart.length > 0;
+            const hasCustomer = this.currentCustomer !== null;
+            recordBtn.disabled = !hasItems || !hasCustomer || !this.isCartView;
         }
     }
 

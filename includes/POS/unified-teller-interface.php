@@ -214,9 +214,9 @@ function unified_teller_interface() {
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
                         
-                        <!-- Always Visible Registration Button -->
+                        <!-- Cart View Toggle Button -->
                         <div class="registration-button-container">
-                                <button id="record-transaction-btn" class="action-btn record-transaction-btn" disabled>Record Transaction</button>
+                                <button id="view-cart-btn" class="action-btn view-cart-btn" disabled>View Cart</button>
                         </div>
                     </div>
                 </div>
@@ -270,8 +270,14 @@ function unified_teller_interface() {
             <!-- Transaction Summary -->
             <div class="teller-card summary-card">
                 <div class="card-header">
-                    <h2 class="card-title">Transaction Summary</h2>
-                    <p class="card-description">Review selected items and complete transaction</p>
+                    <div class="card-header-left">
+                        <h2 class="card-title">Transaction Summary</h2>
+                        <p class="card-description">Review selected items and complete transaction</p>
+                    </div>
+                    <div class="card-header-right">
+                        <button id="record-transaction-btn" class="action-btn record-transaction-btn" disabled style="display: none;">Record Transaction</button>
+                        <button id="back-to-shop-btn" class="action-btn back-to-shop-btn" style="display: none;">Back to Shop</button>
+                    </div>
                 </div>
                 <div class="card-content">
                     <div id="transaction-items" class="transaction-list">
@@ -963,6 +969,59 @@ function unified_teller_interface() {
         color: #666;
         cursor: not-allowed;
         opacity: 0.6;
+    }
+
+    /* View Cart Button */
+    .view-cart-btn {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    .view-cart-btn:hover:not(:disabled) {
+        background: #218838;
+        border-color: #218838;
+    }
+
+    .view-cart-btn:disabled {
+        background: #ccc;
+        border-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Back to Shop Button */
+    .back-to-shop-btn {
+        background: #6c757d;
+        color: white;
+        border-color: #6c757d;
+        margin-right: 10px;
+    }
+
+    .back-to-shop-btn:hover {
+        background: #5a6268;
+        border-color: #5a6268;
+    }
+
+    /* Card Header Layout */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .card-header-left {
+        flex: 1;
+    }
+
+    .card-header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
     /* Ensure consistent card heights and alignment */
