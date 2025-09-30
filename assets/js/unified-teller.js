@@ -3939,85 +3939,133 @@ class UnifiedTeller {
     }
 
     renderItemsTable(container) {
-        if (!this.shopItems || this.shopItems.length === 0) {
+        // DUPLICATE of renderItemsGrid - start with working grid functionality
+        container.innerHTML = '';
+
+        if (this.shopItems.length === 0) {
             container.innerHTML = '<div class="no-items">No items available for this shop.</div>';
             return;
         }
 
-        // Create 2-column grid layout for compact display
-        container.innerHTML = `
-            <div class="table-grid-layout">
-                ${this.shopItems.filter(item => item.is_available == 1).map((item, index) => this.createCompactTableItem(item, index)).join('')}
-            </div>
-        `;
+        // Create table wrapper
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'table-view-wrapper';
+        
+        // Create actual HTML table structure
+        const table = document.createElement('table');
+        table.className = 'items-table';
+        
+        // Create table header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        // Table headers - adjust based on mode
+        const isTurninMode = this.currentTab === 'turnin';
+        if (isTurninMode) {
+            headerRow.innerHTML = `
+                <th class="item-col">Item</th>
+                <th class="controls-col">Quantity Controls</th>
+                <th class="progress-col">Progress & Limits</th>
+                <th class="actions-col">Action</th>
+            `;
+        } else {
+            headerRow.innerHTML = `
+                <th class="item-col">Item</th>
+                <th class="controls-col">Quantity Controls</th>
+                <th class="calculations-col">Calculations</th>
+                <th class="actions-col">Action</th>
+            `;
+        }
+        
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        
+        // Create table body
+        const tbody = document.createElement('tbody');
+        
+        // For each item, create a table row using the SAME createItemCard logic
+        this.shopItems.forEach(item => {
+            if (item.is_available == 1) {
+                // Use the existing createItemCard method - SAME as grid
+                const itemCard = this.createItemCard(item);
+                
+                // Convert the card to a table row
+                const tableRow = this.convertCardToTableRow(itemCard, item);
+                tbody.appendChild(tableRow);
+            }
+        });
+        
+        table.appendChild(tbody);
+        tableWrapper.appendChild(table);
+        container.appendChild(tableWrapper);
     }
 
-    createCompactTableItem(item, index) {
-        // Generate the full card to extract all components
-        const cardElement = this.createItemCard(item);
-        if (!cardElement) return '';
-
-        // Extract all the functional components from the card
+    convertCardToTableRow(cardElement, item) {
+        // Extract components from the working card
         const itemName = cardElement.querySelector('.item-name')?.textContent || item.item_name;
+        const itemType = cardElement.querySelector('.item-type')?.textContent || item.item_type || 'Item';
         const quantityControls = cardElement.querySelector('.quantity-controls');
         const turninProgress = cardElement.querySelector('.turnin-progress-container');
         const actionButtons = cardElement.querySelector('.action-buttons');
-        const itemImage = cardElement.querySelector('.item-image');
         
-        // Create calculations display based on mode
+        // Create table row
+        const row = document.createElement('tr');
+        row.className = 'item-table-row';
+        row.dataset.itemId = item.shop_item_id;
+        
         const isTurninMode = this.currentTab === 'turnin';
-        let calculationsHtml = '';
         
         if (isTurninMode) {
-            // Turn-in calculations with progress
-            const turninProgressHtml = turninProgress ? turninProgress.outerHTML : '';
-            calculationsHtml = `
-                <div class="table-calculations turnin-calculations">
-                    ${turninProgressHtml}
-                </div>
+            // Turn-in mode: Item | Controls | Progress | Actions
+            row.innerHTML = `
+                <td class="item-cell">
+                    <div class="table-item-info">
+                        <strong class="item-name">${itemName}</strong>
+                        <small class="item-type">${itemType}</small>
+                    </div>
+                </td>
+                <td class="controls-cell">
+                    ${quantityControls ? quantityControls.outerHTML : ''}
+                </td>
+                <td class="progress-cell">
+                    ${turninProgress ? turninProgress.outerHTML : ''}
+                </td>
+                <td class="actions-cell">
+                    ${actionButtons ? actionButtons.outerHTML : ''}
+                </td>
             `;
         } else {
-            // Buy/sell calculations with pricing
+            // Buy/sell mode: Item | Controls | Calculations | Actions
             const unitPrice = item.unit_price || item.price || item.default_price || 0;
-            calculationsHtml = `
-                <div class="table-calculations buysell-calculations">
-                    <div class="calc-row">
-                        <span>Unit Price:</span>
-                        <span class="price-value">${unitPrice}</span>
+            row.innerHTML = `
+                <td class="item-cell">
+                    <div class="table-item-info">
+                        <strong class="item-name">${itemName}</strong>
+                        <small class="item-type">${itemType}</small>
                     </div>
-                    <div class="calc-row">
-                        <span>Total Cost:</span>
-                        <span class="total-cost" id="total-cost-${item.shop_item_id}">0</span>
+                </td>
+                <td class="controls-cell">
+                    ${quantityControls ? quantityControls.outerHTML : ''}
+                </td>
+                <td class="calculations-cell">
+                    <div class="table-calculations">
+                        <div class="calc-row">
+                            <span>Unit Price:</span>
+                            <span class="price-value">${unitPrice}</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total:</span>
+                            <span class="total-cost" id="total-cost-${item.shop_item_id}">0</span>
+                        </div>
                     </div>
-                </div>
+                </td>
+                <td class="actions-cell">
+                    ${actionButtons ? actionButtons.outerHTML : ''}
+                </td>
             `;
         }
-
-        // Return compact table item with all card functionality
-        return `
-            <div class="table-item-card" data-item-id="${item.shop_item_id}">
-                <div class="table-item-header">
-                    <div class="table-item-name">
-                        <strong>${itemName}</strong>
-                        <small class="item-type">${item.item_type || 'Item'}</small>
-                    </div>
-                </div>
-                
-                <div class="table-item-body">
-                    <div class="table-item-controls">
-                        ${quantityControls ? quantityControls.outerHTML : ''}
-                    </div>
-                    
-                    <div class="table-item-calculations">
-                        ${calculationsHtml}
-                    </div>
-                    
-                    <div class="table-item-actions">
-                        ${actionButtons ? actionButtons.outerHTML : ''}
-                    </div>
-                </div>
-            </div>
-        `;
+        
+        return row;
     }
 
     generateTableItemActions(item) {
