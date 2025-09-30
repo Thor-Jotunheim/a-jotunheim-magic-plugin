@@ -3952,38 +3952,6 @@ class UnifiedTeller {
             this.updatePaymentCalculations();
         }
     }
-
-    clearCart() {
-        this.cart = [];
-        this.updateCartDisplay();
-        this.updatePaymentCalculations();
-        
-        // Clear customer name field
-        const customerInput = document.getElementById('customer-name');
-        if (customerInput) {
-            customerInput.value = '';
-        }
-        
-        // Clear validation icons and customer state
-        this.hideValidationIcon();
-        this.currentCustomer = null;
-        
-        // Clear all turn-in quantity inputs (units and stacks)
-        const turninInputs = document.querySelectorAll('[id^="turnin-qty-"], [id^="turnin-stack-qty-"]');
-        turninInputs.forEach(input => {
-            input.value = 0;
-        });
-        
-        // Update all progress displays
-        this.turninItems?.forEach(item => {
-            const progressElement = document.getElementById(`progress-${item.shop_item_id}`);
-            if (progressElement) {
-                progressElement.innerHTML = this.generateProgressText(item, true);
-            }
-        });
-        
-        this.showStatus('Transaction cleared - all fields reset', 'info');
-    }
     
     // Debug method to create test shops
     async debugCreateTestShops() {
