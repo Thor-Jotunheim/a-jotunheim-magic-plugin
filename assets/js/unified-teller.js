@@ -4551,6 +4551,28 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, 20000);
         
+        // IMMEDIATE TEST: Check if our event listeners are working after adding them
+        setTimeout(() => {
+            console.log('🚀 TESTING NEWLY ADDED EVENT LISTENERS...');
+            const testInput = document.querySelector('input[id^="turnin-qty-"]');
+            if (testInput) {
+                console.log('🚀 Found input for testing:', testInput.id);
+                console.log('🚀 Current value:', testInput.value);
+                
+                // Create and dispatch a keydown event
+                const testEvent = new KeyboardEvent('keydown', {
+                    key: '9',
+                    code: 'Digit9',
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                console.log('🚀 Dispatching test keydown event...');
+                testInput.dispatchEvent(testEvent);
+                console.log('🚀 Test keydown event dispatched');
+            }
+        }, 12000); // Run 2 seconds after the event listeners are added
+
         // Add CSS for player suggestions
         const style = document.createElement('style');
         style.textContent = `
