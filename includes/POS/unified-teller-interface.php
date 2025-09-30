@@ -201,14 +201,23 @@ function unified_teller_interface() {
             </div>
 
             <!-- Transaction Actions -->
-            <div class="teller-card actions-card">
+            <div class="teller-card customer-card">
                 <div class="card-header">
                     <h2 class="card-title">Transaction Actions</h2>
                 </div>
                 <div class="card-content">
-                    <div class="action-buttons-container">
-                        <button id="clear-transaction-btn" class="action-btn clear-transaction-btn">Clear Transaction</button>
-                        <button id="record-transaction-btn" class="action-btn record-transaction-btn" disabled>Record Transaction</button>
+                    <div class="form-field">
+                        <div class="customer-search-container">
+                            <div class="input-group">
+                                <button id="clear-transaction-btn" class="field-input">Clear Transaction</button>
+                            </div>
+                            <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Always Visible Registration Button -->
+                        <div class="registration-button-container">
+                                <button id="record-transaction-btn" class="action-btn record-transaction-btn" disabled>Record Transaction</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -898,15 +907,20 @@ function unified_teller_interface() {
         gap: 10px;
         min-height: 140px; /* Match the customer card height */
         justify-content: space-between; /* Distribute buttons evenly */
+        padding: 15px 25px; /* Add more horizontal padding (was 15px all around) */
     }
 
     .action-buttons-container {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        width: 100%;
-        height: 100%; /* Take full height */
-        justify-content: space-between; /* Space buttons to match alignment */
+        height: 100%;
+        justify-content: space-between;
+    }
+
+    /* Alternative approach if you want to match the exact padding of the customer input field */
+    .actions-card .action-buttons-container {
+        padding: 0 10px; /* This adds inner padding to match the customer field */
     }
 
     .action-btn {
@@ -959,7 +973,7 @@ function unified_teller_interface() {
         align-items: stretch;
     }
 
-    .customer-payment-actions-row .teller-card {
+    .customer-payment-actions-row .teller-card .customer-card{
         flex: 1;
     }
 
@@ -969,7 +983,7 @@ function unified_teller_interface() {
     }
 
     /* Match the customer name input container structure */
-    .customer-card .form-field {
+    .form-field {
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -983,7 +997,7 @@ function unified_teller_interface() {
     }
 
     .customer-card .register-new-player-btn,
-    .actions-card .action-btn {
+    .actions-card .action-btn, {
         width: 100%;
         padding: 10px 16px;
         border: 1px solid #ddd;
