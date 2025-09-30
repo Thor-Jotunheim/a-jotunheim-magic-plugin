@@ -1069,9 +1069,10 @@ class UnifiedTeller {
                         <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
                         <input type="number" id="turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
                                class="turnin-large-quantity-input" 
+                               data-debug="preventOverLimit-attached"
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
-                               onkeydown="window.unifiedTeller.preventOverLimit(event, this)"
+                               onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                     </div>
@@ -1083,9 +1084,10 @@ class UnifiedTeller {
                         <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
                         <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
                                class="turnin-large-quantity-input" 
+                               data-debug="preventOverLimit-attached"
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
-                               onkeydown="window.unifiedTeller.preventOverLimit(event, this)"
+                               onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
                     </div>
