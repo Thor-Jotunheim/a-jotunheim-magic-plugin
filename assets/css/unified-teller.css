@@ -847,10 +847,10 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .turnin-large-quantity-input {
-    width: 100px;
-    height: 50px;
-    padding: 8px;
-    font-size: 24px;
+    width: 140px;
+    height: 60px;
+    padding: 12px;
+    font-size: 28px;
     font-weight: bold;
     text-align: center;
     border: 2px solid var(--gray-6);
