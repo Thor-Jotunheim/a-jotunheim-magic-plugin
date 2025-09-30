@@ -3992,12 +3992,7 @@ class UnifiedTeller {
             const row = document.createElement('tr');
             
             // Reuse existing card generation methods
-            const cardHtml = this.generateItemCard(item);
-            
-            // Parse the card HTML to extract components
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = cardHtml;
-            const cardElement = tempDiv.querySelector('.item-card');
+            const cardElement = this.createItemCard(item);
             
             if (cardElement) {
                 // Extract existing components from the card
