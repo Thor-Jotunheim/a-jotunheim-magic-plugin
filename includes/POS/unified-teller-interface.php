@@ -1025,6 +1025,72 @@ function unified_teller_interface() {
         gap: 10px;
     }
 
+    /* Item Action Buttons */
+    .view-cart-btn {
+        width: 57px !important;
+    }
+
+    .item-btn {
+        min-width: 57px;
+        padding: 6px 12px;
+        border: 1px solid;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 2px;
+        text-align: center;
+    }
+
+    /* Buy/Sell button - Green for Sell (teller sells to customer) */
+    .buy-btn {
+        background-color: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    .buy-btn:hover {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    /* Sell/Buy button - Red for Buy (teller buys from customer) */  
+    .sell-btn {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
+    .sell-btn:hover {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    /* Turn In button - Blue (already correct) */
+    .turnin-btn {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .turnin-btn:hover {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    /* Update button state */
+    .item-btn.update-btn {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white;
+    }
+
+    .item-btn.update-btn:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+
     /* Ensure consistent card heights and alignment */
     .customer-payment-actions-row {
         display: flex;

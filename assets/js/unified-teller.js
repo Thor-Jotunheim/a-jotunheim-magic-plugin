@@ -1165,20 +1165,36 @@ class UnifiedTeller {
 
     generateUnifiedItemActions(item, isTurnInItem) {
         if (isTurnInItem) {
-            return `<button class="btn btn-primary item-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">Turn In</button>`;
+            // Check if item is already in cart for turn-in
+            const inCart = this.cart.some(cartItem => cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'turnin');
+            const buttonText = inCart ? 'Update' : 'Turn In';
+            const buttonClass = inCart ? 'btn item-btn turnin-btn update-btn' : 'btn item-btn turnin-btn';
+            return `<button class="${buttonClass}" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">${buttonText}</button>`;
         } else {
             let actionsHTML = '';
             
             if (item.buy == 1 || item.buy === true) {
-                actionsHTML += `<button class="btn btn-success item-btn buy-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')">Sell</button>`;
+                // Check if item is already in cart for buy action
+                const inCart = this.cart.some(cartItem => cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'buy');
+                const buttonText = inCart ? 'Update' : 'Sell';
+                const buttonClass = inCart ? 'btn item-btn buy-btn update-btn' : 'btn item-btn buy-btn';
+                actionsHTML += `<button class="${buttonClass}" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')">${buttonText}</button>`;
             }
             
             if (item.sell == 1 || item.sell === true) {
-                actionsHTML += `<button class="btn btn-warning item-btn sell-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')">Buy</button>`;
+                // Check if item is already in cart for sell action
+                const inCart = this.cart.some(cartItem => cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'sell');
+                const buttonText = inCart ? 'Update' : 'Buy';
+                const buttonClass = inCart ? 'btn item-btn sell-btn update-btn' : 'btn item-btn sell-btn';
+                actionsHTML += `<button class="${buttonClass}" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')">${buttonText}</button>`;
             }
             
             if (item.turn_in == 1 || item.turn_in === true) {
-                actionsHTML += `<button class="btn btn-info item-btn turnin-btn" onclick="window.unifiedTeller.addTurninItem(${item.shop_item_id})">Turn In</button>`;
+                // Check if item is already in cart for turn-in action
+                const inCart = this.cart.some(cartItem => cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'turnin');
+                const buttonText = inCart ? 'Update' : 'Turn In';
+                const buttonClass = inCart ? 'btn item-btn turnin-btn update-btn' : 'btn item-btn turnin-btn';
+                actionsHTML += `<button class="${buttonClass}" onclick="window.unifiedTeller.addTurninItem(${item.shop_item_id})">${buttonText}</button>`;
             }
             
             return actionsHTML || '<span class="text-muted">No actions available</span>';
@@ -1621,7 +1637,19 @@ class UnifiedTeller {
         }
     }
 
-
+    refreshItemDisplay() {
+        const gridView = document.getElementById('items-grid-view');
+        const tableView = document.getElementById('items-table-view');
+        
+        if (!gridView || !tableView) return;
+        
+        // Re-render the currently visible view to update button states
+        if (this.isTableView) {
+            this.renderItemsTable(tableView);
+        } else {
+            this.renderItemsGrid(gridView);
+        }
+    }
 
     showTransactionModal() {
         if (!this.currentCustomer) {
@@ -3125,7 +3153,8 @@ class UnifiedTeller {
         );
 
         if (existingItem) {
-            existingItem.quantity += quantity;
+            // Replace quantity instead of adding (for update functionality)
+            existingItem.quantity = quantity;
             existingItem.total_price = existingItem.unit_price * existingItem.quantity;
         } else {
             // Debug logging to track the 10x issue
@@ -3159,7 +3188,11 @@ class UnifiedTeller {
         this.updateViewCartButton();
         this.updateRecordTransactionButton();
         
-        this.showStatus(`Added ${item.item_name} to turn-in cart`, 'success');
+        const actionText = existingItem ? 'Updated' : 'Added';
+        this.showStatus(`${actionText} ${item.item_name} in turn-in cart`, 'success');
+        
+        // Refresh display to update button states
+        this.refreshItemDisplay();
     }
 
     addTurninItemWithQuantity(shopItemId) {
@@ -3207,7 +3240,8 @@ class UnifiedTeller {
         );
 
         if (existingItem) {
-            existingItem.quantity += quantity;
+            // Replace quantity instead of adding (for update functionality)
+            existingItem.quantity = quantity;
             existingItem.total_price = existingItem.unit_price * existingItem.quantity;
         } else {
             this.cart.push({
@@ -3233,7 +3267,11 @@ class UnifiedTeller {
         this.updateViewCartButton();
         this.updateRecordTransactionButton();
         
-        this.showStatus(`Added ${quantity} ${item.item_name} to turn-in cart`, 'success');
+        const actionText = existingItem ? 'Updated' : 'Added';
+        this.showStatus(`${actionText} ${quantity} ${item.item_name} in turn-in cart`, 'success');
+        
+        // Refresh display to update button states
+        this.refreshItemDisplay();
     }
 
 
@@ -3490,7 +3528,8 @@ class UnifiedTeller {
         );
 
         if (existingItem) {
-            existingItem.quantity += quantity;
+            // Replace quantity instead of adding (for update functionality)
+            existingItem.quantity = quantity;
             existingItem.total_price = existingItem.unit_price * existingItem.quantity;
         } else {
             this.cart.push({
@@ -3516,12 +3555,16 @@ class UnifiedTeller {
         const quantityDesc = quantityType === 'stack' ? 
             `${qtyInput.value} stack(s) (${quantity} items)` : 
             `${quantity} item(s)`;
-        this.showStatus(`Added ${quantityDesc} of ${item.item_name} to cart (${action})`, 'success');
+        const actionText = existingItem ? 'Updated' : 'Added';
+        this.showStatus(`${actionText} ${quantityDesc} of ${item.item_name} in cart (${action})`, 'success');
 
         // Reset quantity input
         if (qtyInput) {
             qtyInput.value = 0;
         }
+        
+        // Refresh display to update button states
+        this.refreshItemDisplay();
     }
 
     addToTurnin(shopItemId) {
