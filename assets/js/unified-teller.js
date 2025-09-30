@@ -1431,11 +1431,15 @@ class UnifiedTeller {
                 gridView.style.display = 'grid';
                 tableView.style.display = 'none';
                 toggleBtn.textContent = 'Table View';
+                // Ensure grid is populated
+                this.renderItemsGrid(gridView);
             } else {
                 // Switch to table view
                 gridView.style.display = 'none';
                 tableView.style.display = 'block';
                 toggleBtn.textContent = 'Grid View';
+                // Ensure table is populated
+                this.renderItemsTable(tableView);
             }
         }
     }
@@ -2918,6 +2922,14 @@ class UnifiedTeller {
         // Update the existing method to use the new structure
         const gridContainer = document.getElementById('items-grid-view');
         const tableContainer = document.getElementById('items-table-view');
+        const toggleBtn = document.getElementById('toggle-view-btn');
+        
+        // Initialize view state - grid view should be default
+        if (gridContainer && tableContainer && toggleBtn) {
+            gridContainer.style.display = 'grid';
+            tableContainer.style.display = 'none';
+            toggleBtn.textContent = 'Table View';
+        }
         
         if (gridContainer) {
             this.renderItemsGrid(gridContainer);
