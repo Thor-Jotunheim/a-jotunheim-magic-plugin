@@ -1055,8 +1055,11 @@ class UnifiedTeller {
                     <div class="quantity-controls">
                         <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
                         <input type="number" id="turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
-                               class="turnin-large-quantity-input" onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
-                               onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                               class="turnin-large-quantity-input" 
+                               oninput="window.unifiedTeller.enforceQuantityLimits(this)"
+                               onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                               onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)"
+                               onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                     </div>
                 </div>
@@ -1066,8 +1069,11 @@ class UnifiedTeller {
                     <div class="quantity-controls">
                         <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
                         <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
-                               class="turnin-large-quantity-input" onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
-                               onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                               class="turnin-large-quantity-input" 
+                               oninput="window.unifiedTeller.enforceQuantityLimits(this)"
+                               onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                               onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)"
+                               onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
                     </div>
                 </div>
@@ -2880,10 +2886,34 @@ class UnifiedTeller {
         }
     }
 
-    handleQuantityBlur(inputElement) {
-        const min = parseInt(inputElement.min) || 1;
+    enforceQuantityLimits(inputElement) {
+        const min = parseInt(inputElement.min) || 0;
         const max = parseInt(inputElement.max) || 999;
-        let value = parseInt(inputElement.value) || min;
+        let value = parseInt(inputElement.value) || 0;
+        
+        // Enforce limits in real-time
+        if (value < min) value = min;
+        if (value > max) value = max;
+        
+        // Only update if the value actually changed to prevent cursor jumping
+        if (parseInt(inputElement.value) !== value) {
+            inputElement.value = value;
+        }
+        
+        // Update progress display if this is a turn-in item
+        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
+            const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+            const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
+            if (item) {
+                this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
+            }
+        }
+    }
+
+    handleQuantityBlur(inputElement) {
+        const min = parseInt(inputElement.min) || 0;
+        const max = parseInt(inputElement.max) || 999;
+        let value = parseInt(inputElement.value) || 0;
         
         // Validate and constrain the value
         if (value < min) value = min;
@@ -2895,9 +2925,9 @@ class UnifiedTeller {
         this.syncQuantityInputs(inputElement.id);
         
         // Update progress display if this is a turn-in item
-        if (inputElement.id.includes('turnin-qty-')) {
-            const shopItemId = inputElement.id.replace('turnin-qty-', '');
-            const item = this.turninItems.find(i => i.shop_item_id == shopItemId);
+        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
+            const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+            const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
             if (item) {
                 this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
             }
@@ -2951,6 +2981,16 @@ class UnifiedTeller {
         
         // Always show: Server total progress (including current transaction)
         const projectedTotal = dailyTotal + currentlySelected;
+        
+        // DEBUG: Add debugging info for turn-in progress calculation
+        console.log('DEBUG - Turn-in progress calculation:', {
+            itemName: item.item_name,
+            dailyTotal,
+            currentlySelected,
+            projectedTotal,
+            turnInRequirement,
+            includeCurrent
+        });
         
         if (turnInRequirement > 0) {
             progressLines.push(`<div class="progress-line server-progress">${projectedTotal} / ${turnInRequirement} collected</div>`);
