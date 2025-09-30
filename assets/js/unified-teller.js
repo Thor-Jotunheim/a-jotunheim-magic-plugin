@@ -1729,11 +1729,6 @@ class UnifiedTeller {
     }
 
     preventOverLimit(event, inputElement) {
-        console.log('preventOverLimit called', {
-            key: event.key,
-            inputId: inputElement.id,
-            currentValue: inputElement.value
-        });
         
         // Allow navigation keys
         const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
@@ -1767,18 +1762,7 @@ class UnifiedTeller {
                             totalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + numericValue * parseInt(item.stack_size);
                         }
                         
-                        console.log('Turn-in validation check', {
-                            shopItemId,
-                            numericValue,
-                            totalUnits,
-                            dynamicMax,
-                            stackSize: item.stack_size,
-                            unitsValue: unitsInput ? unitsInput.value : 'no units input',
-                            stacksValue: stacksInput ? stacksInput.value : 'no stacks input'
-                        });
-                        
                         if (totalUnits > dynamicMax) {
-                            console.log('BLOCKING keystroke - total would exceed limit');
                             event.preventDefault();
                             return false;
                         }
@@ -2852,20 +2836,8 @@ class UnifiedTeller {
                     newTotalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + newStacksValue * parseInt(item.stack_size);
                 }
                 
-                console.log('🔢 Increase validation check', {
-                    shopItemId,
-                    inputId,
-                    currentValue,
-                    newTotalUnits,
-                    dynamicMax,
-                    stackSize: item.stack_size,
-                    unitsValue: unitsInput ? unitsInput.value : 'no units input',
-                    stacksValue: stacksInput ? stacksInput.value : 'no stacks input'
-                });
-                
                 // Check if the new total would exceed the limit
                 if (newTotalUnits > dynamicMax) {
-                    console.log('🚫 BLOCKING increment - total would exceed limit:', newTotalUnits, '>', dynamicMax);
                     return; // Don't increment
                 }
             }
@@ -4420,184 +4392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         checkAPI();
         
-        // Test global accessibility after initialization
-        setTimeout(() => {
-            console.log('=== Global Accessibility Test ===');
-            console.log('window.unifiedTeller exists:', typeof window.unifiedTeller !== 'undefined');
-            if (window.unifiedTeller) {
-                console.log('preventOverLimit method accessible:', typeof window.unifiedTeller.preventOverLimit !== 'undefined');
-                console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(window.unifiedTeller)));
-            }
-        }, 2000);
-        
-        // Debug DOM inputs every 5 seconds to see what's actually in the page
-        setInterval(() => {
-            const allInputs = document.querySelectorAll('input[type="number"]');
-            const relevantInputs = Array.from(allInputs).filter(input => 
-                input.id && (input.id.includes('turnin') || input.id.includes('qty'))
-            );
-            
-            if (relevantInputs.length > 0) {
-                console.log('🔍 DOM INSPECTION - Found', relevantInputs.length, 'number inputs:');
-                relevantInputs.forEach(input => {
-                    console.log('  Input:', {
-                        id: input.id,
-                        className: input.className,
-                        value: input.value,
-                        max: input.max,
-                        hasOnkeydown: input.hasAttribute('onkeydown'),
-                        onkeydownValue: input.getAttribute('onkeydown')?.substring(0, 100) + '...'
-                    });
-                });
-            }
-        }, 5000);
-        
-        // Add global test function for manual debugging
-        window.testPreventOverLimit = function() {
-            console.log('🧪 MANUAL TEST: Testing preventOverLimit method');
-            const testInput = document.querySelector('input[type="number"]');
-            if (testInput) {
-                console.log('🧪 Found test input:', testInput.id);
-                const fakeEvent = { keyCode: 49, key: '1', preventDefault: () => console.log('preventDefault called') };
-                try {
-                    if (window.unifiedTeller && window.unifiedTeller.preventOverLimit) {
-                        console.log('🧪 Calling preventOverLimit...');
-                        window.unifiedTeller.preventOverLimit(fakeEvent, testInput);
-                        console.log('🧪 preventOverLimit called successfully');
-                    } else {
-                        console.log('🧪 ERROR: preventOverLimit method not found');
-                    }
-                } catch (error) {
-                    console.log('🧪 ERROR calling preventOverLimit:', error);
-                }
-            } else {
-                console.log('🧪 No input found for testing');
-            }
-        };
-        
-        // Add event listener debugging - check if other handlers are interfering
-        window.debugEventListeners = function() {
-            console.log('🔧 EVENT LISTENER DEBUG: Checking for interference...');
-            const inputs = document.querySelectorAll('input[id*="turnin-qty"]');
-            inputs.forEach(input => {
-                console.log(`🔧 Input ${input.id}:`);
-                console.log('  - onkeydown attribute:', input.getAttribute('onkeydown') ? 'EXISTS' : 'MISSING');
-                
-                // Test if keydown events fire at all
-                const testHandler = (e) => {
-                    console.log(`🔧 KEYDOWN EVENT FIRED on ${input.id}:`, e.key);
-                };
-                
-                // Add temporary listener
-                input.addEventListener('keydown', testHandler);
-                console.log(`🔧 Added test listener to ${input.id}`);
-                
-                // Remove after 30 seconds
-                setTimeout(() => {
-                    input.removeEventListener('keydown', testHandler);
-                    console.log(`🔧 Removed test listener from ${input.id}`);
-                }, 30000);
-            });
-        };
-        
-        // Auto-run event debugging after 10 seconds
-        setTimeout(() => {
-            console.log('🔧 AUTO-RUNNING EVENT LISTENER DEBUGGING...');
-            if (window.debugEventListeners) {
-                window.debugEventListeners();
-            }
-        }, 10000);
-
-        // Add a TEST to check if ANY keydown events work on our inputs
-        setTimeout(() => {
-            console.log('🧪 TESTING KEYDOWN EVENTS ON INPUTS...');
-            const testInput = document.querySelector('input[id^="turnin-qty-"]');
-            if (testInput) {
-                console.log('🧪 Found test units input:', testInput.id);
-                console.log('🧪 onkeydown attribute:', testInput.getAttribute('onkeydown'));
-                
-                // Try to trigger the onkeydown manually
-                const fakeEvent = { 
-                    key: '5', 
-                    preventDefault: () => console.log('🧪 preventDefault called'),
-                    type: 'keydown'
-                };
-                
-                console.log('🧪 Manually triggering onkeydown...');
-                if (testInput.onkeydown) {
-                    testInput.onkeydown.call(testInput, fakeEvent);
-                } else {
-                    console.log('🧪 ERROR: No onkeydown function found on element');
-                }
-            }
-            
-            const testStackInput = document.querySelector('input[id^="turnin-stack-qty-"]');
-            if (testStackInput) {
-                console.log('🧪 Found test stack input:', testStackInput.id);
-                console.log('🧪 onkeydown attribute:', testStackInput.getAttribute('onkeydown'));
-                
-                // Try to trigger the onkeydown manually
-                const fakeEvent = { 
-                    key: '3', 
-                    preventDefault: () => console.log('🧪 stack preventDefault called'),
-                    type: 'keydown'
-                };
-                
-                console.log('🧪 Manually triggering stack onkeydown...');
-                if (testStackInput.onkeydown) {
-                    testStackInput.onkeydown.call(testStackInput, fakeEvent);
-                } else {
-                    console.log('🧪 ERROR: No onkeydown function found on stack element');
-                }
-            }
-        }, 15000);
-
-        // Test if addEventListener works where onkeydown attributes don't
-        setTimeout(() => {
-            console.log('🔬 TESTING addEventListener as alternative...');
-            const inputs = document.querySelectorAll('input[id^="turnin-qty-"], input[id^="turnin-stack-qty-"]');
-            inputs.forEach(input => {
-                // Remove existing event listener if any
-                input.removeEventListener('keydown', window.testKeydownHandler);
-                
-                // Add new event listener
-                const testHandler = function(event) {
-                    console.log('🔬 addEventListener KEYDOWN FIRED on', this.id, 'key:', event.key);
-                    
-                    // Call the same preventOverLimit logic
-                    if (window.unifiedTeller && window.unifiedTeller.preventOverLimit) {
-                        return window.unifiedTeller.preventOverLimit(event, this);
-                    }
-                };
-                
-                window.testKeydownHandler = testHandler;
-                input.addEventListener('keydown', testHandler);
-                
-                console.log('🔬 Added addEventListener to:', input.id);
-            });
-        }, 20000);
-        
-        // IMMEDIATE TEST: Check if our event listeners are working after adding them
-        setTimeout(() => {
-            console.log('🚀 TESTING NEWLY ADDED EVENT LISTENERS...');
-            const testInput = document.querySelector('input[id^="turnin-qty-"]');
-            if (testInput) {
-                console.log('🚀 Found input for testing:', testInput.id);
-                console.log('🚀 Current value:', testInput.value);
-                
-                // Create and dispatch a keydown event
-                const testEvent = new KeyboardEvent('keydown', {
-                    key: '9',
-                    code: 'Digit9',
-                    bubbles: true,
-                    cancelable: true
-                });
-                
-                console.log('🚀 Dispatching test keydown event...');
-                testInput.dispatchEvent(testEvent);
-                console.log('🚀 Test keydown event dispatched');
-            }
-        }, 12000); // Run 2 seconds after the event listeners are added
+        // Input validation system is now active
 
         // Add CSS for player suggestions
         const style = document.createElement('style');
