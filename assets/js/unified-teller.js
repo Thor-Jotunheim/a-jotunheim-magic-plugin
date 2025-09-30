@@ -3939,90 +3939,85 @@ class UnifiedTeller {
     }
 
     renderItemsTable(container) {
-        const tableBody = container.querySelector('#items-table-body');
-        if (!tableBody) return;
-
-        tableBody.innerHTML = '';
-
-        if (this.shopItems.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="8">No items available for this shop.</td></tr>';
+        if (!this.shopItems || this.shopItems.length === 0) {
+            container.innerHTML = '<div class="no-items">No items available for this shop.</div>';
             return;
         }
 
-        // Universal table headers that work for all modes
-        const tableHeader = container.querySelector('thead tr');
-        if (tableHeader) {
-            // Check if we're in turn-in mode to determine columns
-            const isTurninMode = this.currentTab === 'turnin';
-            
-            if (isTurninMode) {
-                // Turn-in mode: no price column needed
-                tableHeader.innerHTML = `
-                    <th>Item</th>
-                    <th>Quantity Controls</th>
-                    <th style="border-left: 2px solid var(--border, #dee2e6);">Calculations</th>
-                    <th>Action</th>
-                `;
-            } else {
-                // Buy/sell mode: include price column
-                tableHeader.innerHTML = `
-                    <th>Item</th>
-                    <th>Quantity Controls</th>
-                    <th style="border-left: 2px solid var(--border, #dee2e6);">Calculations</th>
-                    <th>Price</th>
-                    <th>Action</th>
-                `;
-            }
+        // Create 2-column grid layout for compact display
+        container.innerHTML = `
+            <div class="table-grid-layout">
+                ${this.shopItems.filter(item => item.is_available == 1).map((item, index) => this.createCompactTableItem(item, index)).join('')}
+            </div>
+        `;
+    }
+
+    createCompactTableItem(item, index) {
+        // Generate the full card to extract all components
+        const cardElement = this.createItemCard(item);
+        if (!cardElement) return '';
+
+        // Extract all the functional components from the card
+        const itemName = cardElement.querySelector('.item-name')?.textContent || item.item_name;
+        const quantityControls = cardElement.querySelector('.quantity-controls');
+        const turninProgress = cardElement.querySelector('.turnin-progress-container');
+        const actionButtons = cardElement.querySelector('.action-buttons');
+        const itemImage = cardElement.querySelector('.item-image');
+        
+        // Create calculations display based on mode
+        const isTurninMode = this.currentTab === 'turnin';
+        let calculationsHtml = '';
+        
+        if (isTurninMode) {
+            // Turn-in calculations with progress
+            const turninProgressHtml = turninProgress ? turninProgress.outerHTML : '';
+            calculationsHtml = `
+                <div class="table-calculations turnin-calculations">
+                    ${turninProgressHtml}
+                </div>
+            `;
+        } else {
+            // Buy/sell calculations with pricing
+            const unitPrice = item.unit_price || item.price || item.default_price || 0;
+            calculationsHtml = `
+                <div class="table-calculations buysell-calculations">
+                    <div class="calc-row">
+                        <span>Unit Price:</span>
+                        <span class="price-value">${unitPrice}</span>
+                    </div>
+                    <div class="calc-row">
+                        <span>Total Cost:</span>
+                        <span class="total-cost" id="total-cost-${item.shop_item_id}">0</span>
+                    </div>
+                </div>
+            `;
         }
 
-        // Reuse existing card components in table layout
-        const isTurninMode = this.currentTab === 'turnin';
-        
-        for (let i = 0; i < this.shopItems.length; i++) {
-            const item = this.shopItems[i];
-            const row = document.createElement('tr');
-            
-            // Reuse existing card generation methods
-            const cardElement = this.createItemCard(item);
-            
-            if (cardElement) {
-                // Extract existing components from the card
-                const itemName = cardElement.querySelector('.item-name')?.textContent || item.item_name;
-                const quantityControls = cardElement.querySelector('.quantity-controls');
-                const turninProgress = cardElement.querySelector('.turnin-progress-container');
-                const actionButtons = cardElement.querySelector('.action-buttons');
-                const priceDisplay = cardElement.querySelector('.item-price');
+        // Return compact table item with all card functionality
+        return `
+            <div class="table-item-card" data-item-id="${item.shop_item_id}">
+                <div class="table-item-header">
+                    <div class="table-item-name">
+                        <strong>${itemName}</strong>
+                        <small class="item-type">${item.item_type || 'Item'}</small>
+                    </div>
+                </div>
                 
-                // Create table-formatted versions of the card components
-                const quantityControlsHtml = quantityControls ? quantityControls.outerHTML : '';
-                const turninProgressHtml = turninProgress ? turninProgress.outerHTML : '';
-                const actionButtonsHtml = actionButtons ? actionButtons.outerHTML : '';
-                const priceHtml = priceDisplay ? priceDisplay.outerHTML : '';
-                
-                if (isTurninMode) {
-                    // Turn-in mode: no price column, include turnin progress
-                    row.innerHTML = `
-                        <td><strong>${itemName}</strong></td>
-                        <td class="table-controls-cell">${quantityControlsHtml}</td>
-                        <td class="table-progress-cell" style="border-left: 2px solid var(--border, #dee2e6);">${turninProgressHtml}</td>
-                        <td class="table-actions-cell">${actionButtonsHtml}</td>
-                    `;
-                } else {
-                    // Buy/sell mode: include price column, no turnin progress
-                    row.innerHTML = `
-                        <td><strong>${itemName}</strong></td>
-                        <td class="table-controls-cell">${quantityControlsHtml}</td>
-                        <td class="table-info-cell" style="border-left: 2px solid var(--border, #dee2e6);">
-                            <div class="table-price-info">${priceHtml}</div>
-                        </td>
-                        <td class="table-price-cell">${this.getItemPriceDisplay(item)}</td>
-                        <td class="table-actions-cell">${actionButtonsHtml}</td>
-                    `;
-                }
-                
-                tableBody.appendChild(row);
-            }
-        }
+                <div class="table-item-body">
+                    <div class="table-item-controls">
+                        ${quantityControls ? quantityControls.outerHTML : ''}
+                    </div>
+                    
+                    <div class="table-item-calculations">
+                        ${calculationsHtml}
+                    </div>
+                    
+                    <div class="table-item-actions">
+                        ${actionButtons ? actionButtons.outerHTML : ''}
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     generateTableItemActions(item) {

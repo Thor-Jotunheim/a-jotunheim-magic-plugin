@@ -2435,15 +2435,102 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 4px;
 }
 
+/* 2-Column Table Grid Layout */
+.table-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px;
+}
+
+.table-item-card {
+    border: 1px solid var(--border, #dee2e6);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--background, #ffffff);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-item-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border, #dee2e6);
+}
+
+.table-item-name strong {
+    font-size: 16px;
+    color: var(--foreground, #333);
+    display: block;
+}
+
+.table-item-name .item-type {
+    font-size: 12px;
+    color: var(--muted-foreground, #666);
+    font-weight: normal;
+}
+
+.table-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.table-item-controls {
+    display: flex;
+    justify-content: center;
+}
+
+.table-item-calculations {
+    min-height: 40px;
+    padding: 8px;
+    background: var(--muted, #f8f9fa);
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.table-item-calculations .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.table-item-calculations .calc-row:last-child {
+    margin-bottom: 0;
+}
+
+.table-item-calculations .price-value,
+.table-item-calculations .total-cost {
+    font-weight: bold;
+    color: var(--primary, #007bff);
+}
+
+.table-item-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Adjust card component spacing for table context */
-.unified-table .quantity-controls {
+.table-item-card .quantity-controls {
     gap: 6px;
+    margin: 0;
 }
 
-.unified-table .turnin-progress-container {
+.table-item-card .turnin-progress-container {
     padding: 4px 0;
+    margin: 0;
 }
 
-.unified-table .action-buttons {
+.table-item-card .action-buttons {
     gap: 8px;
+    margin: 0;
 }
