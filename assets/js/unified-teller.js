@@ -2753,9 +2753,13 @@ class UnifiedTeller {
     }
 
     addTurninItemWithQuantity(shopItemId) {
-        // Get quantity from input field
-        const quantityInput = document.getElementById(`turnin-qty-${shopItemId}`);
-        const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+        // Get units input
+        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+        const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+        
+        // Get stacks input if it exists
+        const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+        const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
         
         // Initialize turninItems if not loaded
         if (!this.turninItems) {
@@ -2763,8 +2767,20 @@ class UnifiedTeller {
         }
         
         const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || this.shopItems.find(i => i.shop_item_id == shopItemId);
+        
+        // Get stack size for calculation
+        const stackSize = parseInt(item?.stack_size || 1);
+        
+        // Calculate total quantity: units + (stacks * stackSize)
+        const quantity = units + (stacks * stackSize);
+        
         if (!item) {
             console.log('Item not found for turn-in:', shopItemId);
+            return;
+        }
+        
+        if (quantity <= 0) {
+            this.showStatus('Please enter a quantity to turn in', 'error');
             return;
         }
 
