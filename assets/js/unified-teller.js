@@ -659,6 +659,16 @@ class UnifiedTeller {
             const requirement = parseInt(item.turn_in_requirement) || 0;
             const projected = dailyCollected + currentTransactionQty;
             
+            // DEBUG: Track turnin compact display calculation
+            console.log('DEBUG - Turnin compact display:', {
+                itemName: item.item_name,
+                dailyCollected,
+                currentTransactionQty,
+                projected,
+                requirement,
+                qtyInputValue: qtyInput ? qtyInput.value : 'NO_INPUT'
+            });
+            
             // Calculate progress percentage
             const progressPercent = requirement > 0 ? Math.min((dailyCollected / requirement) * 100, 100) : 0;
             const projectedPercent = requirement > 0 ? Math.min((projected / requirement) * 100, 100) : 0;
@@ -672,7 +682,7 @@ class UnifiedTeller {
                             <div class="turnin-compact-fill" style="width: ${progressPercent}%"></div>
                         </div>
                     </div>
-                    <div class="turnin-compact-counts">${dailyCollected}/${requirement}</div>
+                    <div class="turnin-compact-counts">${projected}/${requirement}</div>
                     <div class="turnin-compact-percent">${progressPercent.toFixed(0)}%</div>
                 </div>
             `;
@@ -683,6 +693,7 @@ class UnifiedTeller {
         // Update the turn-in tracking container with compact table display
         const container = document.getElementById('turnin-tracking-content');
         if (container) {
+            console.log('DEBUG - Updating turnin tracking container with', progressDisplays.length, 'items');
             container.innerHTML = `
                 <div class="turnin-compact-table">
                     ${progressDisplays.join('')}
