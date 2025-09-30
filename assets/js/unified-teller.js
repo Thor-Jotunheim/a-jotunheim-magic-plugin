@@ -4404,6 +4404,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 2000);
         
+        // Debug DOM inputs every 5 seconds to see what's actually in the page
+        setInterval(() => {
+            const allInputs = document.querySelectorAll('input[type="number"]');
+            const relevantInputs = Array.from(allInputs).filter(input => 
+                input.id && (input.id.includes('turnin') || input.id.includes('qty'))
+            );
+            
+            if (relevantInputs.length > 0) {
+                console.log('🔍 DOM INSPECTION - Found', relevantInputs.length, 'number inputs:');
+                relevantInputs.forEach(input => {
+                    console.log('  Input:', {
+                        id: input.id,
+                        className: input.className,
+                        value: input.value,
+                        max: input.max,
+                        hasOnkeydown: input.hasAttribute('onkeydown'),
+                        onkeydownValue: input.getAttribute('onkeydown')?.substring(0, 100) + '...'
+                    });
+                });
+            }
+        }, 5000);
+        
+        // Add global test function for manual debugging
+        window.testPreventOverLimit = function() {
+            console.log('🧪 MANUAL TEST: Testing preventOverLimit method');
+            const testInput = document.querySelector('input[type="number"]');
+            if (testInput) {
+                console.log('🧪 Found test input:', testInput.id);
+                const fakeEvent = { keyCode: 49, key: '1', preventDefault: () => console.log('preventDefault called') };
+                try {
+                    if (window.unifiedTeller && window.unifiedTeller.preventOverLimit) {
+                        console.log('🧪 Calling preventOverLimit...');
+                        window.unifiedTeller.preventOverLimit(fakeEvent, testInput);
+                        console.log('🧪 preventOverLimit called successfully');
+                    } else {
+                        console.log('🧪 ERROR: preventOverLimit method not found');
+                    }
+                } catch (error) {
+                    console.log('🧪 ERROR calling preventOverLimit:', error);
+                }
+            } else {
+                console.log('🧪 No input found for testing');
+            }
+        };
+        
         // Add CSS for player suggestions
         const style = document.createElement('style');
         style.textContent = `
