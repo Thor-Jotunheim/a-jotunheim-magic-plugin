@@ -10,6 +10,7 @@ class UnifiedTeller {
         this.transactionMode = 'buy'; // buy, sell, admin
         this.cart = [];
         this.shopItems = [];
+        this.isTableView = false; // Track current view state
         
         this.initializeEventListeners();
         this.loadInitialData();
@@ -1426,17 +1427,19 @@ class UnifiedTeller {
         const toggleBtn = document.getElementById('toggle-view-btn');
         
         if (gridView && tableView && toggleBtn) {
-            // Button always shows "Toggle View" - just toggle between the two layouts
-            if (gridView.style.display === 'none') {
+            // Use flag to track state instead of DOM inspection
+            if (this.isTableView) {
                 // Currently showing table, switch back to grid view
                 gridView.style.display = 'grid';
                 tableView.style.display = 'none';
+                this.isTableView = false;
                 // Ensure grid is populated
                 this.renderItemsGrid(gridView);
             } else {
                 // Currently showing grid, switch to table view
                 gridView.style.display = 'none';
                 tableView.style.display = 'block';
+                this.isTableView = true;
                 // Ensure table is populated
                 this.renderItemsTable(tableView);
             }
@@ -2930,6 +2933,7 @@ class UnifiedTeller {
             gridContainer.style.display = 'grid';
             tableContainer.style.display = 'none';
             toggleBtn.textContent = 'Toggle View';
+            this.isTableView = false; // Reset to grid view
         }
         
         if (gridContainer) {
