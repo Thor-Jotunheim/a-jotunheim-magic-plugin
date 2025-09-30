@@ -58,6 +58,20 @@
     --red-11: hsl(358, 65%, 48.7%);
     --red-12: hsl(354, 50%, 14.6%);
     
+    /* Orange Colors */
+    --orange-1: hsl(24, 70%, 99%);
+    --orange-2: hsl(24, 83%, 97.6%);
+    --orange-3: hsl(24, 100%, 95.3%);
+    --orange-4: hsl(25, 100%, 92.2%);
+    --orange-5: hsl(25, 100%, 87.8%);
+    --orange-6: hsl(25, 100%, 81.8%);
+    --orange-7: hsl(24, 100%, 75.3%);
+    --orange-8: hsl(24, 100%, 68.2%);
+    --orange-9: hsl(24, 94%, 50%);
+    --orange-10: hsl(24, 100%, 46.5%);
+    --orange-11: hsl(24, 100%, 37%);
+    --orange-12: hsl(15, 60%, 17%);
+    
     /* Semantic Colors */
     --background: var(--gray-1);
     --foreground: var(--gray-12);
@@ -985,6 +999,52 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-weight: 500;
     color: var(--muted-foreground);
     font-size: var(--font-size-2);
+}
+
+/* Table Action Buttons */
+.table-action-btn {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    margin: 0 2px !important;
+    border-radius: 4px !important;
+    border: none !important;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    line-height: 1.2;
+    transition: all 0.2s ease;
+}
+
+.table-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-action-btn.btn-success {
+    background-color: var(--green-9) !important;
+    color: white !important;
+}
+
+.table-action-btn.btn-success:hover {
+    background-color: var(--green-10) !important;
+}
+
+.table-action-btn.btn-warning {
+    background-color: var(--orange-9) !important;
+    color: white !important;
+}
+
+.table-action-btn.btn-warning:hover {
+    background-color: var(--orange-10) !important;
+}
+
+.table-action-btn.btn-info {
+    background-color: var(--blue-9) !important;
+    color: white !important;
+}
+
+.table-action-btn.btn-info:hover {
+    background-color: var(--blue-10) !important;
 }
 
 /* Transaction List */

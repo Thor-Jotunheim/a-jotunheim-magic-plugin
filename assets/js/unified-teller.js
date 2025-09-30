@@ -2973,31 +2973,18 @@ class UnifiedTeller {
             return;
         }
 
-        const isTurninShop = this.selectedShopData && this.selectedShopData.shop_type === 'turnin_only';
-
-        // Update table headers for turn-in shops
+        // Dynamic table headers based on what actions are available
         const tableHeader = container.querySelector('thead tr');
-        if (tableHeader && isTurninShop) {
+        if (tableHeader) {
             tableHeader.innerHTML = `
                 <th>Item</th>
+                <th>Actions</th>
+                <th>Price/Points</th>
                 <th>Qty</th>
-                <th>Turn In</th>
-                <th>Points</th>
                 <th>Item</th>
+                <th>Actions</th>
+                <th>Price/Points</th>
                 <th>Qty</th>
-                <th>Turn In</th>
-                <th>Points</th>
-            `;
-        } else if (tableHeader && !isTurninShop) {
-            tableHeader.innerHTML = `
-                <th>Item</th>
-                <th>Buy</th>
-                <th>Sell</th>
-                <th>Price</th>
-                <th>Item</th>
-                <th>Buy</th>
-                <th>Sell</th>
-                <th>Price</th>
             `;
         }
 
@@ -3008,35 +2995,66 @@ class UnifiedTeller {
 
             const row = document.createElement('tr');
             
-            if (isTurninShop) {
-                row.innerHTML = `
-                    <td>${item1.item_name}</td>
-                    <td><input type="number" class="table-qty-input" id="table-qty-${item1.shop_item_id}" min="1" value="1"></td>
-                    <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToTurnin(${item1.shop_item_id})">Turn In</button></td>
-                    <td>${item1.event_points || 0}</td>
-                    ${item2 ? `
-                        <td>${item2.item_name}</td>
-                        <td><input type="number" class="table-qty-input" id="table-qty-${item2.shop_item_id}" min="1" value="1"></td>
-                        <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToTurnin(${item2.shop_item_id})">Turn In</button></td>
-                        <td>${item2.event_points || 0}</td>
-                    ` : '<td colspan="4"></td>'}
-                `;
-            } else {
-                row.innerHTML = `
-                    <td>${item1.item_name}</td>
-                    <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'buy')">Buy</button></td>
-                    <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item1.shop_item_id}, 'sell')">Sell</button></td>
-                    <td>${item1.unit_price || 0}</td>
-                    ${item2 ? `
-                        <td>${item2.item_name}</td>
-                        <td><button class="btn btn-sm btn-secondary" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'buy')">Buy</button></td>
-                        <td><button class="btn btn-sm btn-outline" onclick="window.unifiedTeller.addToCart(${item2.shop_item_id}, 'sell')">Sell</button></td>
-                        <td>${item2.unit_price || 0}</td>
-                    ` : '<td colspan="4"></td>'}
-                `;
-            }
+            // Generate action buttons and pricing for item1
+            const item1Actions = this.generateTableItemActions(item1);
+            const item1Price = this.getItemPriceDisplay(item1);
+            
+            // Generate action buttons and pricing for item2 (if exists)
+            const item2Actions = item2 ? this.generateTableItemActions(item2) : '';
+            const item2Price = item2 ? this.getItemPriceDisplay(item2) : '';
+            
+            row.innerHTML = `
+                <td>${item1.item_name}</td>
+                <td>${item1Actions}</td>
+                <td>${item1Price}</td>
+                <td><input type="number" class="table-qty-input" id="table-qty-${item1.shop_item_id}" min="1" value="1" max="999"></td>
+                ${item2 ? `
+                    <td>${item2.item_name}</td>
+                    <td>${item2Actions}</td>
+                    <td>${item2Price}</td>
+                    <td><input type="number" class="table-qty-input" id="table-qty-${item2.shop_item_id}" min="1" value="1" max="999"></td>
+                ` : '<td colspan="4"></td>'}
+            `;
+            
             tableBody.appendChild(row);
         }
+    }
+
+    generateTableItemActions(item) {
+        let actionsHTML = '';
+        
+        // Check for Buy button (buy=1 means customers can buy from shop)
+        if (item.buy == 1 || item.buy === true) {
+            actionsHTML += `<button class="btn btn-sm btn-success table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')" title="Buy from shop">Buy</button> `;
+        }
+        
+        // Check for Sell button (sell=1 means shop will buy from customers)
+        if (item.sell == 1 || item.sell === true) {
+            actionsHTML += `<button class="btn btn-sm btn-warning table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')" title="Sell to shop">Sell</button> `;
+        }
+        
+        // Check for Turn In button
+        if (item.turn_in == 1 || item.turn_in === true) {
+            actionsHTML += `<button class="btn btn-sm btn-info table-action-btn" onclick="window.unifiedTeller.addToTurnin(${item.shop_item_id})" title="Turn in for points">Turn In</button> `;
+        }
+        
+        // If turn-in item with event points, use different method
+        if (item.event_points !== undefined && item.event_points !== null) {
+            actionsHTML = `<button class="btn btn-sm btn-info table-action-btn" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})" title="Turn in for ${item.event_points} points">Turn In</button>`;
+        }
+        
+        return actionsHTML || '<span class="text-muted">No actions</span>';
+    }
+
+    getItemPriceDisplay(item) {
+        // For turn-in items, show event points
+        if (item.event_points !== undefined && item.event_points !== null) {
+            return `${item.event_points} pts`;
+        }
+        
+        // For regular items, show unit price
+        const unitPrice = item.unit_price || item.price || item.default_price || 0;
+        return `${unitPrice}`;
     }
 
     // Cart and transaction methods
