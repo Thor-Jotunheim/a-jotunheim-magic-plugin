@@ -66,8 +66,15 @@ class UnifiedTeller {
 
         // Transaction actions
         const clearTransactionBtn = document.getElementById('clear-transaction-btn');
+        console.log('DEBUG: Clear transaction button found:', clearTransactionBtn);
         if (clearTransactionBtn) {
-            clearTransactionBtn.addEventListener('click', () => this.clearCart());
+            clearTransactionBtn.addEventListener('click', () => {
+                console.log('DEBUG: Clear transaction button clicked!');
+                this.clearCart();
+            });
+            console.log('DEBUG: Clear transaction event listener attached');
+        } else {
+            console.log('ERROR: Clear transaction button not found!');
         }
         
         const recordTransactionBtn = document.getElementById('record-transaction-btn');
@@ -1614,9 +1621,9 @@ class UnifiedTeller {
     }
 
     clearCart() {
-        console.log('DEBUG: clearCart() called');
+        console.log('🚨 DEBUG: clearCart() method called - CART CLEARING STARTED');
         this.cart = [];
-        console.log(`DEBUG: Cart cleared. New length: ${this.cart.length}`);
+        console.log(`🚨 DEBUG: Cart cleared. New length: ${this.cart.length}`);
         
         this.updateCartDisplay();
         
@@ -1629,7 +1636,7 @@ class UnifiedTeller {
         
         // Go back to shop view after clearing cart
         this.showShopView();
-        console.log('DEBUG: clearCart() completed');
+        console.log('🚨 DEBUG: clearCart() completed - CART CLEARING FINISHED');
     }
 
     resetItemDisplay() {

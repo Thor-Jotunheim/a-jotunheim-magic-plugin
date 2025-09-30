@@ -209,7 +209,7 @@ function unified_teller_interface() {
                     <div class="form-field">
                         <div class="customer-search-container">
                             <div class="input-group">
-                                <button id="clear-transaction-btn" class="field-input clear-transaction-btn">Clear Transaction</button>
+                                <button id="clear-transaction-btn" class="field-input clear-transaction-btn" onclick="if(window.unifiedTeller) { console.log('🚨 DEBUG: Clear button onclick fired'); window.unifiedTeller.clearCart(); } else { console.log('ERROR: unifiedTeller not found'); }">Clear Transaction</button>
                             </div>
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
