@@ -451,8 +451,12 @@ class UnifiedTeller {
             this.updateViewCartButton();
             this.updateRecordTransactionButton();
             
-            // Ensure we're in shop view mode (but don't force display changes)
+            // Ensure we're in shop view mode and hide transaction summary
             this.isCartView = false;
+            const transactionSummaryCard = document.querySelector('.summary-card');
+            if (transactionSummaryCard) {
+                transactionSummaryCard.style.display = 'none';
+            }
         } else {
             // Reset dynamic header to default
             document.getElementById('dynamic-shop-title').textContent = 'Transaction Manager';
@@ -2322,6 +2326,12 @@ class UnifiedTeller {
             shopInventoryCard.style.display = 'none';
         }
         
+        // Show transaction summary section
+        const transactionSummaryCard = document.querySelector('.summary-card');
+        if (transactionSummaryCard) {
+            transactionSummaryCard.style.display = 'block';
+        }
+        
         // Switch buttons: hide View Cart, show Record Transaction
         const viewCartBtn = document.getElementById('view-cart-btn');
         const recordBtn = document.getElementById('record-transaction-btn');
@@ -2349,6 +2359,12 @@ class UnifiedTeller {
         const shopInventoryCard = document.querySelector('.items-card');
         if (shopInventoryCard) {
             shopInventoryCard.style.display = 'block';
+        }
+        
+        // Hide transaction summary section
+        const transactionSummaryCard = document.querySelector('.summary-card');
+        if (transactionSummaryCard) {
+            transactionSummaryCard.style.display = 'none';
         }
         
         // Switch buttons: show View Cart, hide Record Transaction
