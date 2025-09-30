@@ -1069,7 +1069,7 @@ class UnifiedTeller {
                                class="turnin-large-quantity-input" 
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
-                               onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)"
+                               onkeydown="window.unifiedTeller.preventOverLimit(event, this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                     </div>
@@ -1083,7 +1083,7 @@ class UnifiedTeller {
                                class="turnin-large-quantity-input" 
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
-                               onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)"
+                               onkeydown="window.unifiedTeller.preventOverLimit(event, this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
                     </div>
@@ -1722,6 +1722,45 @@ class UnifiedTeller {
         }
         
         return { allowed: true, message: 'Within limits' };
+    }
+
+    preventOverLimit(event, inputElement) {
+        // Allow navigation keys
+        const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+        if (allowedKeys.includes(event.key) || (event.key >= '0' && event.key <= '9')) {
+            
+            // For number keys, check if the resulting value would exceed max
+            if (event.key >= '0' && event.key <= '9') {
+                const currentValue = inputElement.value;
+                const cursorPos = inputElement.selectionStart;
+                const newValue = currentValue.slice(0, cursorPos) + event.key + currentValue.slice(cursorPos);
+                const numericValue = parseInt(newValue) || 0;
+                
+                let max = parseInt(inputElement.max) || 999;
+                
+                // For turn-in items, get dynamic max
+                if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
+                    const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+                    const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
+                    if (item) {
+                        const dynamicMax = this.getMaxAllowedTurnin(item);
+                        max = inputElement.id.includes('turnin-stack-qty-') ? 
+                            Math.floor(dynamicMax / parseInt(item.stack_size)) : 
+                            dynamicMax;
+                    }
+                }
+                
+                if (numericValue > max) {
+                    event.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Block all other keys
+        event.preventDefault();
+        return false;
     }
 
     generateLimitStatusDisplay(projectedDaily, turnInLimit, dailyTotal) {
@@ -2964,6 +3003,9 @@ class UnifiedTeller {
                     Math.floor(dynamicMax / parseInt(item.stack_size)) : 
                     dynamicMax;
                     
+                // Update the max attribute so it's consistent
+                inputElement.setAttribute('max', max);
+                    
                 console.log('DEBUG - enforceQuantityLimits for turn-in:', {
                     itemName: item.item_name,
                     inputId: inputElement.id,
@@ -2975,13 +3017,20 @@ class UnifiedTeller {
             }
         }
         
-        // Enforce limits in real-time
+        // Store cursor position to preserve it
+        const cursorPosition = inputElement.selectionStart;
+        
+        // Enforce limits in real-time - prevent typing beyond max
         if (value < min) value = min;
         if (value > max) value = max;
         
         // Only update if the value actually changed to prevent cursor jumping
         if (parseInt(inputElement.value) !== value) {
             inputElement.value = value;
+            // Restore cursor position
+            setTimeout(() => {
+                inputElement.setSelectionRange(cursorPosition, cursorPosition);
+            }, 0);
         }
         
         // Update progress display if this is a turn-in item
@@ -4140,27 +4189,24 @@ class UnifiedTeller {
             const projectedDaily = dailyTotal + parseInt(cartItem.quantity || 0);
             
             itemRow.innerHTML = `
-                <div class="cart-item-simple">
-                    <div class="cart-item-header">
-                        <span class="item-name">${cartItem.item_name}</span>
-                        <span class="item-action ${cartItem.action}" style="background-color: ${cartItem.action === 'sell' ? '#dc3545' : cartItem.action === 'buy' ? '#28a745' : cartItem.action === 'turnin' ? '#6c757d' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block;">${cartItem.action.toUpperCase()}</span>
-                        ${cartItem.action === 'turnin' && turnInLimit > 0 ? `<span class="item-requirement">Req: ${turnInLimit}</span>` : ''}
-                    </div>
-                    <div class="cart-item-quantity">
-                        <input type="number" class="cart-qty-input-enhanced" value="${cartItem.quantity}" 
-                               min="1" readonly 
-                               title="Go back to Shop Inventory to change quantity">
-                        ${cartItem.action === 'turnin' && turnInLimit > 0 ? 
-                            this.generateLimitStatusDisplay(projectedDaily, turnInLimit, dailyTotal) : 
-                            cartItem.action === 'turnin' ? 
-                                `<span class="daily-limit-enhanced">Last 24h: ${projectedDaily}</span>` :
-                                `<span class="stack-info-enhanced">Stack: ${cartItem.stack_size || 'N/A'}</span>`}
-                    </div>
-                    ${pricingSection}
-                    <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
-                        Remove
-                    </button>
+                <div class="item-info">
+                    <span class="item-name">${cartItem.item_name}</span>
+                    <span class="item-action ${cartItem.action}" style="background-color: ${cartItem.action === 'sell' ? '#dc3545' : cartItem.action === 'buy' ? '#28a745' : cartItem.action === 'turnin' ? '#6c757d' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block;">${cartItem.action.toUpperCase()}</span>
                 </div>
+                <div class="item-quantity">
+                    <input type="number" class="cart-qty-input" value="${cartItem.quantity}" 
+                           min="1" readonly style="background-color: #f8f9fa; cursor: not-allowed;" 
+                           title="Go back to Shop Inventory to change quantity">
+                    ${cartItem.action === 'turnin' && turnInLimit > 0 ? 
+                        `<span class="daily-limit-info">Last 24h: ${projectedDaily} / ${turnInLimit}</span>` : 
+                        cartItem.action === 'turnin' ? 
+                            `<span class="daily-limit-info">Last 24h: ${projectedDaily}</span>` :
+                            `<span class="stack-info">/ ${cartItem.stack_size}</span>`}
+                </div>
+                ${pricingSection}
+                <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
+                    Remove
+                </button>
             `;
             container.appendChild(itemRow);
 
