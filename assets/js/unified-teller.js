@@ -2240,12 +2240,15 @@ class UnifiedTeller {
                     input.value = cartState[inputId];
                     console.log(`Restored ${inputId} to value:`, cartState[inputId]);
                     
-                    // Update progress display for turn-in items
-                    if (inputId.includes('turn-in')) {
+                    // Update progress display for turn-in items (check for "turnin" without hyphen)
+                    if (inputId.includes('turnin')) {
                         this.updateProgressFromInput(inputId);
                     }
                 }
             });
+            
+            // Also trigger a general update of all visible progress displays to ensure consistency
+            this.updateAllProgressDisplays();
         }, 100); // Small delay to ensure DOM is updated
     }
 
@@ -2356,6 +2359,24 @@ class UnifiedTeller {
                 progressElement.innerHTML = this.generateProgressText(item, true);
             }
         }
+        
+        // Update turn-in tracking if in turn-in mode
+        if (this.getCurrentShopType() === 'turn-in_only') {
+            this.updateTurninTracking();
+        }
+    }
+
+    updateAllProgressDisplays() {
+        // Update all visible progress displays to reflect current quantity inputs
+        const progressElements = document.querySelectorAll('[id^="progress-"]');
+        progressElements.forEach(progressElement => {
+            const shopItemId = progressElement.id.replace('progress-', '');
+            const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
+                        this.shopItems.find(i => i.shop_item_id == shopItemId);
+            if (item) {
+                progressElement.innerHTML = this.generateProgressText(item, true);
+            }
+        });
         
         // Update turn-in tracking if in turn-in mode
         if (this.getCurrentShopType() === 'turn-in_only') {
