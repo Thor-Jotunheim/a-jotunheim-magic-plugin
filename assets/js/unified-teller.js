@@ -1620,6 +1620,12 @@ class UnifiedTeller {
         // Explicitly update button states after clearing cart
         this.updateViewCartButton();
         this.updateRecordTransactionButton();
+        
+        // Refresh item display to reset button states back to default
+        this.refreshItemDisplay();
+        
+        // Go back to shop view after clearing cart
+        this.showShopView();
     }
 
     toggleItemsView() {

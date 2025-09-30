@@ -209,7 +209,7 @@ function unified_teller_interface() {
                     <div class="form-field">
                         <div class="customer-search-container">
                             <div class="input-group">
-                                <button id="clear-transaction-btn" class="field-input">Clear Transaction</button>
+                                <button id="clear-transaction-btn" class="field-input clear-transaction-btn">Clear Transaction</button>
                             </div>
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
@@ -217,7 +217,7 @@ function unified_teller_interface() {
                         <!-- Cart View Toggle Button / Record Transaction Button -->
                         <div class="registration-button-container">
                                 <button id="view-cart-btn" class="register-new-player-btn" disabled>View Cart</button>
-                                <button id="record-transaction-btn" class="register-new-player-btn" disabled style="display: none;">Record Transaction</button>
+                                <button id="record-transaction-btn" class="register-new-player-btn record-transaction-btn" disabled style="display: none;">Record Transaction</button>
                         </div>
                     </div>
                 </div>
@@ -954,15 +954,16 @@ function unified_teller_interface() {
         border-color: #999;
     }
 
+    /* Record Transaction Button - Red */
     .record-transaction-btn {
-        background: #0073aa;
+        background: #dc3545;
         color: white;
-        border-color: #0073aa;
+        border-color: #dc3545;
     }
 
     .record-transaction-btn:hover:not(:disabled) {
-        background: #005a87;
-        border-color: #005a87;
+        background: #c82333;
+        border-color: #bd2130;
     }
 
     .record-transaction-btn:disabled {
@@ -971,6 +972,18 @@ function unified_teller_interface() {
         color: #666;
         cursor: not-allowed;
         opacity: 0.6;
+    }
+
+    /* Clear Transaction Button - Orange */
+    .clear-transaction-btn {
+        background: #fd7e14;
+        color: white;
+        border-color: #fd7e14;
+    }
+
+    .clear-transaction-btn:hover {
+        background: #e8650e;
+        border-color: #dc5f0a;
     }
 
 
