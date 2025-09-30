@@ -1685,6 +1685,58 @@ class UnifiedTeller {
         return 999; // No limit set
     }
 
+    checkTurninLimits(item, requestedQuantity) {
+        const dailyTotal = this.getDailyTurninTotal(item.item_name);
+        const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
+        
+        // Check if there's a limit at all
+        if (turnInRequirement <= 0) {
+            return { allowed: true, message: 'No limit set' };
+        }
+        
+        // Check current cart for this item
+        const existingCartItem = this.cart.find(cartItem => 
+            cartItem.item_name === item.item_name && cartItem.action === 'turnin'
+        );
+        const cartQuantity = existingCartItem ? existingCartItem.quantity : 0;
+        
+        // Calculate projected total after this transaction
+        const projectedTotal = dailyTotal + requestedQuantity;
+        
+        console.log('DEBUG - checkTurninLimits:', {
+            itemName: item.item_name,
+            dailyTotal,
+            cartQuantity,
+            requestedQuantity,
+            projectedTotal,
+            turnInRequirement,
+            wouldExceed: projectedTotal > turnInRequirement
+        });
+        
+        if (projectedTotal > turnInRequirement) {
+            const remaining = Math.max(0, turnInRequirement - dailyTotal);
+            return {
+                allowed: false,
+                message: `Cannot turn in ${requestedQuantity} ${item.item_name}. Would exceed daily limit! (${dailyTotal}/${turnInRequirement} already reached, ${remaining} remaining)`
+            };
+        }
+        
+        return { allowed: true, message: 'Within limits' };
+    }
+
+    generateLimitStatusDisplay(projectedDaily, turnInLimit, dailyTotal) {
+        const percentage = (projectedDaily / turnInLimit) * 100;
+        let cssClass = 'daily-limit-enhanced';
+        
+        if (projectedDaily >= turnInLimit) {
+            cssClass += ' at-limit';
+        } else if (percentage >= 90) {
+            cssClass += ' near-limit';
+        }
+        
+        return `<span class="${cssClass}">Last 24h: ${projectedDaily} / ${turnInLimit}</span>`;
+    }
+
     updateCartDisplay() {
         const cartItemsContainer = document.getElementById('cart-items');
         cartItemsContainer.innerHTML = '';
@@ -3607,10 +3659,10 @@ class UnifiedTeller {
             return;
         }
 
-        // Check daily limits
-        const maxAllowed = this.getMaxAllowedTurnin(item);
-        if (quantity > maxAllowed) {
-            this.showStatus(`Cannot turn in ${quantity} ${item.item_name}. Daily limit: ${maxAllowed} remaining (${this.getDailyTurninTotal(item.item_name)} already turned in today)`, 'error');
+        // Enhanced limit checking - consider existing cart items
+        const limitCheck = this.checkTurninLimits(item, quantity);
+        if (!limitCheck.allowed) {
+            this.showStatus(limitCheck.message, 'error');
             return;
         }
 
@@ -4061,22 +4113,36 @@ class UnifiedTeller {
                 `;
             }
             
+            // Enhanced cart display with better space utilization and turn-in limit tracking
+            const dailyTotal = cartItem.action === 'turnin' ? this.getDailyTurninTotal(cartItem.item_name) : 0;
+            const turnInLimit = cartItem.action === 'turnin' ? parseInt(cartItem.turn_in_requirement || 0) : 0;
+            const projectedDaily = dailyTotal + parseInt(cartItem.quantity || 0);
+            
             itemRow.innerHTML = `
-                <div class="item-info">
-                    <span class="item-name">${cartItem.item_name}</span>
-                    <span class="item-action ${cartItem.action}" style="background-color: ${cartItem.action === 'sell' ? '#dc3545' : cartItem.action === 'buy' ? '#28a745' : cartItem.action === 'turnin' ? '#6c757d' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block;">${cartItem.action.toUpperCase()}</span>
+                <div class="cart-item-header">
+                    <div class="item-info-enhanced">
+                        <span class="item-name-large">${cartItem.item_name}</span>
+                        <span class="item-action ${cartItem.action}" style="background-color: ${cartItem.action === 'sell' ? '#dc3545' : cartItem.action === 'buy' ? '#28a745' : cartItem.action === 'turnin' ? '#6c757d' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block;">${cartItem.action.toUpperCase()}</span>
+                        ${cartItem.action === 'turnin' && turnInLimit > 0 ? `<span class="item-requirement">Req: ${turnInLimit}</span>` : ''}
+                    </div>
+                    <button class="btn btn-sm btn-danger cart-remove-btn" onclick="window.unifiedTeller.removeFromCart(${index})">
+                        Remove
+                    </button>
                 </div>
-                <div class="item-quantity">
-                    <input type="number" class="cart-qty-input" value="${cartItem.quantity}" 
-                           min="1" onchange="window.unifiedTeller.updateCartItemQuantity(${index}, this.value)">
-                    ${cartItem.action === 'turnin' ? 
-                        `<span class="daily-limit-info">Last 24h: ${this.getDailyTurninTotal(cartItem.item_name)}</span>` : 
-                        `<span class="stack-info">/ ${cartItem.stack_size}</span>`}
+                <div class="cart-item-details">
+                    <div class="item-quantity-section">
+                        <label class="quantity-label">Quantity:</label>
+                        <input type="number" class="cart-qty-input-enhanced" value="${cartItem.quantity}" 
+                               min="1" readonly style="background-color: #f8f9fa; cursor: not-allowed; font-size: 16px; padding: 8px; width: 80px;" 
+                               title="Go back to Shop Inventory to change quantity">
+                        ${cartItem.action === 'turnin' && turnInLimit > 0 ? 
+                            this.generateLimitStatusDisplay(projectedDaily, turnInLimit, dailyTotal) : 
+                            cartItem.action === 'turnin' ? 
+                                `<span class="daily-limit-enhanced">Last 24h: ${projectedDaily}</span>` :
+                                `<span class="stack-info-enhanced">Stack: ${cartItem.stack_size || 'N/A'}</span>`}
+                    </div>
+                    ${pricingSection}
                 </div>
-                ${pricingSection}
-                <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
-                    Remove
-                </button>
             `;
             container.appendChild(itemRow);
 

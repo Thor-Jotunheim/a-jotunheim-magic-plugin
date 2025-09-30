@@ -2116,3 +2116,134 @@ button.btn.btn-success.stack-buy:hover {
     border-color: #218838 !important;
     color: white !important;
 }
+
+/* ========================================
+   ENHANCED CART DESIGN - v0.9.5.7.4+
+   ======================================== */
+
+/* Enhanced Cart Item Layout */
+.cart-item-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--gray-4);
+    padding-bottom: 8px;
+}
+
+.item-info-enhanced {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.item-name-large { 
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-12);
+    line-height: 1.2;
+}
+
+.item-requirement {
+    background-color: var(--blue-3);
+    color: var(--blue-11);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-block;
+    width: fit-content;
+}
+
+.cart-remove-btn {
+    margin-left: auto;
+    height: fit-content;
+}
+
+/* Enhanced Cart Item Details Section */
+.cart-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.item-quantity-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.quantity-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-11);
+    min-width: 70px;
+}
+
+.cart-qty-input-enhanced {
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+    width: 80px !important;
+    background-color: var(--gray-2) !important;
+    border: 1px solid var(--gray-6) !important;
+    border-radius: 6px !important;
+    cursor: not-allowed !important;
+    text-align: center;
+    font-weight: 600;
+}
+
+.cart-qty-input-enhanced:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Enhanced Progress Displays */
+.daily-limit-enhanced {
+    background-color: var(--blue-2);
+    color: var(--blue-11);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--blue-6);
+}
+
+.daily-limit-enhanced.at-limit {
+    background-color: var(--red-2);
+    color: var(--red-11);
+    border-color: var(--red-6);
+}
+
+.daily-limit-enhanced.near-limit {
+    background-color: var(--orange-2);
+    color: var(--orange-11);
+    border-color: var(--orange-6);
+}
+
+.stack-info-enhanced {
+    background-color: var(--gray-2);
+    color: var(--gray-11);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--gray-6);
+}
+
+/* Enhanced Transaction Item Spacing */
+.transaction-item {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid var(--gray-4) !important;
+    border-radius: 8px !important;
+    background-color: var(--gray-1) !important;
+}
+
+/* Orange colors for near-limit warnings */
+:root {
+    --orange-2: hsl(32, 100%, 97%);
+    --orange-6: hsl(32, 98%, 83%);
+    --orange-11: hsl(32, 98%, 45%);
+}
