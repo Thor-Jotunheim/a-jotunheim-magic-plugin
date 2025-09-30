@@ -2671,8 +2671,11 @@ class UnifiedTeller {
         let currentlySelected = 0;
         if (includeCurrent) {
             // Check if item is already in cart - if so, use cart quantity
+            console.log(`DEBUG: Searching for cart item with shop_item_id=${item.shop_item_id} and action='turnin'`);
+            console.log(`DEBUG: Available cart items:`, this.cart.map(c => ({shop_item_id: c.shop_item_id, action: c.action, quantity: c.quantity})));
+            
             const cartItem = this.cart.find(cartItem => 
-                cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'turnin'
+                cartItem.shop_item_id == item.shop_item_id && cartItem.action === 'turnin'
             );
             
             if (cartItem) {
