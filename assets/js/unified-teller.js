@@ -4481,6 +4481,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.debugEventListeners();
             }
         }, 10000);
+
+        // Add a TEST to check if ANY keydown events work on our inputs
+        setTimeout(() => {
+            console.log('🧪 TESTING KEYDOWN EVENTS ON INPUTS...');
+            const testInput = document.querySelector('input[id^="turnin-qty-"]');
+            if (testInput) {
+                console.log('🧪 Found test units input:', testInput.id);
+                console.log('🧪 onkeydown attribute:', testInput.getAttribute('onkeydown'));
+                
+                // Try to trigger the onkeydown manually
+                const fakeEvent = { 
+                    key: '5', 
+                    preventDefault: () => console.log('🧪 preventDefault called'),
+                    type: 'keydown'
+                };
+                
+                console.log('🧪 Manually triggering onkeydown...');
+                if (testInput.onkeydown) {
+                    testInput.onkeydown.call(testInput, fakeEvent);
+                } else {
+                    console.log('🧪 ERROR: No onkeydown function found on element');
+                }
+            }
+            
+            const testStackInput = document.querySelector('input[id^="turnin-stack-qty-"]');
+            if (testStackInput) {
+                console.log('🧪 Found test stack input:', testStackInput.id);
+                console.log('🧪 onkeydown attribute:', testStackInput.getAttribute('onkeydown'));
+                
+                // Try to trigger the onkeydown manually
+                const fakeEvent = { 
+                    key: '3', 
+                    preventDefault: () => console.log('🧪 stack preventDefault called'),
+                    type: 'keydown'
+                };
+                
+                console.log('🧪 Manually triggering stack onkeydown...');
+                if (testStackInput.onkeydown) {
+                    testStackInput.onkeydown.call(testStackInput, fakeEvent);
+                } else {
+                    console.log('🧪 ERROR: No onkeydown function found on stack element');
+                }
+            }
+        }, 15000);
+
+        // Test if addEventListener works where onkeydown attributes don't
+        setTimeout(() => {
+            console.log('🔬 TESTING addEventListener as alternative...');
+            const inputs = document.querySelectorAll('input[id^="turnin-qty-"], input[id^="turnin-stack-qty-"]');
+            inputs.forEach(input => {
+                // Remove existing event listener if any
+                input.removeEventListener('keydown', window.testKeydownHandler);
+                
+                // Add new event listener
+                const testHandler = function(event) {
+                    console.log('🔬 addEventListener KEYDOWN FIRED on', this.id, 'key:', event.key);
+                    
+                    // Call the same preventOverLimit logic
+                    if (window.unifiedTeller && window.unifiedTeller.preventOverLimit) {
+                        return window.unifiedTeller.preventOverLimit(event, this);
+                    }
+                };
+                
+                window.testKeydownHandler = testHandler;
+                input.addEventListener('keydown', testHandler);
+                
+                console.log('🔬 Added addEventListener to:', input.id);
+            });
+        }, 20000);
         
         // Add CSS for player suggestions
         const style = document.createElement('style');
