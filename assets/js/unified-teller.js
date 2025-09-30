@@ -775,6 +775,8 @@ class UnifiedTeller {
             return;
         }
         
+        // Ensure consistent display property
+        container.style.display = 'flex';
         container.innerHTML = '';
 
         if (this.shopItems.length === 0) {
@@ -2834,6 +2836,8 @@ class UnifiedTeller {
         const container = document.getElementById('turnin-items-grid');
         if (!container) return;
 
+        // Ensure consistent display property
+        container.style.display = 'flex';
         container.innerHTML = '';
 
         if (this.turninItems.length === 0) {
