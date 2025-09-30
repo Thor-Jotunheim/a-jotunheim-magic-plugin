@@ -4030,22 +4030,26 @@ class UnifiedTeller {
                     raw_addition: (cartItem.turn_in_quantity || 0) + cartItem.quantity
                 });
                 
-                const currentProgress = parseInt(cartItem.turn_in_quantity || 0) + parseInt(cartItem.quantity || 0);
-                const required = parseInt(cartItem.turn_in_requirement || 0);
+                // Fix double-counting: dailyTotal already includes turn_in_quantity from database
                 const dailyTotal = this.getDailyTurninTotal(cartItem.item_name);
+                const cartQuantity = parseInt(cartItem.quantity || 0);
+                const projectedTotal = dailyTotal + cartQuantity;
+                const required = parseInt(cartItem.turn_in_requirement || 0);
                 const remaining = Math.max(0, required - dailyTotal);
                 
-                console.log('DEBUG - Fixed progress calculation:', {
-                    currentProgress,
-                    required,
+                console.log('DEBUG - Fixed progress calculation (no double-counting):', {
                     dailyTotal,
-                    remaining
+                    cartQuantity,
+                    projectedTotal,
+                    required,
+                    remaining,
+                    oldDoubleCountMethod: parseInt(cartItem.turn_in_quantity || 0) + parseInt(cartItem.quantity || 0)
                 });
                 
                 pricingSection = `
                     <div class="item-pricing">
                         <span class="unit-price">${remaining} remaining</span>
-                        <span class="total-price">${dailyTotal + currentProgress} / ${required}</span>
+                        <span class="total-price">${projectedTotal} / ${required}</span>
                     </div>
                 `;
             } else {
