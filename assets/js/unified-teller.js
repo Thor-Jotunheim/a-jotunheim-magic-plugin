@@ -70,7 +70,13 @@ class UnifiedTeller {
         if (clearTransactionBtn) {
             clearTransactionBtn.addEventListener('click', () => {
                 console.log('DEBUG: Clear transaction button clicked!');
-                this.clearCart();
+                console.log('DEBUG: typeof this.clearCart:', typeof this.clearCart);
+                console.log('DEBUG: this:', this);
+                try {
+                    this.clearCart();
+                } catch (error) {
+                    console.error('ERROR calling clearCart():', error);
+                }
             });
             console.log('DEBUG: Clear transaction event listener attached');
         } else {
@@ -1621,22 +1627,32 @@ class UnifiedTeller {
     }
 
     clearCart() {
-        console.log('🚨 DEBUG: clearCart() method called - CART CLEARING STARTED');
+        console.log('🚨🚨🚨 DEBUG: clearCart() method ENTRY - CART CLEARING STARTED');
+        console.log('🚨 DEBUG: Current cart length before clearing:', this.cart.length);
+        console.log('🚨 DEBUG: Current cart contents:', this.cart);
+        
         this.cart = [];
-        console.log(`🚨 DEBUG: Cart cleared. New length: ${this.cart.length}`);
+        console.log('🚨 DEBUG: Cart array set to empty. New length:', this.cart.length);
         
         this.updateCartDisplay();
+        console.log('🚨 DEBUG: updateCartDisplay() called');
         
         // Explicitly update button states after clearing cart
         this.updateViewCartButton();
+        console.log('🚨 DEBUG: updateViewCartButton() called');
+        
         this.updateRecordTransactionButton();
+        console.log('🚨 DEBUG: updateRecordTransactionButton() called');
         
         // Reset item display without preserving quantities
         this.resetItemDisplay();
+        console.log('🚨 DEBUG: resetItemDisplay() called');
         
         // Go back to shop view after clearing cart
         this.showShopView();
-        console.log('🚨 DEBUG: clearCart() completed - CART CLEARING FINISHED');
+        console.log('🚨 DEBUG: showShopView() called');
+        
+        console.log('🚨🚨🚨 DEBUG: clearCart() completed - CART CLEARING FINISHED');
     }
 
     resetItemDisplay() {
