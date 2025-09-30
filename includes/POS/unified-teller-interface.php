@@ -976,6 +976,7 @@ function unified_teller_interface() {
         background: #28a745;
         color: white;
         border-color: #28a745;
+        min-height: 38px; /* Match other action buttons */
     }
 
     .view-cart-btn:hover:not(:disabled) {

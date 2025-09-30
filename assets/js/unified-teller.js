@@ -446,6 +446,10 @@ class UnifiedTeller {
             } else {
                 await this.loadShopItems(shopId);
             }
+            
+            // Initialize button states after shop selection
+            this.updateViewCartButton();
+            this.updateRecordTransactionButton();
         } else {
             // Reset dynamic header to default
             document.getElementById('dynamic-shop-title').textContent = 'Transaction Manager';
@@ -1584,6 +1588,10 @@ class UnifiedTeller {
     clearCart() {
         this.cart = [];
         this.updateCartDisplay();
+        
+        // Explicitly update button states after clearing cart
+        this.updateViewCartButton();
+        this.updateRecordTransactionButton();
     }
 
     toggleItemsView() {
@@ -3146,6 +3154,11 @@ class UnifiedTeller {
 
         console.log('Added turn-in item to cart:', item.item_name, 'Cart now has', this.cart.length, 'items');
         this.updateCartDisplay();
+        
+        // Explicitly update cart view buttons
+        this.updateViewCartButton();
+        this.updateRecordTransactionButton();
+        
         this.showStatus(`Added ${item.item_name} to turn-in cart`, 'success');
     }
 
@@ -3215,6 +3228,11 @@ class UnifiedTeller {
 
         console.log('Added turn-in item to cart:', item.item_name, 'quantity:', quantity, 'Cart now has', this.cart.length, 'items');
         this.updateCartDisplay();
+        
+        // Explicitly update cart view buttons
+        this.updateViewCartButton();
+        this.updateRecordTransactionButton();
+        
         this.showStatus(`Added ${quantity} ${item.item_name} to turn-in cart`, 'success');
     }
 
