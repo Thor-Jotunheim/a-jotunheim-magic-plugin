@@ -1678,7 +1678,36 @@ class UnifiedTeller {
                     input.value = quantities[inputId];
                 }
             });
-        }, 50);
+            
+            // Force a second button state update after quantities are restored
+            console.log('DEBUG: Forcing button state update after quantity restoration');
+            this.forceButtonStateUpdate();
+        }, 100);
+    }
+
+    forceButtonStateUpdate() {
+        // Find all turn-in buttons and update their text/class based on cart state
+        const turninButtons = document.querySelectorAll('button[onclick*="addTurninItemWithQuantity"], button[onclick*="addTurninItem"]');
+        
+        turninButtons.forEach(button => {
+            const onclickAttr = button.getAttribute('onclick');
+            const shopItemIdMatch = onclickAttr.match(/\((\d+)\)/);
+            
+            if (shopItemIdMatch) {
+                const shopItemId = parseInt(shopItemIdMatch[1]);
+                const inCart = this.cart.some(cartItem => cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin');
+                
+                if (inCart && button.textContent === 'Turn In') {
+                    button.textContent = 'Update';
+                    button.classList.add('update-btn');
+                    console.log(`DEBUG: Updated button text to "Update" for item ${shopItemId}`);
+                } else if (!inCart && button.textContent === 'Update') {
+                    button.textContent = 'Turn In';
+                    button.classList.remove('update-btn');
+                    console.log(`DEBUG: Updated button text to "Turn In" for item ${shopItemId}`);
+                }
+            }
+        });
     }
 
     showTransactionModal() {
@@ -3217,6 +3246,9 @@ class UnifiedTeller {
         
         // Refresh display to update button states
         this.refreshItemDisplay();
+        
+        // Recalculate progress displays after adding to cart
+        this.recalculateAllProgressDisplays();
     }
 
     addTurninItemWithQuantity(shopItemId) {
@@ -3299,6 +3331,9 @@ class UnifiedTeller {
         
         // Refresh display to update button states
         this.refreshItemDisplay();
+        
+        // Recalculate progress displays after adding to cart
+        this.recalculateAllProgressDisplays();
     }
 
 
