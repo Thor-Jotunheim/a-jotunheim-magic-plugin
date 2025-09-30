@@ -2951,8 +2951,29 @@ class UnifiedTeller {
 
     enforceQuantityLimits(inputElement) {
         const min = parseInt(inputElement.min) || 0;
-        const max = parseInt(inputElement.max) || 999;
+        let max = parseInt(inputElement.max) || 999;
         let value = parseInt(inputElement.value) || 0;
+        
+        // For turn-in items, recalculate max dynamically to account for cart changes
+        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
+            const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+            const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
+            if (item) {
+                const dynamicMax = this.getMaxAllowedTurnin(item);
+                max = inputElement.id.includes('turnin-stack-qty-') ? 
+                    Math.floor(dynamicMax / parseInt(item.stack_size)) : 
+                    dynamicMax;
+                    
+                console.log('DEBUG - enforceQuantityLimits for turn-in:', {
+                    itemName: item.item_name,
+                    inputId: inputElement.id,
+                    originalMax: inputElement.max,
+                    dynamicMax: max,
+                    currentValue: value,
+                    willClamp: value > max
+                });
+            }
+        }
         
         // Enforce limits in real-time
         if (value < min) value = min;
@@ -4119,21 +4140,15 @@ class UnifiedTeller {
             const projectedDaily = dailyTotal + parseInt(cartItem.quantity || 0);
             
             itemRow.innerHTML = `
-                <div class="cart-item-header">
-                    <div class="item-info-enhanced">
-                        <span class="item-name-large">${cartItem.item_name}</span>
+                <div class="cart-item-simple">
+                    <div class="cart-item-header">
+                        <span class="item-name">${cartItem.item_name}</span>
                         <span class="item-action ${cartItem.action}" style="background-color: ${cartItem.action === 'sell' ? '#dc3545' : cartItem.action === 'buy' ? '#28a745' : cartItem.action === 'turnin' ? '#6c757d' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block;">${cartItem.action.toUpperCase()}</span>
                         ${cartItem.action === 'turnin' && turnInLimit > 0 ? `<span class="item-requirement">Req: ${turnInLimit}</span>` : ''}
                     </div>
-                    <button class="btn btn-sm btn-danger cart-remove-btn" onclick="window.unifiedTeller.removeFromCart(${index})">
-                        Remove
-                    </button>
-                </div>
-                <div class="cart-item-details">
-                    <div class="item-quantity-section">
-                        <label class="quantity-label">Quantity:</label>
+                    <div class="cart-item-quantity">
                         <input type="number" class="cart-qty-input-enhanced" value="${cartItem.quantity}" 
-                               min="1" readonly style="background-color: #f8f9fa; cursor: not-allowed; font-size: 16px; padding: 8px; width: 80px;" 
+                               min="1" readonly 
                                title="Go back to Shop Inventory to change quantity">
                         ${cartItem.action === 'turnin' && turnInLimit > 0 ? 
                             this.generateLimitStatusDisplay(projectedDaily, turnInLimit, dailyTotal) : 
@@ -4142,6 +4157,9 @@ class UnifiedTeller {
                                 `<span class="stack-info-enhanced">Stack: ${cartItem.stack_size || 'N/A'}</span>`}
                     </div>
                     ${pricingSection}
+                    <button class="btn btn-sm btn-danger" onclick="window.unifiedTeller.removeFromCart(${index})">
+                        Remove
+                    </button>
                 </div>
             `;
             container.appendChild(itemRow);

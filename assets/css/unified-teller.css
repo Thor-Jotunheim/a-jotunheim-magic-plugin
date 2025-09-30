@@ -2121,28 +2121,24 @@ button.btn.btn-success.stack-buy:hover {
    ENHANCED CART DESIGN - v0.9.5.7.4+
    ======================================== */
 
-/* Enhanced Cart Item Layout */
-.cart-item-header {
-    display: flex;
-    justify-content: between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--gray-4);
-    padding-bottom: 8px;
-}
-
-.item-info-enhanced {
-    flex-grow: 1;
+/* Simplified Cart Item Layout */
+.cart-item-simple {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
-.item-name-large { 
-    font-size: 18px;
+.cart-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cart-item-header .item-name {
+    font-size: 16px;
     font-weight: 600;
     color: var(--gray-12);
-    line-height: 1.2;
 }
 
 .item-requirement {
@@ -2153,33 +2149,13 @@ button.btn.btn-success.stack-buy:hover {
     font-size: 11px;
     font-weight: 500;
     display: inline-block;
-    width: fit-content;
 }
 
-.cart-remove-btn {
-    margin-left: auto;
-    height: fit-content;
-}
-
-/* Enhanced Cart Item Details Section */
-.cart-item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.item-quantity-section {
+.cart-item-quantity {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-}
-
-.quantity-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--gray-11);
-    min-width: 70px;
 }
 
 .cart-qty-input-enhanced {
@@ -2192,6 +2168,27 @@ button.btn.btn-success.stack-buy:hover {
     cursor: not-allowed !important;
     text-align: center;
     font-weight: 600;
+    -moz-appearance: textfield !important; /* Remove arrows in Firefox */
+    appearance: textfield !important; /* Remove arrows standard property */
+}
+
+/* Remove input number arrows in WebKit browsers */
+.cart-qty-input-enhanced::-webkit-outer-spin-button,
+.cart-qty-input-enhanced::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Remove spinner arrows from all quantity inputs to prevent confusion */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
 }
 
 .cart-qty-input-enhanced:focus {
