@@ -1763,8 +1763,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .customer-payment-actions-row {
     display: flex;
     gap: var(--space-4);
-    margin-bottom: var(--space-6);
     align-items: stretch;
+    margin-bottom: 0 !important;
 }
 
 .customer-card {
