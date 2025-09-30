@@ -1138,18 +1138,24 @@ function unified_teller_interface() {
         background: #28a745;
         color: white;
         border-color: #28a745;
+        cursor: pointer !important; /* Override any inherited cursor styles */
     }
 
     #view-cart-btn:hover:not(:disabled) {
         background: #218838;
         border-color: #1e7e34;
+        cursor: pointer !important; /* Override any inherited cursor styles */
+    }
+
+    #view-cart-btn:not(:disabled) {
+        cursor: pointer !important; /* Ensure pointer cursor when not disabled */
     }
 
     #view-cart-btn:disabled {
         background: #6c757d;
         border-color: #6c757d;
         color: white;
-        cursor: not-allowed;
+        cursor: not-allowed !important; /* Only show not-allowed when actually disabled */
         opacity: 0.6;
     }
     </style>
