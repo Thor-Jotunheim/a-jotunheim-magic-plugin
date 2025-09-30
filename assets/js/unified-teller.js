@@ -1725,6 +1725,12 @@ class UnifiedTeller {
     }
 
     preventOverLimit(event, inputElement) {
+        console.log('preventOverLimit called', {
+            key: event.key,
+            inputId: inputElement.id,
+            currentValue: inputElement.value
+        });
+        
         // Allow navigation keys
         const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
         if (allowedKeys.includes(event.key) || (event.key >= '0' && event.key <= '9')) {
@@ -1757,7 +1763,18 @@ class UnifiedTeller {
                             totalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + numericValue * parseInt(item.stack_size);
                         }
                         
+                        console.log('Turn-in validation check', {
+                            shopItemId,
+                            numericValue,
+                            totalUnits,
+                            dynamicMax,
+                            stackSize: item.stack_size,
+                            unitsValue: unitsInput ? unitsInput.value : 'no units input',
+                            stacksValue: stacksInput ? stacksInput.value : 'no stacks input'
+                        });
+                        
                         if (totalUnits > dynamicMax) {
+                            console.log('BLOCKING keystroke - total would exceed limit');
                             event.preventDefault();
                             return false;
                         }
