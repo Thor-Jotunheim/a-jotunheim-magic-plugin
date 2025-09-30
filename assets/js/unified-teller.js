@@ -845,27 +845,18 @@ class UnifiedTeller {
     }
 
     renderShopItems() {
-        const container = document.getElementById('items-grid-view');
-        if (!container) {
-            console.error('Shop items container not found: items-grid-view');
-            return;
-        }
-        
-        // Ensure consistent display property
-        container.style.display = 'flex';
-        container.innerHTML = '';
-
-        if (this.shopItems.length === 0) {
-            container.innerHTML = '<div class="no-items">No items available for this shop.</div>';
-            return;
-        }
-
-        this.shopItems.forEach(item => {
-            if (item.is_available == 1) {
-                const itemCard = this.createItemCard(item);
-                container.appendChild(itemCard);
+        // Respect current view mode when re-rendering
+        if (this.isTableView) {
+            const tableContainer = document.getElementById('items-table-view');
+            if (tableContainer) {
+                this.renderItemsTable(tableContainer);
             }
-        });
+        } else {
+            const gridContainer = document.getElementById('items-grid-view');
+            if (gridContainer) {
+                this.renderItemsGrid(gridContainer);
+            }
+        }
     }
 
     createItemCard(item) {
