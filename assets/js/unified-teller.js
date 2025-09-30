@@ -73,9 +73,12 @@ class UnifiedTeller {
                 console.log('DEBUG: typeof this.clearCart:', typeof this.clearCart);
                 console.log('DEBUG: this:', this);
                 try {
+                    console.log('🚨 ABOUT TO CALL clearCart()');
                     this.clearCart();
+                    console.log('🚨 clearCart() CALL COMPLETED');
                 } catch (error) {
-                    console.error('ERROR calling clearCart():', error);
+                    console.error('🚨 ERROR calling clearCart():', error);
+                    console.error('🚨 Error stack:', error.stack);
                 }
             });
             console.log('DEBUG: Clear transaction event listener attached');
@@ -1763,6 +1766,9 @@ class UnifiedTeller {
     }
 
     forceButtonStateUpdate() {
+        console.log('🚨 DEBUG: forceButtonStateUpdate() called, cart length:', this.cart.length);
+        console.log('🚨 DEBUG: Cart contents:', this.cart);
+        
         // Find all turn-in buttons and update their text/class based on cart state
         const turninButtons = document.querySelectorAll([
             'button[onclick*="addTurninItemWithQuantity"]',
@@ -1774,7 +1780,7 @@ class UnifiedTeller {
             'button.table-action-btn[onclick*="addToTurnin"]'
         ].join(', '));
         
-        console.log(`DEBUG: Found ${turninButtons.length} turn-in buttons to update`);
+        console.log(`🚨 DEBUG: Found ${turninButtons.length} turn-in buttons to update`);
         
         turninButtons.forEach(button => {
             const onclickAttr = button.getAttribute('onclick');
@@ -1787,19 +1793,21 @@ class UnifiedTeller {
                 const shopItemId = parseInt(shopItemIdMatch[1]);
                 const inCart = this.cart.some(cartItem => cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin');
                 
-                console.log(`DEBUG: Button for item ${shopItemId}: inCart=${inCart}, current text="${button.textContent.trim()}"`);
+                console.log(`🚨 DEBUG: Button for item ${shopItemId}: inCart=${inCart}, current text="${button.textContent.trim()}", cart.length=${this.cart.length}`);
                 
                 if (inCart && button.textContent.trim() === 'Turn In') {
                     button.textContent = 'Update';
                     button.classList.add('update-btn');
-                    console.log(`DEBUG: Updated button text to "Update" for item ${shopItemId}`);
+                    console.log(`🚨 DEBUG: Updated button text to "Update" for item ${shopItemId}`);
                 } else if (!inCart && button.textContent.trim() === 'Update') {
                     button.textContent = 'Turn In';
                     button.classList.remove('update-btn');
-                    console.log(`DEBUG: Updated button text to "Turn In" for item ${shopItemId}`);
+                    console.log(`🚨 DEBUG: Updated button text to "Turn In" for item ${shopItemId}`);
                 }
             }
         });
+        
+        console.log('🚨 DEBUG: forceButtonStateUpdate() completed');
     }
 
     showTransactionModal() {
@@ -2436,17 +2444,20 @@ class UnifiedTeller {
     }
 
     showShopView() {
-        console.log('Switching to shop view');
+        console.log('🚨 DEBUG: showShopView() called');
+        console.log('🚨 DEBUG: Setting isCartView to false');
         this.isCartView = false;
         
         // Show shop inventory section
         const shopInventoryCard = document.querySelector('.items-card');
+        console.log('🚨 DEBUG: shopInventoryCard found:', !!shopInventoryCard);
         if (shopInventoryCard) {
             shopInventoryCard.style.display = 'block';
         }
         
         // Hide transaction summary section
         const transactionSummaryCard = document.querySelector('.summary-card');
+        console.log('🚨 DEBUG: transactionSummaryCard found:', !!transactionSummaryCard);
         if (transactionSummaryCard) {
             transactionSummaryCard.style.display = 'none';
         }
@@ -2455,6 +2466,8 @@ class UnifiedTeller {
         const viewCartBtn = document.getElementById('view-cart-btn');
         const recordBtn = document.getElementById('record-transaction-btn');
         const backBtn = document.getElementById('back-to-shop-btn');
+        
+        console.log('🚨 DEBUG: Buttons found - viewCart:', !!viewCartBtn, 'record:', !!recordBtn, 'back:', !!backBtn);
         
         if (viewCartBtn) viewCartBtn.style.display = 'inline-block';
         if (recordBtn) recordBtn.style.display = 'none';
@@ -2472,13 +2485,33 @@ class UnifiedTeller {
 
     updateViewCartButton() {
         const viewCartBtn = document.getElementById('view-cart-btn');
+        console.log('🚨 DEBUG: updateViewCartButton() called');
+        console.log('🚨 DEBUG: viewCartBtn found:', !!viewCartBtn);
+        console.log('🚨 DEBUG: cart length:', this.cart ? this.cart.length : 'undefined');
+        console.log('🚨 DEBUG: cart contents:', this.cart);
+        
         if (viewCartBtn) {
             const hasItems = this.cart && this.cart.length > 0;
-            console.log('Updating View Cart button:', { hasItems, cartLength: this.cart ? this.cart.length : 'undefined' });
+            console.log('🚨 DEBUG: Updating View Cart button:', { hasItems, cartLength: this.cart ? this.cart.length : 'undefined' });
+            
+            // Force remove disabled state and update regardless of visibility
             viewCartBtn.disabled = !hasItems;
             viewCartBtn.textContent = hasItems ? `View Cart (${this.cart.length})` : 'View Cart';
+            
+            // Update button styling based on cart state
+            if (hasItems) {
+                viewCartBtn.style.backgroundColor = '#28a745';
+                viewCartBtn.style.borderColor = '#28a745';
+                viewCartBtn.style.color = 'white';
+            } else {
+                viewCartBtn.style.backgroundColor = '#6c757d';
+                viewCartBtn.style.borderColor = '#6c757d';
+                viewCartBtn.style.color = 'white';
+            }
+            
+            console.log('🚨 DEBUG: View Cart button updated - disabled:', viewCartBtn.disabled, 'text:', viewCartBtn.textContent);
         } else {
-            console.log('View Cart button not found');
+            console.log('🚨 ERROR: View Cart button not found');
         }
     }
 
