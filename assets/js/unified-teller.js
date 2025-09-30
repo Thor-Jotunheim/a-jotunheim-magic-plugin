@@ -3552,10 +3552,7 @@ class UnifiedTeller {
         const actionText = existingItem ? 'Updated' : 'Added';
         this.showStatus(`${actionText} ${quantityDesc} of ${item.item_name} in cart (${action})`, 'success');
 
-        // Reset quantity input
-        if (qtyInput) {
-            qtyInput.value = 0;
-        }
+        // Don't reset quantity input - keep values for update functionality
         
         // Refresh display to update button states
         this.refreshItemDisplay();
@@ -3601,10 +3598,10 @@ class UnifiedTeller {
         this.updateTurninDisplay();
         this.showStatus(`Added ${quantity} ${item.item_name} to turn-in list`, 'success');
 
-        // Reset quantity input
-        if (qtyInput) {
-            qtyInput.value = 0;
-        }
+        // Don't reset quantity input - keep values for update functionality
+        
+        // Refresh display to update button states
+        this.refreshItemDisplay();
     }
 
     updateCartDisplay() {
