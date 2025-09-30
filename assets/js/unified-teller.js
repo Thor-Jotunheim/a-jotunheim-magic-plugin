@@ -2268,9 +2268,12 @@ class UnifiedTeller {
     updateViewCartButton() {
         const viewCartBtn = document.getElementById('view-cart-btn');
         if (viewCartBtn) {
-            const hasItems = this.cart.length > 0;
+            const hasItems = this.cart && this.cart.length > 0;
+            console.log('Updating View Cart button:', { hasItems, cartLength: this.cart ? this.cart.length : 'undefined' });
             viewCartBtn.disabled = !hasItems;
             viewCartBtn.textContent = hasItems ? `View Cart (${this.cart.length})` : 'View Cart';
+        } else {
+            console.log('View Cart button not found');
         }
     }
 
@@ -3487,6 +3490,10 @@ class UnifiedTeller {
 
         this.updateCartDisplay();
         this.updatePaymentCalculations();
+        
+        // Update button states when items are added to cart
+        this.updateViewCartButton();
+        this.updateRecordTransactionButton();
         
         const quantityDesc = quantityType === 'stack' ? 
             `${qtyInput.value} stack(s) (${quantity} items)` : 
