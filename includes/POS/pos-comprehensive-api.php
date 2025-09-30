@@ -2648,6 +2648,10 @@ function jotun_api_add_transaction($request) {
         jotun_ensure_turnin_tracker_column($item_name);
         jotun_update_turnin_tracker($shop_id, $item_name, $quantity);
         
+        // CRITICAL FIX: Update turn_in_quantity in jotun_shop_items table
+        // This is what the unified teller interface reads for the "collected" display
+        jotun_update_shop_item_turnin_quantity($shop_id, $item_name, $quantity);
+        
         error_log("Turn-in transaction added successfully with ID: " . $wpdb->insert_id);
         return new WP_REST_Response(['message' => 'Turn-in transaction recorded successfully', 'id' => $wpdb->insert_id, 'table' => 'jotun_turn_ins'], 201);
         
@@ -3811,4 +3815,52 @@ function jotun_sanitize_item_column_name($item_name) {
     }
     
     return $column_name;
+}
+
+/**
+ * Update the turn_in_quantity field in jotun_shop_items table when transactions are recorded
+ * This ensures the unified teller interface shows the correct "collected" numbers
+ */
+function jotun_update_shop_item_turnin_quantity($shop_id, $item_name, $quantity_to_add) {
+    global $wpdb;
+    
+    // Find the shop item record that matches this shop and item
+    $shop_item = $wpdb->get_row($wpdb->prepare(
+        "SELECT si.shop_item_id, si.turn_in_quantity, si.item_id, ml.item_name as master_name
+         FROM jotun_shop_items si
+         LEFT JOIN jotun_itemlist ml ON si.item_id = ml.id
+         WHERE si.shop_id = %d 
+         AND (si.item_name = %s OR ml.item_name = %s)
+         AND si.turn_in = 1
+         LIMIT 1",
+        $shop_id,
+        $item_name,
+        $item_name
+    ));
+    
+    if (!$shop_item) {
+        error_log("jotun_update_shop_item_turnin_quantity: No shop item found for shop_id=$shop_id, item_name='$item_name'");
+        return false;
+    }
+    
+    // Calculate new turn_in_quantity by adding the transaction quantity
+    $current_quantity = intval($shop_item->turn_in_quantity);
+    $new_quantity = $current_quantity + intval($quantity_to_add);
+    
+    // Update the turn_in_quantity field
+    $result = $wpdb->update(
+        'jotun_shop_items',
+        array('turn_in_quantity' => $new_quantity),
+        array('shop_item_id' => $shop_item->shop_item_id),
+        array('%d'),
+        array('%d')
+    );
+    
+    if ($result === false) {
+        error_log("jotun_update_shop_item_turnin_quantity: Failed to update shop item - " . $wpdb->last_error);
+        return false;
+    }
+    
+    error_log("jotun_update_shop_item_turnin_quantity: Updated shop_item_id={$shop_item->shop_item_id} from $current_quantity to $new_quantity (+$quantity_to_add)");
+    return true;
 }
