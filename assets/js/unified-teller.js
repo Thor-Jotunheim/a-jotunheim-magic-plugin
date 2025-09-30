@@ -1420,6 +1420,9 @@ class UnifiedTeller {
                 this.currentCustomer = player;
                 this.showValidationIcon('valid');
                 
+                // Clear any customer name field highlighting
+                this.clearCustomerNameHighlight();
+                
                 // Update all button states when customer is validated
                 this.updateViewCartButton();
                 this.updateRecordTransactionButton();
@@ -1464,6 +1467,58 @@ class UnifiedTeller {
                     this.registerNewPlayer();
                 }
             });
+        }
+    }
+
+    // Customer validation helpers
+    validateCustomerForAction() {
+        if (!this.currentCustomer) {
+            this.highlightCustomerNameFieldAsRequired();
+            this.showStatus('Please enter a customer name before adding items to cart.', 'error');
+            return false;
+        }
+        this.clearCustomerNameHighlight();
+        return true;
+    }
+
+    highlightCustomerNameFieldAsRequired() {
+        const customerNameInput = document.getElementById('customer-name');
+        const turninCustomerNameInput = document.getElementById('turnin-customer-name');
+        
+        if (customerNameInput) {
+            customerNameInput.style.borderColor = '#dc3545';
+            customerNameInput.style.backgroundColor = '#fff5f5';
+            customerNameInput.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+        }
+        
+        if (turninCustomerNameInput) {
+            turninCustomerNameInput.style.borderColor = '#dc3545';
+            turninCustomerNameInput.style.backgroundColor = '#fff5f5';
+            turninCustomerNameInput.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+        }
+        
+        // Auto-focus the customer name field to guide user
+        if (customerNameInput && customerNameInput.offsetParent !== null) {
+            customerNameInput.focus();
+        } else if (turninCustomerNameInput && turninCustomerNameInput.offsetParent !== null) {
+            turninCustomerNameInput.focus();
+        }
+    }
+
+    clearCustomerNameHighlight() {
+        const customerNameInput = document.getElementById('customer-name');
+        const turninCustomerNameInput = document.getElementById('turnin-customer-name');
+        
+        if (customerNameInput) {
+            customerNameInput.style.borderColor = '';
+            customerNameInput.style.backgroundColor = '';
+            customerNameInput.style.boxShadow = '';
+        }
+        
+        if (turninCustomerNameInput) {
+            turninCustomerNameInput.style.borderColor = '';
+            turninCustomerNameInput.style.backgroundColor = '';
+            turninCustomerNameInput.style.boxShadow = '';
         }
     }
 
@@ -1538,6 +1593,12 @@ class UnifiedTeller {
 
     addToCart(item, quantity = 1, price = null) {
         console.log('addToCart called with:', item.item_name, 'quantity:', quantity, 'price:', price);
+        
+        // Validate customer first
+        if (!this.validateCustomerForAction()) {
+            return;
+        }
+
         if (!this.selectedShop) {
             this.showStatus('Please select a shop first', 'error');
             return;
@@ -3372,6 +3433,11 @@ class UnifiedTeller {
 
 
     addTurninItem(shopItemId) {
+        // Validate customer first
+        if (!this.validateCustomerForAction()) {
+            return;
+        }
+
         // Get units input
         const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
@@ -3454,6 +3520,11 @@ class UnifiedTeller {
     }
 
     addTurninItemWithQuantity(shopItemId) {
+        // Validate customer first
+        if (!this.validateCustomerForAction()) {
+            return;
+        }
+
         // Get units input
         const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
@@ -3758,6 +3829,11 @@ class UnifiedTeller {
     }
 
     addToCart(shopItemId, action = 'buy', quantityType = 'individual') {
+        // Validate customer first
+        if (!this.validateCustomerForAction()) {
+            return;
+        }
+
         const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
         if (!item) {
             this.showStatus('Item not found', 'error');
