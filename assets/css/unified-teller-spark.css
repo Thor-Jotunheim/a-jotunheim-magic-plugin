@@ -1586,9 +1586,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .cart-qty-input {
-    width: 50px;
-    padding: 2px 4px;
+    width: 140px !important;
+    height: 60px !important;
+    padding: 12px !important;
+    font-size: 28px !important;
+    font-weight: bold !important;
+    text-align: center !important;
     margin-right: var(--space-1);
+    border: 2px solid var(--gray-6) !important;
+    border-radius: 8px !important;
+    background: white !important;
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
 }
 
 
