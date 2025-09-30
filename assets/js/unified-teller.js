@@ -2662,17 +2662,27 @@ class UnifiedTeller {
         
         let currentlySelected = 0;
         if (includeCurrent) {
-            // Get units input
-            const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
-            const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+            // Check if item is already in cart - if so, use cart quantity
+            const cartItem = this.cart.find(cartItem => 
+                cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'turnin'
+            );
             
-            // Get stacks input if it exists
-            const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
-            const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
-            const stackSize = parseInt(item.stack_size) || 1;
-            
-            // Calculate total: units + (stacks * stackSize)
-            currentlySelected = units + (stacks * stackSize);
+            if (cartItem) {
+                // Item is in cart - use cart quantity as current selection
+                currentlySelected = cartItem.quantity;
+                console.log(`DEBUG: Using cart quantity ${cartItem.quantity} for item ${item.shop_item_id}`);
+            } else {
+                // Item not in cart - use input values
+                const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+                const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+                
+                const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
+                const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+                const stackSize = parseInt(item.stack_size) || 1;
+                
+                currentlySelected = units + (stacks * stackSize);
+                console.log(`DEBUG: Using input values for item ${item.shop_item_id}: units=${units}, stacks=${stacks}, total=${currentlySelected}`);
+            }
         }
         
         const progressLines = [];
@@ -3248,7 +3258,7 @@ class UnifiedTeller {
         this.refreshItemDisplay();
         
         // Recalculate progress displays after adding to cart
-        this.recalculateAllProgressDisplays();
+        this.updateAllProgressDisplays();
     }
 
     addTurninItemWithQuantity(shopItemId) {
@@ -3333,7 +3343,7 @@ class UnifiedTeller {
         this.refreshItemDisplay();
         
         // Recalculate progress displays after adding to cart
-        this.recalculateAllProgressDisplays();
+        this.updateAllProgressDisplays();
     }
 
 
