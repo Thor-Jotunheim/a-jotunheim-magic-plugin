@@ -5,6 +5,7 @@
 
 class UnifiedTeller {
     constructor() {
+        console.log('UnifiedTeller constructor called');
         this.selectedShop = null;
         this.currentCustomer = null;
         this.transactionMode = 'buy'; // buy, sell, admin
@@ -15,6 +16,7 @@ class UnifiedTeller {
         
         this.initializeEventListeners();
         this.loadInitialData();
+        console.log('UnifiedTeller constructor completed, preventOverLimit method:', typeof this.preventOverLimit);
     }
 
     initializeEventListeners() {
@@ -4381,12 +4383,24 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof JotunAPI !== 'undefined' && JotunAPI) {
                 console.log('JotunAPI is available, initializing UnifiedTeller');
                 window.unifiedTeller = new UnifiedTeller();
+                console.log('window.unifiedTeller assigned:', typeof window.unifiedTeller);
+                console.log('preventOverLimit method accessible:', typeof window.unifiedTeller.preventOverLimit);
             } else {
                 console.log('JotunAPI not ready, waiting...');
                 setTimeout(checkAPI, 100);
             }
         };
         checkAPI();
+        
+        // Test global accessibility after initialization
+        setTimeout(() => {
+            console.log('=== Global Accessibility Test ===');
+            console.log('window.unifiedTeller exists:', typeof window.unifiedTeller !== 'undefined');
+            if (window.unifiedTeller) {
+                console.log('preventOverLimit method accessible:', typeof window.unifiedTeller.preventOverLimit !== 'undefined');
+                console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(window.unifiedTeller)));
+            }
+        }, 2000);
         
         // Add CSS for player suggestions
         const style = document.createElement('style');
