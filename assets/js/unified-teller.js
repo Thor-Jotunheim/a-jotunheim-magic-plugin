@@ -2704,6 +2704,14 @@ class UnifiedTeller {
 
 
     addTurninItem(shopItemId) {
+        // Get units input
+        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+        const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+        
+        // Get stacks input if it exists
+        const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+        const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+        
         // Initialize turninItems if not loaded
         if (!this.turninItems) {
             this.turninItems = this.shopItems || [];
@@ -2714,6 +2722,17 @@ class UnifiedTeller {
             console.log('Item not found for turn-in:', shopItemId);
             return;
         }
+        
+        // Get stack size for calculation
+        const stackSize = parseInt(item?.stack_size || 1);
+        
+        // Calculate total quantity: units + (stacks * stackSize)
+        const quantity = units + (stacks * stackSize);
+        
+        if (quantity <= 0) {
+            this.showStatus('Please enter a quantity to turn in', 'error');
+            return;
+        }
 
         // Add to main cart with 'turnin' action type
         const existingItem = this.cart.find(cartItem => 
@@ -2721,7 +2740,7 @@ class UnifiedTeller {
         );
 
         if (existingItem) {
-            existingItem.quantity += 1;
+            existingItem.quantity += quantity;
             existingItem.total_price = existingItem.unit_price * existingItem.quantity;
         } else {
             // Debug logging to track the 10x issue
@@ -2736,14 +2755,15 @@ class UnifiedTeller {
                 shop_item_id: shopItemId,
                 item_name: item.item_name,
                 action: 'turnin',
-                quantity: 1,
+                quantity: quantity,
                 price: item.event_points || 0,
                 unit_price: item.event_points || 0,
                 total_price: item.event_points || 0,
                 stack_size: item.stack_size || 1,
                 turn_in_quantity: parseInt(item.turn_in_quantity || 0),
                 turn_in_requirement: parseInt(item.turn_in_requirement || 0),
-                item: item
+                item: item,
+                shop_id: this.selectedShop // Make sure shop_id is included
             });
         }
 
