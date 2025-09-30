@@ -2272,7 +2272,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     padding: var(--space-5);
 }
 
-/* Universal Table Layout Styles */
+/* Universal Table Layout Styles - Match Card View Exactly */
 .table-universal-inputs {
     display: flex;
     gap: var(--space-3);
@@ -2283,7 +2283,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 100px;
+    min-width: 120px;
 }
 
 .table-input-label {
@@ -2296,49 +2296,52 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .table-qty-controls {
     display: flex;
     align-items: center;
-    gap: 2px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--background);
+    justify-content: space-between;
+    gap: 3px;
+    width: 100%;
 }
 
 .table-qty-btn {
-    background: var(--gray-2);
+    background-color: #6c757d;
+    color: white;
     border: none;
-    color: var(--foreground);
-    width: 28px;
-    height: 28px;
+    width: 50px;
+    height: 38px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    transition: background-color 0.2s;
 }
 
 .table-qty-btn:hover {
-    background: var(--gray-3);
+    background-color: #5a6268;
 }
 
-.table-qty-btn:active {
-    background: var(--gray-4);
+.table-qty-btn:disabled {
+    background-color: #adb5bd;
+    cursor: not-allowed;
 }
 
 .table-universal-qty-input {
-    width: 50px;
-    height: 28px;
-    border: none;
-    background: transparent;
+    width: 80px;
+    height: 38px;
+    border: 2px solid #ced4da;
+    background: white;
     text-align: center;
-    font-size: 13px;
-    padding: 0 4px;
-    color: var(--foreground);
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 8px;
+    border-radius: 4px;
+    color: #333;
 }
 
 .table-universal-qty-input:focus {
     outline: none;
-    background: var(--gray-1);
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .table-universal-calculations {
@@ -2374,4 +2377,73 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-size: 13px;
     padding: var(--space-1) var(--space-3);
     margin: 1px;
+}
+
+/* Table cell styling for reused card components */
+.table-controls-cell {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: center;
+    min-width: 200px;
+}
+
+.table-progress-cell {
+    padding: 8px;
+    vertical-align: middle;
+    min-width: 250px;
+}
+
+.table-info-cell {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.table-price-cell {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: bold;
+}
+
+.table-actions-cell {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Make sure card components work well in table cells */
+.table-controls-cell .quantity-controls {
+    justify-content: center;
+    margin: 0;
+}
+
+.table-progress-cell .turnin-progress-container {
+    margin: 0;
+}
+
+.table-actions-cell .action-buttons {
+    justify-content: center;
+    margin: 0;
+}
+
+.table-price-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Adjust card component spacing for table context */
+.unified-table .quantity-controls {
+    gap: 6px;
+}
+
+.unified-table .turnin-progress-container {
+    padding: 4px 0;
+}
+
+.unified-table .action-buttons {
+    gap: 8px;
 }

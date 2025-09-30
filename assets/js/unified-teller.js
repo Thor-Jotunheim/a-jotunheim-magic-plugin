@@ -3961,36 +3961,81 @@ class UnifiedTeller {
         // Universal table headers that work for all modes
         const tableHeader = container.querySelector('thead tr');
         if (tableHeader) {
-            // Universal layout that adapts to any mode
-            tableHeader.innerHTML = `
-                <th>Item</th>
-                <th>Quantity Controls</th>
-                <th style="border-left: 2px solid var(--border, #dee2e6);">Calculations</th>
-                <th>Price/Reward</th>
-                <th>Action</th>
-            `;
+            // Check if we're in turn-in mode to determine columns
+            const isTurninMode = this.currentTab === 'turnin';
+            
+            if (isTurninMode) {
+                // Turn-in mode: no price column needed
+                tableHeader.innerHTML = `
+                    <th>Item</th>
+                    <th>Quantity Controls</th>
+                    <th style="border-left: 2px solid var(--border, #dee2e6);">Calculations</th>
+                    <th>Action</th>
+                `;
+            } else {
+                // Buy/sell mode: include price column
+                tableHeader.innerHTML = `
+                    <th>Item</th>
+                    <th>Quantity Controls</th>
+                    <th style="border-left: 2px solid var(--border, #dee2e6);">Calculations</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                `;
+            }
         }
 
-        // Universal single-row layout that works for all modes
+        // Reuse existing card components in table layout
+        const isTurninMode = this.currentTab === 'turnin';
+        
         for (let i = 0; i < this.shopItems.length; i++) {
             const item = this.shopItems[i];
             const row = document.createElement('tr');
             
-            // Generate universal components
-            const inputsHtml = this.generateUniversalInputs(item);
-            const calculations = this.generateUniversalCalculations(item);
-            const priceDisplay = this.getItemPriceDisplay(item);
-            const buttonHtml = this.generateUniversalButton(item);
+            // Reuse existing card generation methods
+            const cardHtml = this.generateItemCard(item);
             
-            row.innerHTML = `
-                <td>${item.item_name}</td>
-                <td>${inputsHtml}</td>
-                <td style="border-left: 2px solid var(--border, #dee2e6);">${calculations}</td>
-                <td>${priceDisplay}</td>
-                <td>${buttonHtml}</td>
-            `;
+            // Parse the card HTML to extract components
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = cardHtml;
+            const cardElement = tempDiv.querySelector('.item-card');
             
-            tableBody.appendChild(row);
+            if (cardElement) {
+                // Extract existing components from the card
+                const itemName = cardElement.querySelector('.item-name')?.textContent || item.item_name;
+                const quantityControls = cardElement.querySelector('.quantity-controls');
+                const turninProgress = cardElement.querySelector('.turnin-progress-container');
+                const actionButtons = cardElement.querySelector('.action-buttons');
+                const priceDisplay = cardElement.querySelector('.item-price');
+                
+                // Create table-formatted versions of the card components
+                const quantityControlsHtml = quantityControls ? quantityControls.outerHTML : '';
+                const turninProgressHtml = turninProgress ? turninProgress.outerHTML : '';
+                const actionButtonsHtml = actionButtons ? actionButtons.outerHTML : '';
+                const priceHtml = priceDisplay ? priceDisplay.outerHTML : '';
+                
+                if (isTurninMode) {
+                    // Turn-in mode: no price column, include turnin progress
+                    row.innerHTML = `
+                        <td><strong>${itemName}</strong></td>
+                        <td class="table-controls-cell">${quantityControlsHtml}</td>
+                        <td class="table-progress-cell" style="border-left: 2px solid var(--border, #dee2e6);">${turninProgressHtml}</td>
+                        <td class="table-actions-cell">${actionButtonsHtml}</td>
+                    `;
+                } else {
+                    // Buy/sell mode: include price column, no turnin progress
+                    row.innerHTML = `
+                        <td><strong>${itemName}</strong></td>
+                        <td class="table-controls-cell">${quantityControlsHtml}</td>
+                        <td class="table-info-cell" style="border-left: 2px solid var(--border, #dee2e6);">
+                            <div class="table-price-info">${priceHtml}</div>
+                        </td>
+                        <td class="table-price-cell">${this.getItemPriceDisplay(item)}</td>
+                        <td class="table-actions-cell">${actionButtonsHtml}</td>
+                    `;
+                }
+                
+                tableBody.appendChild(row);
+            }
         }
     }
 
@@ -4033,200 +4078,6 @@ class UnifiedTeller {
         // For regular buy/sell items, show unit price
         const unitPrice = item.unit_price || item.price || item.default_price || 0;
         return `${unitPrice}`;
-    }
-
-    generateUniversalInputs(item) {
-        // Create side-by-side Units and Stacks inputs with +/- buttons for any mode
-        const stackSize = parseInt(item.stack_size || 1);
-        const hasStacks = stackSize > 1;
-        
-        let inputsHtml = `
-            <div class="table-universal-inputs">
-                <div class="table-input-group">
-                    <label class="table-input-label">Units</label>
-                    <div class="table-qty-controls">
-                        <button type="button" class="table-qty-btn table-qty-decrease" onclick="window.unifiedTeller.decreaseTableQuantity('table-qty-${item.shop_item_id}')">-</button>
-                        <input type="number" class="table-universal-qty-input" id="table-qty-${item.shop_item_id}" min="0" value="1" max="999">
-                        <button type="button" class="table-qty-btn table-qty-increase" onclick="window.unifiedTeller.increaseTableQuantity('table-qty-${item.shop_item_id}')">+</button>
-                    </div>
-                </div>`;
-        
-        if (hasStacks) {
-            inputsHtml += `
-                <div class="table-input-group">
-                    <label class="table-input-label">Stacks</label>
-                    <div class="table-qty-controls">
-                        <button type="button" class="table-qty-btn table-qty-decrease" onclick="window.unifiedTeller.decreaseTableQuantity('table-stack-qty-${item.shop_item_id}')">-</button>
-                        <input type="number" class="table-universal-qty-input" id="table-stack-qty-${item.shop_item_id}" min="0" value="0" max="999">
-                        <button type="button" class="table-qty-btn table-qty-increase" onclick="window.unifiedTeller.increaseTableQuantity('table-stack-qty-${item.shop_item_id}')">+</button>
-                    </div>
-                </div>`;
-        }
-        
-        inputsHtml += `</div>`;
-        return inputsHtml;
-    }
-
-    generateUniversalCalculations(item) {
-        // Get current quantities
-        const unitsInput = document.getElementById(`table-qty-${item.shop_item_id}`);
-        const stacksInput = document.getElementById(`table-stack-qty-${item.shop_item_id}`);
-        
-        const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
-        const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
-        const stackSize = parseInt(item.stack_size || 1);
-        
-        // Calculate total quantity for this transaction
-        const totalThisTransaction = units + (stacks * stackSize);
-        
-        // Different calculations based on item type
-        if (item.turn_in == 1 || item.turn_in === true) {
-            // Turn-in calculations
-            const existingTurnin = this.turninList ? this.turninList.find(t => t.shop_item_id === item.shop_item_id) : null;
-            const existingQuantity = existingTurnin ? existingTurnin.quantity : 0;
-            const totalWithTransaction = existingQuantity + totalThisTransaction;
-            const last24Hours = 0; // TODO: Get from server data
-            
-            return `
-                <div class="table-universal-calculations">
-                    <div class="calc-row">
-                        <span class="calc-label">This Transaction:</span>
-                        <span class="calc-value">${totalThisTransaction}</span>
-                    </div>
-                    <div class="calc-row">
-                        <span class="calc-label">Total (Event + This):</span>
-                        <span class="calc-value">${totalWithTransaction}</span>
-                    </div>
-                    <div class="calc-row">
-                        <span class="calc-label">Last 24h:</span>
-                        <span class="calc-value">${last24Hours}</span>
-                    </div>
-                </div>`;
-        } else {
-            // Buy/sell calculations
-            const unitPrice = item.unit_price || item.price || item.default_price || 0;
-            const totalCost = totalThisTransaction * unitPrice;
-            
-            // Check if item is in cart
-            const existingCart = this.cart ? this.cart.find(c => c.shop_item_id === item.shop_item_id) : null;
-            const existingQuantity = existingCart ? existingCart.quantity : 0;
-            const totalWithCart = existingQuantity + totalThisTransaction;
-            const totalCartCost = totalWithCart * unitPrice;
-            
-            return `
-                <div class="table-universal-calculations">
-                    <div class="calc-row">
-                        <span class="calc-label">This Transaction:</span>
-                        <span class="calc-value">${totalThisTransaction} (${totalCost})</span>
-                    </div>
-                    <div class="calc-row">
-                        <span class="calc-label">Total in Cart:</span>
-                        <span class="calc-value">${totalWithCart} (${totalCartCost})</span>
-                    </div>
-                    <div class="calc-row">
-                        <span class="calc-label">Unit Price:</span>
-                        <span class="calc-value">${unitPrice}</span>
-                    </div>
-                </div>`;
-        }
-    }
-
-    generateUniversalButton(item) {
-        // Generate appropriate button based on item type and current state
-        if (item.turn_in == 1 || item.turn_in === true) {
-            // Turn-in button logic
-            const existingTurnin = this.turninList ? this.turninList.find(t => t.shop_item_id === item.shop_item_id) : null;
-            const isInCart = existingTurnin && existingTurnin.quantity > 0;
-            
-            if (isInCart) {
-                return `<button class="btn btn-sm btn-warning table-universal-btn" onclick="window.unifiedTeller.updateTableItem(${item.shop_item_id}, 'turnin')" title="Update turn-in quantity">Update</button>`;
-            } else {
-                return `<button class="btn btn-sm btn-info table-universal-btn" onclick="window.unifiedTeller.addTableItem(${item.shop_item_id}, 'turnin')" title="Add to turn-in">Turn In</button>`;
-            }
-        } else {
-            // Buy/sell button logic
-            let buttonsHtml = '';
-            
-            // Check for Buy button (buy=1 means customers can buy from shop, so teller sells)
-            if (item.buy == 1 || item.buy === true) {
-                const existingCart = this.cart ? this.cart.find(c => c.shop_item_id === item.shop_item_id && c.action === 'buy') : null;
-                const buttonText = existingCart && existingCart.quantity > 0 ? 'Update' : 'Sell';
-                const buttonClass = existingCart && existingCart.quantity > 0 ? 'btn-warning' : 'btn-success';
-                buttonsHtml += `<button class="btn btn-sm ${buttonClass} table-universal-btn" onclick="window.unifiedTeller.addTableItem(${item.shop_item_id}, 'buy')" title="Sell to customer">${buttonText}</button> `;
-            }
-            
-            // Check for Sell button (sell=1 means shop will buy from customers, so teller buys)
-            if (item.sell == 1 || item.sell === true) {
-                const existingCart = this.cart ? this.cart.find(c => c.shop_item_id === item.shop_item_id && c.action === 'sell') : null;
-                const buttonText = existingCart && existingCart.quantity > 0 ? 'Update' : 'Buy';
-                const buttonClass = existingCart && existingCart.quantity > 0 ? 'btn-warning' : 'btn-primary';
-                buttonsHtml += `<button class="btn btn-sm ${buttonClass} table-universal-btn" onclick="window.unifiedTeller.addTableItem(${item.shop_item_id}, 'sell')" title="Buy from customer">${buttonText}</button>`;
-            }
-            
-            return buttonsHtml || '<span class="text-muted">No actions</span>';
-        }
-    }
-
-    decreaseTableQuantity(inputId) {
-        const input = document.getElementById(inputId);
-        if (input) {
-            const currentValue = parseInt(input.value) || 0;
-            if (currentValue > 0) {
-                input.value = currentValue - 1;
-                this.updateTableCalculations();
-            }
-        }
-    }
-
-    increaseTableQuantity(inputId) {
-        const input = document.getElementById(inputId);
-        if (input) {
-            const currentValue = parseInt(input.value) || 0;
-            input.value = currentValue + 1;
-            this.updateTableCalculations();
-        }
-    }
-
-    updateTableCalculations() {
-        // Re-render the table to update calculations
-        this.renderTableView();
-    }
-
-    addTableItem(shopItemId, action) {
-        // Get quantities from table inputs
-        const unitsInput = document.getElementById(`table-qty-${shopItemId}`);
-        const stacksInput = document.getElementById(`table-stack-qty-${shopItemId}`);
-        
-        const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
-        const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
-        
-        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
-        if (!item) return;
-        
-        const stackSize = parseInt(item.stack_size || 1);
-        const totalQuantity = units + (stacks * stackSize);
-        
-        if (totalQuantity <= 0) {
-            this.showStatus('Please enter a quantity', 'error');
-            return;
-        }
-        
-        // Route to appropriate method based on action
-        if (action === 'turnin') {
-            // Use existing turn-in logic
-            this.addTurninItemWithQuantity(shopItemId);
-        } else {
-            // Use existing cart logic for buy/sell
-            this.addToCart(shopItemId, action, 'individual');
-        }
-        
-        // Update table display
-        this.renderTableView();
-    }
-
-    updateTableItem(shopItemId, action) {
-        // Same as add, but for updating existing items
-        this.addTableItem(shopItemId, action);
     }
 
     // Cart and transaction methods
