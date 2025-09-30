@@ -3074,7 +3074,7 @@ class UnifiedTeller {
         
         // Initialize view state - grid view should be default (when button shows "Toggle View")
         if (gridContainer && tableContainer && toggleBtn) {
-            gridContainer.style.display = 'grid';
+            gridContainer.style.display = 'flex'; // Use flex to match CSS
             tableContainer.style.display = 'none';
             toggleBtn.textContent = 'Toggle View';
             this.isTableView = false; // Reset to grid view
