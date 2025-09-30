@@ -1091,7 +1091,12 @@ class UnifiedTeller {
 
     generateItemInfoDisplay(item, isTurnInItem) {
         if (isTurnInItem) {
-            return this.generateProgressText(item, false);
+            // For turn-in items, show live transaction progress
+            return `
+                <div class="transaction-info turnin-progress-info" id="turnin-display-${item.shop_item_id}">
+                    ${this.generateProgressText(item, true)}
+                </div>
+            `;
         } else {
             // Show transaction information based on what type of transaction is available
             const unitPrice = item.unit_price || item.price || item.default_price || 0;
@@ -1190,12 +1195,33 @@ class UnifiedTeller {
                 totalElement.textContent = `$${totalPayout}`;
             }
         } else if (transactionType === 'turn_in') {
-            const qty = parseInt(document.getElementById(`turnin-reg-qty-${shopItemId}`)?.value) || 1;
-            const requirement = item.turn_in_requirement || 1;
-            
-            const progressElement = document.getElementById(`turnin-progress-${shopItemId}`);
+            // Update turn-in progress display with full progress text
+            this.updateTurninProgressDisplay(shopItemId);
+        }
+    }
+
+    // Update turn-in progress display for unified layout
+    updateTurninProgressDisplay(shopItemId) {
+        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (!item) return;
+        
+        const displayElement = document.getElementById(`turnin-display-${shopItemId}`);
+        if (displayElement) {
+            displayElement.innerHTML = this.generateProgressText(item, true);
+        }
+    }
+
+    // Update progress display method - works with both old and new layout
+    updateProgressDisplay(shopItemId, requirement) {
+        // Try unified layout first
+        this.updateTurninProgressDisplay(shopItemId);
+        
+        // Also update old layout for backward compatibility
+        const item = this.shopItems.find(i => i.shop_item_id == shopItemId);
+        if (item) {
+            const progressElement = document.getElementById(`progress-${shopItemId}`);
             if (progressElement) {
-                progressElement.textContent = `${qty} / ${requirement}`;
+                progressElement.innerHTML = this.generateProgressText(item, true);
             }
         }
     }

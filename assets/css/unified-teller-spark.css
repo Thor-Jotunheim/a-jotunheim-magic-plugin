@@ -1116,6 +1116,42 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-weight: 500;
 }
 
+/* Turn-in Progress Display */
+.turnin-progress-info {
+    background-color: var(--blue-2);
+    border: 1px solid var(--blue-6);
+    padding: var(--space-3);
+    border-radius: var(--radius-2);
+}
+
+.progress-line {
+    margin-bottom: var(--space-1);
+    font-size: var(--font-size-2);
+    line-height: var(--line-height-3);
+}
+
+.progress-line:last-child {
+    margin-bottom: 0;
+}
+
+/* Transaction progress (current turn-in) - Green */
+.transaction-progress {
+    color: var(--green-11);
+    font-weight: 600;
+}
+
+/* Player daily progress - Blue/Info */
+.player-progress {
+    color: var(--blue-11);
+    font-weight: 500;
+}
+
+/* Server total progress - Standard */
+.server-progress {
+    color: var(--gray-11);
+    font-weight: 500;
+}
+
 /* Transaction List */
 .transaction-list {
     border: 1px solid var(--border);
