@@ -1132,6 +1132,26 @@ function unified_teller_interface() {
         cursor: not-allowed;
         opacity: 0.6;
     }
+
+    /* View Cart Button - Green styling */
+    #view-cart-btn {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    #view-cart-btn:hover:not(:disabled) {
+        background: #218838;
+        border-color: #1e7e34;
+    }
+
+    #view-cart-btn:disabled {
+        background: #6c757d;
+        border-color: #6c757d;
+        color: white;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
     </style>
     
     <?php
