@@ -1047,6 +1047,75 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     background-color: var(--blue-10) !important;
 }
 
+/* Unified Card Layout - Transaction Info Display */
+.transaction-info {
+    padding: var(--space-3);
+    border-radius: var(--radius-2);
+    margin-bottom: var(--space-2);
+}
+
+.transaction-info .info-label {
+    font-size: var(--font-size-2);
+    color: var(--muted-foreground);
+    margin-bottom: var(--space-1);
+}
+
+.transaction-info .info-value {
+    font-size: var(--font-size-4);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+}
+
+.transaction-info .info-details {
+    display: flex;
+    gap: var(--space-3);
+    font-size: var(--font-size-1);
+    color: var(--muted-foreground);
+}
+
+.transaction-info.buy-info {
+    background-color: var(--green-2);
+    border: 1px solid var(--green-6);
+}
+
+.transaction-info.buy-info .info-value {
+    color: var(--green-11);
+}
+
+.transaction-info.sell-info {
+    background-color: var(--orange-2);
+    border: 1px solid var(--orange-6);
+}
+
+.transaction-info.sell-info .info-value {
+    color: var(--orange-11);
+}
+
+.transaction-info.turnin-info {
+    background-color: var(--blue-2);
+    border: 1px solid var(--blue-6);
+}
+
+.transaction-info.turnin-info .info-value {
+    color: var(--blue-11);
+}
+
+.transaction-info.no-actions {
+    background-color: var(--gray-2);
+    border: 1px solid var(--gray-6);
+}
+
+/* Large quantity inputs for unified layout */
+.large-quantity-input {
+    width: 80px;
+    padding: var(--space-2);
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-3);
+    font-weight: 500;
+}
+
 /* Transaction List */
 .transaction-list {
     border: 1px solid var(--border);
