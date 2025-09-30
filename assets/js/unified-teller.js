@@ -1169,6 +1169,10 @@ class UnifiedTeller {
             const inCart = this.cart.some(cartItem => cartItem.shop_item_id === item.shop_item_id && cartItem.action === 'turnin');
             const buttonText = inCart ? 'Update' : 'Turn In';
             const buttonClass = inCart ? 'btn item-btn turnin-btn update-btn' : 'btn item-btn turnin-btn';
+            
+            // Debug logging
+            console.log(`Generating button for item ${item.shop_item_id}: inCart=${inCart}, buttonText=${buttonText}, cartSize=${this.cart.length}`);
+            
             return `<button class="${buttonClass}" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})">${buttonText}</button>`;
         } else {
             let actionsHTML = '';
@@ -1643,12 +1647,38 @@ class UnifiedTeller {
         
         if (!gridView || !tableView) return;
         
+        // Save current quantities from all input fields before re-rendering
+        const quantities = {};
+        const allInputs = document.querySelectorAll([
+            'input[id^="turnin-qty-"]',
+            'input[id^="turnin-stack-qty-"]',
+            'input[id^="qty-individual-"]',
+            'input[id^="qty-stack-"]',
+            'input[id^="table-qty-"]'
+        ].join(', '));
+        
+        allInputs.forEach(input => {
+            if (input.value && parseInt(input.value) > 0) {
+                quantities[input.id] = input.value;
+            }
+        });
+        
         // Re-render the currently visible view to update button states
         if (this.isTableView) {
             this.renderItemsTable(tableView);
         } else {
             this.renderItemsGrid(gridView);
         }
+        
+        // Restore quantities after re-rendering
+        setTimeout(() => {
+            Object.keys(quantities).forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.value = quantities[inputId];
+                }
+            });
+        }, 50);
     }
 
     showTransactionModal() {
@@ -3228,6 +3258,8 @@ class UnifiedTeller {
             return;
         }
 
+        console.log(`DEBUG: addTurninItemWithQuantity - shopItemId=${shopItemId}, quantity=${quantity}, cartBefore=${this.cart.length}`);
+
         // Add to main cart with 'turnin' action type
         const existingItem = this.cart.find(cartItem => 
             cartItem.shop_item_id === shopItemId && cartItem.action === 'turnin'
@@ -3254,7 +3286,8 @@ class UnifiedTeller {
             });
         }
 
-        console.log('Added turn-in item to cart:', item.item_name, 'quantity:', quantity, 'Cart now has', this.cart.length, 'items');
+        console.log('DEBUG: Added turn-in item to cart:', item.item_name, 'quantity:', quantity, 'Cart now has', this.cart.length, 'items', 'existingItem:', !!existingItem);
+        console.log('DEBUG: Cart contents:', this.cart.map(c => ({id: c.shop_item_id, action: c.action, qty: c.quantity})));
         this.updateCartDisplay();
         
         // Explicitly update cart view buttons
