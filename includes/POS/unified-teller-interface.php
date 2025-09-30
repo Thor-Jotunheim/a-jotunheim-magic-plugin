@@ -943,47 +943,36 @@ function unified_teller_interface() {
         min-height: 38px; /* Match input field height */
     }
 
-    .clear-transaction-btn {
-        background: #fff;
-        color: #333;
-        border-color: #ddd;
-    }
-
-    .clear-transaction-btn:hover {
-        background: #f8f9fa;
-        border-color: #999;
-    }
-
     /* Record Transaction Button - Red */
     .record-transaction-btn {
-        background: #dc3545;
-        color: white;
-        border-color: #dc3545;
+        background: #dc3545 !important;
+        color: white !important;
+        border-color: #dc3545 !important;
     }
 
     .record-transaction-btn:hover:not(:disabled) {
-        background: #c82333;
-        border-color: #bd2130;
+        background: #c82333 !important;
+        border-color: #bd2130 !important;
     }
 
     .record-transaction-btn:disabled {
-        background: #ccc;
-        border-color: #ccc;
-        color: #666;
+        background: #ccc !important;
+        border-color: #ccc !important; 
+        color: #666 !important;
         cursor: not-allowed;
         opacity: 0.6;
     }
 
     /* Clear Transaction Button - Orange */
     .clear-transaction-btn {
-        background: #fd7e14;
-        color: white;
-        border-color: #fd7e14;
+        background: #fd7e14 !important;
+        color: white !important;
+        border-color: #fd7e14 !important;
     }
 
     .clear-transaction-btn:hover {
-        background: #e8650e;
-        border-color: #dc5f0a;
+        background: #e8650e !important;
+        border-color: #dc5f0a !important;
     }
 
 

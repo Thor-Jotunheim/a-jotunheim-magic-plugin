@@ -1621,11 +1621,43 @@ class UnifiedTeller {
         this.updateViewCartButton();
         this.updateRecordTransactionButton();
         
-        // Refresh item display to reset button states back to default
-        this.refreshItemDisplay();
+        // Reset item display without preserving quantities
+        this.resetItemDisplay();
         
         // Go back to shop view after clearing cart
         this.showShopView();
+    }
+
+    resetItemDisplay() {
+        const gridView = document.getElementById('items-grid-view');
+        const tableView = document.getElementById('items-table-view');
+        
+        if (!gridView || !tableView) return;
+        
+        // Clear all input fields first
+        const allInputs = document.querySelectorAll([
+            'input[id^="turnin-qty-"]',
+            'input[id^="turnin-stack-qty-"]',
+            'input[id^="qty-individual-"]',
+            'input[id^="qty-stack-"]',
+            'input[id^="table-qty-"]'
+        ].join(', '));
+        
+        allInputs.forEach(input => {
+            input.value = '';
+        });
+        
+        // Re-render the currently visible view to reset button states
+        if (this.isTableView) {
+            this.renderItemsTable(tableView);
+        } else {
+            this.renderItemsGrid(gridView);
+        }
+        
+        // Force button state update to ensure all buttons show default text
+        setTimeout(() => {
+            this.forceButtonStateUpdate();
+        }, 100);
     }
 
     toggleItemsView() {
