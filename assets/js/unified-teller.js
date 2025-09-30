@@ -1430,7 +1430,7 @@ class UnifiedTeller {
             // Use flag to track state instead of DOM inspection
             if (this.isTableView) {
                 // Currently showing table, switch back to grid view
-                gridView.style.display = 'grid';
+                gridView.style.display = 'flex'; // Use flex, not grid!
                 tableView.style.display = 'none';
                 this.isTableView = false;
                 // Ensure grid is populated
