@@ -4449,6 +4449,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
+        // Add event listener debugging - check if other handlers are interfering
+        window.debugEventListeners = function() {
+            console.log('🔧 EVENT LISTENER DEBUG: Checking for interference...');
+            const inputs = document.querySelectorAll('input[id*="turnin-qty"]');
+            inputs.forEach(input => {
+                console.log(`🔧 Input ${input.id}:`);
+                console.log('  - onkeydown attribute:', input.getAttribute('onkeydown') ? 'EXISTS' : 'MISSING');
+                
+                // Test if keydown events fire at all
+                const testHandler = (e) => {
+                    console.log(`🔧 KEYDOWN EVENT FIRED on ${input.id}:`, e.key);
+                };
+                
+                // Add temporary listener
+                input.addEventListener('keydown', testHandler);
+                console.log(`🔧 Added test listener to ${input.id}`);
+                
+                // Remove after 30 seconds
+                setTimeout(() => {
+                    input.removeEventListener('keydown', testHandler);
+                    console.log(`🔧 Removed test listener from ${input.id}`);
+                }, 30000);
+            });
+        };
+        
+        // Auto-run event debugging after 10 seconds
+        setTimeout(() => {
+            console.log('🔧 AUTO-RUNNING EVENT LISTENER DEBUGGING...');
+            if (window.debugEventListeners) {
+                window.debugEventListeners();
+            }
+        }, 10000);
+        
         // Add CSS for player suggestions
         const style = document.createElement('style');
         style.textContent = `
