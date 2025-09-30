@@ -700,19 +700,17 @@ class UnifiedTeller {
             let fontSize;
             
             if (itemCount <= 3) {
-                fontSize = 16; // Don't go too big with few items
-            } else if (itemCount <= 5) {
-                fontSize = 18; // Good size for 4-5 items
-            } else if (itemCount === 6) {
-                fontSize = 18; // Perfect for 6 items
+                fontSize = 16; // Conservative size for few items
+            } else if (itemCount <= 6) {
+                fontSize = 17; // Slightly smaller than before for 4-6 items
             } else if (itemCount === 7) {
                 fontSize = 18; // Perfect baseline for 7 items
             } else if (itemCount === 8) {
-                fontSize = 17; // Slightly smaller for 8
+                fontSize = 15; // Scale down more for 8
             } else if (itemCount === 9) {
-                fontSize = 16; // Smaller for 9
+                fontSize = 14; // Much smaller for 9 to prevent scrollbar
             } else if (itemCount >= 10) {
-                fontSize = Math.max(14, 20 - itemCount); // Scale down further, minimum 14px
+                fontSize = Math.max(12, 16 - (itemCount - 8)); // Scale down aggressively, minimum 12px
             }
             
             container.innerHTML = `
