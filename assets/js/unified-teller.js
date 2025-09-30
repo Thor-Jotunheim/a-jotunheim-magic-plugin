@@ -1334,14 +1334,9 @@ class UnifiedTeller {
                 // Load daily turn-in data for this customer
                 await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
                 
-                // Re-render items to update limits, then recalculate progress displays
+                // Re-render items to update limits, but preserve current quantities
                 if (this.selectedShop && this.shopItems.length > 0) {
-                    this.renderShopItems();
-                    
-                    // After re-rendering, recalculate all progress displays based on current input values
-                    setTimeout(() => {
-                        this.recalculateAllProgressDisplays();
-                    }, 100);
+                    this.preserveQuantitiesAndRerender();
                 }
             } else {
                 // Show register option for new customers
@@ -2385,6 +2380,44 @@ class UnifiedTeller {
         if (this.getCurrentShopType() === 'turn-in_only') {
             this.updateTurninTracking();
         }
+    }
+
+    preserveQuantitiesAndRerender() {
+        console.log('Preserving quantities and re-rendering items...');
+        
+        // Save current quantities from all input fields
+        const quantities = {};
+        const allInputs = document.querySelectorAll([
+            'input[id^="turnin-qty-"]',
+            'input[id^="turnin-stack-qty-"]',
+            'input[id^="buy-qty-"]',
+            'input[id^="buy-stack-qty-"]',
+            'input[id^="sell-qty-"]'
+        ].join(', '));
+        
+        allInputs.forEach(input => {
+            if (input.value && parseInt(input.value) > 0) {
+                quantities[input.id] = input.value;
+                console.log(`Saved ${input.id}: ${input.value}`);
+            }
+        });
+        
+        // Re-render the items
+        this.renderShopItems();
+        
+        // Restore quantities and recalculate progress
+        setTimeout(() => {
+            Object.keys(quantities).forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.value = quantities[inputId];
+                    console.log(`Restored ${inputId}: ${quantities[inputId]}`);
+                }
+            });
+            
+            // Recalculate all progress displays
+            this.recalculateAllProgressDisplays();
+        }, 100);
     }
 
     recalculateAllProgressDisplays() {
