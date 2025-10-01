@@ -2495,6 +2495,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 16px;
     align-items: center;
     width: 100%;
+    position: relative; /* Enable absolute positioning for children */
 }
 
 /* Rearrange card sections to match table columns exactly */
@@ -2538,14 +2539,16 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .card-cell .item-card .action-buttons {
-    /* Actions column (4th) */
-    grid-column: 4;
-    justify-content: center;
-    margin: 0;
+    /* Force action buttons to the far right */
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
+    z-index: 10;
 }
 
 .card-cell .item-name {
