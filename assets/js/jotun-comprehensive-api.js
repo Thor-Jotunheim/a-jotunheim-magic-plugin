@@ -207,6 +207,10 @@ class JotunheimAPI {
         return this.request(`/shop-items/${id}`, 'DELETE');
     }
 
+    async updateShopItemDisplayOrders(updates) {
+        return this.request('/shop-items/display-orders', 'PUT', { updates });
+    }
+
     // ============================================================================
     // SHOP ROTATION API METHODS
     // ============================================================================

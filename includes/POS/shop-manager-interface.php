@@ -944,6 +944,99 @@ function shop_manager_interface() {
     .close:hover {
         color: #000;
     }
+    
+    /* Rotation Grouping Styles */
+    .rotation-header-row {
+        background: #f0f8ff;
+        border-left: 4px solid #0073aa;
+    }
+    
+    .rotation-header {
+        padding: 12px 15px !important;
+        font-weight: bold;
+        color: #0073aa;
+        background: #f0f8ff;
+    }
+    
+    .rotation-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .rotation-title {
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .rotation-count {
+        font-size: 12px;
+        font-weight: normal;
+        color: #666;
+        background: #fff;
+        padding: 4px 8px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+    }
+    
+    /* Drag and Drop Styles */
+    .drag-handle {
+        cursor: move;
+        padding: 8px 12px !important;
+        text-align: center;
+        position: relative;
+    }
+    
+    .drag-icon {
+        color: #666;
+        font-size: 14px;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    
+    .sortable-item {
+        transition: all 0.2s ease;
+    }
+    
+    .sortable-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .sortable-item.dragging {
+        opacity: 0.5;
+        transform: rotate(2deg);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .drag-placeholder {
+        background: #e3f2fd;
+        border: 2px dashed #1976d2;
+        height: 60px;
+    }
+    
+    .placeholder-content {
+        text-align: center;
+        color: #1976d2;
+        font-style: italic;
+        padding: 20px 0;
+    }
+    
+    .rotation-group {
+        background: #fafafa;
+        border-left: 3px solid #e0e0e0;
+    }
+    
+    .rotation-group .sortable-item:hover {
+        background-color: #fff;
+        border-left: 3px solid #0073aa;
+    }
+    
+    /* Enhanced rotation badge in drag handle */
+    .drag-handle .rotation-badge {
+        display: block;
+        margin-top: 4px;
+        font-size: 10px;
+    }
     </style>
     
     <script>

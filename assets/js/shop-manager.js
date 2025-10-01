@@ -1051,41 +1051,221 @@ class ShopManager {
         const tbody = document.getElementById('shop-items-table-body');
         tbody.innerHTML = '';
 
-        shopItems.forEach(item => {
-            const row = document.createElement('tr');
-            const defaultPrice = item.default_price || 0;
-            const shopPrice = item.custom_price || defaultPrice;
-            const isCustomItem = item.is_custom_item == 1;
-            
-            row.innerHTML = `
-                <td><span class="rotation-badge">${(item.rotation === 1 || !item.rotation) ? 'none' : item.rotation}</span></td>
-                <td>
-                    ${item.icon_image ? `<img src="${this.escapeHtml(item.icon_image)}" alt="${this.escapeHtml(item.master_item_name || item.item_name)}" class="item-icon">` : ''}
-                    ${this.escapeHtml(item.master_item_name || item.item_name)}
-                    ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
-                </td>
-                <td>${Math.floor(parseFloat(defaultPrice) || 0)} Coins</td>
-                <td>${Math.floor(parseFloat(shopPrice) || 0)} Coins</td>
-                <td class="stock-cell">${(() => {
-                    console.log('DEBUG - Stock quantity for item:', item.master_item_name || item.item_name, 'stock_quantity:', item.stock_quantity, 'type:', typeof item.stock_quantity);
-                    return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
-                })()}</td>
-                <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
-                <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
-                <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
-                ${item.turn_in == 1 ? `<td class="turnin-progress">${item.turn_in_quantity || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
-                ${item.turn_in == 1 ? `<td class="turnin-required">${item.turn_in_requirement || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
-                <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
-                <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_buy_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
-                <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
-                <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
-                <td>
-                    <button class="btn btn-primary btn-sm" onclick="console.log('Edit button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.editShopItem(${item.shop_item_id || item.id}); } else { console.error('shopManager not found'); }">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="console.log('Delete button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}'); } else { console.error('shopManager not found'); }">Delete</button>
+        // Group items by rotation and sort by display_order within each rotation
+        const itemsByRotation = this.groupItemsByRotation(shopItems);
+        
+        // Render each rotation group
+        Object.keys(itemsByRotation).sort((a, b) => {
+            // Sort rotations: 'none' (1) first, then numerically
+            if (a === 'none') return -1;
+            if (b === 'none') return 1;
+            return parseInt(a) - parseInt(b);
+        }).forEach(rotation => {
+            // Add rotation header row
+            const headerRow = document.createElement('tr');
+            headerRow.className = 'rotation-header-row';
+            headerRow.innerHTML = `
+                <td colspan="15" class="rotation-header">
+                    <div class="rotation-header-content">
+                        <span class="rotation-title">Rotation ${rotation === 'none' ? '(None)' : rotation}</span>
+                        <span class="rotation-count">${itemsByRotation[rotation].length} items</span>
+                    </div>
                 </td>
             `;
-            tbody.appendChild(row);
+            tbody.appendChild(headerRow);
+
+            // Create sortable container for this rotation
+            const rotationContainer = document.createElement('tbody');
+            rotationContainer.className = 'rotation-group';
+            rotationContainer.dataset.rotation = rotation;
+            
+            // Render items in this rotation
+            itemsByRotation[rotation].forEach((item, index) => {
+                const row = this.createItemRow(item, index);
+                rotationContainer.appendChild(row);
+            });
+            
+            // Enable drag and drop for this rotation group
+            this.enableDragAndDrop(rotationContainer);
+            
+            tbody.appendChild(rotationContainer);
         });
+    }
+
+    groupItemsByRotation(shopItems) {
+        const groups = {};
+        
+        shopItems.forEach(item => {
+            const rotation = (item.rotation === 1 || !item.rotation) ? 'none' : item.rotation.toString();
+            if (!groups[rotation]) {
+                groups[rotation] = [];
+            }
+            groups[rotation].push(item);
+        });
+        
+        // Sort items within each rotation by display_order (or index if no display_order)
+        Object.keys(groups).forEach(rotation => {
+            groups[rotation].sort((a, b) => {
+                const orderA = a.display_order !== undefined ? a.display_order : 999999;
+                const orderB = b.display_order !== undefined ? b.display_order : 999999;
+                return orderA - orderB;
+            });
+        });
+        
+        return groups;
+    }
+
+    createItemRow(item, index) {
+        const row = document.createElement('tr');
+        row.className = 'shop-item-row sortable-item';
+        row.dataset.itemId = item.shop_item_id || item.id;
+        row.dataset.displayOrder = item.display_order || index;
+        
+        const defaultPrice = item.default_price || 0;
+        const shopPrice = item.custom_price || defaultPrice;
+        const isCustomItem = item.is_custom_item == 1;
+        
+        row.innerHTML = `
+            <td class="drag-handle">
+                <span class="drag-icon">⋮⋮</span>
+                <span class="rotation-badge">${(item.rotation === 1 || !item.rotation) ? 'none' : item.rotation}</span>
+            </td>
+            <td>
+                ${item.icon_image ? `<img src="${this.escapeHtml(item.icon_image)}" alt="${this.escapeHtml(item.master_item_name || item.item_name)}" class="item-icon">` : ''}
+                ${this.escapeHtml(item.master_item_name || item.item_name)}
+                ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
+            </td>
+            <td>${Math.floor(parseFloat(defaultPrice) || 0)} Coins</td>
+            <td>${Math.floor(parseFloat(shopPrice) || 0)} Coins</td>
+            <td class="stock-cell">${(() => {
+                return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
+            })()}</td>
+            <td><span class="checkbox-display ${item.sell == 1 ? 'checked' : ''}">${item.sell == 1 ? '✓' : '✗'}</span></td>
+            <td><span class="checkbox-display ${item.buy == 1 ? 'checked' : ''}">${item.buy == 1 ? '✓' : '✗'}</span></td>
+            <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
+            ${item.turn_in == 1 ? `<td class="turnin-progress">${item.turn_in_quantity || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
+            ${item.turn_in == 1 ? `<td class="turnin-required">${item.turn_in_requirement || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
+            <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
+            <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_buy_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
+            <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
+            <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="console.log('Edit button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.editShopItem(${item.shop_item_id || item.id}); } else { console.error('shopManager not found'); }">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="console.log('Delete button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.deleteShopItem(${item.shop_item_id || item.id}, '${this.escapeHtml(item.master_item_name || item.item_name)}'); } else { console.error('shopManager not found'); }">Delete</button>
+            </td>
+        `;
+        
+        return row;
+    }
+
+    enableDragAndDrop(container) {
+        let draggedElement = null;
+        let placeholder = null;
+
+        // Add event listeners for drag and drop
+        container.addEventListener('dragstart', (e) => {
+            if (e.target.closest('.sortable-item')) {
+                draggedElement = e.target.closest('.sortable-item');
+                draggedElement.classList.add('dragging');
+                
+                // Create placeholder
+                placeholder = document.createElement('tr');
+                placeholder.className = 'drag-placeholder';
+                placeholder.innerHTML = '<td colspan="15" class="placeholder-content">Drop here</td>';
+                
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', draggedElement.outerHTML);
+            }
+        });
+
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (draggedElement && placeholder) {
+                const afterElement = this.getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(placeholder);
+                } else {
+                    container.insertBefore(placeholder, afterElement);
+                }
+            }
+        });
+
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            
+            if (draggedElement && placeholder) {
+                // Replace placeholder with dragged element
+                placeholder.parentNode.replaceChild(draggedElement, placeholder);
+                draggedElement.classList.remove('dragging');
+                
+                // Update display orders
+                this.updateDisplayOrders(container);
+                
+                draggedElement = null;
+                placeholder = null;
+            }
+        });
+
+        container.addEventListener('dragend', (e) => {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+            if (placeholder && placeholder.parentNode) {
+                placeholder.parentNode.removeChild(placeholder);
+                placeholder = null;
+            }
+        });
+
+        // Make rows draggable
+        container.querySelectorAll('.sortable-item').forEach(item => {
+            item.draggable = true;
+        });
+    }
+
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.sortable-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    async updateDisplayOrders(container) {
+        const rotation = container.dataset.rotation;
+        const items = container.querySelectorAll('.sortable-item');
+        const updates = [];
+
+        items.forEach((item, index) => {
+            const itemId = item.dataset.itemId;
+            const newOrder = index;
+            item.dataset.displayOrder = newOrder;
+            
+            updates.push({
+                shop_item_id: itemId,
+                display_order: newOrder
+            });
+        });
+
+        try {
+            // Send batch update to server
+            await JotunAPI.updateShopItemDisplayOrders(updates);
+            this.showStatus(`Updated display order for ${updates.length} items in rotation ${rotation === 'none' ? '(None)' : rotation}`, 'success');
+        } catch (error) {
+            console.error('Error updating display orders:', error);
+            this.showStatus('Failed to update item order', 'error');
+            // Reload items to reset to server state
+            this.loadShopItems(this.selectedShop);
+        }
     }
 
     async handleAddShopItem(e) {

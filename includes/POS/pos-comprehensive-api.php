@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 add_action('plugins_loaded', 'jotun_shop_migration_check');
 
 function jotun_shop_migration_check() {
-    $current_version = '1.3.0'; // Updated for buy/turnin daily limits
+    $current_version = '1.4.0'; // Updated for display_order column and drag-and-drop sorting
     $db_version = get_option('jotun_shop_db_version', '0.0.0');
     
     if (version_compare($db_version, $current_version, '<')) {
@@ -405,6 +405,13 @@ function jotun_ensure_shop_items_table() {
         if (empty($max_daily_turnin_quantity_exists)) {
             $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN max_daily_turnin_quantity int(11) DEFAULT 0 COMMENT 'Maximum quantity a player can turn in per 24-hour period'");
             error_log('Jotunheim POS: Added max_daily_turnin_quantity column to jotun_shop_items table');
+        }
+        
+        // Migration: Add display_order column for drag-and-drop sorting within rotation groups
+        $display_order_exists = $wpdb->get_results("SHOW COLUMNS FROM $shop_items_table LIKE 'display_order'");
+        if (empty($display_order_exists)) {
+            $wpdb->query("ALTER TABLE $shop_items_table ADD COLUMN display_order int(11) DEFAULT 0 COMMENT 'Display order within rotation group for drag-and-drop sorting'");
+            error_log('Jotunheim POS: Added display_order column to jotun_shop_items table');
         }
     }
     
@@ -1037,6 +1044,15 @@ add_action('rest_api_init', function() {
                 return current_user_can('edit_posts');
             }
         ]
+    ]);
+    
+    // Batch update shop item display orders
+    register_rest_route('jotun-api/v1', '/shop-items/display-orders', [
+        'methods' => 'PUT',
+        'callback' => 'jotun_api_update_shop_item_display_orders',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
     ]);
     
     // ============================================================================
@@ -2364,6 +2380,51 @@ function jotun_api_delete_shop_item($request) {
     }
     
     return new WP_REST_Response(['message' => 'Shop item deleted successfully'], 200);
+}
+
+function jotun_api_update_shop_item_display_orders($request) {
+    global $wpdb;
+    
+    $data = $request->get_json_params();
+    $table_name = 'jotun_shop_items';
+    
+    if (empty($data['updates']) || !is_array($data['updates'])) {
+        return new WP_REST_Response(['error' => 'Updates array is required'], 400);
+    }
+    
+    $updated_count = 0;
+    $wpdb->query('START TRANSACTION');
+    
+    try {
+        foreach ($data['updates'] as $update) {
+            if (empty($update['shop_item_id']) || !isset($update['display_order'])) {
+                continue;
+            }
+            
+            $result = $wpdb->update(
+                $table_name,
+                ['display_order' => (int) $update['display_order']],
+                ['shop_item_id' => (int) $update['shop_item_id']],
+                ['%d'],
+                ['%d']
+            );
+            
+            if ($result !== false) {
+                $updated_count++;
+            }
+        }
+        
+        $wpdb->query('COMMIT');
+        
+        return new WP_REST_Response([
+            'message' => "Updated display order for {$updated_count} items",
+            'updated_count' => $updated_count
+        ], 200);
+        
+    } catch (Exception $e) {
+        $wpdb->query('ROLLBACK');
+        return new WP_REST_Response(['error' => 'Failed to update display orders: ' . $e->getMessage()], 500);
+    }
 }
 
 // ============================================================================
