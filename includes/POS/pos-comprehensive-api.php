@@ -2191,6 +2191,37 @@ function jotun_api_add_shop_item($request) {
     if (!empty($turn_in_exists)) {
         $insert_data['turn_in'] = isset($data['turn_in']) ? (bool)$data['turn_in'] : false; // Default not turn-in
     }
+
+    // Add daily limit fields if columns exist
+    $daily_limit_enabled_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'daily_limit_enabled'");
+    if (!empty($daily_limit_enabled_exists)) {
+        $insert_data['daily_limit_enabled'] = isset($data['daily_limit_enabled']) ? (bool)$data['daily_limit_enabled'] : false;
+    }
+
+    $max_daily_sell_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'max_daily_sell_quantity'");
+    if (!empty($max_daily_sell_quantity_exists)) {
+        $insert_data['max_daily_sell_quantity'] = (int)($data['max_daily_sell_quantity'] ?? 0);
+    }
+
+    $buy_daily_limit_enabled_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'buy_daily_limit_enabled'");
+    if (!empty($buy_daily_limit_enabled_exists)) {
+        $insert_data['buy_daily_limit_enabled'] = isset($data['buy_daily_limit_enabled']) ? (bool)$data['buy_daily_limit_enabled'] : false;
+    }
+
+    $max_daily_buy_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'max_daily_buy_quantity'");
+    if (!empty($max_daily_buy_quantity_exists)) {
+        $insert_data['max_daily_buy_quantity'] = (int)($data['max_daily_buy_quantity'] ?? 0);
+    }
+
+    $turnin_daily_limit_enabled_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'turnin_daily_limit_enabled'");
+    if (!empty($turnin_daily_limit_enabled_exists)) {
+        $insert_data['turnin_daily_limit_enabled'] = isset($data['turnin_daily_limit_enabled']) ? (bool)$data['turnin_daily_limit_enabled'] : false;
+    }
+
+    $max_daily_turnin_quantity_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'max_daily_turnin_quantity'");
+    if (!empty($max_daily_turnin_quantity_exists)) {
+        $insert_data['max_daily_turnin_quantity'] = (int)($data['max_daily_turnin_quantity'] ?? 0);
+    }
     
     // Enhanced debug logging
     error_log('DEBUG - Final insert data: ' . json_encode($insert_data));
@@ -2348,6 +2379,31 @@ function jotun_api_update_shop_item($request) {
 
     if (isset($data['turn_in'])) {
         $update_data['turn_in'] = (bool)$data['turn_in'];
+    }
+
+    // Handle daily limit fields
+    if (isset($data['daily_limit_enabled'])) {
+        $update_data['daily_limit_enabled'] = (bool)$data['daily_limit_enabled'];
+    }
+
+    if (isset($data['max_daily_sell_quantity'])) {
+        $update_data['max_daily_sell_quantity'] = (int)$data['max_daily_sell_quantity'];
+    }
+
+    if (isset($data['buy_daily_limit_enabled'])) {
+        $update_data['buy_daily_limit_enabled'] = (bool)$data['buy_daily_limit_enabled'];
+    }
+
+    if (isset($data['max_daily_buy_quantity'])) {
+        $update_data['max_daily_buy_quantity'] = (int)$data['max_daily_buy_quantity'];
+    }
+
+    if (isset($data['turnin_daily_limit_enabled'])) {
+        $update_data['turnin_daily_limit_enabled'] = (bool)$data['turnin_daily_limit_enabled'];
+    }
+
+    if (isset($data['max_daily_turnin_quantity'])) {
+        $update_data['max_daily_turnin_quantity'] = (int)$data['max_daily_turnin_quantity'];
     }
     
     if (empty($update_data)) {
