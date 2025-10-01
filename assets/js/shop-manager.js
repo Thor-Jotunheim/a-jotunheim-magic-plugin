@@ -346,7 +346,8 @@ class ShopManager {
                 // Update price placeholder
                 const customPriceInput = document.getElementById('custom-price');
                 if (customPriceInput) {
-                    customPriceInput.placeholder = `Default: ${this.formatPrice(item.unit_price || 0)}`;
+                    const totalCoins = Math.floor(parseFloat(item.unit_price || 0));
+                    customPriceInput.placeholder = `Default: ${totalCoins} Coins`;
                 }
             });
             
@@ -431,7 +432,7 @@ class ShopManager {
                     // Update price placeholder
                     const customPriceInput = document.getElementById('custom-price');
                     if (customPriceInput) {
-                        customPriceInput.placeholder = `Default: ${this.formatPrice(0)}`;
+                        customPriceInput.placeholder = `Default: 0 Coins`;
                     }
                 }
                 
@@ -1500,6 +1501,14 @@ class ShopManager {
             
             // Populate other fields
             document.getElementById('custom-price').value = item.custom_price || '';
+            
+            // Update price placeholder to show the item's default price
+            const customPriceInput = document.getElementById('custom-price');
+            if (customPriceInput && (item.unit_price || item.master_unit_price)) {
+                const defaultPrice = item.unit_price || item.master_unit_price || 0;
+                const totalCoins = Math.floor(parseFloat(defaultPrice));
+                customPriceInput.placeholder = `Default: ${totalCoins} Coins`;
+            }
             
             // Handle stock quantity checkbox and field
             const stockQuantityValue = parseInt(item.stock_quantity);
