@@ -189,9 +189,10 @@ function shop_manager_interface() {
             text-transform: uppercase;
         }
         
-        /* Stock quantity input margin */
+        /* Stock quantity input styling */
         input#stock-quantity {
-            margin-top: 12px;
+            margin-top: 13px;
+            font-size: 16px;
         }
         
         /* Relative positioning for autocomplete */
