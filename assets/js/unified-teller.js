@@ -5,6 +5,7 @@
 
 class UnifiedTeller {
     constructor() {
+        console.log('🚀🚀🚀 UNIFIED TELLER: Constructor called!');
         console.log('UnifiedTeller constructor called');
         this.selectedShop = null;
         this.currentCustomer = null;
@@ -89,11 +90,11 @@ class UnifiedTeller {
             this.handleShopRotationChanged(event.detail);
         });
         
-        console.log('🔄 UnifiedTeller event listener registered for shopRotationChanged');
+        console.log('�🚀🚀 UNIFIED TELLER: Event listener registered for shopRotationChanged');
         
         // Add a global debug listener to catch any shopRotationChanged events
         window.addEventListener('shopRotationChanged', (event) => {
-            console.log('🌍 GLOBAL: shopRotationChanged event detected!', event.detail);
+            console.log('🚀🚀🚀 GLOBAL: shopRotationChanged event detected!', event.detail);
         }, true); // Use capture phase to ensure it fires first
 
         // Transaction actions
@@ -4508,13 +4509,15 @@ function confirmTransaction() {
 
 // Initialize unified teller when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀🚀🚀 UNIFIED TELLER: DOMContentLoaded event fired!');
+    
     // Check if we should initialize UnifiedTeller
     const shouldInitialize = document.getElementById('unified-teller-interface') || 
                             document.getElementById('teller-shop-selector') ||
                             document.querySelector('.unified-teller-container') ||
                             document.querySelector('#refresh-shop-btn');
     
-    console.log('🔄 UnifiedTeller initialization check:', {
+    console.log('🚀🚀� UNIFIED TELLER: Initialization check:', {
         'unified-teller-interface': !!document.getElementById('unified-teller-interface'),
         'teller-shop-selector': !!document.getElementById('teller-shop-selector'),
         'unified-teller-container': !!document.querySelector('.unified-teller-container'),
@@ -4523,22 +4526,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     if (shouldInitialize) {
-        console.log('🔄 Conditions met, initializing UnifiedTeller...');
+        console.log('🚀🚀� UNIFIED TELLER: Conditions met, initializing UnifiedTeller...');
         // Wait for JotunAPI to be available
         const checkAPI = () => {
+            console.log('🚀🚀🚀 UNIFIED TELLER: Checking for JotunAPI...');
             if (typeof JotunAPI !== 'undefined' && JotunAPI) {
-                console.log('JotunAPI is available, initializing UnifiedTeller');
+                console.log('🚀🚀🚀 UNIFIED TELLER: JotunAPI is available, initializing UnifiedTeller');
                 window.unifiedTeller = new UnifiedTeller();
-                console.log('window.unifiedTeller assigned:', typeof window.unifiedTeller);
-                console.log('preventOverLimit method accessible:', typeof window.unifiedTeller.preventOverLimit);
+                console.log('🚀🚀🚀 UNIFIED TELLER: window.unifiedTeller assigned:', typeof window.unifiedTeller);
+                console.log('🚀🚀🚀 UNIFIED TELLER: preventOverLimit method accessible:', typeof window.unifiedTeller.preventOverLimit);
             } else {
-                console.log('JotunAPI not ready, waiting...');
+                console.log('🚀🚀🚀 UNIFIED TELLER: JotunAPI not ready, waiting...');
                 setTimeout(checkAPI, 100);
             }
         };
         checkAPI();
     } else {
-        console.log('🔄 UnifiedTeller not needed on this page - no relevant elements found');
+        console.log('🚀🚀� UNIFIED TELLER: Not needed on this page - no relevant elements found');
     }
     
     // Input validation system is now active
