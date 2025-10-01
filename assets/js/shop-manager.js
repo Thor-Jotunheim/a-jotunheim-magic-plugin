@@ -1797,8 +1797,16 @@ class ShopManager {
             // Add change event listener
             dropdown.addEventListener('change', async (e) => {
                 const newRotation = parseInt(e.target.value);
-                if (newRotation && newRotation !== currentRotation) {
+                // Get the current rotation dynamically from the selected option
+                const currentlySelectedOption = dropdown.querySelector('option[selected]');
+                const currentRotationValue = currentlySelectedOption ? parseInt(currentlySelectedOption.value) : null;
+                
+                console.log(`Rotation change detected: ${currentRotationValue} -> ${newRotation}`);
+                
+                if (newRotation && newRotation !== currentRotationValue) {
                     await this.updateShopRotation(shopId, newRotation);
+                } else if (newRotation === currentRotationValue) {
+                    console.log('Same rotation selected, no update needed');
                 }
             });
             
@@ -1816,6 +1824,24 @@ class ShopManager {
         try {
             await JotunAPI.updateShopRotation(shopId, rotation);
             this.showStatus(`Shop rotation updated to ${rotation}`, 'success');
+            
+            // Update the dropdown's selected state to reflect the change
+            const rotationDropdown = document.querySelector(`select.rotation-selector[data-shop-id="${shopId}"]`);
+            if (rotationDropdown) {
+                // Remove selected attribute from all options
+                rotationDropdown.querySelectorAll('option').forEach(opt => {
+                    opt.removeAttribute('selected');
+                    opt.selected = false;
+                });
+                
+                // Set the new rotation as selected
+                const newSelectedOption = rotationDropdown.querySelector(`option[value="${rotation}"]`);
+                if (newSelectedOption) {
+                    newSelectedOption.setAttribute('selected', 'selected');
+                    newSelectedOption.selected = true;
+                    console.log(`Updated dropdown: set rotation ${rotation} as selected`);
+                }
+            }
             
             // Dispatch custom event to notify unified teller of rotation change
             const rotationChangeEvent = new CustomEvent('shopRotationChanged', {
