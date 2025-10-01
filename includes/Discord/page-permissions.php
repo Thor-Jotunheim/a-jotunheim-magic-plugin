@@ -16,6 +16,9 @@ class JotunheimPagePermissions {
         
         // Add admin capability management
         add_action('init', [$this, 'manage_admin_capabilities'], 1);
+        
+        // Add WordPress page access control
+        add_action('template_redirect', [$this, 'check_wordpress_page_access']);
     }
     
     /**
@@ -85,6 +88,42 @@ class JotunheimPagePermissions {
         
         if ($current_page && !$this->user_can_access_page($current_page)) {
             wp_die('You do not have permission to access this page.');
+        }
+    }
+
+    /**
+     * Check access to WordPress pages (frontend)
+     */
+    public function check_wordpress_page_access() {
+        // Only run on frontend for logged-in users
+        if (is_admin() || !is_user_logged_in()) {
+            return;
+        }
+        
+        // Only check actual pages, not posts or other content types
+        if (!is_page()) {
+            return;
+        }
+        
+        global $post;
+        if (!$post || !isset($post->post_name)) {
+            return;
+        }
+        
+        $page_slug = $post->post_name;
+        
+        // Check if this page has permission restrictions configured
+        $page_permissions = get_option('jotunheim_page_permissions', []);
+        if (!isset($page_permissions[$page_slug])) {
+            // No restrictions configured for this page
+            return;
+        }
+        
+        // Check if user has access to this page
+        if (!$this->user_can_access_page($page_slug)) {
+            // Redirect to home page with error message or show access denied
+            wp_redirect(home_url('/?access_denied=1'));
+            exit;
         }
     }
 
@@ -426,14 +465,18 @@ class JotunheimPagePermissions {
         $shortcode_count = 0;
         
         foreach ($posts as $post) {
-            // Add ALL WordPress pages and posts (this is what was missing!)
-            $page_key = "wp_{$post->post_type}_{$post->post_name}";
+            // Use the actual WordPress page slug for better permission matching
+            // This ensures permissions work with actual WordPress page URLs
+            $page_key = $post->post_name; // Use actual slug like 'faq' instead of 'wp_page_faq'
+            
             if (!isset($all_pages[$page_key])) {
                 $all_pages[$page_key] = [
-                    'title' => $post->post_title,
-                    'description' => "WordPress {$post->post_type}: {$post->post_name}",
+                    'title' => $post->post_title . " ({$post->post_type})",
+                    'description' => "WordPress {$post->post_type}: /{$post->post_name}/",
                     'type' => "wp_{$post->post_type}",
-                    'post_id' => $post->ID
+                    'post_id' => $post->ID,
+                    'post_name' => $post->post_name,
+                    'post_type' => $post->post_type
                 ];
                 $wp_pages_count++;
             }
