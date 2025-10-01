@@ -4508,7 +4508,22 @@ function confirmTransaction() {
 
 // Initialize unified teller when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('unified-teller-interface')) {
+    // Check if we should initialize UnifiedTeller
+    const shouldInitialize = document.getElementById('unified-teller-interface') || 
+                            document.getElementById('teller-shop-selector') ||
+                            document.querySelector('.unified-teller-container') ||
+                            document.querySelector('#refresh-shop-btn');
+    
+    console.log('🔄 UnifiedTeller initialization check:', {
+        'unified-teller-interface': !!document.getElementById('unified-teller-interface'),
+        'teller-shop-selector': !!document.getElementById('teller-shop-selector'),
+        'unified-teller-container': !!document.querySelector('.unified-teller-container'),
+        'refresh-shop-btn': !!document.querySelector('#refresh-shop-btn'),
+        'shouldInitialize': !!shouldInitialize
+    });
+    
+    if (shouldInitialize) {
+        console.log('🔄 Conditions met, initializing UnifiedTeller...');
         // Wait for JotunAPI to be available
         const checkAPI = () => {
             if (typeof JotunAPI !== 'undefined' && JotunAPI) {
@@ -4522,8 +4537,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         checkAPI();
-        
-        // Input validation system is now active
+    } else {
+        console.log('🔄 UnifiedTeller not needed on this page - no relevant elements found');
+    }
+    
+    // Input validation system is now active
 
         // Add CSS for player suggestions
         const style = document.createElement('style');
