@@ -2584,10 +2584,10 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Make icon 75% smaller ONLY in table view */
 .card-cell .item-icon-container {
-    width: 35px;  /* 75% smaller than 140px */
-    height: 35px; /* 75% smaller than 140px */
-    min-width: 35px;
-    max-width: 35px;
+    width: 40px;  /* 35px + 15% = 40px */
+    height: 40px; /* 35px + 15% = 40px */
+    min-width: 40px;
+    max-width: 40px;
     padding: 2px; /* Proportionally smaller padding */
     margin: 0; /* Remove margin for compact table layout */
 }
