@@ -2013,7 +2013,11 @@ function jotun_api_get_shop_items($request) {
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
     
+    error_log('=== ROTATION API DEBUG ===');
     error_log('jotun_api_get_shop_items: Called with shop_id=' . $shop_id . ', rotation=' . $rotation);
+    error_log('Rotation parameter type: ' . gettype($rotation));
+    error_log('Rotation is null: ' . ($rotation === null ? 'yes' : 'no'));
+    error_log('Rotation is empty: ' . (empty($rotation) ? 'yes' : 'no'));
     
     $sql = "SELECT si.*, il.item_name as master_item_name, il.unit_price as default_price, il.icon_image 
             FROM $table_name si 
@@ -2024,11 +2028,15 @@ function jotun_api_get_shop_items($request) {
     if ($shop_id) {
         $where_clauses[] = "si.shop_id = %d";
         $params[] = (int)$shop_id;
+        error_log('Added shop_id filter: ' . (int)$shop_id);
     }
     
-    if ($rotation !== null) {
+    if ($rotation !== null && $rotation !== '') {
         $where_clauses[] = "si.rotation = %d";
         $params[] = (int)$rotation;
+        error_log('Added rotation filter: ' . (int)$rotation);
+    } else {
+        error_log('Rotation filter NOT applied - rotation is null or empty');
     }
     
     if (!empty($where_clauses)) {

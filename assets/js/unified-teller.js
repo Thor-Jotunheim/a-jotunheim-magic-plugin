@@ -467,6 +467,12 @@ class UnifiedTeller {
             
             // Get current rotation from selected option
             const currentRotation = selectedOption.dataset.currentRotation || 1;
+            console.log('=== SHOP SELECTION DEBUG ===');
+            console.log('Selected shop option:', selectedOption);
+            console.log('Shop dataset:', selectedOption.dataset);
+            console.log('Current rotation from dataset:', selectedOption.dataset.currentRotation);
+            console.log('Final rotation being used:', currentRotation);
+            console.log('Rotation type:', typeof currentRotation);
             
             // Load appropriate items
             if (isTurnInOnly) {
@@ -519,12 +525,17 @@ class UnifiedTeller {
 
     async loadShopItems(shopId, rotation = 1) {
         try {
+            console.log('=== ROTATION DEBUG ===');
             console.log('Loading shop items for shop ID:', shopId, 'rotation:', rotation);
+            console.log('Rotation type:', typeof rotation);
             
             // Load shop items from jotun_shop_items table with rotation filter
-            const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId, rotation: rotation });
+            const apiParams = { shop_id: shopId, rotation: rotation };
+            console.log('API Parameters being sent:', apiParams);
+            const shopItemsResponse = await JotunAPI.getShopItems(apiParams);
             const shopItems = shopItemsResponse.data || [];
-            console.log('Raw shop items from API:', shopItems);
+            console.log('Raw shop items from API (should be filtered by rotation):', shopItems);
+            console.log('Number of items returned:', shopItems.length);
             
             // Load Item Database from jotun_item_list table for pricing and details
             const itemListResponse = await JotunAPI.getItemlist();
