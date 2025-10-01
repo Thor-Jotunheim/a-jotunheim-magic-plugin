@@ -224,6 +224,15 @@ class JotunheimPagePermissions {
                     <p>Configure which Discord roles can access specific plugin pages. Check the boxes to grant access to each role.</p>
                 </div>
                 
+                <!-- Compact Permission Key/Legend -->
+                <div class="permission-legend" style="margin: 10px 0; padding: 8px 12px; background: #f0f8ff; border-left: 4px solid #2271b1; font-size: 12px; line-height: 1.4;">
+                    <strong>Permission Key:</strong> 
+                    <span style="color: #2271b1; font-weight: bold;">R</span> = Read Only Access | 
+                    <span style="color: #00a32a; font-weight: bold;">E</span> = Read & Edit Access | 
+                    <span style="color: #d63638; font-weight: bold;">D</span> = Deny Access | 
+                    <span style="color: #8c8f94; font-weight: bold;">-</span> = No Permission (falls back to WordPress permissions)
+                </div>
+                
                 <!-- Action buttons at the top -->
                 <div class="permissions-actions" style="margin: 20px 0; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
                     <button type="button" class="button" id="select-all-permissions">Select All</button>
