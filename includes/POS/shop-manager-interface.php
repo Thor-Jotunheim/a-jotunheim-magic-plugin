@@ -1037,6 +1037,48 @@ function shop_manager_interface() {
         margin-top: 4px;
         font-size: 10px;
     }
+    
+    /* Collapsible Rotation Styles */
+    .rotation-header.clickable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+    
+    .rotation-header.clickable:hover {
+        background: #e3f2fd !important;
+    }
+    
+    .rotation-toggle {
+        display: inline-block;
+        margin-right: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #0073aa;
+        transition: transform 0.2s ease;
+    }
+    
+    .rotation-header-row.collapsed .rotation-toggle {
+        transform: rotate(-90deg);
+    }
+    
+    .rotation-header-row.collapsed {
+        background: #f5f5f5;
+        border-left-color: #999;
+    }
+    
+    .rotation-header-row.collapsed .rotation-title {
+        color: #666;
+    }
+    
+    /* Empty message styling */
+    .empty-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-style: italic;
+        background: #f9f9f9;
+    }
     </style>
     
     <script>

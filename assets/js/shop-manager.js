@@ -1051,6 +1051,13 @@ class ShopManager {
         const tbody = document.getElementById('shop-items-table-body');
         tbody.innerHTML = '';
 
+        if (shopItems.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="15" class="empty-message">No items found for this shop</td>';
+            tbody.appendChild(emptyRow);
+            return;
+        }
+
         // Group items by rotation and sort by display_order within each rotation
         const itemsByRotation = this.groupItemsByRotation(shopItems);
         
@@ -1061,34 +1068,138 @@ class ShopManager {
             if (b === 'none') return 1;
             return parseInt(a) - parseInt(b);
         }).forEach(rotation => {
-            // Add rotation header row
+            // Add collapsible rotation header row
             const headerRow = document.createElement('tr');
             headerRow.className = 'rotation-header-row';
+            headerRow.dataset.rotation = rotation;
             headerRow.innerHTML = `
-                <td colspan="15" class="rotation-header">
+                <td colspan="15" class="rotation-header clickable">
                     <div class="rotation-header-content">
+                        <span class="rotation-toggle">▼</span>
                         <span class="rotation-title">Rotation ${rotation === 'none' ? '(None)' : rotation}</span>
                         <span class="rotation-count">${itemsByRotation[rotation].length} items</span>
                     </div>
                 </td>
             `;
+            
+            // Add click handler for collapsible functionality
+            headerRow.addEventListener('click', () => {
+                this.toggleRotationCollapse(rotation);
+            });
+            
             tbody.appendChild(headerRow);
-
-            // Create sortable container for this rotation
-            const rotationContainer = document.createElement('tbody');
-            rotationContainer.className = 'rotation-group';
-            rotationContainer.dataset.rotation = rotation;
             
             // Render items in this rotation
             itemsByRotation[rotation].forEach((item, index) => {
                 const row = this.createItemRow(item, index);
-                rotationContainer.appendChild(row);
+                row.dataset.rotationGroup = rotation;
+                tbody.appendChild(row);
             });
+        });
+        
+        // Initialize drag and drop for all sortable items
+        this.initializeDragAndDrop();
+    }
+
+    toggleRotationCollapse(rotation) {
+        const tbody = document.getElementById('shop-items-table-body');
+        const headerRow = tbody.querySelector(`tr.rotation-header-row[data-rotation="${rotation}"]`);
+        const itemRows = tbody.querySelectorAll(`tr.shop-item-row[data-rotation-group="${rotation}"]`);
+        const toggleIcon = headerRow.querySelector('.rotation-toggle');
+        
+        const isCollapsed = headerRow.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            headerRow.classList.remove('collapsed');
+            toggleIcon.textContent = '▼';
+            itemRows.forEach(row => {
+                row.style.display = '';
+            });
+        } else {
+            // Collapse
+            headerRow.classList.add('collapsed');
+            toggleIcon.textContent = '▶';
+            itemRows.forEach(row => {
+                row.style.display = 'none';
+            });
+        }
+    }
+
+    initializeDragAndDrop() {
+        const tbody = document.getElementById('shop-items-table-body');
+        let draggedElement = null;
+        let placeholder = null;
+        let draggedFromRotation = null;
+
+        // Add event listeners for drag and drop
+        tbody.addEventListener('dragstart', (e) => {
+            if (e.target.closest('.sortable-item')) {
+                draggedElement = e.target.closest('.sortable-item');
+                draggedFromRotation = draggedElement.dataset.rotationGroup;
+                draggedElement.classList.add('dragging');
+                
+                // Create placeholder
+                placeholder = document.createElement('tr');
+                placeholder.className = 'drag-placeholder';
+                placeholder.innerHTML = '<td colspan="15" class="placeholder-content">Drop here</td>';
+                
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', draggedElement.outerHTML);
+            }
+        });
+
+        tbody.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
             
-            // Enable drag and drop for this rotation group
-            this.enableDragAndDrop(rotationContainer);
+            if (draggedElement && placeholder) {
+                const afterElement = this.getDragAfterElement(tbody, e.clientY, draggedFromRotation);
+                if (afterElement == null) {
+                    // Find the last item in the same rotation
+                    const rotationItems = Array.from(tbody.querySelectorAll(`tr.shop-item-row[data-rotation-group="${draggedFromRotation}"]`));
+                    if (rotationItems.length > 0) {
+                        const lastItem = rotationItems[rotationItems.length - 1];
+                        lastItem.parentNode.insertBefore(placeholder, lastItem.nextSibling);
+                    }
+                } else {
+                    afterElement.parentNode.insertBefore(placeholder, afterElement);
+                }
+            }
+        });
+
+        tbody.addEventListener('drop', (e) => {
+            e.preventDefault();
             
-            tbody.appendChild(rotationContainer);
+            if (draggedElement && placeholder) {
+                // Replace placeholder with dragged element
+                placeholder.parentNode.replaceChild(draggedElement, placeholder);
+                draggedElement.classList.remove('dragging');
+                
+                // Update display orders for this rotation
+                this.updateDisplayOrdersForRotation(draggedFromRotation);
+                
+                draggedElement = null;
+                placeholder = null;
+                draggedFromRotation = null;
+            }
+        });
+
+        tbody.addEventListener('dragend', (e) => {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+            if (placeholder && placeholder.parentNode) {
+                placeholder.parentNode.removeChild(placeholder);
+                placeholder = null;
+            }
+            draggedFromRotation = null;
+        });
+
+        // Make rows draggable
+        tbody.querySelectorAll('.sortable-item').forEach(item => {
+            item.draggable = true;
         });
     }
 
@@ -1120,6 +1231,7 @@ class ShopManager {
         row.className = 'shop-item-row sortable-item';
         row.dataset.itemId = item.shop_item_id || item.id;
         row.dataset.displayOrder = item.display_order || index;
+        // Will be set by renderShopItemsTable when row is added to the table
         
         const defaultPrice = item.default_price || 0;
         const shopPrice = item.custom_price || defaultPrice;
@@ -1158,75 +1270,10 @@ class ShopManager {
         return row;
     }
 
-    enableDragAndDrop(container) {
-        let draggedElement = null;
-        let placeholder = null;
 
-        // Add event listeners for drag and drop
-        container.addEventListener('dragstart', (e) => {
-            if (e.target.closest('.sortable-item')) {
-                draggedElement = e.target.closest('.sortable-item');
-                draggedElement.classList.add('dragging');
-                
-                // Create placeholder
-                placeholder = document.createElement('tr');
-                placeholder.className = 'drag-placeholder';
-                placeholder.innerHTML = '<td colspan="15" class="placeholder-content">Drop here</td>';
-                
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/html', draggedElement.outerHTML);
-            }
-        });
 
-        container.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            
-            if (draggedElement && placeholder) {
-                const afterElement = this.getDragAfterElement(container, e.clientY);
-                if (afterElement == null) {
-                    container.appendChild(placeholder);
-                } else {
-                    container.insertBefore(placeholder, afterElement);
-                }
-            }
-        });
-
-        container.addEventListener('drop', (e) => {
-            e.preventDefault();
-            
-            if (draggedElement && placeholder) {
-                // Replace placeholder with dragged element
-                placeholder.parentNode.replaceChild(draggedElement, placeholder);
-                draggedElement.classList.remove('dragging');
-                
-                // Update display orders
-                this.updateDisplayOrders(container);
-                
-                draggedElement = null;
-                placeholder = null;
-            }
-        });
-
-        container.addEventListener('dragend', (e) => {
-            if (draggedElement) {
-                draggedElement.classList.remove('dragging');
-                draggedElement = null;
-            }
-            if (placeholder && placeholder.parentNode) {
-                placeholder.parentNode.removeChild(placeholder);
-                placeholder = null;
-            }
-        });
-
-        // Make rows draggable
-        container.querySelectorAll('.sortable-item').forEach(item => {
-            item.draggable = true;
-        });
-    }
-
-    getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.sortable-item:not(.dragging)')];
+    getDragAfterElement(container, y, rotation) {
+        const draggableElements = [...container.querySelectorAll(`.sortable-item[data-rotation-group="${rotation}"]:not(.dragging)`)];
         
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
@@ -1240,9 +1287,9 @@ class ShopManager {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    async updateDisplayOrders(container) {
-        const rotation = container.dataset.rotation;
-        const items = container.querySelectorAll('.sortable-item');
+    async updateDisplayOrdersForRotation(rotation) {
+        const tbody = document.getElementById('shop-items-table-body');
+        const items = tbody.querySelectorAll(`.sortable-item[data-rotation-group="${rotation}"]`);
         const updates = [];
 
         items.forEach((item, index) => {
@@ -1255,6 +1302,8 @@ class ShopManager {
                 display_order: newOrder
             });
         });
+
+        if (updates.length === 0) return;
 
         try {
             // Send batch update to server
