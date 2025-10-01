@@ -426,8 +426,9 @@ class UnifiedTeller {
                 option.textContent = shop.shop_name;
                 option.dataset.shopName = shop.shop_name;
                 option.dataset.shopType = shop.shop_type;
+                option.dataset.currentRotation = shop.current_rotation || 1; // Store current rotation
                 selector.appendChild(option);
-                console.log('DEBUG - Added shop option:', option.textContent);
+                console.log('DEBUG - Added shop option:', option.textContent, 'with rotation:', shop.current_rotation);
             } else {
                 console.log('DEBUG - Skipping inactive shop:', shop.shop_name);
             }
@@ -464,11 +465,14 @@ class UnifiedTeller {
             // Switch between Payment Tracking and Turn-in Tracking
             this.setupTrackingInterface(isTurnInOnly);
             
+            // Get current rotation from selected option
+            const currentRotation = selectedOption.dataset.currentRotation || 1;
+            
             // Load appropriate items
             if (isTurnInOnly) {
-                await this.loadTurninItems(shopId);
+                await this.loadTurninItems(shopId, currentRotation);
             } else {
-                await this.loadShopItems(shopId);
+                await this.loadShopItems(shopId, currentRotation);
             }
             
             // Initialize button states after shop selection
@@ -513,12 +517,12 @@ class UnifiedTeller {
         }
     }
 
-    async loadShopItems(shopId) {
+    async loadShopItems(shopId, rotation = 1) {
         try {
-            console.log('Loading shop items for shop ID:', shopId);
+            console.log('Loading shop items for shop ID:', shopId, 'rotation:', rotation);
             
-            // Load shop items from jotun_shop_items table
-            const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId });
+            // Load shop items from jotun_shop_items table with rotation filter
+            const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId, rotation: rotation });
             const shopItems = shopItemsResponse.data || [];
             console.log('Raw shop items from API:', shopItems);
             
@@ -737,11 +741,11 @@ class UnifiedTeller {
 
 
 
-    async loadTurninItems(shopId) {
+    async loadTurninItems(shopId, rotation = 1) {
         try {
-            console.log('Loading turn-in items for shop ID:', shopId);
-            // Load turn-in items from jotun_shop_items table
-            const response = await JotunAPI.getShopItems({ shop_id: shopId });
+            console.log('Loading turn-in items for shop ID:', shopId, 'rotation:', rotation);
+            // Load turn-in items from jotun_shop_items table with rotation filter
+            const response = await JotunAPI.getShopItems({ shop_id: shopId, rotation: rotation });
             console.log('Turn-in items response:', response);
             this.turninItems = response.data || [];
             
@@ -2231,15 +2235,16 @@ class UnifiedTeller {
                 // Reload shop items based on shop type
                 const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
                 const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+                const currentRotation = selectedOption ? selectedOption.dataset.currentRotation || 1 : 1;
                 
                 if (shopType === 'turn-in_only') {
-                    await this.loadTurninItems(this.selectedShop);
+                    await this.loadTurninItems(this.selectedShop, currentRotation);
                     // Reload daily turn-in data to update counts
                     if (this.currentCustomer) {
                         await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
                     }
                 } else {
-                    await this.loadShopItems(this.selectedShop);
+                    await this.loadShopItems(this.selectedShop, currentRotation);
                 }
                 await this.loadTransactionHistory();
                 
