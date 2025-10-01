@@ -274,13 +274,18 @@ class JotunheimPagePermissions {
                                             <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
                                                 <td style="text-align: center; padding: 8px;">
                                                     <?php 
-                                                    // Norn role always gets edit permission and cannot be changed
+                                                    // Define core admin pages that should be locked for Norn role
+                                                    $core_admin_pages = ['jotunheim_magic', 'dashboard_config', 'discord_auth_config', 'page_permissions_config'];
+                                                    $is_core_admin_page = in_array($page_key, $core_admin_pages);
+                                                    
+                                                    // Norn role gets edit permission on core admin pages and cannot be changed
                                                     $is_norn_role = ($role_key === 'norn');
+                                                    $is_norn_locked = ($is_norn_role && $is_core_admin_page);
                                                     
                                                     // Get current permission level (backward compatibility)
                                                     $current_value = 'none';
-                                                    if ($is_norn_role) {
-                                                        // Norn always has edit permission
+                                                    if ($is_norn_locked) {
+                                                        // Norn always has edit permission on core admin pages
                                                         $current_value = 'edit';
                                                     } else {
                                                         if (isset($current_permissions[$page_key][$role_key])) {
@@ -294,11 +299,11 @@ class JotunheimPagePermissions {
                                                     }
                                                     
                                                     $radio_name = "permissions[{$page_key}][{$role_key}]";
-                                                    $is_disabled = $is_norn_role ? 'disabled' : '';
-                                                    $locked_class = $is_norn_role ? 'norn-locked' : '';
+                                                    $is_disabled = $is_norn_locked ? 'disabled' : '';
+                                                    $locked_class = $is_norn_locked ? 'norn-locked' : '';
                                                     ?>
                                                     <div style="display: flex; justify-content: center; gap: 8px; font-size: 12px;" class="<?php echo esc_attr($locked_class); ?>">
-                                                        <?php if ($is_norn_role): ?>
+                                                        <?php if ($is_norn_locked): ?>
                                                             <!-- Norn role: Show locked edit permission with visual indication -->
                                                             <label title="Norn Always Has Full Access (Locked)" style="opacity: 0.5;">
                                                                 <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="read" disabled>
@@ -595,8 +600,9 @@ class JotunheimPagePermissions {
                     $role_key = sanitize_key($role_key);
                     $permission_level = sanitize_text_field($permission_level);
                     
-                    // ENFORCE: Norn role always gets edit permission, cannot be overridden
-                    if ($role_key === 'norn') {
+                    // ENFORCE: Norn role always gets edit permission on core admin pages, cannot be overridden
+                    $core_admin_pages = ['jotunheim_magic', 'dashboard_config', 'discord_auth_config', 'page_permissions_config'];
+                    if ($role_key === 'norn' && in_array($page_key, $core_admin_pages)) {
                         $permission_level = 'edit';
                     }
                     
