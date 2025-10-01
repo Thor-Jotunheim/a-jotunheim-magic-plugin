@@ -2489,7 +2489,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin: 0;
     padding: 12px 16px;
     
-    /* Use table-row-like layout */
+    /* Use table-row-like layout matching table headers */
     display: grid;
     grid-template-columns: 1fr 2fr 2fr 1fr;
     gap: 16px;
@@ -2497,39 +2497,55 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     width: 100%;
 }
 
-/* Arrange card sections as table columns */
-.card-cell .item-header {
+/* Rearrange card sections to match table columns exactly */
+.card-cell .item-card .item-header {
+    /* Item column (1st) */
     grid-column: 1;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-.card-cell .item-main-content {
+.card-cell .item-card .item-main-content {
+    /* Spans columns 2-4 */
     grid-column: 2 / -1;
-    display: grid;
-    grid-template-columns: 2fr 2fr 1fr;
-    gap: 16px;
-    align-items: center;
-    margin: 0;
-    padding: 0;
+    display: contents; /* This makes children appear as direct grid items */
 }
 
-.card-cell .quantity-controls {
-    grid-column: 1;
-    justify-content: center;
-    margin: 0;
-}
-
-.card-cell .turnin-progress-container,
-.card-cell .price-info {
+/* Direct control over each section's grid position */
+.card-cell .item-card .quantity-controls {
+    /* Quantity Controls column (2nd) */
     grid-column: 2;
-    margin: 0;
-}
-
-.card-cell .action-buttons {
-    grid-column: 3;
     justify-content: center;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-cell .item-card .turnin-progress-container,
+.card-cell .item-card .price-info,
+.card-cell .item-card .item-content .transaction-calculations {
+    /* Progress/Calculations column (3rd) */
+    grid-column: 3;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-cell .item-card .action-buttons {
+    /* Actions column (4th) */
+    grid-column: 4;
+    justify-content: center;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
 .card-cell .item-name {
