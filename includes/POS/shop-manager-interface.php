@@ -259,6 +259,40 @@ function shop_manager_interface() {
         .checkbox-display:not(.checked) {
             color: #dc3545;
         }
+        
+        /* Shop items table responsive styling */
+        #shop-items-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        
+        #shop-items-table th:nth-child(1) { width: 60px; } /* Rotation */
+        #shop-items-table th:nth-child(2) { width: 120px; } /* Item Name */
+        #shop-items-table th:nth-child(3) { width: 80px; } /* Default Price */
+        #shop-items-table th:nth-child(4) { width: 80px; } /* Shop Price */
+        #shop-items-table th:nth-child(5) { width: 50px; } /* Stock */
+        #shop-items-table th:nth-child(6) { width: 40px; } /* Sell */
+        #shop-items-table th:nth-child(7) { width: 40px; } /* Buy */
+        #shop-items-table th:nth-child(8) { width: 50px; } /* Turn-In */
+        #shop-items-table th:nth-child(9) { width: 60px; } /* Turn-In Progress */
+        #shop-items-table th:nth-child(10) { width: 60px; } /* Turn-In Goal */
+        #shop-items-table th:nth-child(11) { width: 60px; } /* Daily Sell Limit */
+        #shop-items-table th:nth-child(12) { width: 60px; } /* Daily Buy Limit */
+        #shop-items-table th:nth-child(13) { width: 65px; } /* Daily Turn-in Limit */
+        #shop-items-table th:nth-child(14) { width: 65px; } /* Available */
+        #shop-items-table th:nth-child(15) { width: 100px; } /* Actions */
+        
+        /* Ensure text doesn't overflow in cells */
+        #shop-items-table td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Allow actions column to show buttons properly */
+        #shop-items-table td:nth-child(15) {
+            white-space: normal;
+        }
         </style>
         <?php
 
