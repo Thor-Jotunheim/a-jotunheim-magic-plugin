@@ -17,6 +17,9 @@ class JotunheimPagePermissions {
         // Add admin capability management
         add_action('init', [$this, 'manage_admin_capabilities'], 1);
         
+        // Add WordPress page edit capability management
+        add_action('init', [$this, 'manage_page_edit_capabilities'], 1);
+        
         // Add WordPress page access control
         add_action('template_redirect', [$this, 'check_wordpress_page_access']);
     }
@@ -65,6 +68,67 @@ class JotunheimPagePermissions {
                 return $allcaps;
             }, 10, 4);
         }
+    }
+    
+    /**
+     * Manage WordPress page edit capabilities based on Discord permissions
+     */
+    public function manage_page_edit_capabilities() {
+        // Only run for logged-in users
+        if (!is_user_logged_in()) {
+            return;
+        }
+
+        $current_user = wp_get_current_user();
+        
+        // Don't interfere with administrators at all
+        if (in_array('administrator', $current_user->roles)) {
+            return;
+        }
+        
+        // Add a filter that will grant edit capabilities based on Discord permissions
+        add_filter('user_has_cap', function($allcaps, $caps, $args, $user) use ($current_user) {
+            // Only modify capabilities for the current user
+            if ($user->ID !== $current_user->ID) {
+                return $allcaps;
+            }
+            
+            // Check if we're requesting page edit capabilities
+            $edit_caps = ['edit_pages', 'edit_others_pages', 'edit_published_pages'];
+            $requested_cap = isset($caps[0]) ? $caps[0] : '';
+            
+            if (in_array($requested_cap, $edit_caps)) {
+                // Get the post being edited (if any)
+                $post_id = null;
+                if (isset($args[2])) {
+                    $post_id = $args[2];
+                } elseif (isset($_GET['post'])) {
+                    $post_id = intval($_GET['post']);
+                } else {
+                    global $post;
+                    if ($post) {
+                        $post_id = $post->ID;
+                    }
+                }
+                
+                if ($post_id) {
+                    $post = get_post($post_id);
+                    if ($post && $post->post_type === 'page') {
+                        $page_slug = $post->post_name;
+                        
+                        // Check if user has edit permission for this specific page
+                        if (self::user_can_edit_page($page_slug, $current_user->ID)) {
+                            $allcaps['edit_pages'] = true;
+                            $allcaps['edit_others_pages'] = true;
+                            $allcaps['edit_published_pages'] = true;
+                            error_log("Jotunheim Page Permissions: Granted page edit capabilities to user {$current_user->user_login} for page {$page_slug}");
+                        }
+                    }
+                }
+            }
+            
+            return $allcaps;
+        }, 10, 4);
     }
     
     /**
