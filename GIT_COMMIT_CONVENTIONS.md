@@ -20,6 +20,17 @@ v[VERSION] - [TYPE]: [Brief description]
 - Use the EXACT version from `jotunheim-magic.php` in commit message
 - Format: `v[major].[minor].[patch].[build]`
 
+### Version Increment Rules:
+- **DEFAULT**: Only increment the LAST number (build) for regular commits
+  - Example: `v0.9.5.9.12` → `v0.9.5.9.13`
+  - Build number can go higher than 9 (e.g., v0.9.5.9.25)
+- **SPECIAL**: Only increment other numbers when explicitly told by user
+- **ROLLOVER RULES**: When numbers exceed 9, rollover to next level:
+  - `v0.9.5.9.X` → `v0.9.6.0.0` (patch rollover)
+  - `v0.9.9.X.X` → `v0.10.0.0.0` (minor rollover) 
+  - `v0.99.X.X.X` → `v1.0.0.0.0` (major rollover)
+- **RESET RULE**: When rolling over, reset all lower numbers to 0
+
 ### Type Categories:
 - **FIX**: Bug fixes, corrections
 - **FEATURE**: New functionality 
