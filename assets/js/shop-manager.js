@@ -343,10 +343,11 @@ class ShopManager {
                 hiddenSelect.value = item.id;
                 container.style.display = 'none';
                 
-                // Update price placeholder
+                // Pre-fill price field with default price
                 const customPriceInput = document.getElementById('custom-price');
                 if (customPriceInput) {
                     const totalCoins = Math.floor(parseFloat(item.unit_price || 0));
+                    customPriceInput.value = totalCoins;
                     customPriceInput.placeholder = `Default: ${totalCoins} Coins`;
                 }
             });
@@ -429,9 +430,10 @@ class ShopManager {
                     searchInput.value = result.item_name;
                     hiddenSelect.value = result.item_id;
                     
-                    // Update price placeholder
+                    // Pre-fill price field with default price (0 for new items)
                     const customPriceInput = document.getElementById('custom-price');
                     if (customPriceInput) {
+                        customPriceInput.value = 0;
                         customPriceInput.placeholder = `Default: 0 Coins`;
                     }
                 }
