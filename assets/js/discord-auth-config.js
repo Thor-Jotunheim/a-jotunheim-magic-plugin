@@ -26,6 +26,9 @@ jQuery(document).ready(function($) {
             // Remove role
             $(document).on('click', '.remove-role', this.removeRole.bind(this));
             
+            // Toggle role disabled state
+            $(document).on('click', '.toggle-role', this.toggleRole.bind(this));
+            
             // Test connection
             $('#test-discord-connection').on('click', this.testConnection.bind(this));
         },
@@ -165,6 +168,66 @@ jQuery(document).ready(function($) {
                 $(e.target).closest('.discord-role-item').remove();
                 this.showMessage('Role removed! Don\'t forget to save your changes.', 'success');
             }
+        },
+
+        toggleRole: function(e) {
+            e.preventDefault();
+            
+            const $button = $(e.target);
+            const $roleItem = $button.closest('.discord-role-item');
+            const roleKey = $button.data('role-key');
+            const originalText = $button.text();
+            const isCurrentlyDisabled = originalText === 'Enable';
+            
+            // Show loading state
+            $button.text(isCurrentlyDisabled ? 'Enabling...' : 'Disabling...').prop('disabled', true);
+            
+            $.ajax({
+                url: discord_auth_config.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'toggle_discord_role',
+                    nonce: discord_auth_config.nonce,
+                    role_key: roleKey
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const newState = response.data.state;
+                        const isNowDisabled = newState === 'disabled';
+                        
+                        // Update button text and styling
+                        $button.text(isNowDisabled ? 'Enable' : 'Disable');
+                        
+                        if (isNowDisabled) {
+                            // Role is now disabled - green "Enable" button
+                            $button.css({
+                                'background': '#00a32a',
+                                'color': 'white'
+                            });
+                            $roleItem.css('opacity', '0.6');
+                        } else {
+                            // Role is now enabled - orange "Disable" button
+                            $button.css({
+                                'background': '#dba617',
+                                'color': 'white'
+                            });
+                            $roleItem.css('opacity', '1');
+                        }
+                        
+                        DiscordAuthConfig.showMessage(response.data.message, 'success');
+                    } else {
+                        DiscordAuthConfig.showMessage('Error toggling role: ' + response.data, 'error');
+                        $button.text(originalText);
+                    }
+                },
+                error: function() {
+                    DiscordAuthConfig.showMessage('Network error occurred while toggling role.', 'error');
+                    $button.text(originalText);
+                },
+                complete: function() {
+                    $button.prop('disabled', false);
+                }
+            });
         },
 
         testConnection: function(e) {

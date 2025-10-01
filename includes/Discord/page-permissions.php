@@ -396,10 +396,14 @@ class JotunheimPagePermissions {
     private function get_discord_roles() {
         $discord_roles = get_option('jotunheim_discord_roles', []);
         
-        // Filter out empty roles
+        // Filter out empty roles and disabled roles
         $valid_roles = [];
         foreach ($discord_roles as $key => $role) {
             if (!empty($role['name']) && !empty($role['id'])) {
+                // Skip disabled roles
+                if (isset($role['disabled']) && $role['disabled']) {
+                    continue;
+                }
                 $valid_roles[$key] = $role;
             }
         }

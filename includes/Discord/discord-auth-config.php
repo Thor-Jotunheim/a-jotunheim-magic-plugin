@@ -17,6 +17,7 @@ class JotunheimDiscordAuthConfig {
         add_action('wp_ajax_save_discord_oauth_settings', [$this, 'ajax_save_discord_oauth_settings']);
         add_action('wp_ajax_add_discord_role', [$this, 'ajax_add_discord_role']);
         add_action('wp_ajax_remove_discord_role', [$this, 'ajax_remove_discord_role']);
+        add_action('wp_ajax_toggle_discord_role', [$this, 'ajax_toggle_discord_role']);
         add_action('wp_ajax_get_discord_roles', [$this, 'ajax_get_discord_roles']);
         add_action('wp_ajax_update_discord_role_level', [$this, 'ajax_update_discord_role_level']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
@@ -374,6 +375,46 @@ class JotunheimDiscordAuthConfig {
     }
     
     /**
+     * AJAX handler for toggling Discord role disabled state
+     */
+    public function ajax_toggle_discord_role() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        if (!wp_verify_nonce($_POST['nonce'], 'discord_auth_config_nonce')) {
+            wp_die('Invalid nonce');
+        }
+        
+        $role_key = sanitize_key($_POST['role_key']);
+        if (empty($role_key)) {
+            wp_send_json_error('Role key is required');
+            return;
+        }
+        
+        $roles = $this->get_discord_roles();
+        
+        if (!isset($roles[$role_key])) {
+            wp_send_json_error('Role not found');
+            return;
+        }
+        
+        // Toggle disabled state
+        $current_disabled = isset($roles[$role_key]['disabled']) ? $roles[$role_key]['disabled'] : false;
+        $roles[$role_key]['disabled'] = !$current_disabled;
+        
+        if ($this->save_discord_roles($roles)) {
+            $new_state = $roles[$role_key]['disabled'] ? 'disabled' : 'enabled';
+            wp_send_json_success([
+                'state' => $new_state,
+                'message' => "Role {$new_state} successfully"
+            ]);
+        } else {
+            wp_send_json_error('Failed to toggle role state');
+        }
+    }
+    
+    /**
      * AJAX handler for getting Discord roles
      */
     public function ajax_get_discord_roles() {
@@ -546,10 +587,13 @@ function render_discord_auth_config_page() {
                 
                 <div class="discord-roles-container">
                     <?php foreach ($discord_roles as $role_key => $role_data): ?>
-                        <div class="discord-role-item">
+                        <div class="discord-role-item" <?php echo ($is_disabled ? 'style="opacity: 0.6;"' : ''); ?>>
                             <div class="role-info">
                                 <label for="discord_role_<?php echo esc_attr($role_key); ?>">
                                     <strong><?php echo esc_html($role_data['name']); ?></strong>
+                                    <?php if ($is_disabled): ?>
+                                        <span style="color: #d63638; font-size: 12px; margin-left: 8px;">(Disabled)</span>
+                                    <?php endif; ?>
                                 </label>
                                 <p class="role-description"><?php echo esc_html($role_data['description']); ?></p>
                             </div>
@@ -572,7 +616,18 @@ function render_discord_auth_config_page() {
                                     name="discord_roles[<?php echo esc_attr($role_key); ?>][description]"
                                     value="<?php echo esc_attr($role_data['description']); ?>"
                                 />
-                                <button type="button" class="button remove-role" data-role-key="<?php echo esc_attr($role_key); ?>" style="margin-left: 10px;">
+                                <?php
+                                $is_disabled = isset($role_data['disabled']) && $role_data['disabled'];
+                                $disable_btn_text = $is_disabled ? 'Enable' : 'Disable';
+                                $disable_btn_class = $is_disabled ? 'button-secondary' : 'button-secondary';
+                                $disable_btn_style = $is_disabled ? 'background: #00a32a; color: white;' : 'background: #dba617; color: white;';
+                                ?>
+                                <button type="button" class="button toggle-role <?php echo esc_attr($disable_btn_class); ?>" 
+                                        data-role-key="<?php echo esc_attr($role_key); ?>" 
+                                        style="margin-left: 10px; <?php echo esc_attr($disable_btn_style); ?>">
+                                    <?php echo esc_html($disable_btn_text); ?>
+                                </button>
+                                <button type="button" class="button remove-role" data-role-key="<?php echo esc_attr($role_key); ?>" style="margin-left: 5px;">
                                     Remove
                                 </button>
                             </div>
