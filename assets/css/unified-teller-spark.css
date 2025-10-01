@@ -2572,6 +2572,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* Center buttons vertically and horizontally */
     gap: 4px;
 }
 
@@ -2593,12 +2594,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 4px;
 }
 
-/* Center Turn In buttons ONLY in UNIFIED TELLER table view */
-#items-table-view .card-cell .item-card .item-bottom-section .item-actions .turn-in-item,
-#items-table-view .card-cell .item-card .item-bottom-section .item-actions .turn-in-stack {
-    justify-self: center;
-    align-self: center;
-}
+
 
 /* Style the icon column header */
 .items-table th.icon-column {
