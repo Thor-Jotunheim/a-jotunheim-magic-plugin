@@ -593,7 +593,10 @@ function render_discord_auth_config_page() {
                 <p class="description">Configure Discord role IDs for access control. Leave ID empty to disable a role.</p>
                 
                 <div class="discord-roles-container">
-                    <?php foreach ($discord_roles as $role_key => $role_data): ?>
+                    <?php foreach ($discord_roles as $role_key => $role_data): 
+                        // Calculate disabled state for this specific role
+                        $is_disabled = isset($role_data['disabled']) && $role_data['disabled'];
+                    ?>
                         <div class="discord-role-item" <?php echo ($is_disabled ? 'style="opacity: 0.6;"' : ''); ?>>
                             <div class="role-info">
                                 <label for="discord_role_<?php echo esc_attr($role_key); ?>">
@@ -630,7 +633,6 @@ function render_discord_auth_config_page() {
                                     class="role-disabled-field"
                                 />
                                 <?php
-                                $is_disabled = isset($role_data['disabled']) && $role_data['disabled'];
                                 $disable_btn_text = $is_disabled ? 'Enable' : 'Disable';
                                 $disable_btn_class = $is_disabled ? 'button-secondary' : 'button-secondary';
                                 $disable_btn_style = $is_disabled ? 'background: #00a32a; color: white;' : 'background: #dba617; color: white;';
