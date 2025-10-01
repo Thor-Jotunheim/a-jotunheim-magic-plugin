@@ -2051,7 +2051,7 @@ function jotun_api_get_shop_items($request) {
         $sql .= " WHERE " . implode(" AND ", $where_clauses);
     }
     
-    $sql .= " ORDER BY si.item_name ASC LIMIT %d OFFSET %d";
+    $sql .= " ORDER BY si.rotation ASC, si.display_order ASC, si.item_name ASC LIMIT %d OFFSET %d";
     $params[] = $limit;
     $params[] = $offset;
     
