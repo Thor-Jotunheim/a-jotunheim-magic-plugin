@@ -78,6 +78,12 @@ class UnifiedTeller {
             toggleViewBtn.addEventListener('click', () => this.toggleItemsView());
         }
 
+        // Listen for shop rotation changes from shop manager
+        window.addEventListener('shopRotationChanged', (event) => {
+            console.log('UnifiedTeller received shopRotationChanged event:', event.detail);
+            this.handleShopRotationChanged(event.detail);
+        });
+
         // Transaction actions
         const clearTransactionBtn = document.getElementById('clear-transaction-btn');
         console.log('DEBUG: Clear transaction button found:', clearTransactionBtn);
@@ -497,6 +503,37 @@ class UnifiedTeller {
         } catch (error) {
             console.error('Error refreshing shop data:', error);
             this.showStatus('Failed to refresh shop data: ' + error.message, 'error');
+        }
+    }
+
+    async handleShopRotationChanged(eventData) {
+        const { shopId, newRotation } = eventData;
+        
+        // Only respond if this is the currently selected shop
+        if (this.selectedShop && this.selectedShop == shopId) {
+            console.log(`Handling rotation change for current shop ${shopId} to rotation ${newRotation}`);
+            
+            // Update the shop selector option's dataset
+            const selectedOption = document.querySelector(`#teller-shop-selector option[value="${shopId}"]`);
+            if (selectedOption) {
+                const oldRotation = selectedOption.dataset.currentRotation;
+                selectedOption.dataset.currentRotation = newRotation;
+                console.log(`Updated shop selector dataset from rotation ${oldRotation} to ${newRotation}`);
+                
+                // Reload the shop items with the new rotation
+                const shopType = selectedOption.dataset.shopType;
+                const isTurnInOnly = shopType === 'turn-in_only';
+                
+                if (isTurnInOnly) {
+                    await this.loadTurninItems(shopId, newRotation);
+                } else {
+                    await this.loadShopItems(shopId, newRotation);
+                }
+                
+                this.showStatus(`Shop rotation automatically updated to ${newRotation}!`, 'success');
+            }
+        } else {
+            console.log(`Ignoring rotation change for shop ${shopId} (current shop: ${this.selectedShop})`);
         }
     }
 

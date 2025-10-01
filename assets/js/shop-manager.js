@@ -1816,6 +1816,17 @@ class ShopManager {
         try {
             await JotunAPI.updateShopRotation(shopId, rotation);
             this.showStatus(`Shop rotation updated to ${rotation}`, 'success');
+            
+            // Dispatch custom event to notify unified teller of rotation change
+            const rotationChangeEvent = new CustomEvent('shopRotationChanged', {
+                detail: {
+                    shopId: shopId,
+                    newRotation: rotation
+                }
+            });
+            window.dispatchEvent(rotationChangeEvent);
+            console.log('Dispatched shopRotationChanged event for shop', shopId, 'rotation', rotation);
+            
         } catch (error) {
             console.error('Error updating shop rotation:', error);
             this.showStatus('Failed to update shop rotation', 'error');
