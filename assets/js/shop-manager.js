@@ -1796,17 +1796,19 @@ class ShopManager {
             
             // Add change event listener
             dropdown.addEventListener('change', async (e) => {
+                console.log('🎯🎯🎯 SHOP MANAGER: Dropdown change event fired!');
                 const newRotation = parseInt(e.target.value);
                 // Get the current rotation dynamically from the selected option
                 const currentlySelectedOption = dropdown.querySelector('option[selected]');
                 const currentRotationValue = currentlySelectedOption ? parseInt(currentlySelectedOption.value) : null;
                 
-                console.log(`Rotation change detected: ${currentRotationValue} -> ${newRotation}`);
+                console.log(`🎯🎯🎯 SHOP MANAGER: Rotation change detected: ${currentRotationValue} -> ${newRotation}`);
                 
                 if (newRotation && newRotation !== currentRotationValue) {
+                    console.log('🎯🎯🎯 SHOP MANAGER: Calling updateShopRotation...');
                     await this.updateShopRotation(shopId, newRotation);
                 } else if (newRotation === currentRotationValue) {
-                    console.log('Same rotation selected, no update needed');
+                    console.log('🎯🎯🎯 SHOP MANAGER: Same rotation selected, no update needed');
                 }
             });
             
@@ -1851,7 +1853,7 @@ class ShopManager {
                 }
             });
             window.dispatchEvent(rotationChangeEvent);
-            console.log('Dispatched shopRotationChanged event for shop', shopId, 'rotation', rotation);
+            console.log('🎯🎯🎯 SHOP MANAGER: Dispatched shopRotationChanged event for shop', shopId, 'rotation', rotation);
             
         } catch (error) {
             console.error('Error updating shop rotation:', error);
