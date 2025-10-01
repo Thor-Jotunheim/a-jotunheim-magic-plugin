@@ -196,6 +196,42 @@ function shop_manager_interface() {
             padding: 12px 16px;
         }
         
+        /* Rotation quantity input styling */
+        input#item-rotation {
+            margin-top: 13px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+
+        /* Availability quantity input styling */
+        select#item-available {
+            margin-top: 13px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+
+        /* Daily Selling Limit quantity input styling */
+        input#max-daily-sell-quantity {
+            margin-top: 13px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+
+        /* Daily Buying Limit quantity input styling */
+        input#max-daily-buy-quantity {
+            margin-top: 13px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+
+        /* Daily Turn In Limit quantity input styling */
+        input#max-daily-turnin-quantity {
+            margin-top: 13px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+
+
         /* Relative positioning for autocomplete */
         .form-group {
             position: relative;
