@@ -230,7 +230,7 @@ class JotunheimPagePermissions {
                     <span style="color: #2271b1; font-weight: bold;">R</span> = Read Only Access | 
                     <span style="color: #00a32a; font-weight: bold;">E</span> = Read & Edit Access | 
                     <span style="color: #d63638; font-weight: bold;">D</span> = Deny Access | 
-                    <span style="color: #8c8f94; font-weight: bold;">-</span> = No Permission (falls back to WordPress permissions)
+                    <span style="color: #8c8f94; font-weight: bold;">-</span> = No Permission (uses default WordPress permissions)
                 </div>
                 
                 <!-- Action buttons at the top -->
@@ -270,9 +270,19 @@ class JotunheimPagePermissions {
                             </thead>
                             <tbody>
                                 <?php foreach ($plugin_pages as $page_key => $page_data): ?>
+                                    <?php
+                                    // Define core admin pages that cannot be removed
+                                    $core_admin_pages = ['jotunheim_magic', 'dashboard_config', 'discord_auth_config', 'page_permissions_config'];
+                                    $is_core_admin_page = in_array($page_key, $core_admin_pages);
+                                    ?>
                                     <tr>
                                         <td style="text-align: center;">
-                                            <input type="checkbox" class="page-select-checkbox" value="<?php echo esc_attr($page_key); ?>" name="selected_pages[]">
+                                            <?php if ($is_core_admin_page): ?>
+                                                <!-- Core admin pages cannot be removed - show lock icon instead of checkbox -->
+                                                <span title="Core admin page - cannot be removed" style="color: #8c8f94; font-size: 16px;">🔒</span>
+                                            <?php else: ?>
+                                                <input type="checkbox" class="page-select-checkbox" value="<?php echo esc_attr($page_key); ?>" name="selected_pages[]">
+                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <strong><?php echo esc_html($page_data['title']); ?></strong>
@@ -283,10 +293,6 @@ class JotunheimPagePermissions {
                                             <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
                                                 <td style="text-align: center; padding: 8px;">
                                                     <?php 
-                                                    // Define core admin pages that should be locked for Norn role
-                                                    $core_admin_pages = ['jotunheim_magic', 'dashboard_config', 'discord_auth_config', 'page_permissions_config'];
-                                                    $is_core_admin_page = in_array($page_key, $core_admin_pages);
-                                                    
                                                     // Norn role gets edit permission on core admin pages and cannot be changed
                                                     $is_norn_role = ($role_key === 'norn');
                                                     $is_norn_locked = ($is_norn_role && $is_core_admin_page);
