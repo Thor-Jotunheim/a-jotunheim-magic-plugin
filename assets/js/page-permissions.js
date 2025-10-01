@@ -31,8 +31,8 @@ jQuery(document).ready(function($) {
             // Reset permissions
             $('#reset-permissions').on('click', this.resetPermissions.bind(this));
             
-            // Individual checkbox changes
-            $('.permission-checkbox').on('change', this.handleCheckboxChange.bind(this));
+            // Individual radio button changes
+            $('.permission-radio').on('change', this.handleRadioChange.bind(this));
         },
 
         savePermissions: function(e) {
@@ -44,19 +44,19 @@ jQuery(document).ready(function($) {
             // Show loading state
             $button.html('<span class="spinner"></span>Saving...').prop('disabled', true);
             
-            // Collect all permission data
+            // Collect all permission data from radio buttons
             const permissions = {};
-            $('.permission-checkbox').each(function() {
-                const $checkbox = $(this);
-                const page = $checkbox.data('page');
-                const role = $checkbox.data('role');
-                const checked = $checkbox.is(':checked');
+            $('.permission-radio:checked').each(function() {
+                const $radio = $(this);
+                const page = $radio.data('page');
+                const role = $radio.data('role');
+                const level = $radio.val();
                 
                 if (!permissions[page]) {
                     permissions[page] = {};
                 }
                 
-                permissions[page][role] = checked ? 1 : 0;
+                permissions[page][role] = level;
             });
             
             $.ajax({
@@ -85,14 +85,16 @@ jQuery(document).ready(function($) {
 
         selectAllPermissions: function(e) {
             e.preventDefault();
-            $('.permission-checkbox').prop('checked', true);
-            this.showMessage('All permissions selected. Don\'t forget to save!', 'info');
+            // Set all radio buttons to 'read' permission
+            $('.permission-radio[value="read"]').prop('checked', true);
+            this.showMessage('All permissions set to READ access. Don\'t forget to save!', 'info');
         },
 
         clearAllPermissions: function(e) {
             e.preventDefault();
             if (confirm('Are you sure you want to clear all permissions?')) {
-                $('.permission-checkbox').prop('checked', false);
+                // Set all radio buttons to 'none'
+                $('.permission-radio[value="none"]').prop('checked', true);
                 this.showMessage('All permissions cleared. Don\'t forget to save!', 'info');
             }
         },
@@ -203,14 +205,14 @@ jQuery(document).ready(function($) {
             });
         },
 
-        handleCheckboxChange: function(e) {
-            const $checkbox = $(e.target);
-            const page = $checkbox.data('page');
-            const role = $checkbox.data('role');
-            const checked = $checkbox.is(':checked');
+        handleRadioChange: function(e) {
+            const $radio = $(e.target);
+            const page = $radio.data('page');
+            const role = $radio.data('role');
+            const level = $radio.val();
             
             // You could add real-time feedback here if needed
-            console.log(`Permission changed: ${page} - ${role} - ${checked}`);
+            console.log(`Permission changed: ${page} - ${role} - ${level}`);
         },
 
         resetPermissions: function(e) {

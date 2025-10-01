@@ -110,12 +110,15 @@ class JotunheimPagePermissions {
         // Add custom CSS for larger checkboxes
         ?>
         <style>
-        .permission-checkbox {
-            width: 20px !important;
-            height: 20px !important;
-            transform: scale(1.5);
-            margin: 8px !important;
+        .page-permissions-config .permission-radio {
+            margin: 2px !important;
             cursor: pointer;
+        }
+        
+        .page-permissions-config .permission-radio + span {
+            font-weight: bold;
+            font-size: 11px;
+            margin-left: 2px;
         }
         
         .wp-list-table td {
@@ -124,11 +127,19 @@ class JotunheimPagePermissions {
         
         .page-permissions-config .wp-list-table th {
             text-align: center;
-            padding: 15px 8px;
+            padding: 12px 4px;
+            font-size: 12px;
         }
         
         .page-permissions-config .wp-list-table td {
-            padding: 15px 8px;
+            padding: 8px 4px;
+        }
+        
+        .page-permissions-config label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
         }
         </style>
         <?php
@@ -189,9 +200,10 @@ class JotunheimPagePermissions {
                                     <th style="width: 300px;"><strong>Plugin Page</strong></th>
                                     <?php foreach ($discord_roles as $role_key => $role_data): ?>
                                         <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
-                                            <th style="text-align: center; width: 120px;">
+                                            <th style="text-align: center; width: 160px;">
                                                 <strong><?php echo esc_html($role_data['name']); ?></strong>
                                                 <br><small>ID: <?php echo esc_html($role_data['id']); ?></small>
+                                                <br><small style="font-size: 10px;">Read | Edit | Deny</small>
                                             </th>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
@@ -210,19 +222,55 @@ class JotunheimPagePermissions {
                                         </td>
                                         <?php foreach ($discord_roles as $role_key => $role_data): ?>
                                             <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
-                                                <td style="text-align: center;">
+                                                <td style="text-align: center; padding: 8px;">
                                                     <?php 
-                                                    $is_checked = isset($current_permissions[$page_key][$role_key]) ? $current_permissions[$page_key][$role_key] : false;
+                                                    // Get current permission level (backward compatibility)
+                                                    $current_value = 'none';
+                                                    if (isset($current_permissions[$page_key][$role_key])) {
+                                                        if (is_array($current_permissions[$page_key][$role_key])) {
+                                                            $current_value = $current_permissions[$page_key][$role_key]['level'] ?? 'none';
+                                                        } else {
+                                                            // Old format (true/false) - convert to read
+                                                            $current_value = $current_permissions[$page_key][$role_key] ? 'read' : 'none';
+                                                        }
+                                                    }
+                                                    
+                                                    $radio_name = "permissions[{$page_key}][{$role_key}]";
                                                     ?>
-                                                    <input 
-                                                        type="checkbox" 
-                                                        name="permissions[<?php echo esc_attr($page_key); ?>][<?php echo esc_attr($role_key); ?>]"
-                                                        value="1"
-                                                        <?php checked($is_checked, true); ?>
-                                                        class="permission-checkbox"
-                                                        data-page="<?php echo esc_attr($page_key); ?>"
-                                                        data-role="<?php echo esc_attr($role_key); ?>"
-                                                    />
+                                                    <div style="display: flex; justify-content: center; gap: 8px; font-size: 12px;">
+                                                        <label title="Read Only">
+                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="read" 
+                                                                   <?php checked($current_value, 'read'); ?>
+                                                                   class="permission-radio"
+                                                                   data-page="<?php echo esc_attr($page_key); ?>"
+                                                                   data-role="<?php echo esc_attr($role_key); ?>">
+                                                            <span style="color: #2271b1;">R</span>
+                                                        </label>
+                                                        <label title="Read & Edit">
+                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="edit" 
+                                                                   <?php checked($current_value, 'edit'); ?>
+                                                                   class="permission-radio"
+                                                                   data-page="<?php echo esc_attr($page_key); ?>"
+                                                                   data-role="<?php echo esc_attr($role_key); ?>">
+                                                            <span style="color: #00a32a;">E</span>
+                                                        </label>
+                                                        <label title="Deny Access">
+                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="deny" 
+                                                                   <?php checked($current_value, 'deny'); ?>
+                                                                   class="permission-radio"
+                                                                   data-page="<?php echo esc_attr($page_key); ?>"
+                                                                   data-role="<?php echo esc_attr($role_key); ?>">
+                                                            <span style="color: #d63638;">D</span>
+                                                        </label>
+                                                        <label title="No Permission">
+                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="none" 
+                                                                   <?php checked($current_value, 'none'); ?>
+                                                                   class="permission-radio"
+                                                                   data-page="<?php echo esc_attr($page_key); ?>"
+                                                                   data-role="<?php echo esc_attr($role_key); ?>">
+                                                            <span style="color: #8c8f94;">-</span>
+                                                        </label>
+                                                    </div>
                                                 </td>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
@@ -322,18 +370,31 @@ class JotunheimPagePermissions {
         }
         error_log('Jotunheim Page Permissions: Found ' . $render_count . ' render functions');
         
-        // Get all posts and pages with content
+        // Get ALL WordPress pages and posts (not just those with shortcodes)
         $posts = $wpdb->get_results("
             SELECT ID, post_title, post_content, post_name, post_type 
             FROM {$wpdb->posts} 
             WHERE post_status = 'publish' 
             AND post_type IN ('page', 'post')
-            AND post_content LIKE '%[%'
         ");
         
+        $wp_pages_count = 0;
         $shortcode_count = 0;
+        
         foreach ($posts as $post) {
-            // Extract shortcodes using same logic as dashboard config
+            // Add ALL WordPress pages and posts (this is what was missing!)
+            $page_key = "wp_{$post->post_type}_{$post->post_name}";
+            if (!isset($all_pages[$page_key])) {
+                $all_pages[$page_key] = [
+                    'title' => $post->post_title,
+                    'description' => "WordPress {$post->post_type}: {$post->post_name}",
+                    'type' => "wp_{$post->post_type}",
+                    'post_id' => $post->ID
+                ];
+                $wp_pages_count++;
+            }
+            
+            // Also extract shortcodes from these pages
             $shortcode_pattern = '/\[([^\]\/\s]+)(?:[^\]]*)\]/';
             if (preg_match_all($shortcode_pattern, $post->post_content, $matches)) {
                 foreach ($matches[1] as $shortcode_name) {
@@ -374,6 +435,7 @@ class JotunheimPagePermissions {
             }
         }
         
+        error_log('Jotunheim Page Permissions: Found ' . $wp_pages_count . ' WordPress pages/posts');
         error_log('Jotunheim Page Permissions: Found ' . $shortcode_count . ' shortcodes');
         error_log('Jotunheim Page Permissions: Total pages detected: ' . count($all_pages));
         
@@ -600,17 +662,25 @@ class JotunheimPagePermissions {
             
             $permissions = isset($_POST['permissions']) ? $_POST['permissions'] : [];
             
-            // Sanitize permissions data
+            // Sanitize permissions data with new structure
             $sanitized_permissions = [];
             foreach ($permissions as $page_key => $roles) {
                 $page_key = sanitize_key($page_key);
-                foreach ($roles as $role_key => $value) {
+                foreach ($roles as $role_key => $permission_level) {
                     $role_key = sanitize_key($role_key);
-                    $sanitized_permissions[$page_key][$role_key] = (bool) $value;
+                    $permission_level = sanitize_text_field($permission_level);
+                    
+                    // Only store non-'none' permissions to keep data clean
+                    if ($permission_level !== 'none') {
+                        $sanitized_permissions[$page_key][$role_key] = [
+                            'level' => $permission_level,
+                            'timestamp' => current_time('mysql')
+                        ];
+                    }
                 }
             }
             
-            // Save permissions
+            // Save permissions with new structure
             update_option('jotunheim_page_permissions', $sanitized_permissions);
             
             wp_send_json_success('Page permissions saved successfully');
@@ -906,12 +976,45 @@ class JotunheimPagePermissions {
             return false; // Page not configured and no WordPress permissions = no access
         }
         
-        // Check if user has any role that grants access to this page
+        // Check permissions with new structure - deny takes precedence
+        $has_access = false;
+        $deny_found = false;
+        
         foreach ($user_discord_roles as $role_key) {
-            if (isset($page_permissions[$page_slug][$role_key]) && $page_permissions[$page_slug][$role_key]) {
-                error_log("Jotunheim Page Permissions: Granting access to page {$page_slug} for Discord role {$role_key}");
-                return true;
+            if (isset($page_permissions[$page_slug][$role_key])) {
+                $permission = $page_permissions[$page_slug][$role_key];
+                
+                // Handle both old and new permission structures
+                if (is_array($permission)) {
+                    $level = $permission['level'] ?? 'none';
+                } else {
+                    // Old boolean format - convert to read
+                    $level = $permission ? 'read' : 'none';
+                }
+                
+                // Deny permission takes precedence over any other permission
+                if ($level === 'deny') {
+                    $deny_found = true;
+                    error_log("Jotunheim Page Permissions: DENY permission found for page {$page_slug} with role {$role_key}");
+                    break; // Stop checking - deny overrides everything
+                }
+                
+                // Grant access for read or edit permissions
+                if ($level === 'read' || $level === 'edit') {
+                    $has_access = true;
+                    error_log("Jotunheim Page Permissions: {$level} access granted for page {$page_slug} with role {$role_key}");
+                }
             }
+        }
+        
+        // If deny was found, deny access regardless of other permissions
+        if ($deny_found) {
+            error_log("Jotunheim Page Permissions: Denying access to page {$page_slug} due to explicit DENY permission");
+            return false;
+        }
+        
+        if ($has_access) {
+            return true;
         }
         
         error_log("Jotunheim Page Permissions: Denying access to page {$page_slug} for user {$user_id} with roles: " . implode(', ', $user_discord_roles));
@@ -945,11 +1048,71 @@ class JotunheimPagePermissions {
         
         return $user_role_keys;
     }
+    
+    /**
+     * Check if a user has edit permission to access a specific page
+     */
+    public static function user_can_edit_page($page_slug, $user_id = null) {
+        if (!$user_id) {
+            $user_id = get_current_user_id();
+        }
+        
+        // Admins can ALWAYS edit everything
+        if (user_can($user_id, 'manage_options')) {
+            return true;
+        }
+        
+        // Get user's Discord roles
+        $user_discord_roles = self::get_user_discord_roles($user_id);
+        
+        if (empty($user_discord_roles)) {
+            return false;
+        }
+        
+        // Get page permissions
+        $page_permissions = get_option('jotunheim_page_permissions', []);
+        
+        if (!isset($page_permissions[$page_slug])) {
+            return false; // No configuration = no edit access
+        }
+        
+        // Check for edit permissions - deny still takes precedence
+        foreach ($user_discord_roles as $role_key) {
+            if (isset($page_permissions[$page_slug][$role_key])) {
+                $permission = $page_permissions[$page_slug][$role_key];
+                
+                // Handle both old and new permission structures
+                if (is_array($permission)) {
+                    $level = $permission['level'] ?? 'none';
+                } else {
+                    // Old boolean format - no edit access
+                    $level = 'none';
+                }
+                
+                // Deny permission blocks edit access
+                if ($level === 'deny') {
+                    return false;
+                }
+                
+                // Only edit level grants edit access
+                if ($level === 'edit') {
+                    return true;
+                }
+            }
+        }
+        
+        return false; // No explicit edit permission found
+    }
 }
 
 // Helper function for easy permission checking throughout the plugin
 function jotunheim_user_can_access_page($page_slug, $user_id = null) {
     return JotunheimPagePermissions::user_can_access_page($page_slug, $user_id);
+}
+
+// Helper function to check if user has edit permissions for a page
+function jotunheim_user_can_edit_page($page_slug, $user_id = null) {
+    return JotunheimPagePermissions::user_can_edit_page($page_slug, $user_id);
 }
 
 /**
