@@ -1423,7 +1423,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .item-tags {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Default left alignment for grid view */
+    align-items: flex-end; /* Right alignment for grid view */
     gap: 4px;
 }
 
@@ -2574,11 +2574,11 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     color: var(--muted-foreground, #666);
 }
 
-/* Right-justify tags ONLY in table view */
+/* Left-justify tags ONLY in table view */  
 .card-cell .item-tags {
     display: flex;
     flex-direction: column;
-    align-items: flex-end; /* Right-justify tags in table view */
+    align-items: flex-start; /* Left-justify tags in table view */
     gap: 4px;
 }
 
