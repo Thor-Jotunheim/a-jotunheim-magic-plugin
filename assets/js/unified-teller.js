@@ -4542,69 +4542,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Input validation system is now active
-
-        // Add CSS for player suggestions
-        const style = document.createElement('style');
-        style.textContent = `
-            .player-suggestions {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: white;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                max-height: 200px;
-                overflow-y: auto;
-                z-index: 1000;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            
-            .player-suggestion-item {
-                padding: 8px 12px;
-                cursor: pointer;
-                border-bottom: 1px solid #eee;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .player-suggestion-item:last-child {
-                border-bottom: none;
-            }
-            
-            .player-suggestion-item:hover,
-            .player-suggestion-item.highlighted {
-                background-color: #f5f5f5;
-            }
-            
-            .player-name {
-                font-weight: 500;
-                color: #333;
-            }
-            
-            .player-status {
-                font-size: 12px;
-                padding: 2px 6px;
-                border-radius: 10px;
-                text-transform: uppercase;
-                font-weight: 500;
-            }
-            
-            .player-status.active {
-                background: #e8f5e8;
-                color: #2e7d32;
-            }
-            
-            .player-status.inactive {
-                background: #ffebee;
-                color: #c62828;
-            }
-            
-            #customer-name {
-                position: relative;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    // Add CSS for player suggestions
+    const style = document.createElement('style');
+    style.textContent = `
+        .player-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .player-suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .player-suggestion-item:hover,
+        .player-suggestion-item.highlighted {
+            background-color: #f5f5f5;
+        }
+        
+        .player-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .player-status {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .player-status.active {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .player-status.inactive {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        #customer-name {
+            position: relative;
+        }
+    `;
+    document.head.appendChild(style);
 });
