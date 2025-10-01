@@ -31,6 +31,12 @@ class UnifiedTeller {
         if (validateBtn) {
             validateBtn.addEventListener('click', () => this.validateCustomer());
         }
+
+        // Shop refresh button
+        const refreshShopBtn = document.getElementById('refresh-shop-btn');
+        if (refreshShopBtn) {
+            refreshShopBtn.addEventListener('click', () => this.refreshCurrentShopData());
+        }
         
         const customerNameInput = document.getElementById('customer-name');
         if (customerNameInput) {
@@ -437,6 +443,49 @@ class UnifiedTeller {
         console.log('DEBUG - Shop selector populated with', selector.options.length - 1, 'active shops');
     }
 
+    async refreshCurrentShopData() {
+        if (!this.selectedShop) {
+            console.log('No shop selected to refresh');
+            return;
+        }
+
+        console.log('Refreshing shop data for current shop:', this.selectedShop);
+        
+        try {
+            // Reload shops to get updated rotation data
+            const response = await JotunAPI.getShops();
+            if (response && response.data) {
+                const shops = response.data;
+                const currentShop = shops.find(shop => shop.shop_id == this.selectedShop);
+                
+                if (currentShop) {
+                    // Update the current shop option with new rotation data
+                    const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                    if (selectedOption) {
+                        selectedOption.dataset.currentRotation = currentShop.current_rotation || 1;
+                        console.log('Updated current shop rotation to:', currentShop.current_rotation);
+                        
+                        // Reload items with new rotation
+                        const shopType = selectedOption.dataset.shopType;
+                        const isTurnInOnly = shopType === 'turn-in_only';
+                        const currentRotation = currentShop.current_rotation || 1;
+                        
+                        if (isTurnInOnly) {
+                            await this.loadTurninItems(this.selectedShop, currentRotation);
+                        } else {
+                            await this.loadShopItems(this.selectedShop, currentRotation);
+                        }
+                        
+                        this.showStatus('Shop data refreshed successfully!', 'success');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing shop data:', error);
+            this.showStatus('Failed to refresh shop data: ' + error.message, 'error');
+        }
+    }
+
     async selectShop(shopId) {
         this.selectedShop = shopId;
         
@@ -446,8 +495,8 @@ class UnifiedTeller {
         if (shopId) {
             // Update dynamic header with shop info
             const selectedOption = document.querySelector(`#teller-shop-selector option[value="${shopId}"]`);
-            const shopName = selectedOption.dataset.shopName;
-            const shopType = selectedOption.dataset.shopType;
+            const shopName = selectedOption ? selectedOption.dataset.shopName : 'Unknown Shop';
+            const shopType = selectedOption ? selectedOption.dataset.shopType : 'unknown';
             
             // Format shop type for display
             const formattedShopType = this.formatShopType(shopType);
@@ -467,12 +516,7 @@ class UnifiedTeller {
             
             // Get current rotation from selected option
             const currentRotation = selectedOption.dataset.currentRotation || 1;
-            console.log('=== SHOP SELECTION DEBUG ===');
-            console.log('Selected shop option:', selectedOption);
-            console.log('Shop dataset:', selectedOption.dataset);
-            console.log('Current rotation from dataset:', selectedOption.dataset.currentRotation);
-            console.log('Final rotation being used:', currentRotation);
-            console.log('Rotation type:', typeof currentRotation);
+
             
             // Load appropriate items
             if (isTurnInOnly) {
@@ -525,17 +569,12 @@ class UnifiedTeller {
 
     async loadShopItems(shopId, rotation = 1) {
         try {
-            console.log('=== ROTATION DEBUG ===');
             console.log('Loading shop items for shop ID:', shopId, 'rotation:', rotation);
-            console.log('Rotation type:', typeof rotation);
             
             // Load shop items from jotun_shop_items table with rotation filter
-            const apiParams = { shop_id: shopId, rotation: rotation };
-            console.log('API Parameters being sent:', apiParams);
-            const shopItemsResponse = await JotunAPI.getShopItems(apiParams);
+            const shopItemsResponse = await JotunAPI.getShopItems({ shop_id: shopId, rotation: rotation });
             const shopItems = shopItemsResponse.data || [];
-            console.log('Raw shop items from API (should be filtered by rotation):', shopItems);
-            console.log('Number of items returned:', shopItems.length);
+            console.log('Raw shop items from API:', shopItems);
             
             // Load Item Database from jotun_item_list table for pricing and details
             const itemListResponse = await JotunAPI.getItemlist();

@@ -26,10 +26,15 @@ function unified_teller_interface() {
                 <div class="shop-selection-box">
                     <div class="form-field">
                         <label for="teller-shop-selector" class="field-label">Shop Selection</label>
-                        <select id="teller-shop-selector" class="field-select">
-                            <option value="">Select a shop to begin...</option>
-                            <!-- Shops will be loaded here -->
-                        </select>
+                        <div class="shop-selector-group">
+                            <select id="teller-shop-selector" class="field-select">
+                                <option value="">Select a shop to begin...</option>
+                                <!-- Shops will be loaded here -->
+                            </select>
+                            <button id="refresh-shop-btn" class="refresh-btn" type="button" title="Refresh shop rotation data">
+                                🔄
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -520,6 +525,38 @@ function unified_teller_interface() {
         display: flex;
         align-items: center;
         gap: 20px;
+    }
+
+    .shop-selector-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .shop-selector-group .field-select {
+        flex: 1;
+    }
+
+    .refresh-btn {
+        padding: 8px 12px;
+        background: #0073aa;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+        min-width: 40px;
+    }
+
+    .refresh-btn:hover {
+        background: #005a87;
+    }
+
+    .refresh-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
     }
 
     .shop-info {
