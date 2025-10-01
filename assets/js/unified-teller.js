@@ -5,8 +5,6 @@
 
 class UnifiedTeller {
     constructor() {
-        console.log('🚀🚀🚀 UNIFIED TELLER: Constructor called!');
-        console.log('UnifiedTeller constructor called');
         this.selectedShop = null;
         this.currentCustomer = null;
         this.transactionMode = 'buy'; // buy, sell, admin
@@ -81,12 +79,6 @@ class UnifiedTeller {
 
         // Listen for shop rotation changes from shop manager
         window.addEventListener('shopRotationChanged', (event) => {
-            console.log('🔄 UnifiedTeller received shopRotationChanged event:', event.detail);
-            console.log('🔄 Current selected shop:', this.selectedShop);
-            console.log('🔄 Event shop ID:', event.detail.shopId);
-            console.log('🔄 Shop ID types:', typeof this.selectedShop, typeof event.detail.shopId);
-            console.log('🔄 Strict match?', this.selectedShop === event.detail.shopId);
-            console.log('🔄 Loose match?', this.selectedShop == event.detail.shopId);
             this.handleShopRotationChanged(event.detail);
         });
         
@@ -94,7 +86,7 @@ class UnifiedTeller {
         
         // Add a global debug listener to catch any shopRotationChanged events
         window.addEventListener('shopRotationChanged', (event) => {
-            console.log('🚀🚀🚀 GLOBAL: shopRotationChanged event detected!', event.detail);
+
         }, true); // Use capture phase to ensure it fires first
         
         // Cross-tab communication via localStorage
@@ -102,8 +94,6 @@ class UnifiedTeller {
             if (event.key === 'jotun_shop_rotation_change' && event.newValue) {
                 try {
                     const crossTabEvent = JSON.parse(event.newValue);
-                    console.log('🚀🚀🚀 UNIFIED TELLER: Received cross-tab rotation change:', crossTabEvent);
-                    
                     // Handle the rotation change
                     this.handleShopRotationChanged({
                         shopId: crossTabEvent.shopId,
@@ -114,8 +104,6 @@ class UnifiedTeller {
                 }
             }
         });
-        
-        console.log('🚀🚀🚀 UNIFIED TELLER: Cross-tab localStorage listener registered');
 
         // Transaction actions
         const clearTransactionBtn = document.getElementById('clear-transaction-btn');
@@ -540,28 +528,18 @@ class UnifiedTeller {
     }
 
     async handleShopRotationChanged(eventData) {
-        console.log('🔄 handleShopRotationChanged called with:', eventData);
         const { shopId, newRotation } = eventData;
-        
-        console.log(`🔄 Checking if should handle: selectedShop=${this.selectedShop}, eventShopId=${shopId}`);
-        console.log(`🔄 Types: selectedShop(${typeof this.selectedShop}), eventShopId(${typeof shopId})`);
         
         // Only respond if this is the currently selected shop
         if (this.selectedShop && this.selectedShop == shopId) {
-            console.log(`🔄 ✅ Handling rotation change for current shop ${shopId} to rotation ${newRotation}`);
-            
             // Update the shop selector option's dataset
             const selectedOption = document.querySelector(`#teller-shop-selector option[value="${shopId}"]`);
             if (selectedOption) {
-                const oldRotation = selectedOption.dataset.currentRotation;
                 selectedOption.dataset.currentRotation = newRotation;
-                console.log(`🔄 Updated shop selector dataset from rotation ${oldRotation} to ${newRotation}`);
                 
                 // Reload the shop items with the new rotation
                 const shopType = selectedOption.dataset.shopType;
                 const isTurnInOnly = shopType === 'turn-in_only';
-                
-                console.log(`🔄 Reloading items - Shop type: ${shopType}, Turn-in only: ${isTurnInOnly}`);
                 
                 if (isTurnInOnly) {
                     await this.loadTurninItems(shopId, newRotation);
@@ -569,13 +547,8 @@ class UnifiedTeller {
                     await this.loadShopItems(shopId, newRotation);
                 }
                 
-                this.showStatus(`🔄 Shop rotation automatically updated to ${newRotation}!`, 'success');
-                console.log(`🔄 Successfully updated unified teller to rotation ${newRotation}`);
-            } else {
-                console.error(`🔄 Could not find shop selector option for shop ${shopId}`);
+                this.showStatus(`Shop rotation automatically updated to ${newRotation}!`, 'success');
             }
-        } else {
-            console.log(`🔄 Ignoring rotation change for shop ${shopId} (current shop: ${this.selectedShop})`);
         }
     }
 
@@ -2014,8 +1987,7 @@ class UnifiedTeller {
     }
 
     clearCart() {
-        console.log('🚨🚨🚨 DEBUG: clearCart() method ENTRY - CART CLEARING STARTED');
-        console.log('🚨 DEBUG: Current cart length before clearing:', this.cart.length);
+
         console.log('🚨 DEBUG: Current cart contents:', this.cart);
         
         this.cart = [];
@@ -4529,7 +4501,7 @@ function confirmTransaction() {
 
 // Initialize unified teller when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀🚀🚀 UNIFIED TELLER: DOMContentLoaded event fired!');
+
     
     // Check if we should initialize UnifiedTeller
     const shouldInitialize = document.getElementById('unified-teller-interface') || 
@@ -4549,14 +4521,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🚀🚀� UNIFIED TELLER: Conditions met, initializing UnifiedTeller...');
         // Wait for JotunAPI to be available
         const checkAPI = () => {
-            console.log('🚀🚀🚀 UNIFIED TELLER: Checking for JotunAPI...');
+
             if (typeof JotunAPI !== 'undefined' && JotunAPI) {
-                console.log('🚀🚀🚀 UNIFIED TELLER: JotunAPI is available, initializing UnifiedTeller');
+
                 window.unifiedTeller = new UnifiedTeller();
-                console.log('🚀🚀🚀 UNIFIED TELLER: window.unifiedTeller assigned:', typeof window.unifiedTeller);
-                console.log('🚀🚀🚀 UNIFIED TELLER: preventOverLimit method accessible:', typeof window.unifiedTeller.preventOverLimit);
+
+
             } else {
-                console.log('🚀🚀🚀 UNIFIED TELLER: JotunAPI not ready, waiting...');
+
                 setTimeout(checkAPI, 100);
             }
         };

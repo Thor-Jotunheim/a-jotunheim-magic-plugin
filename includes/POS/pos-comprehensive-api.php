@@ -2400,49 +2400,35 @@ function jotun_api_get_shop_rotations($request) {
 function jotun_api_update_shop_rotation($request) {
     global $wpdb;
     
-    error_log('🔄 UPDATE SHOP ROTATION: Starting request');
-    error_log('🔄 Request parameters: ' . print_r($request->get_params(), true));
-    
     $shop_id = (int) $request['shop_id'];
     $data = $request->get_json_params();
-    error_log('🔄 JSON params: ' . print_r($data, true));
-    
     $new_rotation = (int) $data['rotation'];
-    error_log('🔄 Shop ID: ' . $shop_id . ', New Rotation: ' . $new_rotation);
     
     if ($new_rotation < 1) {
-        error_log('🔄 ERROR: Invalid rotation value');
         return new WP_REST_Response(['error' => 'Rotation must be 1 or greater'], 400);
     }
     
     // Verify this rotation exists for the shop
-    error_log('🔄 Checking if rotation exists...');
     $rotation_exists = $wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM jotun_shop_items WHERE shop_id = %d AND rotation = %d",
         $shop_id, $new_rotation
     ));
-    error_log('🔄 Rotation exists check result: ' . $rotation_exists);
     
     if (!$rotation_exists) {
-        error_log('🔄 ERROR: No items found for this rotation');
         return new WP_REST_Response(['error' => 'No items found for this rotation'], 400);
     }
     
     // Update shop's current rotation
-    error_log('🔄 Updating shop rotation in database...');
     $result = $wpdb->update(
         'jotun_shops',
         ['current_rotation' => $new_rotation],
         ['shop_id' => $shop_id]
     );
-    error_log('🔄 Database update result: ' . ($result !== false ? 'SUCCESS' : 'FAILED'));
     
     if ($result === false) {
-        error_log('🔄 DATABASE ERROR: ' . $wpdb->last_error);
         return new WP_REST_Response(['error' => 'Failed to update shop rotation: ' . $wpdb->last_error], 500);
     }
     
-    error_log('🔄 SUCCESS: Shop rotation updated successfully');
     return new WP_REST_Response(['message' => 'Shop rotation updated successfully'], 200);
 }
 

@@ -204,12 +204,9 @@ class ShopManager {
     }
 
     renderShopsTable(shops) {
-        console.log('🎯🎯🎯 SHOP MANAGER: renderShopsTable called with', shops.length, 'shops');
         const tbody = document.getElementById('shops-table-body');
-        console.log('🎯🎯🎯 SHOP MANAGER: Found tbody element:', !!tbody);
         tbody.innerHTML = '';
         this.loadedRotations.clear(); // Clear the set when table is recreated
-        console.log('🎯🎯🎯 SHOP MANAGER: Cleared loadedRotations, starting shop processing...');
 
         shops.forEach(shop => {
             const row = document.createElement('tr');
@@ -233,16 +230,10 @@ class ShopManager {
             `;
             tbody.appendChild(row);
             
-            console.log('🎯🎯🎯 SHOP MANAGER: Processing shop row for shop ID:', shop.shop_id);
-            console.log('🎯🎯🎯 SHOP MANAGER: Already loaded rotations:', Array.from(this.loadedRotations));
-            
             // Load rotations for this shop (only once)
             if (!this.loadedRotations.has(shop.shop_id)) {
-                console.log('🎯🎯🎯 SHOP MANAGER: Loading rotations for NEW shop:', shop.shop_id);
                 this.loadedRotations.add(shop.shop_id);
                 this.loadShopRotations(shop.shop_id, rotationDropdownId);
-            } else {
-                console.log('🎯🎯🎯 SHOP MANAGER: Skipping rotations for ALREADY LOADED shop:', shop.shop_id);
             }
         });
     }
@@ -1777,15 +1768,12 @@ class ShopManager {
     }
 
     async loadShopRotations(shopId, dropdownId) {
-        console.log('🎯🎯🎯 SHOP MANAGER: loadShopRotations called for shop:', shopId, 'dropdown:', dropdownId);
         try {
             const response = await JotunAPI.getShopRotations(shopId);
             const rotations = response.rotations || [];
             const currentRotation = response.current_rotation || 1;
-            console.log('🎯🎯🎯 SHOP MANAGER: Got rotations:', rotations.length, 'current:', currentRotation);
             
             const dropdown = document.getElementById(dropdownId);
-            console.log('🎯🎯🎯 SHOP MANAGER: Dropdown element found:', !!dropdown, 'ID:', dropdownId);
             if (!dropdown) return;
             
             dropdown.innerHTML = '';
@@ -1810,36 +1798,17 @@ class ShopManager {
             const newDropdown = dropdown.cloneNode(true);
             dropdown.parentNode.replaceChild(newDropdown, dropdown);
             
-            console.log('🎯🎯🎯 SHOP MANAGER: Adding change event listener to dropdown:', newDropdown.id);
-            
-            // Add test event listeners for debugging
-            newDropdown.addEventListener('focus', () => {
-                console.log('🎯🎯🎯 SHOP MANAGER: Dropdown focused!', newDropdown.id);
-            });
-            
-            newDropdown.addEventListener('click', () => {
-                console.log('🎯🎯🎯 SHOP MANAGER: Dropdown clicked!', newDropdown.id);
-            });
-            
             // Add change event listener
             newDropdown.addEventListener('change', async (e) => {
-                console.log('🎯🎯🎯 SHOP MANAGER: Dropdown change event fired!');
                 const newRotation = parseInt(e.target.value);
                 // Get the current rotation dynamically from the selected option
                 const currentlySelectedOption = newDropdown.querySelector('option[selected]');
                 const currentRotationValue = currentlySelectedOption ? parseInt(currentlySelectedOption.value) : null;
                 
-                console.log(`🎯🎯🎯 SHOP MANAGER: Rotation change detected: ${currentRotationValue} -> ${newRotation}`);
-                
                 if (newRotation && newRotation !== currentRotationValue) {
-                    console.log('🎯🎯🎯 SHOP MANAGER: Calling updateShopRotation...');
                     await this.updateShopRotation(shopId, newRotation);
-                } else if (newRotation === currentRotationValue) {
-                    console.log('🎯🎯🎯 SHOP MANAGER: Same rotation selected, no update needed');
                 }
             });
-            
-            console.log('🎯🎯🎯 SHOP MANAGER: Event listener attached successfully to:', newDropdown.id);
             
         } catch (error) {
             console.error(`Error loading rotations for shop ${shopId}:`, error);
@@ -1882,7 +1851,6 @@ class ShopManager {
                 }
             });
             window.dispatchEvent(rotationChangeEvent);
-            console.log('🎯🎯🎯 SHOP MANAGER: Dispatched shopRotationChanged event for shop', shopId, 'rotation', rotation);
             
             // Cross-tab communication via localStorage
             const crossTabEvent = {
@@ -1892,7 +1860,6 @@ class ShopManager {
                 timestamp: Date.now()
             };
             localStorage.setItem('jotun_shop_rotation_change', JSON.stringify(crossTabEvent));
-            console.log('🎯🎯🎯 SHOP MANAGER: Cross-tab event stored in localStorage:', crossTabEvent);
             
         } catch (error) {
             console.error('Error updating shop rotation:', error);
