@@ -1247,10 +1247,11 @@ class ShopManager {
             </td>
             <td>
                 ${item.icon_image ? `<img src="${this.escapeHtml(item.icon_image)}" alt="${this.escapeHtml(item.master_item_name || item.item_name)}" class="item-icon">` : ''}
+            </td>
+            <td>
                 ${this.escapeHtml(item.master_item_name || item.item_name)}
                 ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
             </td>
-            <td>${Math.floor(parseFloat(defaultPrice) || 0)} Coins</td>
             <td>${Math.floor(parseFloat(shopPrice) || 0)} Coins</td>
             <td class="stock-cell">${(() => {
                 return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
@@ -1260,9 +1261,9 @@ class ShopManager {
             <td><span class="checkbox-display ${item.turn_in == 1 ? 'checked' : ''}">${item.turn_in == 1 ? '✓' : '✗'}</span></td>
             ${item.turn_in == 1 ? `<td class="turnin-progress">${item.turn_in_quantity || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
             ${item.turn_in == 1 ? `<td class="turnin-required">${item.turn_in_requirement || 0}</td>` : '<td class="no-turnin"><span class="na-text">N/A</span></td>'}
-            <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_sell_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
-            <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_buy_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
-            <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">Max: ${item.max_daily_turnin_quantity || 0}/day</span>` : '<span class="no-limit">No limit</span>'}</td>
+            <td>${item.daily_limit_enabled == 1 ? `<span class="daily-limit-badge">${item.max_daily_sell_quantity || 0}</span>` : '<span class="no-limit">No limit</span>'}</td>
+            <td>${item.buy_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">${item.max_daily_buy_quantity || 0}</span>` : '<span class="no-limit">No limit</span>'}</td>
+            <td>${item.turnin_daily_limit_enabled == 1 ? `<span class="daily-limit-badge">${item.max_daily_turnin_quantity || 0}</span>` : '<span class="no-limit">No limit</span>'}</td>
             <td><span class="status-badge ${item.is_available == 1 ? 'active' : 'inactive'}">${item.is_available == 1 ? 'Yes' : 'No'}</span></td>
             <td>
                 <button class="btn btn-primary btn-sm" onclick="console.log('Edit button clicked for item:', ${item.shop_item_id || item.id}); if(window.shopManager) { window.shopManager.editShopItem(${item.shop_item_id || item.id}); } else { console.error('shopManager not found'); }">Edit</button>
