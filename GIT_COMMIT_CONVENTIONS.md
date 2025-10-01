@@ -21,15 +21,13 @@ v[VERSION] - [TYPE]: [Brief description]
 - Format: `v[major].[minor].[patch].[build]`
 
 ### Version Increment Rules:
-- **DEFAULT**: Only increment the LAST number (build) for regular commits
-  - Example: `v0.9.5.9.12` → `v0.9.5.9.13`
-  - Build number can go higher than 9 (e.g., v0.9.5.9.25)
-- **SPECIAL**: Only increment other numbers when explicitly told by user
-- **ROLLOVER RULES**: When numbers exceed 9, rollover to next level:
-  - `v0.9.5.9.X` → `v0.9.6.0.0` (patch rollover)
-  - `v0.9.9.X.X` → `v0.10.0.0.0` (minor rollover) 
-  - `v0.99.X.X.X` → `v1.0.0.0.0` (major rollover)
-- **RESET RULE**: When rolling over, reset all lower numbers to 0
+- **CRITICAL**: ONLY EVER INCREMENT THE LAST NUMBER (rightmost) unless explicitly told otherwise
+- **DEFAULT BEHAVIOR**: Always increment only the build number (rightmost position)
+  - Example: `v0.9.6.0.9` → `v0.9.6.0.10` → `v0.9.6.0.11` → `v0.9.6.0.12`
+  - Build numbers can go WAY higher than 9 (e.g., v0.9.6.0.25, v0.9.6.0.100)
+  - **NEVER ASSUME** numbers need to "rollover" at 9
+- **ONLY CHANGE OTHER NUMBERS** when user explicitly says "increment the patch number" or "increment the minor number"
+- **NO AUTOMATIC ROLLOVERS** - User will tell you when to change anything other than the last digit
 
 ### Type Categories:
 - **FIX**: Bug fixes, corrections
