@@ -2582,6 +2582,22 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 4px;
 }
 
+/* Make icon 75% smaller ONLY in table view */
+.card-cell .item-icon-container {
+    width: 35px;  /* 75% smaller than 140px */
+    height: 35px; /* 75% smaller than 140px */
+    min-width: 35px;
+    max-width: 35px;
+    padding: 2px; /* Proportionally smaller padding */
+    margin: 0; /* Remove margin for compact table layout */
+}
+
+.card-cell .item-icon-container .item-image {
+    width: 100%; /* Reset to normal size within smaller container */
+    height: 100%;
+    transform: scale(1); /* Remove the 1.1 scale for cleaner small icon */
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .card-cell .item-card {
