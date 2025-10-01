@@ -1247,8 +1247,8 @@ class ShopManager {
                 ${this.escapeHtml(item.master_item_name || item.item_name)}
                 ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
             </td>
-            <td>${Math.floor(parseFloat(defaultPrice) || 0)} Coins</td>
-            <td>${Math.floor(parseFloat(shopPrice) || 0)} Coins</td>
+            <td>${this.formatPrice(defaultPrice || 0)}</td>
+            <td>${this.formatPrice(shopPrice || 0)}</td>
             <td class="stock-cell">${(() => {
                 return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
             })()}</td>
