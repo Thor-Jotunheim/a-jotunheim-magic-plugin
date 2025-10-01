@@ -193,6 +193,7 @@ function shop_manager_interface() {
         input#stock-quantity {
             margin-top: 13px;
             font-size: 16px;
+            padding: 12px 16px;
         }
         
         /* Relative positioning for autocomplete */
