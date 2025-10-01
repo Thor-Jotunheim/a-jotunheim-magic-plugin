@@ -452,32 +452,46 @@ class UnifiedTeller {
         console.log('Refreshing shop data for current shop:', this.selectedShop);
         
         try {
-            // Reload shops to get updated rotation data
+            // Get just the current shop's updated data
             const response = await JotunAPI.getShops();
             if (response && response.data) {
                 const shops = response.data;
                 const currentShop = shops.find(shop => shop.shop_id == this.selectedShop);
                 
                 if (currentShop) {
+                    console.log('Found current shop with rotation:', currentShop.current_rotation);
+                    
                     // Update the current shop option with new rotation data
                     const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
                     if (selectedOption) {
+                        const oldRotation = selectedOption.dataset.currentRotation;
                         selectedOption.dataset.currentRotation = currentShop.current_rotation || 1;
-                        console.log('Updated current shop rotation to:', currentShop.current_rotation);
+                        console.log('Updated rotation from', oldRotation, 'to', currentShop.current_rotation);
                         
-                        // Reload items with new rotation
-                        const shopType = selectedOption.dataset.shopType;
-                        const isTurnInOnly = shopType === 'turn-in_only';
-                        const currentRotation = currentShop.current_rotation || 1;
-                        
-                        if (isTurnInOnly) {
-                            await this.loadTurninItems(this.selectedShop, currentRotation);
+                        // Only reload if rotation actually changed
+                        if (oldRotation != currentShop.current_rotation) {
+                            // Reload items with new rotation
+                            const shopType = selectedOption.dataset.shopType;
+                            const isTurnInOnly = shopType === 'turn-in_only';
+                            const currentRotation = parseInt(currentShop.current_rotation) || 1;
+                            
+                            console.log('Reloading items with rotation:', currentRotation);
+                            
+                            if (isTurnInOnly) {
+                                await this.loadTurninItems(this.selectedShop, currentRotation);
+                            } else {
+                                await this.loadShopItems(this.selectedShop, currentRotation);
+                            }
+                            
+                            this.showStatus(`Shop rotation updated to ${currentRotation}!`, 'success');
                         } else {
-                            await this.loadShopItems(this.selectedShop, currentRotation);
+                            this.showStatus('Rotation unchanged - no refresh needed', 'info');
                         }
-                        
-                        this.showStatus('Shop data refreshed successfully!', 'success');
+                    } else {
+                        console.error('Could not find selected option element');
                     }
+                } else {
+                    console.error('Could not find current shop in response');
                 }
             }
         } catch (error) {
