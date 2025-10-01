@@ -655,6 +655,31 @@
     line-height: 1.4;
 }
 
+/* Daily Limit Fields Alignment */
+.advanced-settings-content .daily-limit-fields,
+.advanced-settings-content .daily-buy-limit-fields,
+.advanced-settings-content .daily-turnin-limit-fields {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.advanced-settings-content .daily-limit-fields .form-group,
+.advanced-settings-content .daily-buy-limit-fields .form-group,
+.advanced-settings-content .daily-turnin-limit-fields .form-group {
+    flex: 1;
+    min-width: 250px;
+    margin-bottom: 0;
+}
+
+.advanced-settings-content #max-daily-quantity-group,
+.advanced-settings-content #max-daily-buy-quantity-group,
+.advanced-settings-content #max-daily-turnin-quantity-group {
+    margin-top: 0;
+    padding-top: 0;
+}
+
 /* Shop Manager Table Enhancements */
 .shop-table .stock-cell {
     text-align: center;
