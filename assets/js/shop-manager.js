@@ -1768,12 +1768,15 @@ class ShopManager {
     }
 
     async loadShopRotations(shopId, dropdownId) {
+        console.log('🎯🎯🎯 SHOP MANAGER: loadShopRotations called for shop:', shopId, 'dropdown:', dropdownId);
         try {
             const response = await JotunAPI.getShopRotations(shopId);
             const rotations = response.rotations || [];
             const currentRotation = response.current_rotation || 1;
+            console.log('🎯🎯🎯 SHOP MANAGER: Got rotations:', rotations.length, 'current:', currentRotation);
             
             const dropdown = document.getElementById(dropdownId);
+            console.log('🎯🎯🎯 SHOP MANAGER: Dropdown element found:', !!dropdown, 'ID:', dropdownId);
             if (!dropdown) return;
             
             dropdown.innerHTML = '';
@@ -1799,6 +1802,15 @@ class ShopManager {
             dropdown.parentNode.replaceChild(newDropdown, dropdown);
             
             console.log('🎯🎯🎯 SHOP MANAGER: Adding change event listener to dropdown:', newDropdown.id);
+            
+            // Add test event listeners for debugging
+            newDropdown.addEventListener('focus', () => {
+                console.log('🎯🎯🎯 SHOP MANAGER: Dropdown focused!', newDropdown.id);
+            });
+            
+            newDropdown.addEventListener('click', () => {
+                console.log('🎯🎯🎯 SHOP MANAGER: Dropdown clicked!', newDropdown.id);
+            });
             
             // Add change event listener
             newDropdown.addEventListener('change', async (e) => {
