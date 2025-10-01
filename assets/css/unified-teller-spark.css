@@ -2550,7 +2550,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Restructure item-card grid for table view to have 5 columns: icon, name, quantity-controls, progress, actions */
 #items-table-view .card-cell .item-card {
     display: grid;
-    grid-template-columns: 60px 1fr 200px 150px 120px; /* icon, name, quantity, progress, actions */
+    grid-template-columns: 60px 1fr 300px 180px 120px; /* icon, name, quantity, progress, actions */
     gap: 16px;
     align-items: center;
     padding: 12px;
@@ -2568,10 +2568,22 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     grid-row: 1;
 }
 
-/* Quantity controls in third column */
+/* Quantity controls in third column - make them side by side */
 #items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
     grid-column: 3;
     grid-row: 1;
+}
+
+/* Make Unit and Stack controls display side by side in table view */
+#items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 16px;
+    width: auto;
+}
+
+#items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls:last-child {
+    margin-right: 0;
 }
 
 /* Progress/calculations in fourth column */
@@ -2603,6 +2615,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Hide non-Turn In buttons in table view actions column */
 #items-table-view .card-cell .item-card .item-bottom-section .item-actions .purchase-button,
 #items-table-view .card-cell .item-card .item-bottom-section .item-actions .sell-to-shop {
+    display: none;
+}
+
+/* Align table headers with the card columns */
+#items-table-view .items-table thead tr {
+    display: grid;
+    grid-template-columns: 60px 1fr 300px 180px 120px; /* Match the card grid */
+    gap: 16px;
+    padding: 12px;
+}
+
+#items-table-view .items-table thead th {
+    text-align: center;
+    padding: 8px 4px;
+}
+
+/* Hide the table body since we're using cards */
+#items-table-view .items-table tbody {
     display: none;
 }
 
