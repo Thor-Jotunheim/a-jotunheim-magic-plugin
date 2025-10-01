@@ -464,7 +464,7 @@ function shop_manager_interface() {
                                         <div class="checkbox-group">
                                             <label class="checkbox-label">
                                                 <input type="checkbox" id="daily-limit-enabled" name="daily_limit_enabled">
-                                                <span>Enable Daily Limit</span>
+                                                <span>Enable Daily Sell Limit</span>
                                             </label>
                                         </div>
                                         <small style="display: block; color: #666; margin-top: 4px;">
