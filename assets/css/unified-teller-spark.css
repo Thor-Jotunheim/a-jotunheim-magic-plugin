@@ -2496,6 +2496,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     align-items: center;
     width: 100%;
     position: relative; /* Enable absolute positioning for children */
+    min-height: 120px; /* Ensure consistent row height for proper centering */
 }
 
 /* Rearrange card sections to match table columns exactly */
@@ -2539,9 +2540,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .card-cell .item-card .action-buttons {
-    /* Force action buttons to the far right */
+    /* Force action buttons to the far right, vertically centered */
     position: absolute;
-    right: 16px;
+    right: 24px; /* A bit more padding from edge to prevent cutoff */
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -2549,6 +2550,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     align-items: center;
     gap: 4px;
     z-index: 10;
+    /* Ensure buttons don't get cut off */
+    min-width: 80px;
 }
 
 .card-cell .item-name {
