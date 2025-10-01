@@ -197,11 +197,18 @@ class JotunheimDiscordAuthConfig {
         
         $roles = [];
         foreach ($_POST['roles'] as $role_key => $role_data) {
-            $roles[sanitize_key($role_key)] = [
+            $role_entry = [
                 'name' => sanitize_text_field($role_data['name']),
                 'id' => sanitize_text_field($role_data['id']),
                 'description' => sanitize_text_field($role_data['description'])
             ];
+            
+            // Preserve disabled state if it exists
+            if (isset($role_data['disabled'])) {
+                $role_entry['disabled'] = (bool) $role_data['disabled'];
+            }
+            
+            $roles[sanitize_key($role_key)] = $role_entry;
         }
         
         if ($this->save_discord_roles($roles)) {
@@ -615,6 +622,12 @@ function render_discord_auth_config_page() {
                                     type="hidden" 
                                     name="discord_roles[<?php echo esc_attr($role_key); ?>][description]"
                                     value="<?php echo esc_attr($role_data['description']); ?>"
+                                />
+                                <input 
+                                    type="hidden" 
+                                    name="discord_roles[<?php echo esc_attr($role_key); ?>][disabled]"
+                                    value="<?php echo esc_attr(isset($role_data['disabled']) && $role_data['disabled'] ? '1' : '0'); ?>"
+                                    class="role-disabled-field"
                                 />
                                 <?php
                                 $is_disabled = isset($role_data['disabled']) && $role_data['disabled'];

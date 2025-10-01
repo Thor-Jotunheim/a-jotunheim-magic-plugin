@@ -198,6 +198,9 @@ jQuery(document).ready(function($) {
                         // Update button text and styling
                         $button.text(isNowDisabled ? 'Enable' : 'Disable');
                         
+                        // Update hidden field for form submission
+                        $roleItem.find('.role-disabled-field').val(isNowDisabled ? '1' : '0');
+                        
                         if (isNowDisabled) {
                             // Role is now disabled - green "Enable" button
                             $button.css({
