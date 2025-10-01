@@ -1794,12 +1794,18 @@ class ShopManager {
             
             dropdown.disabled = false;
             
+            // Remove any existing event listeners to prevent duplicates
+            const newDropdown = dropdown.cloneNode(true);
+            dropdown.parentNode.replaceChild(newDropdown, dropdown);
+            
+            console.log('🎯🎯🎯 SHOP MANAGER: Adding change event listener to dropdown:', newDropdown.id);
+            
             // Add change event listener
-            dropdown.addEventListener('change', async (e) => {
+            newDropdown.addEventListener('change', async (e) => {
                 console.log('🎯🎯🎯 SHOP MANAGER: Dropdown change event fired!');
                 const newRotation = parseInt(e.target.value);
                 // Get the current rotation dynamically from the selected option
-                const currentlySelectedOption = dropdown.querySelector('option[selected]');
+                const currentlySelectedOption = newDropdown.querySelector('option[selected]');
                 const currentRotationValue = currentlySelectedOption ? parseInt(currentlySelectedOption.value) : null;
                 
                 console.log(`🎯🎯🎯 SHOP MANAGER: Rotation change detected: ${currentRotationValue} -> ${newRotation}`);
@@ -1811,6 +1817,8 @@ class ShopManager {
                     console.log('🎯🎯🎯 SHOP MANAGER: Same rotation selected, no update needed');
                 }
             });
+            
+            console.log('🎯🎯🎯 SHOP MANAGER: Event listener attached successfully to:', newDropdown.id);
             
         } catch (error) {
             console.error(`Error loading rotations for shop ${shopId}:`, error);
