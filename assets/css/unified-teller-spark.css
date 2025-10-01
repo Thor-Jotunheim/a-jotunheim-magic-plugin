@@ -2502,16 +2502,18 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Extract icon from main content and position in dedicated space for table view */
 .card-cell .item-card .item-main-content .item-icon-container {
-    position: absolute;
-    left: 16px; /* Position in the reserved 60px space */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;  /* Sized for table view */
-    height: 40px;
-    min-width: 40px;
-    max-width: 40px;
-    margin: 0;
-    z-index: 10;
+    position: absolute !important;
+    left: 16px !important; /* Position in the reserved 60px space */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 40px !important;  /* Sized for table view */
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+    background: red !important; /* TEST - make it obvious */
+    border: 3px solid yellow !important; /* TEST - make it obvious */
 }
 
 /* Rearrange card sections to match table columns exactly */
