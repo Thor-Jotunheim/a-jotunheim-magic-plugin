@@ -2489,37 +2489,31 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin: 0;
     padding: 12px 16px;
     
-    /* Use table-row-like layout - icon positioned absolutely in first 60px */
+    /* Use table-row-like layout with 5 columns to match header */
     display: grid;
-    grid-template-columns: 1fr 2fr 2fr 1fr; /* Item | Quantity | Progress | Actions */
+    grid-template-columns: 60px 1fr 2fr 2fr 1fr; /* Icon | Item | Quantity | Progress | Actions */
     gap: 16px;
     align-items: center;
     width: 100%;
     position: relative; /* Enable absolute positioning for children */
     min-height: 120px; /* Ensure consistent row height for proper centering */
-    padding-left: 60px; /* Reserve space for absolutely positioned icon */
 }
 
-/* Extract icon from main content and position in dedicated space for table view */
+/* Move icon to first column for table view */
 .card-cell .item-card .item-main-content .item-icon-container {
-    position: absolute !important;
-    left: 16px !important; /* Position in the reserved 60px space */
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 40px !important;  /* Sized for table view */
-    height: 40px !important;
-    min-width: 40px !important;
-    max-width: 40px !important;
-    margin: 0 !important;
-    z-index: 100 !important;
-    background: red !important; /* TEST - make it obvious */
-    border: 3px solid yellow !important; /* TEST - make it obvious */
+    grid-column: 1;
+    justify-self: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    margin: 0;
 }
 
 /* Rearrange card sections to match table columns exactly */
 .card-cell .item-card .item-header {
-    /* Item column (1st) */
-    grid-column: 1;
+    /* Item column (2nd) */
+    grid-column: 2;
     margin: 0;
     padding: 0;
     display: flex;
@@ -2528,14 +2522,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .card-cell .item-card .item-main-content {
-    /* Spans columns 1-4 */
+    /* Spans all columns - icon goes to column 1, quantity section goes to column 3 */
     grid-column: 1 / -1;
     display: contents; /* This makes children appear as direct grid items */
 }
 
 /* Position quantity controls in the table layout */
 .card-cell .item-card .item-main-content .item-quantity-section {
-    grid-column: 2; /* Quantity Controls column */
+    grid-column: 3; /* Quantity Controls column */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2545,8 +2539,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .card-cell .item-card .turnin-progress-container,
 .card-cell .item-card .price-info,
 .card-cell .item-card .item-content .transaction-calculations {
-    /* Progress/Calculations column (3rd) */
-    grid-column: 3;
+    /* Progress/Calculations column (4th) */
+    grid-column: 4;
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -2555,7 +2549,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .card-cell .item-card .item-bottom-section {
     /* Override the bottom section to integrate with table layout */
-    grid-column: 2 / -1; /* Span from column 2 to end */
+    grid-column: 3 / -1; /* Span from column 3 to end */
     display: grid;
     grid-template-columns: 1fr 1fr 1fr; /* 3 columns: quantity-controls, info-display, actions */
     gap: 16px;
@@ -2599,7 +2593,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 4px;
 }
 
-/* Note: Icon styling moved to grid positioning above - no size override needed since it's in dedicated column */
+/* Style the icon column header */
+.items-table th.icon-column {
+    width: 60px;
+    text-align: center;
+    padding: 8px 4px;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

@@ -3952,6 +3952,7 @@ class UnifiedTeller {
             <table class="items-table">
                 <thead>
                     <tr>
+                        <th class="icon-column">Icon</th>
                         <th>Item</th>
                         <th>Quantity Controls</th>
                         <th>Progress/Calculations</th>
