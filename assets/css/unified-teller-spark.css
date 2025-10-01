@@ -2516,12 +2516,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: contents; /* This makes children appear as direct grid items */
 }
 
-/* Direct control over each section's grid position */
-.card-cell .item-card .quantity-controls {
-    /* Quantity Controls column (2nd) */
-    grid-column: 2;
-    justify-content: center;
-    margin: 0;
+/* Position quantity controls in the table layout */
+.card-cell .item-card .item-main-content .item-quantity-section {
+    grid-column: 2; /* Quantity Controls column */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2539,19 +2536,32 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     align-items: center;
 }
 
-.card-cell .item-card .action-buttons {
-    /* Force action buttons to the far right, vertically centered */
-    position: absolute;
-    right: 24px; /* A bit more padding from edge to prevent cutoff */
-    top: 50%;
-    transform: translateY(-50%);
+.card-cell .item-card .item-bottom-section {
+    /* Override the bottom section to integrate with table layout */
+    grid-column: 2 / -1; /* Span from column 2 to end */
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 columns: quantity-controls, info-display, actions */
+    gap: 16px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.card-cell .item-card .item-bottom-section .item-info-display {
+    /* Progress/Calculations in middle column */
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-cell .item-card .item-bottom-section .item-actions {
+    /* Action buttons in right column */
+    grid-column: 3;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    z-index: 10;
-    /* Ensure buttons don't get cut off */
-    min-width: 80px;
 }
 
 .card-cell .item-name {
