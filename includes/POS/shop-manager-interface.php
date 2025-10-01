@@ -157,7 +157,24 @@ function shop_manager_interface() {
             font-style: italic;
         }
         
-
+        /* Transaction type help text */
+        .form-help-text {
+            display: block;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            color: #666;
+            font-style: italic;
+            font-size: 12px;
+        }
+        
+        .checkbox-help {
+            display: block;
+            margin-top: 2px;
+            margin-left: 20px;
+            color: #888;
+            font-size: 11px;
+            font-style: italic;
+        }
         
         /* Custom item badge */
         .custom-item-badge {
@@ -330,18 +347,22 @@ function shop_manager_interface() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Transaction Types</label>
+                                <small class="form-help-text">Configure what actions appear in the Unified Teller (from teller's perspective)</small>
                                 <div class="checkbox-group">
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="sell-checkbox" name="sell" checked>
-                                        <span>Sell</span>
+                                        <span>Shop will buy from customers</span>
+                                        <small class="checkbox-help">(Shows "Buy" button in teller)</small>
                                     </label>
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="buy-checkbox" name="buy">
-                                        <span>Buy</span>
+                                        <span>Customers can buy from shop</span>
+                                        <small class="checkbox-help">(Shows "Sell" button in teller)</small>
                                     </label>
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="turn-in-checkbox" name="turn_in">
                                         <span>Turn-In</span>
+                                        <small class="checkbox-help">(Community collection event)</small>
                                     </label>
                                 </div>
                             </div>
