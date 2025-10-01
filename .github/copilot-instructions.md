@@ -6,6 +6,16 @@ Reminder, i am not doing localhost. I test on the live wordpress website. I want
 
 when you push, we push to main main branch. I will test on the live site.
 
+## MANDATORY GIT CONVENTIONS - READ FIRST BEFORE ANY COMMIT
+
+**BEFORE EVERY COMMIT:**
+1. **FIRST**: Update version in `jotunheim-magic.php` (increment LAST number only: v0.9.6.0.0 → v0.9.6.0.1)
+2. **SECOND**: Use EXACT format: `v[VERSION] - [TYPE]: [description]`
+3. **THIRD**: Match version in commit to version in file
+
+**REFER TO**: `/GIT_COMMIT_CONVENTIONS.md` for complete rules
+**NO EXCEPTIONS** - This is mandatory for every single commit
+
 ## Architecture Overview
 
 **Main Entry Point**: `jotunheim-magic.php` - Monolithic include file that loads all subsystems  
