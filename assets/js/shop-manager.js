@@ -1884,6 +1884,16 @@ class ShopManager {
             window.dispatchEvent(rotationChangeEvent);
             console.log('🎯🎯🎯 SHOP MANAGER: Dispatched shopRotationChanged event for shop', shopId, 'rotation', rotation);
             
+            // Cross-tab communication via localStorage
+            const crossTabEvent = {
+                type: 'shopRotationChanged',
+                shopId: shopId,
+                newRotation: rotation,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('jotun_shop_rotation_change', JSON.stringify(crossTabEvent));
+            console.log('🎯🎯🎯 SHOP MANAGER: Cross-tab event stored in localStorage:', crossTabEvent);
+            
         } catch (error) {
             console.error('Error updating shop rotation:', error);
             this.showStatus('Failed to update shop rotation', 'error');

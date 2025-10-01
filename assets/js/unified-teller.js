@@ -96,6 +96,26 @@ class UnifiedTeller {
         window.addEventListener('shopRotationChanged', (event) => {
             console.log('🚀🚀🚀 GLOBAL: shopRotationChanged event detected!', event.detail);
         }, true); // Use capture phase to ensure it fires first
+        
+        // Cross-tab communication via localStorage
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'jotun_shop_rotation_change' && event.newValue) {
+                try {
+                    const crossTabEvent = JSON.parse(event.newValue);
+                    console.log('🚀🚀🚀 UNIFIED TELLER: Received cross-tab rotation change:', crossTabEvent);
+                    
+                    // Handle the rotation change
+                    this.handleShopRotationChanged({
+                        shopId: crossTabEvent.shopId,
+                        newRotation: crossTabEvent.newRotation
+                    });
+                } catch (error) {
+                    console.error('Error parsing cross-tab event:', error);
+                }
+            }
+        });
+        
+        console.log('🚀🚀🚀 UNIFIED TELLER: Cross-tab localStorage listener registered');
 
         // Transaction actions
         const clearTransactionBtn = document.getElementById('clear-transaction-btn');
