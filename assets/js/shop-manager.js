@@ -1250,8 +1250,8 @@ class ShopManager {
                 ${this.escapeHtml(item.master_item_name || item.item_name)}
                 ${isCustomItem ? '<span class="custom-item-badge">Custom</span>' : ''}
             </td>
-            <td>${this.formatPrice(defaultPrice || 0)}</td>
-            <td>${this.formatPrice(shopPrice || 0)}</td>
+            <td>${Math.floor(parseFloat(defaultPrice) || 0)} Coins</td>
+            <td>${Math.floor(parseFloat(shopPrice) || 0)} Coins</td>
             <td class="stock-cell">${(() => {
                 return (item.stock_quantity == -1 || item.stock_quantity === '-1') ? '<span class="infinity-symbol">∞</span>' : (item.stock_quantity || 0);
             })()}</td>
@@ -1401,6 +1401,8 @@ class ShopManager {
         }
 
         console.log('DEBUG - Shop item data being sent:', shopItemData);
+        console.log('DEBUG - Daily limit checkbox checked:', document.getElementById('daily-limit-enabled')?.checked);
+        console.log('DEBUG - Max daily sell quantity value:', formData.get('max_daily_sell_quantity'));
 
         try {
             if (this.currentEditingShopItem) {
