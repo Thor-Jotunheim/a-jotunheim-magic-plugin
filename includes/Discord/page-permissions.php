@@ -141,6 +141,17 @@ class JotunheimPagePermissions {
             align-items: center;
             cursor: pointer;
         }
+        
+        .norn-locked {
+            background: #f0f6fc !important;
+            border: 1px solid #d1ecf1;
+            border-radius: 4px;
+            padding: 4px !important;
+        }
+        
+        .norn-locked label[title*="Locked"] {
+            cursor: not-allowed;
+        }
         </style>
         <?php
         
@@ -224,52 +235,85 @@ class JotunheimPagePermissions {
                                             <?php if (!empty($role_data['name']) && !empty($role_data['id'])): ?>
                                                 <td style="text-align: center; padding: 8px;">
                                                     <?php 
+                                                    // Norn role always gets edit permission and cannot be changed
+                                                    $is_norn_role = ($role_key === 'norn');
+                                                    
                                                     // Get current permission level (backward compatibility)
                                                     $current_value = 'none';
-                                                    if (isset($current_permissions[$page_key][$role_key])) {
-                                                        if (is_array($current_permissions[$page_key][$role_key])) {
-                                                            $current_value = $current_permissions[$page_key][$role_key]['level'] ?? 'none';
-                                                        } else {
-                                                            // Old format (true/false) - convert to read
-                                                            $current_value = $current_permissions[$page_key][$role_key] ? 'read' : 'none';
+                                                    if ($is_norn_role) {
+                                                        // Norn always has edit permission
+                                                        $current_value = 'edit';
+                                                    } else {
+                                                        if (isset($current_permissions[$page_key][$role_key])) {
+                                                            if (is_array($current_permissions[$page_key][$role_key])) {
+                                                                $current_value = $current_permissions[$page_key][$role_key]['level'] ?? 'none';
+                                                            } else {
+                                                                // Old format (true/false) - convert to read
+                                                                $current_value = $current_permissions[$page_key][$role_key] ? 'read' : 'none';
+                                                            }
                                                         }
                                                     }
                                                     
                                                     $radio_name = "permissions[{$page_key}][{$role_key}]";
+                                                    $is_disabled = $is_norn_role ? 'disabled' : '';
+                                                    $locked_class = $is_norn_role ? 'norn-locked' : '';
                                                     ?>
-                                                    <div style="display: flex; justify-content: center; gap: 8px; font-size: 12px;">
-                                                        <label title="Read Only">
-                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="read" 
-                                                                   <?php checked($current_value, 'read'); ?>
-                                                                   class="permission-radio"
-                                                                   data-page="<?php echo esc_attr($page_key); ?>"
-                                                                   data-role="<?php echo esc_attr($role_key); ?>">
-                                                            <span style="color: #2271b1;">R</span>
-                                                        </label>
-                                                        <label title="Read & Edit">
-                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="edit" 
-                                                                   <?php checked($current_value, 'edit'); ?>
-                                                                   class="permission-radio"
-                                                                   data-page="<?php echo esc_attr($page_key); ?>"
-                                                                   data-role="<?php echo esc_attr($role_key); ?>">
-                                                            <span style="color: #00a32a;">E</span>
-                                                        </label>
-                                                        <label title="Deny Access">
-                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="deny" 
-                                                                   <?php checked($current_value, 'deny'); ?>
-                                                                   class="permission-radio"
-                                                                   data-page="<?php echo esc_attr($page_key); ?>"
-                                                                   data-role="<?php echo esc_attr($role_key); ?>">
-                                                            <span style="color: #d63638;">D</span>
-                                                        </label>
-                                                        <label title="No Permission">
-                                                            <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="none" 
-                                                                   <?php checked($current_value, 'none'); ?>
-                                                                   class="permission-radio"
-                                                                   data-page="<?php echo esc_attr($page_key); ?>"
-                                                                   data-role="<?php echo esc_attr($role_key); ?>">
-                                                            <span style="color: #8c8f94;">-</span>
-                                                        </label>
+                                                    <div style="display: flex; justify-content: center; gap: 8px; font-size: 12px;" class="<?php echo esc_attr($locked_class); ?>">
+                                                        <?php if ($is_norn_role): ?>
+                                                            <!-- Norn role: Show locked edit permission with visual indication -->
+                                                            <label title="Norn Always Has Full Access (Locked)" style="opacity: 0.5;">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="read" disabled>
+                                                                <span style="color: #2271b1;">R</span>
+                                                            </label>
+                                                            <label title="Norn Always Has Full Access (Locked)" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px;">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="edit" checked disabled>
+                                                                <span style="color: #00a32a; font-weight: bold;">E 🔒</span>
+                                                            </label>
+                                                            <label title="Norn Always Has Full Access (Locked)" style="opacity: 0.5;">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="deny" disabled>
+                                                                <span style="color: #d63638;">D</span>
+                                                            </label>
+                                                            <label title="Norn Always Has Full Access (Locked)" style="opacity: 0.5;">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="none" disabled>
+                                                                <span style="color: #8c8f94;">-</span>
+                                                            </label>
+                                                            <!-- Hidden input to ensure Norn always gets edit permission when form is submitted -->
+                                                            <input type="hidden" name="<?php echo esc_attr($radio_name); ?>" value="edit">
+                                                        <?php else: ?>
+                                                            <!-- Normal roles: Editable permissions -->
+                                                            <label title="Read Only">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="read" 
+                                                                       <?php checked($current_value, 'read'); ?>
+                                                                       class="permission-radio"
+                                                                       data-page="<?php echo esc_attr($page_key); ?>"
+                                                                       data-role="<?php echo esc_attr($role_key); ?>">
+                                                                <span style="color: #2271b1;">R</span>
+                                                            </label>
+                                                            <label title="Read & Edit">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="edit" 
+                                                                       <?php checked($current_value, 'edit'); ?>
+                                                                       class="permission-radio"
+                                                                       data-page="<?php echo esc_attr($page_key); ?>"
+                                                                       data-role="<?php echo esc_attr($role_key); ?>">
+                                                                <span style="color: #00a32a;">E</span>
+                                                            </label>
+                                                            <label title="Deny Access">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="deny" 
+                                                                       <?php checked($current_value, 'deny'); ?>
+                                                                       class="permission-radio"
+                                                                       data-page="<?php echo esc_attr($page_key); ?>"
+                                                                       data-role="<?php echo esc_attr($role_key); ?>">
+                                                                <span style="color: #d63638;">D</span>
+                                                            </label>
+                                                            <label title="No Permission">
+                                                                <input type="radio" name="<?php echo esc_attr($radio_name); ?>" value="none" 
+                                                                       <?php checked($current_value, 'none'); ?>
+                                                                       class="permission-radio"
+                                                                       data-page="<?php echo esc_attr($page_key); ?>"
+                                                                       data-role="<?php echo esc_attr($role_key); ?>">
+                                                                <span style="color: #8c8f94;">-</span>
+                                                            </label>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </td>
                                             <?php endif; ?>
@@ -452,10 +496,9 @@ class JotunheimPagePermissions {
      * Now dynamically pulls from Dashboard Manager's shortcode detection + hardcoded admin pages
      */
     private function get_plugin_pages() {
-        $pages = [];
-        
-        // First add core admin pages (non-shortcode)
-        $admin_pages = [
+        // Only include core admin pages that should always be available
+        // These are the essential plugin configuration pages
+        $core_admin_pages = [
             'jotunheim_magic' => [
                 'title' => 'Overview Dashboard',
                 'description' => 'Main dashboard overview page'
@@ -471,171 +514,10 @@ class JotunheimPagePermissions {
             'page_permissions_config' => [
                 'title' => 'Page Permissions Config',
                 'description' => 'Configure Discord role-based page access permissions'
-            ],
-            'universal_ui_table_config' => [
-                'title' => 'Universal UI Table Config',
-                'description' => 'Configure UI table settings'
-            ],
-            'weather_calendar_config' => [
-                'title' => 'Weather Calendar Config',
-                'description' => 'Configure weather and calendar'
-            ],
-            'eventzone_field_config' => [
-                'title' => 'EventZone Field Config',
-                'description' => 'Configure event zone fields'
             ]
         ];
         
-        // Add admin pages
-        $pages = array_merge($pages, $admin_pages);
-        
-        // Now dynamically add all detected shortcode pages
-        // Use the same predefined shortcodes as Dashboard Manager
-        $predefined_shortcodes = [
-            'shop_manager' => [
-                'title' => 'Shop Manager',
-                'description' => 'Manage shop inventory and pricing',
-                'category' => 'commerce'
-            ],
-            'unified_teller' => [
-                'title' => 'Unified Teller',
-                'description' => 'Point of sale and transaction interface',
-                'category' => 'commerce'
-            ],
-            'itemlist_editor' => [
-                'title' => 'Item List Editor',
-                'description' => 'Edit and manage game items',
-                'category' => 'content'
-            ],
-            'item_list_editor' => [
-                'title' => 'Item List Editor (Alt)',
-                'description' => 'Alternative item list editor interface',
-                'category' => 'content'
-            ],
-            'item_list_add_new_item' => [
-                'title' => 'Add New Item',
-                'description' => 'Add new items to the game',
-                'category' => 'content'
-            ],
-            'eventzones_editor' => [
-                'title' => 'Event Zones Editor',
-                'description' => 'Edit and manage event zones',
-                'category' => 'content'
-            ],
-            'event_zone_editor' => [
-                'title' => 'Event Zone Editor (Alt)',
-                'description' => 'Alternative event zone editor interface',
-                'category' => 'content'
-            ],
-            'add_event_zone' => [
-                'title' => 'Add Event Zone',
-                'description' => 'Create new event zones',
-                'category' => 'content'
-            ],
-            'pos_interface' => [
-                'title' => 'Point of Sale Interface',
-                'description' => 'POS interface for transactions',
-                'category' => 'commerce'
-            ],
-            'jotunheim_trade_page' => [
-                'title' => 'Trade Management',
-                'description' => 'Manage trading system',
-                'category' => 'commerce'
-            ],
-            'trade' => [
-                'title' => 'Trade System (Alt)',
-                'description' => 'Alternative trade system interface',
-                'category' => 'commerce'
-            ],
-            'jotunheim_barter_page' => [
-                'title' => 'Barter System',
-                'description' => 'Manage barter and exchange system',
-                'category' => 'commerce'
-            ],
-            'barter' => [
-                'title' => 'Barter System (Alt)',
-                'description' => 'Alternative barter system interface',
-                'category' => 'commerce'
-            ],
-            'universal_editor_ui' => [
-                'title' => 'Universal Editor UI',
-                'description' => 'Universal content editing interface',
-                'category' => 'content'
-            ],
-            'eventzones_code_output' => [
-                'title' => 'Event Zones Code Output',
-                'description' => 'Event zone code generation and output',
-                'category' => 'utility'
-            ],
-            'section2_items' => [
-                'title' => 'Section 2 Items',
-                'description' => 'Manage section 2 item collections',
-                'category' => 'content'
-            ],
-            'prefabdb_image_import' => [
-                'title' => 'Prefab Database Image Import',
-                'description' => 'Import and manage prefab images',
-                'category' => 'content'
-            ],
-            'prefab_image_import' => [
-                'title' => 'Prefab Image Import (Alt)',
-                'description' => 'Alternative prefab image import interface',
-                'category' => 'content'
-            ],
-            'valheim_weather' => [
-                'title' => 'Valheim Weather System',
-                'description' => 'Weather prediction and calendar system',
-                'category' => 'utility'
-            ],
-            'jotunheim_kb' => [
-                'title' => 'Knowledge Base',
-                'description' => 'Knowledge base and documentation system',
-                'category' => 'content'
-            ],
-            'jotunheim_kb_direct' => [
-                'title' => 'Direct Knowledge Base',
-                'description' => 'Direct access knowledge base interface',
-                'category' => 'content'
-            ],
-            'popup_shop' => [
-                'title' => 'Popup Shop',
-                'description' => 'Popup shop interface for quick purchases',
-                'category' => 'commerce'
-            ],
-            'legacy_shop_teller' => [
-                'title' => 'Legacy Shop Teller',
-                'description' => 'Legacy shop and teller interface',
-                'category' => 'commerce'
-            ],
-            'playerlist_interface' => [
-                'title' => 'Player List Interface',
-                'description' => 'Manage registered players and user data',
-                'category' => 'content'
-            ],
-            'jotun-playerlist' => [
-                'title' => 'Jotun Player List',
-                'description' => 'Jotun player list management',
-                'category' => 'content'
-            ]
-        ];
-        
-        // Only add shortcodes that are actually registered
-        foreach ($predefined_shortcodes as $shortcode => $definition) {
-            if (shortcode_exists($shortcode)) {
-                $pages[$shortcode] = [
-                    'title' => $definition['title'],
-                    'description' => $definition['description'],
-                    'is_shortcode' => true,
-                    'registered' => true
-                ];
-            }
-        }
-        
-        error_log('Jotunheim Page Permissions: Detected ' . count($pages) . ' total pages for permissions');
-        error_log('Jotunheim Page Permissions: Admin pages: ' . count($admin_pages));
-        error_log('Jotunheim Page Permissions: Shortcode pages: ' . (count($pages) - count($admin_pages)));
-        
-        return $pages;
+        return $core_admin_pages;
     }
     
     /**
@@ -670,6 +552,11 @@ class JotunheimPagePermissions {
                     $role_key = sanitize_key($role_key);
                     $permission_level = sanitize_text_field($permission_level);
                     
+                    // ENFORCE: Norn role always gets edit permission, cannot be overridden
+                    if ($role_key === 'norn') {
+                        $permission_level = 'edit';
+                    }
+                    
                     // Only store non-'none' permissions to keep data clean
                     if ($permission_level !== 'none') {
                         $sanitized_permissions[$page_key][$role_key] = [
@@ -678,6 +565,15 @@ class JotunheimPagePermissions {
                         ];
                     }
                 }
+            }
+            
+            // ENSURE: Norn role has edit permission on all core admin pages even if not submitted
+            $core_admin_pages = ['jotunheim_magic', 'dashboard_config', 'discord_auth_config', 'page_permissions_config'];
+            foreach ($core_admin_pages as $admin_page) {
+                $sanitized_permissions[$admin_page]['norn'] = [
+                    'level' => 'edit',
+                    'timestamp' => current_time('mysql')
+                ];
             }
             
             // Save permissions with new structure
