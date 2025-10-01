@@ -204,9 +204,12 @@ class ShopManager {
     }
 
     renderShopsTable(shops) {
+        console.log('🎯🎯🎯 SHOP MANAGER: renderShopsTable called with', shops.length, 'shops');
         const tbody = document.getElementById('shops-table-body');
+        console.log('🎯🎯🎯 SHOP MANAGER: Found tbody element:', !!tbody);
         tbody.innerHTML = '';
         this.loadedRotations.clear(); // Clear the set when table is recreated
+        console.log('🎯🎯🎯 SHOP MANAGER: Cleared loadedRotations, starting shop processing...');
 
         shops.forEach(shop => {
             const row = document.createElement('tr');
@@ -230,10 +233,16 @@ class ShopManager {
             `;
             tbody.appendChild(row);
             
+            console.log('🎯🎯🎯 SHOP MANAGER: Processing shop row for shop ID:', shop.shop_id);
+            console.log('🎯🎯🎯 SHOP MANAGER: Already loaded rotations:', Array.from(this.loadedRotations));
+            
             // Load rotations for this shop (only once)
             if (!this.loadedRotations.has(shop.shop_id)) {
+                console.log('🎯🎯🎯 SHOP MANAGER: Loading rotations for NEW shop:', shop.shop_id);
                 this.loadedRotations.add(shop.shop_id);
                 this.loadShopRotations(shop.shop_id, rotationDropdownId);
+            } else {
+                console.log('🎯🎯🎯 SHOP MANAGER: Skipping rotations for ALREADY LOADED shop:', shop.shop_id);
             }
         });
     }
