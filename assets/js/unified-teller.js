@@ -4452,14 +4452,30 @@ class UnifiedTeller {
                 const unitsInput = unitsCell.querySelector(`#table-turnin-qty-${item.shop_item_id}`);
                 if (unitsInput) {
                     console.log('🟡 Manually attaching event listeners to units input:', unitsInput.id);
+                    console.log('🟡 Input element details:', {id: unitsInput.id, value: unitsInput.value, type: unitsInput.type});
+                    
+                    // Test if the input is actually interactive
+                    unitsInput.addEventListener('focus', () => {
+                        console.log('🔸 Units input focused:', unitsInput.id);
+                    });
+                    
                     unitsInput.addEventListener('input', (e) => {
                         console.log('🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
+                    
+                    // Also try 'change' event as backup
+                    unitsInput.addEventListener('change', (e) => {
+                        console.log('🟠 MANUAL ONCHANGE FIRED for', e.target.id, 'value:', e.target.value);
+                        this.enforceQuantityLimits(e.target);
+                        this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
+                    });
+                } else {
+                    console.log('❌ Could not find units input for', item.shop_item_id);
                 }
             }
-        }, 0);
+        }, 100); // Increased timeout to ensure DOM is ready
         
         // Stacks column cell
         const stacksCell = document.createElement('td');
@@ -4476,14 +4492,30 @@ class UnifiedTeller {
                 const stacksInput = stacksCell.querySelector(`#table-turnin-stack-qty-${item.shop_item_id}`);
                 if (stacksInput) {
                     console.log('🟡 Manually attaching event listeners to stacks input:', stacksInput.id);
+                    console.log('🟡 Stacks input element details:', {id: stacksInput.id, value: stacksInput.value, type: stacksInput.type});
+                    
+                    // Test if the input is actually interactive
+                    stacksInput.addEventListener('focus', () => {
+                        console.log('🔸 Stacks input focused:', stacksInput.id);
+                    });
+                    
                     stacksInput.addEventListener('input', (e) => {
                         console.log('🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
+                    
+                    // Also try 'change' event as backup
+                    stacksInput.addEventListener('change', (e) => {
+                        console.log('🟠 MANUAL ONCHANGE FIRED for', e.target.id, 'value:', e.target.value);
+                        this.enforceQuantityLimits(e.target);
+                        this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
+                    });
+                } else {
+                    console.log('❌ Could not find stacks input for', item.shop_item_id);
                 }
             }
-        }, 0);
+        }, 100); // Increased timeout to ensure DOM is ready
         
         // Progress/calculations cell - use working info display
         const progressCell = document.createElement('td');
