@@ -4157,8 +4157,8 @@ class UnifiedTeller {
         // Update button state without refreshing the entire display to preserve input values
         this.forceButtonStateUpdate();
         
-        // Update just this item's progress display
-        this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
+        // Update all progress displays to reflect cart changes
+        this.updateAllProgressDisplays();
     }
 
 
