@@ -3471,16 +3471,22 @@ class UnifiedTeller {
         
         let currentlySelected = 0;
         if (includeCurrent) {
-            // Check which view is currently visible and get inputs from that view only
+            // Check which view is currently visible using DOM inspection
+            const gridView = document.getElementById('items-grid-view');
+            const tableView = document.getElementById('items-table-view');
+            const isTableViewVisible = tableView && tableView.style.display !== 'none';
+            
             let unitsInput, stacksInput;
-            if (this.isTableView) {
+            if (isTableViewVisible) {
                 // Table view is active - use table-specific IDs
                 unitsInput = document.getElementById(`table-turnin-qty-${item.shop_item_id}`);
                 stacksInput = document.getElementById(`table-turnin-stack-qty-${item.shop_item_id}`);
+                console.log(`🔴 DEBUG: Progress using table inputs - units: ${unitsInput?.value}, stacks: ${stacksInput?.value}`);
             } else {
                 // Grid view is active - use grid-specific IDs
                 unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
                 stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
+                console.log(`🔴 DEBUG: Progress using grid inputs - units: ${unitsInput?.value}, stacks: ${stacksInput?.value}`);
             }
             
             const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
