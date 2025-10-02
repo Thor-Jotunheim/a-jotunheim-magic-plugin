@@ -1295,7 +1295,7 @@ class UnifiedTeller {
                         <input type="number" id="table-turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
                                class="turnin-large-quantity-input table-input" 
                                data-debug="preventOverLimit-attached"
-                               oninput="window.unifiedTeller.enforceQuantityLimits(this)"
+                               oninput="window.unifiedTeller.enforceQuantityLimits(this); window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                onfocus="window.unifiedTeller.handleQuantityFocus(this)"
@@ -1350,7 +1350,7 @@ class UnifiedTeller {
                             <input type="number" id="table-turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
                                    class="turnin-large-quantity-input table-input" 
                                    data-debug="preventOverLimit-attached"
-                                   oninput="window.unifiedTeller.enforceQuantityLimits(this)"
+                                   oninput="window.unifiedTeller.enforceQuantityLimits(this); window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                    onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                    onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                    onfocus="window.unifiedTeller.handleQuantityFocus(this)"
@@ -3322,30 +3322,57 @@ class UnifiedTeller {
 
     enforceQuantityLimits(inputElement) {
         const min = parseInt(inputElement.min) || 0;
-        let max = parseInt(inputElement.max) || 999;
         let value = parseInt(inputElement.value) || 0;
         
-        // For turn-in items, recalculate max dynamically to account for cart changes
+        // For turn-in items, enforce combined limits (units + stacks * stack_size)
         if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-') || 
             inputElement.id.includes('table-turnin-qty-') || inputElement.id.includes('table-turnin-stack-qty-')) {
             const shopItemId = inputElement.id.replace(/^(table-)?turnin-(stack-)?qty-/, '');
             const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
+            
             if (item) {
                 const dynamicMax = this.getMaxAllowedTurnin(item);
-                max = (inputElement.id.includes('turnin-stack-qty-') || inputElement.id.includes('table-turnin-stack-qty-')) ? 
-                    Math.floor(dynamicMax / parseInt(item.stack_size)) : 
-                    dynamicMax;
-                    
-                // Update the max attribute so it's consistent
-                inputElement.setAttribute('max', max);
-                    
-                console.log('DEBUG - enforceQuantityLimits for turn-in:', {
+                const stackSize = parseInt(item.stack_size) || 1;
+                
+                // Get both input values
+                const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-turnin-qty-${shopItemId}`);
+                const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`) || document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
+                
+                let units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+                let stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+                
+                // If this is the input being changed, use the new value
+                if (inputElement === unitsInput) {
+                    units = value;
+                } else if (inputElement === stacksInput) {
+                    stacks = value;
+                }
+                
+                // Calculate combined total
+                const combinedTotal = units + (stacks * stackSize);
+                
+                // If combined total exceeds max, adjust the current input
+                if (combinedTotal > dynamicMax) {
+                    if (inputElement === unitsInput) {
+                        // Adjust units: max allowed units = dynamicMax - (stacks * stackSize)
+                        const maxUnits = Math.max(0, dynamicMax - (stacks * stackSize));
+                        value = Math.min(value, maxUnits);
+                    } else if (inputElement === stacksInput) {
+                        // Adjust stacks: max allowed stacks = floor((dynamicMax - units) / stackSize)
+                        const maxStacks = Math.max(0, Math.floor((dynamicMax - units) / stackSize));
+                        value = Math.min(value, maxStacks);
+                    }
+                }
+                
+                console.log('DEBUG - enforceQuantityLimits combined:', {
                     itemName: item.item_name,
                     inputId: inputElement.id,
-                    originalMax: inputElement.max,
-                    dynamicMax: max,
-                    currentValue: value,
-                    willClamp: value > max
+                    units: units,
+                    stacks: stacks,
+                    stackSize: stackSize,
+                    combinedTotal: combinedTotal,
+                    dynamicMax: dynamicMax,
+                    adjustedValue: value
                 });
             }
         }
@@ -4050,18 +4077,23 @@ class UnifiedTeller {
     }
 
     addTurninItemWithQuantity(shopItemId) {
+        console.log(`🔴 DEBUG: addTurninItemWithQuantity called for item ${shopItemId}`);
+        
         // Validate customer first
         if (!this.validateCustomerForAction()) {
+            console.log('🔴 DEBUG: Customer validation failed');
             return;
         }
 
         // Get units input (check both grid and table views)
         const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-turnin-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+        console.log(`🔴 DEBUG: Units input found: ${!!unitsInput}, value: ${units}, id: ${unitsInput?.id}`);
         
-        // Get stacks input if it exists (check both grid and table views)
+        // Get stacks input if it exists (check both grid and table views)  
         const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`) || document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
         const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+        console.log(`🔴 DEBUG: Stacks input found: ${!!stacksInput}, value: ${stacks}, id: ${stacksInput?.id}`);
         
         // Initialize turninItems if not loaded
         if (!this.turninItems) {
