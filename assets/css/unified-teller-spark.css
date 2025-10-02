@@ -2631,9 +2631,23 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     padding: 8px 4px;
 }
 
-/* Hide the table body since we're using cards */
-#items-table-view .items-table tbody {
+/* Show the table body with cards, but hide the original empty tbody */
+#items-table-view .items-table tbody:not(.table-body-cards) {
     display: none;
+}
+
+#items-table-view .items-table .table-body-cards {
+    display: block; /* Allow the card tbody to show */
+}
+
+/* Make table rows with cards display properly */
+#items-table-view .table-row-card-wrapper {
+    display: block;
+    border-bottom: 1px solid var(--border, #e5e5e5);
+}
+
+#items-table-view .table-row-card-wrapper:last-child {
+    border-bottom: none;
 }
 
 #items-table-view .card-cell .item-name {
