@@ -10,7 +10,7 @@ class UnifiedTeller {
         this.transactionMode = 'buy'; // buy, sell, admin
         this.cart = [];
         this.shopItems = [];
-        this.isTableView = false; // Track current view state
+        this.isTableView = false; // Grid view is the primary format
         this.isCartView = false; // Track cart view state
         
         this.initializeEventListeners();
@@ -4081,7 +4081,6 @@ class UnifiedTeller {
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th class="icon-column">Icon</th>
                             <th class="item-column">Item</th>
                             <th class="quantity-column">Quantity Controls</th>
                             <th class="progress-column">Progress/Calculations</th>
@@ -4096,7 +4095,6 @@ class UnifiedTeller {
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th class="icon-column">Icon</th>
                             <th class="item-column">Item</th>
                             <th class="quantity-column">Quantity Controls</th>
                             <th class="progress-column">Progress/Calculations</th>
@@ -4132,21 +4130,6 @@ class UnifiedTeller {
         // Check if this is a turn-in item
         const isTurnInItem = item.event_points !== undefined && item.event_points !== null;
         const isOutOfStock = item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity === 0;
-        
-        // Icon cell - use correct property names and hide broken images
-        const iconCell = document.createElement('td');
-        iconCell.className = 'icon-cell';
-        const itemImageUrl = item.icon_image || 
-            (item.prefab_name ? `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name.toLowerCase()}.png` : null);
-        
-        iconCell.innerHTML = `
-            <div class="item-icon-container">
-                ${itemImageUrl ? `
-                    <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name || 'Item')}" 
-                         class="item-icon" onerror="this.style.display='none'">
-                ` : ''}
-            </div>
-        `;
         
         // Item info cell - use correct property names  
         const itemCell = document.createElement('td');
@@ -4192,7 +4175,6 @@ class UnifiedTeller {
         `;
         
         // Append all cells to row
-        row.appendChild(iconCell);
         row.appendChild(itemCell);
         row.appendChild(quantityCell);
         row.appendChild(progressCell);
