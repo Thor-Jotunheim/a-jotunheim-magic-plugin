@@ -2503,12 +2503,13 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .table-container .items-table td:nth-child(1),
 #items-table-view .table-container .items-table .item-column,
 #items-table-view .table-container .items-table .item-cell {
-    width: 180px !important; /* Item column - force specific width */
-    min-width: 180px !important;
-    max-width: 180px !important; /* Force exact width */
+    width: 120px !important; /* Item column - drastically reduced */
+    min-width: 120px !important;
+    max-width: 120px !important; /* Force exact width */
     text-align: left !important; /* Force left alignment for item column */
     box-sizing: border-box !important; /* Include padding in width calculation */
     overflow: hidden !important; /* Prevent content from expanding width */
+    white-space: nowrap !important; /* Prevent text wrapping */
 }
 
 #items-table-view .table-container .items-table th:nth-child(2),
@@ -2595,6 +2596,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex-direction: column;
     gap: 4px;
     align-items: flex-start; /* Ensure all child elements align to the left */
+    width: 100% !important;
+    max-width: 110px !important;
+    overflow: hidden !important;
 }
 
 #items-table-view .item-cell .item-name {
@@ -2603,6 +2607,10 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin-bottom: 2px;
     color: var(--foreground);
     line-height: 1.2;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 100px !important;
 }
 
 #items-table-view .item-cell .item-type {
