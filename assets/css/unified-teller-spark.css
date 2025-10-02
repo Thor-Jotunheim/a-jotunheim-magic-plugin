@@ -2486,9 +2486,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 #items-table-view .table-container {
-    flex: 1 1 50% !important;
+    flex: 1 1 49% !important;
     min-width: 0 !important; /* Allow shrinking */
-    max-width: 50% !important; /* Increased from 48% to use more space */
+    max-width: 49% !important; /* Reduced slightly to prevent overflow */
     display: block !important;
 }
 
