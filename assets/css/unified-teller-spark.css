@@ -1437,14 +1437,15 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Biome Tags */
 .item-biome {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
-    padding: 3px 6px;
-    border-radius: 4px;
+    padding: 2px 5px;
+    border-radius: 3px;
     display: inline-block;
     text-transform: capitalize;
     text-align: center;
-    min-width: 50px;
+    min-width: 45px;
+    line-height: 1.2;
 }
 
 /* Biome Color Coding */
@@ -2648,19 +2649,20 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .item-cell .item-tags {
     display: flex;
-    gap: 4px;
+    gap: 2px;
     flex-wrap: wrap;
     justify-content: flex-start;
 }
 
 #items-table-view .item-cell .biome-tag {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
-    padding: 3px 6px;
-    border-radius: 4px;
+    padding: 2px 5px;
+    border-radius: 3px;
     display: inline-block;
     text-transform: capitalize;
-    min-width: 50px;
+    min-width: 45px;
+    line-height: 1.2;
     /* Remove background and color overrides to allow biome-specific colors */
 }
 
@@ -2920,9 +2922,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* General table cell padding consistency */
+/* General table cell padding consistency - reduced for more compact rows */
 #items-table-view .items-table td {
-    padding: 10px 8px;
+    padding: 6px 8px;
     vertical-align: middle;
 }
 
