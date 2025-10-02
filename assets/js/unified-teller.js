@@ -3213,6 +3213,7 @@ class UnifiedTeller {
 
     updateProgressDisplay(shopItemId, turnInRequirement) {
         console.log(`🔵 updateProgressDisplay called for item ${shopItemId}`);
+        console.log(`🔵 STACK TRACE:`, new Error().stack);
         const progressElement = document.getElementById(`progress-${shopItemId}`);
         console.log(`🔵 Progress element found:`, !!progressElement);
         if (progressElement) {
@@ -4464,18 +4465,25 @@ class UnifiedTeller {
                         console.log('🔸 Units input focused:', unitsInput.id);
                     });
                     
+                    // Test if element is actually receiving events
+                    unitsInput.addEventListener('click', () => {
+                        console.log('🔸 Units input CLICKED:', unitsInput.id);
+                    });
+                    
                     unitsInput.addEventListener('input', (e) => {
-                        console.log('🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
+                        console.log('🟢🟢🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
                     
                     // Also try 'change' event as backup
                     unitsInput.addEventListener('change', (e) => {
-                        console.log('🟠 MANUAL ONCHANGE FIRED for', e.target.id, 'value:', e.target.value);
+                        console.log('🟠🟠🟠 MANUAL ONCHANGE FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
+                    
+                    console.log('🟡 Event listeners attached successfully to:', unitsInput.id);
                 } else {
                     console.log('❌ Could not find units input for', item.shop_item_id);
                 }
@@ -4504,8 +4512,13 @@ class UnifiedTeller {
                         console.log('🔸 Stacks input focused:', stacksInput.id);
                     });
                     
+                    // Test if element is actually receiving events
+                    stacksInput.addEventListener('click', () => {
+                        console.log('🔸 Stacks input CLICKED:', stacksInput.id);
+                    });
+                    
                     stacksInput.addEventListener('input', (e) => {
-                        console.log('🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
+                        console.log('🟢🟢🟢 MANUAL STACKS ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
@@ -4516,6 +4529,8 @@ class UnifiedTeller {
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
+                    
+                    console.log('🟡 Stacks event listeners attached successfully to:', stacksInput.id);
                 } else {
                     console.log('❌ Could not find stacks input for', item.shop_item_id);
                 }
