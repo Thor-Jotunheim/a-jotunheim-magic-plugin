@@ -2516,17 +2516,29 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container .items-table th:nth-child(2),
 #items-table-view .table-container .items-table td:nth-child(2) {
-    width: 180px !important; /* Quantity controls column */
+    width: 80px !important; /* Units column */
+    min-width: 80px !important;
+    text-align: center !important;
 }
 
 #items-table-view .table-container .items-table th:nth-child(3),
 #items-table-view .table-container .items-table td:nth-child(3) {
-    width: 115px !important; /* Progress column - increased by 15px */
+    width: 80px !important; /* Stacks column */
+    min-width: 80px !important;
+    text-align: center !important;
 }
 
 #items-table-view .table-container .items-table th:nth-child(4),
 #items-table-view .table-container .items-table td:nth-child(4) {
-    width: 65px !important; /* Actions column - reduced by 15px */
+    width: 200px !important; /* Progress column - increased for better readability */
+    min-width: 200px !important;
+}
+
+#items-table-view .table-container .items-table th:nth-child(5),
+#items-table-view .table-container .items-table td:nth-child(5) {
+    width: 100px !important; /* Actions column */
+    min-width: 100px !important;
+    text-align: center !important;
 }
 
 /* Table cell styling for proper column alignment with enhanced visual effects */
