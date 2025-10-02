@@ -2235,6 +2235,8 @@ class UnifiedTeller {
         const allInputs = document.querySelectorAll([
             'input[id^="turnin-qty-"]',
             'input[id^="turnin-stack-qty-"]',
+            'input[id^="table-turnin-qty-"]',
+            'input[id^="table-turnin-stack-qty-"]',
             'input[id^="qty-individual-"]',
             'input[id^="qty-stack-"]',
             'input[id^="table-qty-"]'
@@ -3253,6 +3255,8 @@ class UnifiedTeller {
         const allInputs = document.querySelectorAll([
             'input[id^="turnin-qty-"]',
             'input[id^="turnin-stack-qty-"]',
+            'input[id^="table-turnin-qty-"]',
+            'input[id^="table-turnin-stack-qty-"]',
             'input[id^="buy-qty-"]',
             'input[id^="buy-stack-qty-"]',
             'input[id^="sell-qty-"]'
@@ -3322,12 +3326,13 @@ class UnifiedTeller {
         let value = parseInt(inputElement.value) || 0;
         
         // For turn-in items, recalculate max dynamically to account for cart changes
-        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
-            const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-') || 
+            inputElement.id.includes('table-turnin-qty-') || inputElement.id.includes('table-turnin-stack-qty-')) {
+            const shopItemId = inputElement.id.replace(/^(table-)?turnin-(stack-)?qty-/, '');
             const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
             if (item) {
                 const dynamicMax = this.getMaxAllowedTurnin(item);
-                max = inputElement.id.includes('turnin-stack-qty-') ? 
+                max = (inputElement.id.includes('turnin-stack-qty-') || inputElement.id.includes('table-turnin-stack-qty-')) ? 
                     Math.floor(dynamicMax / parseInt(item.stack_size)) : 
                     dynamicMax;
                     
@@ -3362,8 +3367,9 @@ class UnifiedTeller {
         }
         
         // Update progress display if this is a turn-in item
-        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
-            const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-') || 
+            inputElement.id.includes('table-turnin-qty-') || inputElement.id.includes('table-turnin-stack-qty-')) {
+            const shopItemId = inputElement.id.replace(/^(table-)?turnin-(stack-)?qty-/, '');
             const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
             if (item) {
                 this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
@@ -3398,8 +3404,9 @@ class UnifiedTeller {
         this.syncQuantityInputs(inputElement.id);
         
         // Update progress display if this is a turn-in item
-        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
-            const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
+        if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-') || 
+            inputElement.id.includes('table-turnin-qty-') || inputElement.id.includes('table-turnin-stack-qty-')) {
+            const shopItemId = inputElement.id.replace(/^(table-)?turnin-(stack-)?qty-/, '');
             const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
             if (item) {
                 this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
