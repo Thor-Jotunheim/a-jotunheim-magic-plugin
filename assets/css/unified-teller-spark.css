@@ -2524,16 +2524,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     width: 80px !important; /* Actions column */
 }
 
-/* Table cell styling for proper column alignment */
+/* Table cell styling for proper column alignment with enhanced visual effects */
 #items-table-view .table-item-row {
     border-bottom: 1px solid var(--gray-6);
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 #items-table-view .table-item-row:hover {
     background-color: var(--gray-2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
 }
 
-/* Icon cell styling */
+#items-table-view .table-item-row:last-child {
+    border-bottom: none;
+}
+
+/* Icon cell styling - enhanced with proper framing */
 #items-table-view .icon-cell {
     text-align: center;
     padding: 8px 4px;
@@ -2541,52 +2549,78 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 #items-table-view .icon-cell .item-icon-container {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     margin: 0 auto;
+    background: var(--gray-2);
+    border-radius: 6px;
+    border: 1px solid var(--gray-6);
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 #items-table-view .icon-cell .item-icon {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 3px;
+    transform: scale(1.05);
 }
 
-/* Item info cell styling */
+/* Item info cell styling - enhanced with proper formatting */
 #items-table-view .item-cell {
     padding: 8px 6px;
     vertical-align: middle;
+}
+
+#items-table-view .item-cell .item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 #items-table-view .item-cell .item-name {
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 2px;
+    color: var(--foreground);
+    line-height: 1.2;
 }
 
 #items-table-view .item-cell .item-type {
     font-size: 11px;
-    color: var(--muted-foreground, #666);
+    color: var(--gray-9);
+    background: var(--gray-3);
+    padding: 2px 6px;
+    border-radius: 4px;
     margin-bottom: 2px;
+    display: inline-block;
+    width: fit-content;
 }
 
 #items-table-view .item-cell .item-tags {
     display: flex;
     gap: 4px;
+    flex-wrap: wrap;
 }
 
 #items-table-view .item-cell .biome-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    text-transform: capitalize;
+    text-align: center;
+    min-width: 50px;
     background: var(--green-3);
     color: var(--green-11);
-    padding: 2px 6px;
-    border-radius: var(--radius-2);
-    font-size: 10px;
 }
 
-/* Quantity controls cell styling */
+/* Quantity controls cell styling - enhanced with proper button styling */
 #items-table-view .quantity-cell {
     padding: 8px 4px;
     vertical-align: middle;
@@ -2595,46 +2629,72 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .quantity-cell .quantity-section {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 #items-table-view .quantity-cell .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 10px;
+    justify-content: space-between;
+    gap: 3px;
+    width: 100%;
 }
 
 #items-table-view .quantity-cell .quantity-controls label {
-    font-size: 9px;
-    min-width: 55px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gray-11);
+    min-width: 60px;
     text-align: left;
 }
 
 #items-table-view .quantity-cell .quantity-controls button {
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
-    padding: 0;
-    border: 1px solid var(--border);
-    background: var(--background);
+    background-color: var(--gray-8);
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    font-weight: bold;
     cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
 }
 
 #items-table-view .quantity-cell .quantity-controls button:hover {
-    background: var(--gray-3);
+    background-color: var(--gray-9);
+}
+
+#items-table-view .quantity-cell .quantity-controls button:disabled {
+    background-color: var(--gray-6);
+    cursor: not-allowed;
 }
 
 #items-table-view .quantity-cell .quantity-input {
-    width: 35px;
-    height: 18px;
-    font-size: 10px;
-    padding: 1px 2px;
+    width: 40px;
+    height: 20px;
     text-align: center;
-    border: 1px solid var(--border);
+    border: 2px solid var(--gray-6);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    background-color: var(--gray-2);
+    color: var(--gray-11);
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-/* Progress cell styling */
+#items-table-view .quantity-cell .quantity-input:focus {
+    outline: none;
+    border-color: var(--gray-8);
+    background-color: white;
+    cursor: text;
+}
+
+/* Progress cell styling - enhanced with proper progress display */
 #items-table-view .progress-cell {
     padding: 8px 4px;
     vertical-align: middle;
@@ -2645,20 +2705,28 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 11px;
+    padding: 6px 8px;
+    background: var(--gray-1);
+    border-radius: 4px;
+    border: 1px solid var(--gray-4);
+    min-width: 70px;
 }
 
 #items-table-view .progress-cell .collected-count {
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-11);
     margin-bottom: 2px;
+    line-height: 1.2;
 }
 
 #items-table-view .progress-cell .collected-label {
     font-size: 10px;
-    color: var(--muted-foreground, #666);
+    color: var(--gray-9);
+    text-transform: lowercase;
 }
 
-/* Actions cell styling */
+/* Actions cell styling - enhanced with proper button design */
 #items-table-view .actions-cell {
     padding: 8px 4px;
     vertical-align: middle;
@@ -2669,32 +2737,65 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
 }
 
 #items-table-view .actions-cell .turn-in-button,
 #items-table-view .actions-cell .table-action-btn {
     font-size: 10px !important;
-    padding: 4px 6px !important;
+    font-weight: 500 !important;
+    padding: 6px 8px !important;
     min-height: auto !important;
-    border-radius: var(--radius-2);
+    border-radius: 4px;
     border: none;
     cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 50px;
+    white-space: nowrap;
 }
 
 #items-table-view .actions-cell .turn-in-button {
     background: var(--blue-9);
     color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#items-table-view .actions-cell .turn-in-button:hover {
+    background: var(--blue-10);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 #items-table-view .actions-cell .table-action-btn.btn-success {
     background: var(--green-9);
     color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#items-table-view .actions-cell .table-action-btn.btn-success:hover {
+    background: var(--green-10);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 #items-table-view .actions-cell .table-action-btn.btn-warning {
     background: var(--orange-9);
     color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#items-table-view .actions-cell .table-action-btn.btn-warning:hover {
+    background: var(--orange-10);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+#items-table-view .actions-cell .text-muted {
+    font-size: 10px;
+    color: var(--gray-8);
+    font-style: italic;
 }
 
 /* Compact quantity controls for two-table layout */
@@ -2737,14 +2838,27 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: none;
 }
 
-/* Table header styling for proper column alignment */
+/* Table header styling for proper column alignment with enhanced design */
 #items-table-view .items-table thead th {
-    background: var(--gray-3);
-    border-bottom: 2px solid var(--gray-6);
-    padding: 8px 4px;
+    background: linear-gradient(135deg, var(--gray-3), var(--gray-4));
+    border-bottom: 2px solid var(--gray-7);
+    padding: 12px 8px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     text-align: center;
+    vertical-align: middle;
+    color: var(--gray-12);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* General table cell padding consistency */
+#items-table-view .items-table td {
+    padding: 10px 8px;
     vertical-align: middle;
 }
 
