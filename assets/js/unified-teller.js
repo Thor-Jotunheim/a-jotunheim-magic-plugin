@@ -4099,9 +4099,17 @@ class UnifiedTeller {
             return;
         }
 
+        // Check which view is currently visible by DOM inspection
+        const gridView = document.getElementById('items-grid-view');
+        const tableView = document.getElementById('items-table-view');
+        const isTableViewVisible = tableView && tableView.style.display !== 'none';
+        const isGridViewVisible = gridView && gridView.style.display !== 'none';
+        
+        console.log(`🔴 DEBUG: View detection - this.isTableView: ${this.isTableView}, DOM tableView visible: ${isTableViewVisible}, DOM gridView visible: ${isGridViewVisible}`);
+        
         // Check which view is currently visible and get inputs from that view only
         let unitsInput, stacksInput;
-        if (this.isTableView) {
+        if (isTableViewVisible) {
             // Table view is active - use table-specific IDs
             unitsInput = document.getElementById(`table-turnin-qty-${shopItemId}`);
             stacksInput = document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
