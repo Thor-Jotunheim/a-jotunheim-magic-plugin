@@ -4539,8 +4539,10 @@ class UnifiedTeller {
             return;
         }
 
-        // Get quantity from input
-        const qtyInput = document.getElementById(`qty-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
+        // Get quantity from input - check all possible input IDs for different views
+        const qtyInput = document.getElementById(`qty-${shopItemId}`) || 
+                        document.getElementById(`table-qty-${shopItemId}`) ||
+                        document.getElementById(`turnin-qty-${shopItemId}`);
         const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
 
         if (quantity <= 0) {
