@@ -4064,8 +4064,8 @@ class UnifiedTeller {
         const actionText = existingItem ? 'Updated' : 'Added';
         this.showStatus(`${actionText} ${item.item_name} in turn-in cart`, 'success');
         
-        // Refresh display to update button states
-        this.refreshItemDisplay();
+        // Update only this item's progress display instead of refreshing everything
+        this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
         
         // Recalculate progress displays after adding to cart
         this.updateAllProgressDisplays();
@@ -4554,8 +4554,9 @@ class UnifiedTeller {
 
         // Don't reset quantity input - keep values for update functionality
         
-        // Refresh display to update button states
-        this.refreshItemDisplay();
+        // Update button states without full refresh to avoid resetting inputs
+        this.updateViewCartButton();
+        this.updateRecordTransactionButton();
     }
 
     addToTurnin(shopItemId) {
@@ -4602,8 +4603,8 @@ class UnifiedTeller {
 
         // Don't reset quantity input - keep values for update functionality
         
-        // Refresh display to update button states
-        this.refreshItemDisplay();
+        // Update only the specific item's progress display instead of refreshing everything
+        this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
     }
 
     updateCartDisplay() {
