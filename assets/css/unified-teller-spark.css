@@ -2519,7 +2519,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container .items-table th:nth-child(3),
 #items-table-view .table-container .items-table td:nth-child(3) {
-    width: 100px !important; /* Progress column */
+    width: 200px !important; /* Progress column - increased to use more space */
 }
 
 #items-table-view .table-container .items-table th:nth-child(4),
