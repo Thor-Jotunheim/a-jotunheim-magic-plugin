@@ -1201,6 +1201,7 @@ class UnifiedTeller {
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
+                               onfocus="window.unifiedTeller.handleQuantityFocus(this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
                     </div>
@@ -1216,6 +1217,7 @@ class UnifiedTeller {
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
+                               onfocus="window.unifiedTeller.handleQuantityFocus(this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
                     </div>
@@ -1235,7 +1237,7 @@ class UnifiedTeller {
                             <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('buy-qty-${item.shop_item_id}')">−</button>
                             <input type="number" id="buy-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}"
                                    class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                             <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('buy-qty-${item.shop_item_id}', ${item.stock_quantity === -1 ? 999 : item.stock_quantity})">+</button>
                         </div>
                     </div>`;
@@ -1249,7 +1251,7 @@ class UnifiedTeller {
                                 <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('buy-stack-qty-${item.shop_item_id}')">−</button>
                                 <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))}"
                                        class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
-                                       onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                       onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                                 <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('buy-stack-qty-${item.shop_item_id}', ${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))})">+</button>
                             </div>
                         </div>`;
@@ -1262,7 +1264,7 @@ class UnifiedTeller {
                             <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('sell-qty-${item.shop_item_id}')">−</button>
                             <input type="number" id="sell-qty-${item.shop_item_id}" min="1" value="1" max="999"
                                    class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'sell')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                             <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('sell-qty-${item.shop_item_id}', 999)">+</button>
                         </div>
                     </div>`;
@@ -1274,7 +1276,7 @@ class UnifiedTeller {
                             <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-reg-qty-${item.shop_item_id}')">−</button>
                             <input type="number" id="turnin-reg-qty-${item.shop_item_id}" min="1" value="1" max="999"
                                    class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'turn_in')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                             <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-reg-qty-${item.shop_item_id}', 999)">+</button>
                         </div>
                     </div>`;
@@ -1296,6 +1298,7 @@ class UnifiedTeller {
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
+                               onfocus="window.unifiedTeller.handleQuantityFocus(this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
                     </div>
                 </div>
@@ -1310,7 +1313,7 @@ class UnifiedTeller {
                         <div class="quantity-controls">
                             <input type="number" id="buy-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}"
                                    class="large-quantity-input table-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         </div>
                     </div>`;
             } else if (item.sell == 1 || item.sell === true) {
@@ -1319,7 +1322,7 @@ class UnifiedTeller {
                         <div class="quantity-controls">
                             <input type="number" id="sell-qty-${item.shop_item_id}" min="1" value="1" max="999"
                                    class="large-quantity-input table-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'sell')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         </div>
                     </div>`;
             } else if (item.turn_in == 1 || item.turn_in === true) {
@@ -1328,7 +1331,7 @@ class UnifiedTeller {
                         <div class="quantity-controls">
                             <input type="number" id="turnin-reg-qty-${item.shop_item_id}" min="1" value="1" max="999"
                                    class="large-quantity-input table-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'turn_in')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         </div>
                     </div>`;
             }
@@ -1350,6 +1353,7 @@ class UnifiedTeller {
                                    oninput="window.unifiedTeller.enforceQuantityLimits(this)"
                                    onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                    onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
+                                   onfocus="window.unifiedTeller.handleQuantityFocus(this)"
                                    onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         </div>
                     </div>
@@ -1365,7 +1369,7 @@ class UnifiedTeller {
                         <div class="quantity-controls">
                             <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))}"
                                    class="large-quantity-input table-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
-                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         </div>
                     </div>
                 `;
@@ -3405,7 +3409,19 @@ class UnifiedTeller {
         if (value < min) value = min;
         if (value > max) value = max;
         
-        inputElement.value = value;
+        // If the field is empty or invalid, restore appropriate default value
+        if (inputElement.value === '' || isNaN(parseInt(inputElement.value))) {
+            // Turn-in inputs default to "0", buy/sell inputs default to "1"
+            if (inputElement.id.includes('turnin-')) {
+                inputElement.value = '0';
+            } else if (inputElement.id.includes('buy-') || inputElement.id.includes('sell-')) {
+                inputElement.value = '1';
+            } else {
+                inputElement.value = '0'; // Default fallback
+            }
+        } else {
+            inputElement.value = value;
+        }
         
         // Sync with related inputs and update progress
         this.syncQuantityInputs(inputElement.id);
@@ -3417,6 +3433,16 @@ class UnifiedTeller {
             if (item) {
                 this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
             }
+        }
+    }
+
+    handleQuantityFocus(inputElement) {
+        // Clear the field if it contains default values to make typing easier
+        // Different input types have different default values:
+        // - Turn-in inputs default to "0"
+        // - Buy/sell inputs default to "1" 
+        if (inputElement.value === '0' || inputElement.value === '1') {
+            inputElement.value = '';
         }
     }
 
