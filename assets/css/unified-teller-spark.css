@@ -2498,29 +2498,25 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-collapse: collapse !important;
 }
 
-/* Table column widths for proper alignment */
+/* Table column widths for 4-column layout (no icon column) */
 #items-table-view .table-container .items-table th:nth-child(1),
 #items-table-view .table-container .items-table td:nth-child(1) {
-    width: 50px !important; /* Icon column */
+    width: 200px !important; /* Item column - 25% wider than before */
+    min-width: 150px !important;
 }
 
 #items-table-view .table-container .items-table th:nth-child(2),
 #items-table-view .table-container .items-table td:nth-child(2) {
-    width: auto !important; /* Item column - flexible */
+    width: 180px !important; /* Quantity controls column */
 }
 
 #items-table-view .table-container .items-table th:nth-child(3),
 #items-table-view .table-container .items-table td:nth-child(3) {
-    width: 180px !important; /* Quantity controls column */
+    width: 100px !important; /* Progress column */
 }
 
 #items-table-view .table-container .items-table th:nth-child(4),
 #items-table-view .table-container .items-table td:nth-child(4) {
-    width: 100px !important; /* Progress column */
-}
-
-#items-table-view .table-container .items-table th:nth-child(5),
-#items-table-view .table-container .items-table td:nth-child(5) {
     width: 80px !important; /* Actions column */
 }
 
