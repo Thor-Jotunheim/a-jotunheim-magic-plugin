@@ -969,20 +969,20 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .items-table .units-column {
-    width: 15%;
-    min-width: 120px;
+    width: 10%;
+    min-width: 80px;
     text-align: center;
 }
 
 .items-table .stacks-column {
-    width: 15%;
-    min-width: 120px;
+    width: 10%;
+    min-width: 80px;
     text-align: center;
 }
 
 .items-table .progress-column {
-    width: 25%;
-    min-width: 150px;
+    width: 35%;
+    min-width: 200px;
 }
 
 .items-table .actions-column {
