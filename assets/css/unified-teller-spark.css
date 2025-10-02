@@ -2549,14 +2549,23 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Create two side-by-side table containers, each with 5 columns */
 #items-table-view {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     gap: 20px;
-    width: 100%;
+    width: 100% !important;
+    align-items: flex-start !important;
 }
 
 #items-table-view .table-container {
-    flex: 1;
-    min-width: 0; /* Allow shrinking */
+    flex: 1 1 48% !important;
+    min-width: 0 !important; /* Allow shrinking */
+    max-width: 48% !important;
+    display: block !important;
+}
+
+#items-table-view .table-container .items-table {
+    width: 100% !important;
+    table-layout: fixed !important;
 }
 
 #items-table-view .card-cell .item-card {
