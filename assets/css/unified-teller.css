@@ -1019,6 +1019,40 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     padding: var(--space-2);
 }
 
+/* Table Input Specific Styling */
+.table-input {
+    width: 60px !important;
+    text-align: center !important;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-1);
+    padding: var(--space-1) var(--space-2);
+    background: var(--background);
+    transition: border-color 0.2s ease;
+}
+
+.table-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.table-input:hover {
+    border-color: var(--accent-muted);
+}
+
+/* Remove spinner arrows for table inputs */
+.table-input::-webkit-outer-spin-button,
+.table-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.table-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 /* Transaction List */
 .transaction-list {
     border: 1px solid var(--border);
