@@ -3187,33 +3187,10 @@ class UnifiedTeller {
     }
 
     syncQuantityInputs(inputId) {
-        // Extract item ID and type from input ID
-        const itemId = inputId.match(/\d+$/)?.[0];
-        if (!itemId) return;
-        
-        // Find the item to get stack size
-        const item = this.turninItems.find(i => i.shop_item_id == itemId) || 
-                    this.shopItems.find(i => i.shop_item_id == itemId);
-        if (!item || !item.stack_size || parseInt(item.stack_size) <= 1) return;
-        
-        const stackSize = parseInt(item.stack_size);
-        
-        // Determine which type of input was changed and sync the other
-        // Note: Only sync units → stacks, not stacks → units
-        // This allows users to specify both stacks AND individual units independently
-        if (inputId.includes('qty-') && !inputId.includes('stack-qty')) {
-            // Unit input changed, update stack input if it exists
-            const unitInput = document.getElementById(inputId);
-            const stackInputId = inputId.replace('qty-', 'stack-qty-').replace('turnin-qty-', 'turnin-stack-qty-');
-            const stackInput = document.getElementById(stackInputId);
-            
-            if (unitInput && stackInput && unitInput.value !== '' && unitInput.value !== '0') {
-                const unitValue = parseInt(unitInput.value) || 0;
-                if (unitValue > 0) {
-                    stackInput.value = Math.floor(unitValue / stackSize);
-                }
-            }
-        }
+        // DISABLED: No syncing between units and stacks fields
+        // Users should be able to enter values independently in both fields
+        // The total quantity calculation will handle combining both values
+        return;
     }
 
     updateProgressFromInput(inputId) {
