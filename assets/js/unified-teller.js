@@ -4446,6 +4446,21 @@ class UnifiedTeller {
             </div>
         `;
         
+        // Manually attach event listeners to inputs in this cell since innerHTML doesn't properly handle template literals
+        setTimeout(() => {
+            if (isTurnInItem) {
+                const unitsInput = unitsCell.querySelector(`#table-turnin-qty-${item.shop_item_id}`);
+                if (unitsInput) {
+                    console.log('🟡 Manually attaching event listeners to units input:', unitsInput.id);
+                    unitsInput.addEventListener('input', (e) => {
+                        console.log('🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
+                        this.enforceQuantityLimits(e.target);
+                        this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
+                    });
+                }
+            }
+        }, 0);
+        
         // Stacks column cell
         const stacksCell = document.createElement('td');
         stacksCell.className = 'stacks-cell';
@@ -4454,6 +4469,21 @@ class UnifiedTeller {
                 ${this.generateStacksControls(item, isTurnInItem)}
             </div>
         `;
+        
+        // Manually attach event listeners to stacks inputs since innerHTML doesn't properly handle template literals
+        setTimeout(() => {
+            if (isTurnInItem && item.stack_size && parseInt(item.stack_size) > 1) {
+                const stacksInput = stacksCell.querySelector(`#table-turnin-stack-qty-${item.shop_item_id}`);
+                if (stacksInput) {
+                    console.log('🟡 Manually attaching event listeners to stacks input:', stacksInput.id);
+                    stacksInput.addEventListener('input', (e) => {
+                        console.log('🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
+                        this.enforceQuantityLimits(e.target);
+                        this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
+                    });
+                }
+            }
+        }, 0);
         
         // Progress/calculations cell - use working info display
         const progressCell = document.createElement('td');
