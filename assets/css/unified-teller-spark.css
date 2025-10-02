@@ -2495,7 +2495,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 #items-table-view .table-container .items-table {
-    width: 100% !important;
+    width: 700px !important; /* Set specific table width */
     table-layout: fixed !important;
     border-collapse: collapse !important;
 }
@@ -2505,9 +2505,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .table-container .items-table td:nth-child(1),
 #items-table-view .table-container .items-table .item-column,
 #items-table-view .table-container .items-table .item-cell {
-    width: 124px !important; /* Item column - increased by 4px */
-    min-width: 124px !important;
-    max-width: 124px !important; /* Force exact width */
+    width: 140px !important; /* Item column - increased to 140px */
+    min-width: 140px !important;
+    max-width: 140px !important; /* Force exact width */
     text-align: left !important; /* Force left alignment for item column */
     box-sizing: border-box !important; /* Include padding in width calculation */
     overflow: hidden !important; /* Prevent content from expanding width */
@@ -2516,29 +2516,37 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container .items-table th:nth-child(2),
 #items-table-view .table-container .items-table td:nth-child(2) {
-    width: 80px !important; /* Units column */
-    min-width: 80px !important;
+    width: 70px !important; /* Units column - slightly narrower */
+    min-width: 70px !important;
+    max-width: 70px !important;
     text-align: center !important;
+    box-sizing: border-box !important;
 }
 
 #items-table-view .table-container .items-table th:nth-child(3),
 #items-table-view .table-container .items-table td:nth-child(3) {
-    width: 80px !important; /* Stacks column */
-    min-width: 80px !important;
+    width: 70px !important; /* Stacks column - slightly narrower */
+    min-width: 70px !important;
+    max-width: 70px !important;
     text-align: center !important;
+    box-sizing: border-box !important;
 }
 
 #items-table-view .table-container .items-table th:nth-child(4),
 #items-table-view .table-container .items-table td:nth-child(4) {
-    width: 200px !important; /* Progress column - increased for better readability */
-    min-width: 200px !important;
+    width: 320px !important; /* Progress column - much wider for better readability */
+    min-width: 320px !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
 }
 
 #items-table-view .table-container .items-table th:nth-child(5),
 #items-table-view .table-container .items-table td:nth-child(5) {
     width: 100px !important; /* Actions column */
     min-width: 100px !important;
+    max-width: 100px !important;
     text-align: center !important;
+    box-sizing: border-box !important;
 }
 
 /* Table cell styling for proper column alignment with enhanced visual effects */
