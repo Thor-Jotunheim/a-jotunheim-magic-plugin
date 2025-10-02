@@ -2501,7 +2501,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Table column widths for 4-column layout (no icon column) */
 #items-table-view .table-container .items-table th:nth-child(1),
 #items-table-view .table-container .items-table td:nth-child(1) {
-    width: 200px !important; /* Item column - 25% wider than before */
+    width: 190px !important; /* Item column - reduced by 10px */
     min-width: 150px !important;
 }
 
@@ -2622,7 +2622,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-radius: 4px;
     display: inline-block;
     text-transform: capitalize;
-    text-align: center;
+    text-align: left;
     min-width: 50px;
     background: var(--green-3);
     color: var(--green-11);
