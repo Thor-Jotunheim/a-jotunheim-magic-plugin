@@ -1343,7 +1343,6 @@ class UnifiedTeller {
             if (item.stack_size && parseInt(item.stack_size) > 1) {
                 return `
                     <div class="quantity-control-group">
-                        <div class="stack-label">(${item.stack_size})</div>
                         <div class="quantity-controls">
                             <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
                                    class="turnin-large-quantity-input table-input" 
@@ -1363,7 +1362,6 @@ class UnifiedTeller {
             if ((item.buy == 1 || item.buy === true) && item.stack_size && parseInt(item.stack_size) > 1) {
                 return `
                     <div class="quantity-control-group">
-                        <div class="stack-label">(${item.stack_size})</div>
                         <div class="quantity-controls">
                             <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))}"
                                    class="large-quantity-input table-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
