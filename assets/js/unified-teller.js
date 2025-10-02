@@ -1295,7 +1295,7 @@ class UnifiedTeller {
                         <input type="number" id="table-turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
                                class="turnin-large-quantity-input table-input" 
                                data-debug="preventOverLimit-attached"
-                               oninput="window.unifiedTeller.enforceQuantityLimits(this); window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                               oninput="console.log('🟢 ONINPUT FIRED for', this.id, 'value:', this.value); window.unifiedTeller.enforceQuantityLimits(this); window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                onfocus="window.unifiedTeller.handleQuantityFocus(this)"
@@ -1350,7 +1350,7 @@ class UnifiedTeller {
                             <input type="number" id="table-turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
                                    class="turnin-large-quantity-input table-input" 
                                    data-debug="preventOverLimit-attached"
-                                   oninput="window.unifiedTeller.enforceQuantityLimits(this); window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                                   oninput="console.log('🟢 ONINPUT FIRED for', this.id, 'value:', this.value); window.unifiedTeller.enforceQuantityLimits(this); window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                    onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
                                    onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                    onfocus="window.unifiedTeller.handleQuantityFocus(this)"
@@ -3214,12 +3214,17 @@ class UnifiedTeller {
     }
 
     updateProgressDisplay(shopItemId, turnInRequirement) {
+        console.log(`🔵 updateProgressDisplay called for item ${shopItemId}`);
         const progressElement = document.getElementById(`progress-${shopItemId}`);
+        console.log(`🔵 Progress element found:`, !!progressElement);
         if (progressElement) {
             const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
                         this.shopItems.find(i => i.shop_item_id == shopItemId);
+            console.log(`🔵 Item found:`, !!item, item?.item_name);
             if (item) {
-                progressElement.innerHTML = this.generateProgressText(item, true);
+                const newProgressHTML = this.generateProgressText(item, true);
+                console.log(`🔵 Generated progress HTML:`, newProgressHTML);
+                progressElement.innerHTML = newProgressHTML;
             }
         }
         
