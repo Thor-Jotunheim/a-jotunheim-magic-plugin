@@ -2940,13 +2940,8 @@ class UnifiedTeller {
     }
 
     increaseQuantity(inputId, maxValue) {
-        console.log('🔧 DEBUG: increaseQuantity called with:', inputId, maxValue);
         const input = document.getElementById(inputId);
-        if (!input) {
-            console.error('🔧 DEBUG: Input element not found for ID:', inputId);
-            return;
-        }
-        console.log('🔧 DEBUG: Found input element:', input);
+        if (!input) return;
         
         const currentValue = parseInt(input.value) || 0;
         
@@ -2990,10 +2985,8 @@ class UnifiedTeller {
     }
 
     decreaseQuantity(inputId) {
-        console.log('🔧 DEBUG: decreaseQuantity called with:', inputId);
         const input = document.getElementById(inputId);
         if (input) {
-            console.log('🔧 DEBUG: Found input element for decrease:', input);
             const currentValue = parseInt(input.value) || 0;
             if (currentValue > 0) {
                 input.value = currentValue - 1;
@@ -4142,9 +4135,6 @@ class UnifiedTeller {
             const tableRow = this.createTableRow(item);
             rightTableBody.appendChild(tableRow);
         });
-
-        // DEBUG: Check if window.unifiedTeller is available and test a sample button
-        console.log('🔧 DEBUG: After table creation, window.unifiedTeller exists:', !!window.unifiedTeller);
     }
 
     createTableRow(item) {
