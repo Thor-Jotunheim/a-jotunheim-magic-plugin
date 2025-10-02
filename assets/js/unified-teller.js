@@ -4084,6 +4084,11 @@ class UnifiedTeller {
         const rightItems = availableItems.slice(midPoint);
 
         console.log('🔧 DEBUG: Creating table HTML structure without icon column');
+        
+        // Determine if we have turn-in items to set appropriate header
+        const hasTurnInItems = availableItems.some(item => item.event_points !== undefined && item.event_points !== null);
+        const thirdColumnHeader = hasTurnInItems ? 'Progress' : 'Price';
+        
         // Create two table containers side by side
         container.innerHTML = `
             <div class="table-container">
@@ -4092,7 +4097,7 @@ class UnifiedTeller {
                         <tr>
                             <th class="item-column">Item</th>
                             <th class="quantity-column">Quantity Controls</th>
-                            <th class="progress-column">Progress/Calculations</th>
+                            <th class="progress-column">${thirdColumnHeader}</th>
                             <th class="actions-column">Actions</th>
                         </tr>
                     </thead>
@@ -4106,7 +4111,7 @@ class UnifiedTeller {
                         <tr>
                             <th class="item-column">Item</th>
                             <th class="quantity-column">Quantity Controls</th>
-                            <th class="progress-column">Progress/Calculations</th>
+                            <th class="progress-column">${thirdColumnHeader}</th>
                             <th class="actions-column">Actions</th>
                         </tr>
                     </thead>
