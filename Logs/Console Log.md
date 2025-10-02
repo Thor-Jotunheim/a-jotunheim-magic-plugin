@@ -1,4 +1,10 @@
-[Warning] 710 console messages are not shown.
+[Warning] 1540 console messages are not shown.
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
 [Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
@@ -7,22 +13,17 @@ Object
 Object
 [Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
 Object
-[Log] Progress recalculation complete. (unified-teller.js, line 3309)
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
-[Log] DEBUG - checkTurninLimits: – Object (unified-teller.js, line 1933)
-Object
-[Log] DEBUG: addTurninItemWithQuantity - shopItemId=41, quantity=1, cartBefore=0 (unified-teller.js, line 4089)
-[Log] DEBUG: Added turn-in item to cart: – "Bear Hide" – "quantity:" – 1 – "Cart now has" – 1 – "items" – "existingItem:" – false (unified-teller.js, line 4117)
-[Log] DEBUG: Cart contents: – Array (1) (unified-teller.js, line 4118)
-Array (1)
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 4602)
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
 Object
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
-[Log] DEBUG - Fixed progress calculation (no double-counting): – Object (unified-teller.js, line 4617)
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
 Object
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3503)
 Object
 [Log] getCurrentShopType: – Object (unified-teller.js, line 751)
 Object
@@ -54,90 +55,60 @@ Object
 Object
 [Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
 Object
-[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 2992)
-[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 2993)
-[Log] 🚨 DEBUG: cart length: – 1 (unified-teller.js, line 2994)
-[Log] 🚨 DEBUG: cart contents: – Array (1) (unified-teller.js, line 2995)
-Array (1)
-[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 2999)
+[Log] 🔥 KEYDOWN FIRED on – "table-turnin-qty-40" – "event:" – KeyboardEvent (admin.php, line 1)
+KeyboardEvent
+[Log] 🚨 PREVENT OVER LIMIT DEBUG: – Object (unified-teller.js, line 1955)
 Object
-[Log] 🚨 DEBUG: View Cart button updated - disabled: – false – "text:" – "View Cart (1)" (unified-teller.js, line 3016)
-[Log] 🚨 DEBUG: forceButtonStateUpdate() called, cart length: – 1 (unified-teller.js, line 2272)
-[Log] 🚨 DEBUG: Cart contents: – Array (1) (unified-teller.js, line 2273)
-Array (1)
-[Log] 🚨 DEBUG: Found 14 turn-in buttons to update (unified-teller.js, line 2286)
-[Log] 🚨 DEBUG: Button for item 59: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 41: inCart=true, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Updated button text to "Update" for item 41 (unified-teller.js, line 2304)
-[Log] 🚨 DEBUG: Button for item 38: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 43: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 40: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 42: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 39: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 59: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 41: inCart=true, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Updated button text to "Update" for item 41 (unified-teller.js, line 2304)
-[Log] 🚨 DEBUG: Button for item 38: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 43: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 40: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 42: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: Button for item 39: inCart=false, current text="Turn In", cart.length=1 (unified-teller.js, line 2299)
-[Log] 🚨 DEBUG: forceButtonStateUpdate() completed (unified-teller.js, line 2313)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+[Log] 🚨 NUMBER KEY PRESSED: – Object (unified-teller.js, line 1979)
 Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
+[Log] 🚨 TURNIN VALIDATION: – Object (unified-teller.js, line 1993)
 Object
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1901)
+Object
+[Log] DEBUG - enforceQuantityLimits combined: – Object (unified-teller.js, line 3367)
+Object
+[Error] ReferenceError: Can't find variable: max
+	enforceQuantityLimits (unified-teller.js:3385)
+	oninput (Script Element 45:1)
+[Log] 🔥 KEYDOWN FIRED on – "table-turnin-qty-40" – "event:" – KeyboardEvent (admin.php, line 1)
+KeyboardEvent
+[Log] 🚨 PREVENT OVER LIMIT DEBUG: – Object (unified-teller.js, line 1955)
+Object
+[Log] 🚨 NUMBER KEY PRESSED: – Object (unified-teller.js, line 1979)
+Object
+[Log] 🚨 TURNIN VALIDATION: – Object (unified-teller.js, line 1993)
 Object
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1901)
+Object
+[Log] DEBUG - enforceQuantityLimits combined: – Object (unified-teller.js, line 3367)
+Object
+[Error] ReferenceError: Can't find variable: max
+	enforceQuantityLimits (unified-teller.js:3385)
+	oninput (Script Element 45:1)
+[Log] 🔥 KEYDOWN FIRED on – "table-turnin-qty-40" – "event:" – KeyboardEvent (admin.php, line 1)
+KeyboardEvent
+[Log] 🚨 PREVENT OVER LIMIT DEBUG: – Object (unified-teller.js, line 1955)
+Object
+[Log] 🚨 NUMBER KEY PRESSED: – Object (unified-teller.js, line 1979)
+Object
+[Log] 🚨 TURNIN VALIDATION: – Object (unified-teller.js, line 1993)
 Object
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1901)
 Object
+[Log] DEBUG - enforceQuantityLimits combined: – Object (unified-teller.js, line 3367)
+Object
+[Error] ReferenceError: Can't find variable: max
+	enforceQuantityLimits (unified-teller.js:3385)
+	oninput (Script Element 45:1)
 [Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
 Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
-Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
-Object
-[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3469)
+[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3503)
 Object
 [Log] getCurrentShopType: – Object (unified-teller.js, line 751)
 Object
@@ -169,5 +140,51 @@ Object
 Object
 [Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
 Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3503)
+Object
+[Log] getCurrentShopType: – Object (unified-teller.js, line 751)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1886)
+Object
+[Log] DEBUG - Turnin compact display: – Object (unified-teller.js, line 785)
+Object
+[Log] 🔴 DEBUG: addTurninItemWithQuantity called for item 59 (unified-teller.js, line 4080)
+[Log] 🔴 DEBUG: Units input found: true, value: 0, id: turnin-qty-59 (unified-teller.js, line 4091)
+[Log] 🔴 DEBUG: Stacks input found: true, value: 0, id: turnin-stack-qty-59 (unified-teller.js, line 4096)
+[Log] 🔴 DEBUG: addTurninItemWithQuantity called for item 41 (unified-teller.js, line 4080)
+[Log] 🔴 DEBUG: Units input found: true, value: 0, id: turnin-qty-41 (unified-teller.js, line 4091)
+[Log] 🔴 DEBUG: Stacks input found: true, value: 0, id: turnin-stack-qty-41 (unified-teller.js, line 4096)
+[Log] 🔴 DEBUG: addTurninItemWithQuantity called for item 38 (unified-teller.js, line 4080)
+[Log] 🔴 DEBUG: Units input found: true, value: 0, id: turnin-qty-38 (unified-teller.js, line 4091)
+[Log] 🔴 DEBUG: Stacks input found: true, value: 0, id: turnin-stack-qty-38 (unified-teller.js, line 4096)
+[Log] 🔴 DEBUG: addTurninItemWithQuantity called for item 43 (unified-teller.js, line 4080)
+[Log] 🔴 DEBUG: Units input found: true, value: 0, id: turnin-qty-43 (unified-teller.js, line 4091)
+[Log] 🔴 DEBUG: Stacks input found: true, value: 0, id: turnin-stack-qty-43 (unified-teller.js, line 4096)
 > Selected Element
 < <div class="items-table-wrapper" id="items-table-view" style="display: block;">…</div>

@@ -3334,9 +3334,15 @@ class UnifiedTeller {
                 const dynamicMax = this.getMaxAllowedTurnin(item);
                 const stackSize = parseInt(item.stack_size) || 1;
                 
-                // Get both input values
-                const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-turnin-qty-${shopItemId}`);
-                const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`) || document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
+                // Get both input values from the currently active view
+                let unitsInput, stacksInput;
+                if (this.isTableView) {
+                    unitsInput = document.getElementById(`table-turnin-qty-${shopItemId}`);
+                    stacksInput = document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
+                } else {
+                    unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+                    stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+                }
                 
                 let units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
                 let stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
@@ -3458,11 +3464,19 @@ class UnifiedTeller {
         
         let currentlySelected = 0;
         if (includeCurrent) {
-            // Always check input values first for live updates (check both grid and table views)
-            const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`) || document.getElementById(`table-turnin-qty-${item.shop_item_id}`);
-            const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+            // Check which view is currently visible and get inputs from that view only
+            let unitsInput, stacksInput;
+            if (this.isTableView) {
+                // Table view is active - use table-specific IDs
+                unitsInput = document.getElementById(`table-turnin-qty-${item.shop_item_id}`);
+                stacksInput = document.getElementById(`table-turnin-stack-qty-${item.shop_item_id}`);
+            } else {
+                // Grid view is active - use grid-specific IDs
+                unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+                stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
+            }
             
-            const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`) || document.getElementById(`table-turnin-stack-qty-${item.shop_item_id}`);
+            const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
             const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
             const stackSize = parseInt(item.stack_size) || 1;
             
@@ -4085,14 +4099,23 @@ class UnifiedTeller {
             return;
         }
 
-        // Get units input (check both grid and table views)
-        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-turnin-qty-${shopItemId}`);
-        const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
-        console.log(`🔴 DEBUG: Units input found: ${!!unitsInput}, value: ${units}, id: ${unitsInput?.id}`);
+        // Check which view is currently visible and get inputs from that view only
+        let unitsInput, stacksInput;
+        if (this.isTableView) {
+            // Table view is active - use table-specific IDs
+            unitsInput = document.getElementById(`table-turnin-qty-${shopItemId}`);
+            stacksInput = document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
+            console.log(`🔴 DEBUG: Table view active - looking for table inputs`);
+        } else {
+            // Grid view is active - use grid-specific IDs  
+            unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
+            stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+            console.log(`🔴 DEBUG: Grid view active - looking for grid inputs`);
+        }
         
-        // Get stacks input if it exists (check both grid and table views)  
-        const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`) || document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
+        const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
         const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
+        console.log(`🔴 DEBUG: Units input found: ${!!unitsInput}, value: ${units}, id: ${unitsInput?.id}`);
         console.log(`🔴 DEBUG: Stacks input found: ${!!stacksInput}, value: ${stacks}, id: ${stacksInput?.id}`);
         
         // Initialize turninItems if not loaded
