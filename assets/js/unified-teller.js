@@ -4342,10 +4342,12 @@ class UnifiedTeller {
         itemCell.innerHTML = `
             <div class="item-info">
                 <div class="item-name">${this.escapeHtml(item.item_name || 'Unknown Item')}</div>
+                <!-- Temporarily commented out for more compact table rows
                 <div class="item-type">${item.item_type || (isTurnInItem ? 'Trophies' : 'Item')}</div>
                 <div class="item-tags">
                     <span class="biome-tag ${biomeClass}">${biomeName}</span>
                 </div>
+                -->
             </div>
         `;
         
