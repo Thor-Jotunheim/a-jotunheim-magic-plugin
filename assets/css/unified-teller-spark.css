@@ -2575,15 +2575,37 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 /* Make Unit and Stack controls display side by side in table view */
-#items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls {
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 16px;
-    width: auto;
+#items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: flex-start;
 }
 
-#items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls:last-child {
-    margin-right: 0;
+#items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    flex: 0 0 auto; /* Don't grow or shrink */
+}
+
+/* Fix button layout to be horizontal (left-right) instead of vertical in table view */
+#items-table-view .card-cell .item-card .quantity-controls .qty-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+#items-table-view .card-cell .item-card .quantity-controls .qty-btn {
+    flex: 0 0 auto;
+}
+
+#items-table-view .card-cell .item-card .quantity-controls .quantity-input,
+#items-table-view .card-cell .item-card .quantity-controls .large-quantity-input {
+    flex: 0 0 auto;
+    width: 60px;
 }
 
 /* Progress/calculations in fourth column */
