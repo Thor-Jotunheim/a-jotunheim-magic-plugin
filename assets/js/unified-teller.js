@@ -1871,14 +1871,21 @@ class UnifiedTeller {
             // For number keys, check if the resulting value would exceed max
             if (event.key >= '0' && event.key <= '9') {
                 const currentValue = inputElement.value;
-                const cursorPos = inputElement.selectionStart;
+                let cursorPos = inputElement.selectionStart;
+                
+                // FIX: Handle null cursor position - default to end of string
+                if (cursorPos === null || cursorPos === undefined) {
+                    cursorPos = currentValue.length;
+                }
+                
                 const newValue = currentValue.slice(0, cursorPos) + event.key + currentValue.slice(cursorPos);
                 const numericValue = parseInt(newValue) || 0;
                 
                 console.log('🚨 NUMBER KEY PRESSED:', {
                     key: event.key,
                     currentValue,
-                    cursorPos,
+                    cursorPos: inputElement.selectionStart,
+                    cursorPosFixed: cursorPos,
                     newValue,
                     numericValue
                 });
@@ -2980,10 +2987,22 @@ class UnifiedTeller {
     }
 
     increaseQuantity(inputId, maxValue) {
+        console.log('🚨 INCREASE QUANTITY DEBUG:', {
+            inputId,
+            maxValue,
+            maxValueType: typeof maxValue
+        });
+        
         const input = document.getElementById(inputId);
         if (!input) return;
         
         const currentValue = parseInt(input.value) || 0;
+        
+        console.log('🚨 CURRENT VALUE:', {
+            inputId,
+            currentValue,
+            inputValue: input.value
+        });
         
         // For turn-in items, check combined total limits
         if (inputId.includes('turnin-qty-') || inputId.includes('turnin-stack-qty-')) {
@@ -3009,15 +3028,33 @@ class UnifiedTeller {
                     newTotalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + newStacksValue * parseInt(item.stack_size);
                 }
                 
+                console.log('🚨 INCREASE QUANTITY - TOTAL UNITS CHECK:', {
+                    inputId,
+                    inputType: inputId.includes('turnin-qty-') ? 'units' : 'stacks',
+                    currentValue,
+                    newTotalUnits,
+                    dynamicMax,
+                    wouldExceed: newTotalUnits > dynamicMax
+                });
+                
                 // Check if the new total would exceed the limit
                 if (newTotalUnits > dynamicMax) {
+                    console.log('🚨 INCREASE BLOCKED - would exceed dynamic limit');
                     return; // Don't increment
                 }
             }
         }
         
         // Standard check against individual max
+        console.log('🚨 STANDARD MAX CHECK:', {
+            inputId,
+            currentValue,
+            maxValue,
+            canIncrement: currentValue < maxValue
+        });
+        
         if (currentValue < maxValue) {
+            console.log('🚨 INCREMENTING VALUE from', currentValue, 'to', currentValue + 1);
             input.value = currentValue + 1;
             // Update progress display when quantity changes
             this.updateProgressFromInput(inputId);
@@ -3025,15 +3062,32 @@ class UnifiedTeller {
     }
 
     decreaseQuantity(inputId) {
+        console.log('🚨 DECREASE QUANTITY DEBUG:', {
+            inputId
+        });
+        
         const input = document.getElementById(inputId);
         if (input) {
             const currentValue = parseInt(input.value) || 0;
+            
+            console.log('🚨 DECREASE - CURRENT VALUE:', {
+                inputId,
+                currentValue,
+                inputValue: input.value,
+                canDecrease: currentValue > 0
+            });
+            
             if (currentValue > 0) {
+                console.log('🚨 DECREASING VALUE from', currentValue, 'to', currentValue - 1);
                 input.value = currentValue - 1;
                 
                 // Update progress display when quantity changes
                 this.updateProgressFromInput(inputId);
+            } else {
+                console.log('🚨 DECREASE BLOCKED - already at 0');
             }
+        } else {
+            console.log('🚨 DECREASE FAILED - input not found:', inputId);
         }
     }
 
