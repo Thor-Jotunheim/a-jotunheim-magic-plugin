@@ -2593,11 +2593,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Reset quantity controls to use the default working layout - don't override the working flexbox */
 #items-table-view .card-cell .item-card .quantity-controls {
     /* Use the same layout as grid view - it already works correctly */
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* This puts buttons on sides automatically */
-    gap: 3px;
-    width: 120px; /* Set a reasonable width for table view */
+    display: flex !important;
+    flex-direction: row !important; /* Force horizontal layout */
+    align-items: center !important;
+    justify-content: space-between !important; /* This puts buttons on sides automatically */
+    gap: 3px !important;
+    width: 120px !important; /* Set a reasonable width for table view */
 }
 
 /* Progress/calculations in fourth column */
