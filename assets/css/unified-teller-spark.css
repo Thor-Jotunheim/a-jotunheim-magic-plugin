@@ -2519,12 +2519,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container .items-table th:nth-child(3),
 #items-table-view .table-container .items-table td:nth-child(3) {
-    width: 100px !important; /* Progress column - reverted back */
+    width: 115px !important; /* Progress column - increased by 15px */
 }
 
 #items-table-view .table-container .items-table th:nth-child(4),
 #items-table-view .table-container .items-table td:nth-child(4) {
-    width: 80px !important; /* Actions column */
+    width: 65px !important; /* Actions column - reduced by 15px */
 }
 
 /* Table cell styling for proper column alignment with enhanced visual effects */
