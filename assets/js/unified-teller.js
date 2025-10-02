@@ -4059,7 +4059,7 @@ class UnifiedTeller {
     }
 
     renderItemsTable(container) {
-        // EXACT DUPLICATE of renderItemsGrid - preserve ALL working functionality
+        // Create two side-by-side table containers for maximum item display
         container.innerHTML = '';
 
         if (this.shopItems.length === 0) {
@@ -4067,44 +4067,79 @@ class UnifiedTeller {
             return;
         }
 
-        // Create table structure but fill with WORKING CARDS
+        // Filter available items
+        const availableItems = this.shopItems.filter(item => item.is_available == 1);
+        
+        // Split items into two halves for the two tables
+        const midPoint = Math.ceil(availableItems.length / 2);
+        const leftItems = availableItems.slice(0, midPoint);
+        const rightItems = availableItems.slice(midPoint);
+
+        // Create two table containers side by side
         container.innerHTML = `
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th class="icon-column">Icon</th>
-                        <th>Item</th>
-                        <th>Quantity Controls</th>
-                        <th>Progress/Calculations</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="table-body-cards">
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="icon-column">Icon</th>
+                            <th>Item</th>
+                            <th>Quantity Controls</th>
+                            <th>Progress/Calculations</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body-cards left-table">
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-container">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="icon-column">Icon</th>
+                            <th>Item</th>
+                            <th>Quantity Controls</th>
+                            <th>Progress/Calculations</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body-cards right-table">
+                    </tbody>
+                </table>
+            </div>
         `;
 
-        const tableBody = container.querySelector('.table-body-cards');
+        const leftTableBody = container.querySelector('.left-table');
+        const rightTableBody = container.querySelector('.right-table');
 
-        // Use EXACT same logic as renderItemsGrid
-        this.shopItems.forEach(item => {
-            if (item.is_available == 1) {
-                // Use the existing createItemCard method - IDENTICAL to grid
-                const itemCard = this.createItemCard(item);
-                
-                // Create table row wrapper but insert the COMPLETE working card
-                const tableRow = document.createElement('tr');
-                tableRow.className = 'table-row-card-wrapper';
-                
-                // Insert the entire working card into a single table cell that spans all columns
-                const cardCell = document.createElement('td');
-                cardCell.colSpan = 4;
-                cardCell.className = 'card-cell';
-                cardCell.appendChild(itemCard);
-                
-                tableRow.appendChild(cardCell);
-                tableBody.appendChild(tableRow);
-            }
+        // Populate left table
+        leftItems.forEach(item => {
+            const itemCard = this.createItemCard(item);
+            const tableRow = document.createElement('tr');
+            tableRow.className = 'table-row-card-wrapper';
+            
+            const cardCell = document.createElement('td');
+            cardCell.colSpan = 5;
+            cardCell.className = 'card-cell';
+            cardCell.appendChild(itemCard);
+            
+            tableRow.appendChild(cardCell);
+            leftTableBody.appendChild(tableRow);
+        });
+
+        // Populate right table
+        rightItems.forEach(item => {
+            const itemCard = this.createItemCard(item);
+            const tableRow = document.createElement('tr');
+            tableRow.className = 'table-row-card-wrapper';
+            
+            const cardCell = document.createElement('td');
+            cardCell.colSpan = 5;
+            cardCell.className = 'card-cell';
+            cardCell.appendChild(itemCard);
+            
+            tableRow.appendChild(cardCell);
+            rightTableBody.appendChild(tableRow);
         });
     }
 

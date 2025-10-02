@@ -2547,70 +2547,111 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     align-items: center;
 }
 
-/* Restructure item-card grid for table view to have 5 columns: icon, name, quantity-controls, progress, actions */
-#items-table-view .card-cell .item-card {
-    display: grid;
-    grid-template-columns: 60px 1fr 300px 180px 120px; /* icon, name, quantity, progress, actions */
-    gap: 16px;
-    align-items: center;
-    padding: 12px;
+/* Create two side-by-side table containers, each with 5 columns */
+#items-table-view {
+    display: flex;
+    gap: 20px;
+    width: 100%;
 }
 
-/* Icon container in first column */
+#items-table-view .table-container {
+    flex: 1;
+    min-width: 0; /* Allow shrinking */
+}
+
+#items-table-view .card-cell .item-card {
+    /* Compact 5-column layout: icon, name, quantity, progress, action */
+    display: grid;
+    grid-template-columns: 40px 1fr 200px 120px 80px; /* Smaller columns to fit two tables */
+    gap: 8px;
+    align-items: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--gray-6);
+    min-height: 80px; /* Slightly reduced for compactness */
+}
+
+/* Icon container in first column - compact */
 #items-table-view .card-cell .item-card .item-main-content .item-icon-container {
     grid-column: 1;
     grid-row: 1;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    justify-self: center;
 }
 
-/* Item header (name/type) in second column */
+/* Item header in second column */
 #items-table-view .card-cell .item-card .item-header {
     grid-column: 2;
     grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0;
 }
 
-/* Quantity controls in third column - make them side by side */
+/* Quantity controls in third column */
 #items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
     grid-column: 3;
     grid-row: 1;
 }
 
-/* Make Unit and Stack controls display side by side in table view */
+/* Make Unit and Stack controls display side by side in compact table view */
 #items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
     display: flex;
     flex-direction: row;
-    gap: 16px;
+    gap: 8px;
     align-items: flex-start;
 }
 
 #items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    flex: 0 0 auto; /* Don't grow or shrink */
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+    font-size: 11px; /* Smaller font for compactness */
 }
 
-/* Reset quantity controls to use the default working layout - don't override the working flexbox */
+/* Compact quantity controls for two-column layout */
 #items-table-view .card-cell .item-card .quantity-controls {
-    /* Use the same layout as grid view - it already works correctly */
     display: flex !important;
-    flex-direction: row !important; /* Force horizontal layout */
+    flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important; /* This puts buttons on sides automatically */
-    gap: 3px !important;
-    width: 120px !important; /* Set a reasonable width for table view */
+    justify-content: space-between !important;
+    gap: 2px !important;
+    width: 80px !important; /* Much smaller for compactness */
+    font-size: 11px !important; /* Smaller text */
 }
 
-/* Progress/calculations in fourth column */
+#items-table-view .card-cell .item-card .quantity-controls button {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 10px !important;
+    padding: 0 !important;
+}
+
+#items-table-view .card-cell .item-card .quantity-controls input {
+    width: 35px !important;
+    height: 20px !important;
+    font-size: 10px !important;
+    padding: 1px 2px !important;
+    text-align: center !important;
+}
+
+/* Progress/calculations in fourth column - compact */
 #items-table-view .card-cell .item-card .item-bottom-section .item-info-display {
     grid-column: 4;
     grid-row: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 11px; /* Smaller font for compactness */
 }
 
-/* Actions (Turn In buttons) in fifth column */
+/* Actions (Turn In buttons) in fifth column - compact */
 #items-table-view .card-cell .item-card .item-bottom-section .item-actions {
     grid-column: 5;
     grid-row: 1;
@@ -2618,7 +2659,41 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
+}
+
+#items-table-view .card-cell .item-card .item-bottom-section .item-actions .turn-in-button {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    min-height: auto !important;
+}
+
+/* Compact quantity controls for two-table layout */
+#items-table-view .card-cell .item-card .quantity-controls {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 2px !important;
+    width: 80px !important; /* Smaller for compactness */
+    font-size: 10px !important;
+}
+
+#items-table-view .card-cell .item-card .quantity-controls button {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 9px !important;
+    padding: 0 !important;
+    border-radius: 2px !important;
+}
+
+#items-table-view .card-cell .item-card .quantity-controls input {
+    width: 35px !important;
+    height: 18px !important;
+    font-size: 9px !important;
+    padding: 1px !important;
+    text-align: center !important;
+    border-radius: 2px !important;
 }
 
 /* Hide the main item-main-content and item-bottom-section containers' default layout */
@@ -2633,17 +2708,18 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: none;
 }
 
-/* Align table headers with the card columns */
+/* Align table headers with the compact card columns for two-table layout */
 #items-table-view .items-table thead tr {
     display: grid;
-    grid-template-columns: 60px 1fr 300px 180px 120px; /* Match the card grid */
-    gap: 16px;
-    padding: 12px;
+    grid-template-columns: 40px 1fr 200px 120px 80px; /* Match the compact card grid */
+    gap: 8px;
+    padding: 8px 6px;
 }
 
 #items-table-view .items-table thead th {
     text-align: center;
-    padding: 8px 4px;
+    padding: 4px 2px;
+    font-size: 12px; /* Smaller header text */
 }
 
 /* Show the table body with cards, but hide the original empty tbody */
