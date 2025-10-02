@@ -2480,15 +2480,15 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view {
     display: flex !important;
     flex-direction: row !important;
-    gap: 20px;
+    gap: 10px; /* Reduced gap to allow more table width */
     width: 100% !important;
     align-items: flex-start !important;
 }
 
 #items-table-view .table-container {
-    flex: 1 1 48% !important;
+    flex: 1 1 50% !important;
     min-width: 0 !important; /* Allow shrinking */
-    max-width: 48% !important;
+    max-width: 50% !important; /* Increased from 48% to use more space */
     display: block !important;
 }
 
@@ -2519,7 +2519,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container .items-table th:nth-child(3),
 #items-table-view .table-container .items-table td:nth-child(3) {
-    width: 200px !important; /* Progress column - increased to use more space */
+    width: 100px !important; /* Progress column - reverted back */
 }
 
 #items-table-view .table-container .items-table th:nth-child(4),
