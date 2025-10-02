@@ -4348,11 +4348,14 @@ class UnifiedTeller {
 
         // Filter available items
         const availableItems = this.shopItems.filter(item => item.is_available == 1);
+        console.log('🔧 DEBUG: availableItems length:', availableItems.length);
+        console.log('🔧 DEBUG: availableItems:', availableItems.map(i => i.item_name));
         
         // Split items into two halves for the two tables
         const midPoint = Math.ceil(availableItems.length / 2);
         const leftItems = availableItems.slice(0, midPoint);
         const rightItems = availableItems.slice(midPoint);
+        console.log('🔧 DEBUG: leftItems length:', leftItems.length, 'rightItems length:', rightItems.length);
 
         console.log('🔧 DEBUG: Creating table HTML structure without icon column');
         
@@ -4398,13 +4401,17 @@ class UnifiedTeller {
         const rightTableBody = container.querySelector('.right-table');
 
         // Populate left table with proper table cells
-        leftItems.forEach(item => {
+        console.log('🔧 DEBUG: About to populate left table with', leftItems.length, 'items');
+        leftItems.forEach((item, index) => {
+            console.log('🔧 DEBUG: Processing left item', index, ':', item.item_name);
             const tableRow = this.createTableRow(item);
             leftTableBody.appendChild(tableRow);
         });
 
         // Populate right table with proper table cells
-        rightItems.forEach(item => {
+        console.log('🔧 DEBUG: About to populate right table with', rightItems.length, 'items');
+        rightItems.forEach((item, index) => {
+            console.log('🔧 DEBUG: Processing right item', index, ':', item.item_name);
             const tableRow = this.createTableRow(item);
             rightTableBody.appendChild(tableRow);
         });
