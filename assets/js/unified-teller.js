@@ -3205,9 +3205,11 @@ class UnifiedTeller {
             const unitInputId = inputId.replace('stack-qty-', 'qty-').replace('turnin-stack-qty-', 'turnin-qty-');
             const unitInput = document.getElementById(unitInputId);
             
-            if (stackInput && unitInput) {
-                const stackValue = parseInt(stackInput.value) || 1;
-                unitInput.value = stackValue * stackSize;
+            if (stackInput && unitInput && stackInput.value !== '' && stackInput.value !== '0') {
+                const stackValue = parseInt(stackInput.value) || 0;
+                if (stackValue > 0) {
+                    unitInput.value = stackValue * stackSize;
+                }
             }
         } else if (inputId.includes('qty-')) {
             // Unit input changed, update stack input if it exists
@@ -3215,9 +3217,11 @@ class UnifiedTeller {
             const stackInputId = inputId.replace('qty-', 'stack-qty-').replace('turnin-qty-', 'turnin-stack-qty-');
             const stackInput = document.getElementById(stackInputId);
             
-            if (unitInput && stackInput) {
-                const unitValue = parseInt(unitInput.value) || 1;
-                stackInput.value = Math.floor(unitValue / stackSize);
+            if (unitInput && stackInput && unitInput.value !== '' && unitInput.value !== '0') {
+                const unitValue = parseInt(unitInput.value) || 0;
+                if (unitValue > 0) {
+                    stackInput.value = Math.floor(unitValue / stackSize);
+                }
             }
         }
     }
