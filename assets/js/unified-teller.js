@@ -3199,19 +3199,9 @@ class UnifiedTeller {
         const stackSize = parseInt(item.stack_size);
         
         // Determine which type of input was changed and sync the other
-        if (inputId.includes('stack-qty')) {
-            // Stack input changed, update unit input
-            const stackInput = document.getElementById(inputId);
-            const unitInputId = inputId.replace('stack-qty-', 'qty-').replace('turnin-stack-qty-', 'turnin-qty-');
-            const unitInput = document.getElementById(unitInputId);
-            
-            if (stackInput && unitInput && stackInput.value !== '' && stackInput.value !== '0') {
-                const stackValue = parseInt(stackInput.value) || 0;
-                if (stackValue > 0) {
-                    unitInput.value = stackValue * stackSize;
-                }
-            }
-        } else if (inputId.includes('qty-')) {
+        // Note: Only sync units → stacks, not stacks → units
+        // This allows users to specify both stacks AND individual units independently
+        if (inputId.includes('qty-') && !inputId.includes('stack-qty')) {
             // Unit input changed, update stack input if it exists
             const unitInput = document.getElementById(inputId);
             const stackInputId = inputId.replace('qty-', 'stack-qty-').replace('turnin-qty-', 'turnin-stack-qty-');
