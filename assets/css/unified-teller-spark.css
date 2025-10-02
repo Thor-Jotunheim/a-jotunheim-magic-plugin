@@ -2638,14 +2638,17 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .quantity-cell .quantity-section {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 12px;
     width: 100%;
+    justify-content: space-between;
 }
 
 /* Ensure quantity controls from the original method work in table view */
 #items-table-view .quantity-cell .quantity-control-group {
-    margin-bottom: 8px;
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 #items-table-view .quantity-cell .quantity-label {
