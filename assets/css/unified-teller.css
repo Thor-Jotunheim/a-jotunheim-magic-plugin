@@ -962,6 +962,63 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-size: var(--font-size-2);
 }
 
+/* Table Column Widths for Split Quantity Controls */
+.items-table .item-column {
+    width: 30%;
+    min-width: 200px;
+}
+
+.items-table .units-column {
+    width: 15%;
+    min-width: 120px;
+    text-align: center;
+}
+
+.items-table .stacks-column {
+    width: 15%;
+    min-width: 120px;
+    text-align: center;
+}
+
+.items-table .progress-column {
+    width: 25%;
+    min-width: 150px;
+}
+
+.items-table .actions-column {
+    width: 15%;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Units and Stacks Cell Styling */
+.units-cell,
+.stacks-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.units-section,
+.stacks-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.stack-label {
+    font-size: var(--font-size-1);
+    color: var(--muted-foreground);
+    margin-bottom: var(--space-1);
+}
+
+.no-stacks {
+    color: var(--muted-foreground);
+    font-style: italic;
+    font-size: var(--font-size-1);
+    padding: var(--space-2);
+}
+
 /* Transaction List */
 .transaction-list {
     border: 1px solid var(--border);

@@ -1284,6 +1284,111 @@ class UnifiedTeller {
         }
     }
 
+    generateUnitsControls(item, isTurnInItem) {
+        if (isTurnInItem) {
+            // Turn-in unit controls
+            return `
+                <div class="quantity-control-group">
+                    <div class="quantity-controls">
+                        <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-qty-${item.shop_item_id}')">−</button>
+                        <input type="number" id="turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
+                               class="turnin-large-quantity-input" 
+                               data-debug="preventOverLimit-attached"
+                               oninput="window.unifiedTeller.enforceQuantityLimits(this)"
+                               onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                               onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
+                               onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                        <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-qty-${item.shop_item_id}', ${this.getMaxAllowedTurnin(item)})">+</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Regular shop item unit controls
+            let controlsHTML = '';
+            
+            if (item.buy == 1 || item.buy === true) {
+                controlsHTML = `
+                    <div class="quantity-control-group">
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('buy-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="buy-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : item.stock_quantity}"
+                                   class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('buy-qty-${item.shop_item_id}', ${item.stock_quantity === -1 ? 999 : item.stock_quantity})">+</button>
+                        </div>
+                    </div>`;
+            } else if (item.sell == 1 || item.sell === true) {
+                controlsHTML = `
+                    <div class="quantity-control-group">
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('sell-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="sell-qty-${item.shop_item_id}" min="1" value="1" max="999"
+                                   class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'sell')"
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('sell-qty-${item.shop_item_id}', 999)">+</button>
+                        </div>
+                    </div>`;
+            } else if (item.turn_in == 1 || item.turn_in === true) {
+                controlsHTML = `
+                    <div class="quantity-control-group">
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-reg-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="turnin-reg-qty-${item.shop_item_id}" min="1" value="1" max="999"
+                                   class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'turn_in')"
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-reg-qty-${item.shop_item_id}', 999)">+</button>
+                        </div>
+                    </div>`;
+            }
+            
+            return controlsHTML;
+        }
+    }
+
+    generateStacksControls(item, isTurnInItem) {
+        if (isTurnInItem) {
+            // Turn-in stack controls (only if stackable)
+            if (item.stack_size && parseInt(item.stack_size) > 1) {
+                return `
+                    <div class="quantity-control-group">
+                        <div class="stack-label">(${item.stack_size})</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
+                                   class="turnin-large-quantity-input" 
+                                   data-debug="preventOverLimit-attached"
+                                   oninput="window.unifiedTeller.enforceQuantityLimits(this)"
+                                   onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
+                                   onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
+                                   onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `<div class="no-stacks">N/A</div>`;
+            }
+        } else {
+            // Regular shop item stack controls (only for buyable items with stacks)
+            if ((item.buy == 1 || item.buy === true) && item.stack_size && parseInt(item.stack_size) > 1) {
+                return `
+                    <div class="quantity-control-group">
+                        <div class="stack-label">(${item.stack_size})</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('buy-stack-qty-${item.shop_item_id}')">−</button>
+                            <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))}"
+                                   class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
+                                   onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
+                            <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('buy-stack-qty-${item.shop_item_id}', ${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))})">+</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `<div class="no-stacks">N/A</div>`;
+            }
+        }
+    }
+
     generateItemInfoDisplay(item, isTurnInItem) {
         if (isTurnInItem) {
             // For turn-in items, show live transaction progress (use original ID for compatibility)
@@ -4190,7 +4295,8 @@ class UnifiedTeller {
                     <thead>
                         <tr>
                             <th class="item-column">Item</th>
-                            <th class="quantity-column">Quantity Controls</th>
+                            <th class="units-column">Units</th>
+                            <th class="stacks-column">Stacks</th>
                             <th class="progress-column">${thirdColumnHeader}</th>
                             <th class="actions-column">Actions</th>
                         </tr>
@@ -4204,7 +4310,8 @@ class UnifiedTeller {
                     <thead>
                         <tr>
                             <th class="item-column">Item</th>
-                            <th class="quantity-column">Quantity Controls</th>
+                            <th class="units-column">Units</th>
+                            <th class="stacks-column">Stacks</th>
                             <th class="progress-column">${thirdColumnHeader}</th>
                             <th class="actions-column">Actions</th>
                         </tr>
@@ -4256,12 +4363,21 @@ class UnifiedTeller {
             </div>
         `;
         
-        // Quantity controls cell - use working quantity controls from createItemCard
-        const quantityCell = document.createElement('td');
-        quantityCell.className = 'quantity-cell';
-        quantityCell.innerHTML = `
-            <div class="quantity-section">
-                ${this.generateQuantityControls(item, isTurnInItem)}
+        // Units column cell 
+        const unitsCell = document.createElement('td');
+        unitsCell.className = 'units-cell';
+        unitsCell.innerHTML = `
+            <div class="units-section">
+                ${this.generateUnitsControls(item, isTurnInItem)}
+            </div>
+        `;
+        
+        // Stacks column cell
+        const stacksCell = document.createElement('td');
+        stacksCell.className = 'stacks-cell';
+        stacksCell.innerHTML = `
+            <div class="stacks-section">
+                ${this.generateStacksControls(item, isTurnInItem)}
             </div>
         `;
         
@@ -4285,7 +4401,8 @@ class UnifiedTeller {
         
         // Append all cells to row
         row.appendChild(itemCell);
-        row.appendChild(quantityCell);
+        row.appendChild(unitsCell);
+        row.appendChild(stacksCell);
         row.appendChild(progressCell);
         row.appendChild(actionsCell);
         
