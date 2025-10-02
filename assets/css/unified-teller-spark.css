@@ -2591,7 +2591,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 /* Fix button layout to be horizontal (left-right) instead of vertical in table view */
-#items-table-view .card-cell .item-card .quantity-controls .qty-controls {
+#items-table-view .card-cell .item-card .quantity-controls {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -2600,12 +2600,18 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .card-cell .item-card .quantity-controls .qty-btn {
     flex: 0 0 auto;
+    order: 1; /* minus button */
+}
+
+#items-table-view .card-cell .item-card .quantity-controls .qty-btn.qty-increase {
+    order: 3; /* plus button */
 }
 
 #items-table-view .card-cell .item-card .quantity-controls .quantity-input,
 #items-table-view .card-cell .item-card .quantity-controls .large-quantity-input {
     flex: 0 0 auto;
     width: 60px;
+    order: 2; /* input in middle */
 }
 
 /* Progress/calculations in fourth column */
