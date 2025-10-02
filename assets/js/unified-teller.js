@@ -4059,6 +4059,9 @@ class UnifiedTeller {
     }
 
     renderItemsTable(container) {
+        console.log('🔧 DEBUG: renderItemsTable called, container:', container);
+        console.log('🔧 DEBUG: shopItems length:', this.shopItems.length);
+        
         // Create two side-by-side table containers for maximum item display
         container.innerHTML = '';
 
@@ -4075,6 +4078,7 @@ class UnifiedTeller {
         const leftItems = availableItems.slice(0, midPoint);
         const rightItems = availableItems.slice(midPoint);
 
+        console.log('🔧 DEBUG: Creating table HTML structure without icon column');
         // Create two table containers side by side
         container.innerHTML = `
             <div class="table-container">
@@ -4124,6 +4128,7 @@ class UnifiedTeller {
     }
 
     createTableRow(item) {
+        console.log('🔧 DEBUG: createTableRow called for item:', item.item_name, item);
         const row = document.createElement('tr');
         row.className = 'table-item-row';
         
