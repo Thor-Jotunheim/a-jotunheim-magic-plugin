@@ -2505,9 +2505,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .table-container .items-table td:nth-child(1),
 #items-table-view .table-container .items-table .item-column,
 #items-table-view .table-container .items-table .item-cell {
-    width: 120px !important; /* Item column - drastically reduced */
-    min-width: 120px !important;
-    max-width: 120px !important; /* Force exact width */
+    width: 124px !important; /* Item column - increased by 4px */
+    min-width: 124px !important;
+    max-width: 124px !important; /* Force exact width */
     text-align: left !important; /* Force left alignment for item column */
     box-sizing: border-box !important; /* Include padding in width calculation */
     overflow: hidden !important; /* Prevent content from expanding width */
