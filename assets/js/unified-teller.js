@@ -3334,9 +3334,13 @@ class UnifiedTeller {
                 const dynamicMax = this.getMaxAllowedTurnin(item);
                 const stackSize = parseInt(item.stack_size) || 1;
                 
-                // Get both input values from the currently active view
+                // Get both input values from the currently active view using DOM inspection
+                const gridView = document.getElementById('items-grid-view');
+                const tableView = document.getElementById('items-table-view');
+                const isTableViewVisible = tableView && tableView.style.display !== 'none';
+                
                 let unitsInput, stacksInput;
-                if (this.isTableView) {
+                if (isTableViewVisible) {
                     unitsInput = document.getElementById(`table-turnin-qty-${shopItemId}`);
                     stacksInput = document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
                 } else {
@@ -3385,6 +3389,9 @@ class UnifiedTeller {
         
         // Store cursor position to preserve it
         const cursorPosition = inputElement.selectionStart;
+        
+        // Get max from input element or use default
+        const max = parseInt(inputElement.max) || 999;
         
         // Enforce limits in real-time - prevent typing beyond max
         if (value < min) value = min;
@@ -4198,8 +4205,9 @@ class UnifiedTeller {
         // Update button state without refreshing the entire display to preserve input values
         this.forceButtonStateUpdate();
         
-        // Update all progress displays to reflect cart changes
-        this.updateAllProgressDisplays();
+        // DO NOT update all progress displays here - they should update live as user types
+        // Only update the specific progress for the item that was just added to cart
+        this.updateProgressDisplay(shopItemId, item.turn_in_requirement || 0);
     }
 
 
