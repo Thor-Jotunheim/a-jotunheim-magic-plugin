@@ -2597,7 +2597,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: 4px;
     align-items: flex-start; /* Ensure all child elements align to the left */
     width: 100% !important;
-    max-width: 110px !important;
+    max-width: 153px !important; /* Match container width */
     overflow: hidden !important;
 }
 
@@ -2610,7 +2610,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-    max-width: 100px !important;
+    max-width: 140px !important; /* Use more available space */
 }
 
 #items-table-view .item-cell .item-type {
