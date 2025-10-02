@@ -1292,7 +1292,7 @@ class UnifiedTeller {
             return `
                 <div class="quantity-control-group">
                     <div class="quantity-controls">
-                        <input type="number" id="turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
+                        <input type="number" id="table-turnin-qty-${item.shop_item_id}" min="0" value="0" max="${this.getMaxAllowedTurnin(item)}"
                                class="turnin-large-quantity-input table-input" 
                                data-debug="preventOverLimit-attached"
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
@@ -1347,7 +1347,7 @@ class UnifiedTeller {
                 return `
                     <div class="quantity-control-group">
                         <div class="quantity-controls">
-                            <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
+                            <input type="number" id="table-turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
                                    class="turnin-large-quantity-input table-input" 
                                    data-debug="preventOverLimit-attached"
                                    oninput="window.unifiedTeller.enforceQuantityLimits(this)"
@@ -3424,11 +3424,11 @@ class UnifiedTeller {
         
         let currentlySelected = 0;
         if (includeCurrent) {
-            // Always check input values first for live updates
-            const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
+            // Always check input values first for live updates (check both grid and table views)
+            const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`) || document.getElementById(`table-turnin-qty-${item.shop_item_id}`);
             const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
             
-            const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
+            const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`) || document.getElementById(`table-turnin-stack-qty-${item.shop_item_id}`);
             const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
             const stackSize = parseInt(item.stack_size) || 1;
             
@@ -4048,12 +4048,12 @@ class UnifiedTeller {
             return;
         }
 
-        // Get units input (check both turnin and table inputs)
-        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-qty-${shopItemId}`);
+        // Get units input (check both grid and table views)
+        const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`) || document.getElementById(`table-turnin-qty-${shopItemId}`);
         const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
         
-        // Get stacks input if it exists (only exists in turnin view, not table)
-        const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`);
+        // Get stacks input if it exists (check both grid and table views)
+        const stacksInput = document.getElementById(`turnin-stack-qty-${shopItemId}`) || document.getElementById(`table-turnin-stack-qty-${shopItemId}`);
         const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
         
         // Initialize turninItems if not loaded
