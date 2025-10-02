@@ -2691,15 +2691,15 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 #items-table-view .quantity-cell .quantity-controls button {
-    background-color: var(--gray-8);
+    background-color: #6c757d; /* Match grid view color */
     color: white;
     border: none;
-    width: 20px;
-    height: 20px;
-    font-size: 14px;
+    width: 40px; /* Increased from 20px to match grid style */
+    height: 32px; /* Increased from 20px to match grid style */
+    font-size: 20px; /* Increased from 14px to match grid style */
     font-weight: bold;
     cursor: pointer;
-    border-radius: 3px;
+    border-radius: 4px; /* Match grid view radius */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2707,24 +2707,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 #items-table-view .quantity-cell .quantity-controls button:hover {
-    background-color: var(--gray-9);
+    background-color: #5a6268; /* Match grid view hover color */
 }
 
 #items-table-view .quantity-cell .quantity-controls button:disabled {
-    background-color: var(--gray-6);
+    background-color: #ccc; /* Match grid view disabled color */
     cursor: not-allowed;
 }
 
 #items-table-view .quantity-cell .quantity-input {
-    width: 40px;
-    height: 20px;
+    width: 70px; /* Increased from 40px to match grid style */
+    height: 32px; /* Increased from 20px to match grid style */
     text-align: center;
-    border: 2px solid var(--gray-6);
-    border-radius: 3px;
-    font-size: 11px;
+    border: 2px solid #ddd; /* Match grid view border color */
+    border-radius: 4px; /* Match grid view radius */
+    font-size: 14px; /* Increased from 11px */
     font-weight: 600;
-    background-color: var(--gray-2);
-    color: var(--gray-11);
+    background-color: white; /* Match grid view background */
+    color: #333; /* Match grid view text color */
     cursor: pointer;
     transition: all 0.2s ease;
 }
