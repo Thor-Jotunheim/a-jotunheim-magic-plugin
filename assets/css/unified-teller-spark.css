@@ -2590,28 +2590,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex: 0 0 auto; /* Don't grow or shrink */
 }
 
-/* Fix button layout to be horizontal (left-right) instead of vertical in table view */
+/* Reset quantity controls to use the default working layout - don't override the working flexbox */
 #items-table-view .card-cell .item-card .quantity-controls {
+    /* Use the same layout as grid view - it already works correctly */
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 8px;
-}
-
-#items-table-view .card-cell .item-card .quantity-controls .qty-btn {
-    flex: 0 0 auto;
-    order: 1; /* minus button */
-}
-
-#items-table-view .card-cell .item-card .quantity-controls .qty-btn.qty-increase {
-    order: 3; /* plus button */
-}
-
-#items-table-view .card-cell .item-card .quantity-controls .quantity-input,
-#items-table-view .card-cell .item-card .quantity-controls .large-quantity-input {
-    flex: 0 0 auto;
-    width: 60px;
-    order: 2; /* input in middle */
+    justify-content: space-between; /* This puts buttons on sides automatically */
+    gap: 3px;
+    width: 120px; /* Set a reasonable width for table view */
 }
 
 /* Progress/calculations in fourth column */
