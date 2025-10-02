@@ -2505,9 +2505,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .table-container .items-table td:nth-child(1),
 #items-table-view .table-container .items-table .item-column,
 #items-table-view .table-container .items-table .item-cell {
-    width: 144px !important; /* Item column - increased by 4px from 140px */
-    min-width: 144px !important;
-    max-width: 144px !important; /* Force exact width */
+    width: 152px !important; /* Item column - increased by 8px from 144px */
+    min-width: 152px !important;
+    max-width: 152px !important; /* Force exact width */
     text-align: left !important; /* Force left alignment for item column */
     box-sizing: border-box !important; /* Include padding in width calculation */
     overflow: hidden !important; /* Prevent content from expanding width */
@@ -2534,9 +2534,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container .items-table th:nth-child(4),
 #items-table-view .table-container .items-table td:nth-child(4) {
-    width: 296px !important; /* Progress column - adjusted to maintain 700px total */
-    min-width: 296px !important;
-    max-width: 296px !important;
+    width: 288px !important; /* Progress column - reduced by 8px to maintain 700px total */
+    min-width: 288px !important;
+    max-width: 288px !important;
     box-sizing: border-box !important;
 }
 
