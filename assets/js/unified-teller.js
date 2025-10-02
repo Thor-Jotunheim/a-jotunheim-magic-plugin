@@ -2051,13 +2051,17 @@ class UnifiedTeller {
     }
 
     toggleItemsView() {
+        console.log('🔧 DEBUG: toggleItemsView() called, current isTableView:', this.isTableView);
         const gridView = document.getElementById('items-grid-view');
         const tableView = document.getElementById('items-table-view');
         const toggleBtn = document.getElementById('toggle-view-btn');
+        console.log('🔧 DEBUG: Found elements - gridView:', !!gridView, 'tableView:', !!tableView, 'toggleBtn:', !!toggleBtn);
         
         if (gridView && tableView && toggleBtn) {
+            console.log('🔧 DEBUG: All elements found, proceeding with toggle');
             // Use flag to track state instead of DOM inspection
             if (this.isTableView) {
+                console.log('🔧 DEBUG: Switching FROM table TO grid view');
                 // Currently showing table, switch back to grid view
                 gridView.style.display = 'flex'; // Use flex, not grid!
                 tableView.style.display = 'none';
@@ -2065,6 +2069,7 @@ class UnifiedTeller {
                 // Ensure grid is populated
                 this.renderItemsGrid(gridView);
             } else {
+                console.log('🔧 DEBUG: Switching FROM grid TO table view');
                 // Currently showing grid, switch to table view
                 gridView.style.display = 'none';
                 tableView.style.display = 'block';
