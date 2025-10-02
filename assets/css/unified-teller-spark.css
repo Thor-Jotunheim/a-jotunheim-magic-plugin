@@ -2474,78 +2474,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border-bottom: none;
 }
 
-/* Make cards display as table rows - UNIFIED TELLER ONLY */
-#items-table-view .card-cell {
-    padding: 0;
-    margin: 0;
-}
-
-#items-table-view .card-cell .item-card {
-    /* Remove card styling to make it look like table row */
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    margin: 0;
-    padding: 12px 16px;
-    
-    /* Use table-row-like layout with 5 columns to match header */
-    display: grid;
-    grid-template-columns: 60px 1fr 2fr 2fr 1fr; /* Icon | Item | Quantity | Progress | Actions */
-    gap: 16px;
-    align-items: center;
-    width: 100%;
-    position: relative; /* Enable absolute positioning for children */
-    min-height: 120px; /* Ensure consistent row height for proper centering */
-}
-
-/* Move icon to first column for UNIFIED TELLER table view only */
-#items-table-view .card-cell .item-card .item-main-content .item-icon-container {
-    grid-column: 1;
-    justify-self: center;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    max-width: 40px;
-    margin: 0;
-}
-
-/* Rearrange card sections to match table columns exactly - UNIFIED TELLER ONLY */
-#items-table-view .card-cell .item-card .item-header {
-    /* Item column (2nd) */
-    grid-column: 2;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-#items-table-view .card-cell .item-card .item-main-content {
-    /* Spans all columns - icon goes to column 1, quantity section goes to column 3 */
-    grid-column: 1 / -1;
-    display: contents; /* This makes children appear as direct grid items */
-}
-
-/* Position quantity controls in the table layout - UNIFIED TELLER ONLY */
-#items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
-    grid-column: 3; /* Quantity Controls column */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-#items-table-view .card-cell .item-card .turnin-progress-container,
-#items-table-view .card-cell .item-card .price-info,
-#items-table-view .card-cell .item-card .item-content .transaction-calculations {
-    /* Progress/Calculations column (4th) */
-    grid-column: 4;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+/* Old card-based CSS removed - now using proper table cells for column alignment */
 
 /* Create two side-by-side table containers, each with 5 columns */
 #items-table-view {
@@ -2566,115 +2495,206 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .table-container .items-table {
     width: 100% !important;
     table-layout: fixed !important;
+    border-collapse: collapse !important;
 }
 
-#items-table-view .card-cell .item-card {
-    /* Compact 5-column layout: icon, name, quantity, progress, action */
-    display: grid;
-    grid-template-columns: 40px 1fr 200px 120px 80px; /* Smaller columns to fit two tables */
-    gap: 8px;
-    align-items: center;
-    padding: 8px 6px;
+/* Table column widths for proper alignment */
+#items-table-view .table-container .items-table th:nth-child(1),
+#items-table-view .table-container .items-table td:nth-child(1) {
+    width: 50px !important; /* Icon column */
+}
+
+#items-table-view .table-container .items-table th:nth-child(2),
+#items-table-view .table-container .items-table td:nth-child(2) {
+    width: auto !important; /* Item column - flexible */
+}
+
+#items-table-view .table-container .items-table th:nth-child(3),
+#items-table-view .table-container .items-table td:nth-child(3) {
+    width: 180px !important; /* Quantity controls column */
+}
+
+#items-table-view .table-container .items-table th:nth-child(4),
+#items-table-view .table-container .items-table td:nth-child(4) {
+    width: 100px !important; /* Progress column */
+}
+
+#items-table-view .table-container .items-table th:nth-child(5),
+#items-table-view .table-container .items-table td:nth-child(5) {
+    width: 80px !important; /* Actions column */
+}
+
+/* Table cell styling for proper column alignment */
+#items-table-view .table-item-row {
     border-bottom: 1px solid var(--gray-6);
-    min-height: 80px; /* Slightly reduced for compactness */
 }
 
-/* Icon container in first column - compact */
-#items-table-view .card-cell .item-card .item-main-content .item-icon-container {
-    grid-column: 1;
-    grid-row: 1;
+#items-table-view .table-item-row:hover {
+    background-color: var(--gray-2);
+}
+
+/* Icon cell styling */
+#items-table-view .icon-cell {
+    text-align: center;
+    padding: 8px 4px;
+    vertical-align: middle;
+}
+
+#items-table-view .icon-cell .item-icon-container {
     width: 32px;
     height: 32px;
-    min-width: 32px;
-    max-width: 32px;
-    justify-self: center;
-}
-
-/* Item header in second column */
-#items-table-view .card-cell .item-card .item-header {
-    grid-column: 2;
-    grid-row: 1;
+    margin: 0 auto;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin: 0;
-    padding: 0;
-}
-
-/* Quantity controls in third column */
-#items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
-    grid-column: 3;
-    grid-row: 1;
-}
-
-/* Make Unit and Stack controls display side by side in compact table view */
-#items-table-view .card-cell .item-card .item-main-content .item-quantity-section {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    align-items: flex-start;
-}
-
-#items-table-view .card-cell .item-card .item-main-content .item-quantity-section .quantity-controls {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 2px;
-    flex: 0 0 auto;
-    font-size: 11px; /* Smaller font for compactness */
-}
-
-/* Compact quantity controls for two-column layout */
-#items-table-view .card-cell .item-card .quantity-controls {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 2px !important;
-    width: 80px !important; /* Much smaller for compactness */
-    font-size: 11px !important; /* Smaller text */
-}
-
-#items-table-view .card-cell .item-card .quantity-controls button {
-    width: 20px !important;
-    height: 20px !important;
-    font-size: 10px !important;
-    padding: 0 !important;
-}
-
-#items-table-view .card-cell .item-card .quantity-controls input {
-    width: 35px !important;
-    height: 20px !important;
-    font-size: 10px !important;
-    padding: 1px 2px !important;
-    text-align: center !important;
-}
-
-/* Progress/calculations in fourth column - compact */
-#items-table-view .card-cell .item-card .item-bottom-section .item-info-display {
-    grid-column: 4;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 11px; /* Smaller font for compactness */
-}
-
-/* Actions (Turn In buttons) in fifth column - compact */
-#items-table-view .card-cell .item-card .item-bottom-section .item-actions {
-    grid-column: 5;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+#items-table-view .icon-cell .item-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+/* Item info cell styling */
+#items-table-view .item-cell {
+    padding: 8px 6px;
+    vertical-align: middle;
+}
+
+#items-table-view .item-cell .item-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+#items-table-view .item-cell .item-type {
+    font-size: 11px;
+    color: var(--muted-foreground, #666);
+    margin-bottom: 2px;
+}
+
+#items-table-view .item-cell .item-tags {
+    display: flex;
+    gap: 4px;
+}
+
+#items-table-view .item-cell .biome-tag {
+    background: var(--green-3);
+    color: var(--green-11);
+    padding: 2px 6px;
+    border-radius: var(--radius-2);
+    font-size: 10px;
+}
+
+/* Quantity controls cell styling */
+#items-table-view .quantity-cell {
+    padding: 8px 4px;
+    vertical-align: middle;
+}
+
+#items-table-view .quantity-cell .quantity-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#items-table-view .quantity-cell .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+}
+
+#items-table-view .quantity-cell .quantity-controls label {
+    font-size: 9px;
+    min-width: 55px;
+    text-align: left;
+}
+
+#items-table-view .quantity-cell .quantity-controls button {
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: var(--background);
+    cursor: pointer;
+}
+
+#items-table-view .quantity-cell .quantity-controls button:hover {
+    background: var(--gray-3);
+}
+
+#items-table-view .quantity-cell .quantity-input {
+    width: 35px;
+    height: 18px;
+    font-size: 10px;
+    padding: 1px 2px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+/* Progress cell styling */
+#items-table-view .progress-cell {
+    padding: 8px 4px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#items-table-view .progress-cell .progress-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+}
+
+#items-table-view .progress-cell .collected-count {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+#items-table-view .progress-cell .collected-label {
+    font-size: 10px;
+    color: var(--muted-foreground, #666);
+}
+
+/* Actions cell styling */
+#items-table-view .actions-cell {
+    padding: 8px 4px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#items-table-view .actions-cell .actions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 2px;
 }
 
-#items-table-view .card-cell .item-card .item-bottom-section .item-actions .turn-in-button {
-    font-size: 11px !important;
-    padding: 4px 8px !important;
+#items-table-view .actions-cell .turn-in-button,
+#items-table-view .actions-cell .table-action-btn {
+    font-size: 10px !important;
+    padding: 4px 6px !important;
     min-height: auto !important;
+    border-radius: var(--radius-2);
+    border: none;
+    cursor: pointer;
+}
+
+#items-table-view .actions-cell .turn-in-button {
+    background: var(--blue-9);
+    color: white;
+}
+
+#items-table-view .actions-cell .table-action-btn.btn-success {
+    background: var(--green-9);
+    color: white;
+}
+
+#items-table-view .actions-cell .table-action-btn.btn-warning {
+    background: var(--orange-9);
+    color: white;
 }
 
 /* Compact quantity controls for two-table layout */
@@ -2717,55 +2737,20 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: none;
 }
 
-/* Align table headers with the compact card columns for two-table layout */
-#items-table-view .items-table thead tr {
-    display: grid;
-    grid-template-columns: 40px 1fr 200px 120px 80px; /* Match the compact card grid */
-    gap: 8px;
-    padding: 8px 6px;
-}
-
+/* Table header styling for proper column alignment */
 #items-table-view .items-table thead th {
-    text-align: center;
-    padding: 4px 2px;
-    font-size: 12px; /* Smaller header text */
-}
-
-/* Show the table body with cards, but hide the original empty tbody */
-#items-table-view .items-table tbody:not(.table-body-cards) {
-    display: none;
-}
-
-#items-table-view .items-table .table-body-cards {
-    display: block; /* Allow the card tbody to show */
-}
-
-/* Make table rows with cards display properly */
-#items-table-view .table-row-card-wrapper {
-    display: block;
-    border-bottom: 1px solid var(--border, #e5e5e5);
-}
-
-#items-table-view .table-row-card-wrapper:last-child {
-    border-bottom: none;
-}
-
-#items-table-view .card-cell .item-name {
-    font-size: 16px;
-    margin-bottom: 4px;
-}
-
-#items-table-view .card-cell .item-type {
+    background: var(--gray-3);
+    border-bottom: 2px solid var(--gray-6);
+    padding: 8px 4px;
     font-size: 12px;
-    color: var(--muted-foreground, #666);
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
 }
 
-/* Left-justify tags ONLY in UNIFIED TELLER table view */  
-#items-table-view .card-cell .item-tags {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Left-justify tags in table view */
-    gap: 4px;
+/* Show the table body with proper table cells */
+#items-table-view .items-table tbody.table-body-cells {
+    display: table-row-group;
 }
 
 
