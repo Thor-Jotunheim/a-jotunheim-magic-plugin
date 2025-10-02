@@ -1857,6 +1857,12 @@ class UnifiedTeller {
     }
 
     preventOverLimit(event, inputElement) {
+        console.log('🚨 PREVENT OVER LIMIT DEBUG:', {
+            inputId: inputElement.id,
+            key: event.key,
+            currentValue: inputElement.value,
+            cursorPos: inputElement.selectionStart
+        });
         
         // Allow navigation keys
         const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
@@ -1869,12 +1875,32 @@ class UnifiedTeller {
                 const newValue = currentValue.slice(0, cursorPos) + event.key + currentValue.slice(cursorPos);
                 const numericValue = parseInt(newValue) || 0;
                 
+                console.log('🚨 NUMBER KEY PRESSED:', {
+                    key: event.key,
+                    currentValue,
+                    cursorPos,
+                    newValue,
+                    numericValue
+                });
+                
                 // For turn-in items, check combined total
                 if (inputElement.id.includes('turnin-qty-') || inputElement.id.includes('turnin-stack-qty-')) {
                     const shopItemId = inputElement.id.replace(/^turnin-(stack-)?qty-/, '');
                     const item = this.turninItems?.find(i => i.shop_item_id == shopItemId) || this.shopItems?.find(i => i.shop_item_id == shopItemId);
+                    
+                    console.log('🚨 TURNIN VALIDATION:', {
+                        shopItemId,
+                        itemFound: !!item,
+                        itemName: item?.item_name
+                    });
+                    
                     if (item) {
                         const dynamicMax = this.getMaxAllowedTurnin(item);
+                        
+                        console.log('🚨 DYNAMIC MAX CALCULATION:', {
+                            itemName: item.item_name,
+                            dynamicMax
+                        });
                         
                         // Get both inputs
                         const unitsInput = document.getElementById(`turnin-qty-${shopItemId}`);
@@ -1890,9 +1916,23 @@ class UnifiedTeller {
                             totalUnits = (unitsInput ? parseInt(unitsInput.value) || 0 : 0) + numericValue * parseInt(item.stack_size);
                         }
                         
+                        console.log('🚨 TOTAL UNITS CALCULATION:', {
+                            inputType: inputElement.id.includes('turnin-qty-') ? 'units' : 'stacks',
+                            numericValue,
+                            stackSize: item.stack_size,
+                            unitsInputValue: unitsInput?.value,
+                            stacksInputValue: stacksInput?.value,
+                            totalUnits,
+                            dynamicMax,
+                            wouldExceed: totalUnits > dynamicMax
+                        });
+                        
                         if (totalUnits > dynamicMax) {
+                            console.log('🚨 BLOCKING INPUT - would exceed limit');
                             event.preventDefault();
                             return false;
+                        } else {
+                            console.log('🚨 ALLOWING INPUT - within limit');
                         }
                     }
                 } else {
