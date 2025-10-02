@@ -3451,33 +3451,43 @@ class UnifiedTeller {
         const playerDailyTotal = this.getPlayerDailyTurninTotal(item.item_name);
         const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
         
+        console.debug(`generateProgressText for item ${item.shop_item_id} (${item.item_name}), includeCurrent: ${includeCurrent}`);
+        
         let currentlySelected = 0;
         if (includeCurrent) {
             // Always check input values first for live updates
             const unitsInput = document.getElementById(`turnin-qty-${item.shop_item_id}`);
             const units = unitsInput ? parseInt(unitsInput.value) || 0 : 0;
+            console.debug(`Units input (turnin-qty-${item.shop_item_id}):`, unitsInput ? `value="${unitsInput.value}" -> ${units}` : 'not found');
             
             const stacksInput = document.getElementById(`turnin-stack-qty-${item.shop_item_id}`);
             const stacks = stacksInput ? parseInt(stacksInput.value) || 0 : 0;
             const stackSize = parseInt(item.stack_size) || 1;
+            console.debug(`Stacks input (turnin-stack-qty-${item.shop_item_id}):`, stacksInput ? `value="${stacksInput.value}" -> ${stacks}` : 'not found');
             
             const inputTotal = units + (stacks * stackSize);
+            console.debug(`Input total for item ${item.shop_item_id}: ${units} + (${stacks} * ${stackSize}) = ${inputTotal}`);
             
             // If there are input values, use them (for live updates)
             if (inputTotal > 0) {
                 currentlySelected = inputTotal;
+                console.debug(`Using input total ${inputTotal} for item ${item.shop_item_id}`);
             } else {
                 // If no input values, check if item is in cart
                 const cartItem = this.cart.find(cartItem => 
                     cartItem.shop_item_id == item.shop_item_id && cartItem.action === 'turnin'
                 );
+                console.debug(`No input values, checking cart for item ${item.shop_item_id}:`, cartItem ? `found with quantity ${cartItem.quantity}` : 'not found');
                 
                 if (cartItem) {
                     // Item is in cart but no input values - use cart quantity
                     currentlySelected = cartItem.quantity;
+                    console.debug(`Using cart quantity ${currentlySelected} for item ${item.shop_item_id}`);
                 }
             }
         }
+        
+        console.debug(`Final currentlySelected for item ${item.shop_item_id}: ${currentlySelected}`);
         
         const progressLines = [];
         
