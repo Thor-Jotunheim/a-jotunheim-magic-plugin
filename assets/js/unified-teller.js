@@ -4129,88 +4129,67 @@ class UnifiedTeller {
         const row = document.createElement('tr');
         row.className = 'table-item-row';
         
-        // Icon cell
+        // Check if this is a turn-in item
+        const isTurnInItem = item.event_points !== undefined && item.event_points !== null;
+        const isOutOfStock = item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity === 0;
+        
+        // Icon cell - use correct property names and hide broken images
         const iconCell = document.createElement('td');
         iconCell.className = 'icon-cell';
+        const itemImageUrl = item.icon_image || 
+            (item.prefab_name ? `/wp-content/uploads/Jotunheim-magic/icons/${item.prefab_name.toLowerCase()}.png` : null);
+        
         iconCell.innerHTML = `
             <div class="item-icon-container">
-                <img src="${item.icon_url || '/wp-content/plugins/a-jotunheim-magic-plugin/assets/images/default-icon.png'}" 
-                     alt="${item.name || 'Item'}" 
-                     class="item-icon" 
-                     onerror="this.src='/wp-content/plugins/a-jotunheim-magic-plugin/assets/images/default-icon.png'">
+                ${itemImageUrl ? `
+                    <img src="${itemImageUrl}" alt="${this.escapeHtml(item.item_name || 'Item')}" 
+                         class="item-icon" onerror="this.style.display='none'">
+                ` : ''}
             </div>
         `;
         
-        // Item info cell
+        // Item info cell - use correct property names  
         const itemCell = document.createElement('td');
         itemCell.className = 'item-cell';
+        const biomeName = item.tech_name && item.tech_name !== 'N/A' && item.tech_name !== 'null' ? item.tech_name : 'Unknown';
+        const biomeClass = `biome-${biomeName.toLowerCase().replace(/\s+/g, '')}`;
+        
         itemCell.innerHTML = `
             <div class="item-info">
-                <div class="item-name">${item.name || 'Unknown Item'}</div>
-                <div class="item-type">${item.type || ''}</div>
+                <div class="item-name">${this.escapeHtml(item.item_name || 'Unknown Item')}</div>
+                <div class="item-type">${item.item_type || (isTurnInItem ? 'Trophies' : 'Item')}</div>
                 <div class="item-tags">
-                    ${item.biome ? `<span class="biome-tag">${item.biome}</span>` : ''}
+                    <span class="biome-tag ${biomeClass}">${biomeName}</span>
                 </div>
             </div>
         `;
         
-        // Quantity controls cell
+        // Quantity controls cell - use working quantity controls from createItemCard
         const quantityCell = document.createElement('td');
         quantityCell.className = 'quantity-cell';
         quantityCell.innerHTML = `
             <div class="quantity-section">
-                <div class="quantity-controls">
-                    <label>Unit(s):</label>
-                    <button type="button" onclick="window.unifiedTeller.decrementQuantity(${item.shop_item_id})">-</button>
-                    <input type="number" id="qty-${item.shop_item_id}" value="0" min="0" max="999" class="quantity-input">
-                    <button type="button" onclick="window.unifiedTeller.incrementQuantity(${item.shop_item_id})">+</button>
-                </div>
-                <div class="quantity-controls">
-                    <label>Stack(s) (${item.stack_size || 50}):</label>
-                    <button type="button" onclick="window.unifiedTeller.decrementStackQuantity(${item.shop_item_id})">-</button>
-                    <input type="number" id="stack-qty-${item.shop_item_id}" value="0" min="0" max="99" class="quantity-input">
-                    <button type="button" onclick="window.unifiedTeller.incrementStackQuantity(${item.shop_item_id})">+</button>
-                </div>
+                ${this.generateQuantityControls(item, isTurnInItem)}
             </div>
         `;
         
-        // Progress/calculations cell  
+        // Progress/calculations cell - use working info display
         const progressCell = document.createElement('td');
         progressCell.className = 'progress-cell';
-        const collectedCount = this.getCollectedCount ? this.getCollectedCount(item.item_id) : 0;
-        const requiredCount = item.quantity || 0;
         progressCell.innerHTML = `
-            <div class="progress-info">
-                <div class="collected-count">${collectedCount} / ${requiredCount}</div>
-                <div class="collected-label">collected</div>
+            <div class="progress-info" id="info-${item.shop_item_id}">
+                ${this.generateItemInfoDisplay(item, isTurnInItem)}
             </div>
         `;
         
-        // Actions cell
+        // Actions cell - use working action generation
         const actionsCell = document.createElement('td');
         actionsCell.className = 'actions-cell';
-        let actionsHTML = '';
-        
-        // Check for Turn In button
-        if (item.turn_in == 1 || item.turn_in === true) {
-            if (item.event_points !== undefined && item.event_points !== null && item.event_points > 0) {
-                actionsHTML += `<button class="btn btn-sm btn-info turn-in-button" onclick="window.unifiedTeller.addTurninItemWithQuantity(${item.shop_item_id})" title="Turn in for ${item.event_points} points">Turn In</button>`;
-            } else {
-                actionsHTML += `<button class="btn btn-sm btn-info turn-in-button" onclick="window.unifiedTeller.addToTurnin(${item.shop_item_id})" title="Turn in for points">Turn In</button>`;
-            }
-        }
-        
-        // Check for Buy button (buy=1 means customers can buy from shop, so teller sells)
-        if (item.buy == 1 || item.buy === true) {
-            actionsHTML += `<button class="btn btn-sm btn-success table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'buy', 'individual')" title="Sell to customer">Sell</button>`;
-        }
-        
-        // Check for Sell button (sell=1 means shop will buy from customers, so teller buys)
-        if (item.sell == 1 || item.sell === true) {
-            actionsHTML += `<button class="btn btn-sm btn-warning table-action-btn" onclick="window.unifiedTeller.addToCart(${item.shop_item_id}, 'sell', 'individual')" title="Buy from customer">Buy</button>`;
-        }
-        
-        actionsCell.innerHTML = `<div class="actions-container">${actionsHTML || '<span class="text-muted">No actions</span>'}</div>`;
+        actionsCell.innerHTML = `
+            <div class="actions-container">
+                ${this.generateUnifiedItemActions(item, isTurnInItem)}
+            </div>
+        `;
         
         // Append all cells to row
         row.appendChild(iconCell);
@@ -4218,6 +4197,13 @@ class UnifiedTeller {
         row.appendChild(quantityCell);
         row.appendChild(progressCell);
         row.appendChild(actionsCell);
+        
+        // Add event listeners for functionality (from createItemCard)
+        if (!isTurnInItem) {
+            const unitPrice = item.unit_price || item.price || item.default_price || 0;
+            const stackPrice = item.stack_price || (unitPrice * (item.stack_size || 1));
+            this.addItemCardEventListeners(row, item, unitPrice, stackPrice);
+        }
         
         return row;
     }

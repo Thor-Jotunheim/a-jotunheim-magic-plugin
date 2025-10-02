@@ -2560,6 +2560,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     justify-content: center;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    position: relative;
+}
+
+/* Hide empty icon containers */
+#items-table-view .icon-cell .item-icon-container:empty {
+    display: none;
 }
 
 #items-table-view .icon-cell .item-icon {
@@ -2568,6 +2574,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     object-fit: cover;
     border-radius: 3px;
     transform: scale(1.05);
+    display: block;
+}
+
+/* Ensure icons that fail to load are hidden */
+#items-table-view .icon-cell .item-icon[style*="display: none"] {
+    display: none !important;
 }
 
 /* Item info cell styling - enhanced with proper formatting */
@@ -2624,12 +2636,27 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .quantity-cell {
     padding: 8px 4px;
     vertical-align: middle;
+    width: 180px;
+    min-width: 180px;
 }
 
 #items-table-view .quantity-cell .quantity-section {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
+}
+
+/* Ensure quantity controls from the original method work in table view */
+#items-table-view .quantity-cell .quantity-control-group {
+    margin-bottom: 8px;
+}
+
+#items-table-view .quantity-cell .quantity-label {
+    font-weight: 600;
+    font-size: 10px;
+    margin-bottom: 4px;
+    color: var(--gray-11);
 }
 
 #items-table-view .quantity-cell .quantity-controls {
@@ -2731,6 +2758,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     padding: 8px 4px;
     vertical-align: middle;
     text-align: center;
+    width: 80px;
+    min-width: 80px;
 }
 
 #items-table-view .actions-cell .actions-container {
