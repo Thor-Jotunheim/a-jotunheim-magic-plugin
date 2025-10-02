@@ -1377,6 +1377,29 @@ class UnifiedTeller {
         }
     }
 
+    generateTableItemInfoDisplay(item, isTurnInItem) {
+        if (isTurnInItem) {
+            // For table view turn-in items, use table-specific progress ID
+            return `
+                <div class="turnin-progress" id="table-progress-${item.shop_item_id}">
+                    ${this.generateProgressText(item, false)}
+                </div>
+            `;
+        } else {
+            // For table view non-turn-in items, use table-specific info ID
+            const unitPrice = item.unit_price || item.price || item.default_price || 0;
+            const unitPriceText = unitPrice > 0 ? `${unitPrice} coins` : 'Price varies';
+            
+            if (item.buy == 1 || item.buy === true) {
+                return `<div class="table-item-price sell-price">Sell for: ${unitPriceText}</div>`;
+            } else if (item.sell == 1 || item.sell === true) {
+                return `<div class="table-item-price buy-price">Buy for: ${unitPriceText}</div>`;
+            } else {
+                return `<div class="table-item-price neutral-price">${unitPriceText}</div>`;
+            }
+        }
+    }
+
     generateItemInfoDisplay(item, isTurnInItem) {
         if (isTurnInItem) {
             // For turn-in items, show live transaction progress (use original ID for compatibility)
@@ -3214,8 +3237,15 @@ class UnifiedTeller {
     updateProgressDisplay(shopItemId, turnInRequirement) {
         console.log(`🔵 updateProgressDisplay called for item ${shopItemId}`);
         console.log(`🔵 STACK TRACE:`, new Error().stack);
-        const progressElement = document.getElementById(`progress-${shopItemId}`);
+        
+        // Detect current view and target the correct progress element
+        const isTableView = this.isCurrentlyTableView();
+        const progressId = isTableView ? `table-progress-${shopItemId}` : `progress-${shopItemId}`;
+        const progressElement = document.getElementById(progressId);
+        
+        console.log(`🔵 Current view: ${isTableView ? 'TABLE' : 'GRID'}, targeting ID: ${progressId}`);
         console.log(`🔵 Progress element found:`, !!progressElement);
+        
         if (progressElement) {
             const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
                         this.shopItems.find(i => i.shop_item_id == shopItemId);
@@ -3239,11 +3269,34 @@ class UnifiedTeller {
         }
     }
 
+    isCurrentlyTableView() {
+        // Check if table view is currently visible/active
+        const tableView = document.querySelector('.table-view-container');
+        const gridView = document.querySelector('.shop-items-grid');
+        
+        if (tableView && gridView) {
+            // Both exist, check which one is visible
+            const tableVisible = getComputedStyle(tableView).display !== 'none';
+            const gridVisible = getComputedStyle(gridView).display !== 'none';
+            console.log(`🔧 View detection: table visible=${tableVisible}, grid visible=${gridVisible}`);
+            return tableVisible && !gridVisible;
+        } else if (tableView) {
+            // Only table view exists
+            return true;
+        } else {
+            // Only grid view exists or neither exists
+            return false;
+        }
+    }
+
     updateAllProgressDisplays() {
         // Update all visible progress displays to reflect current quantity inputs
-        const progressElements = document.querySelectorAll('[id^="progress-"]');
+        const isTableView = this.isCurrentlyTableView();
+        const progressSelector = isTableView ? '[id^="table-progress-"]' : '[id^="progress-"]';
+        const progressElements = document.querySelectorAll(progressSelector);
+        
         progressElements.forEach(progressElement => {
-            const shopItemId = progressElement.id.replace('progress-', '');
+            const shopItemId = progressElement.id.replace(isTableView ? 'table-progress-' : 'progress-', '');
             const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
                         this.shopItems.find(i => i.shop_item_id == shopItemId);
             if (item) {
@@ -4548,7 +4601,7 @@ class UnifiedTeller {
         progressCell.className = 'progress-cell';
         progressCell.innerHTML = `
             <div class="progress-info" id="info-${item.shop_item_id}">
-                ${this.generateItemInfoDisplay(item, isTurnInItem)}
+                ${this.generateTableItemInfoDisplay(item, isTurnInItem)}
             </div>
         `;
         
