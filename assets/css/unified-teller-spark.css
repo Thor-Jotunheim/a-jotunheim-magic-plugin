@@ -2500,10 +2500,15 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Table column widths for 4-column layout (no icon column) */
 #items-table-view .table-container .items-table th:nth-child(1),
-#items-table-view .table-container .items-table td:nth-child(1) {
-    width: 180px !important; /* Item column - reduced to 180px */
-    min-width: 150px !important;
+#items-table-view .table-container .items-table td:nth-child(1),
+#items-table-view .table-container .items-table .item-column,
+#items-table-view .table-container .items-table .item-cell {
+    width: 180px !important; /* Item column - force specific width */
+    min-width: 180px !important;
+    max-width: 180px !important; /* Force exact width */
     text-align: left !important; /* Force left alignment for item column */
+    box-sizing: border-box !important; /* Include padding in width calculation */
+    overflow: hidden !important; /* Prevent content from expanding width */
 }
 
 #items-table-view .table-container .items-table th:nth-child(2),
