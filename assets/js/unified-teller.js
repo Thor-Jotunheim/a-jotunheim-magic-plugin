@@ -3223,7 +3223,13 @@ class UnifiedTeller {
             if (item) {
                 const newProgressHTML = this.generateProgressText(item, true);
                 console.log(`🔵 Generated progress HTML:`, newProgressHTML);
-                progressElement.innerHTML = newProgressHTML;
+                
+                // Add visual confirmation that update happened
+                const timestamp = new Date().toLocaleTimeString();
+                const enhancedHTML = `<div style="background: yellow; padding: 2px; margin: 2px;">UPDATED at ${timestamp}</div>${newProgressHTML}`;
+                
+                progressElement.innerHTML = enhancedHTML;
+                console.log(`🔵 DOM updated with enhanced HTML at ${timestamp}`);
             }
         }
         
