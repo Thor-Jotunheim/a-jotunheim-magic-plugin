@@ -952,12 +952,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     width: 100%;
     overflow-x: auto;
     padding: 10px 0;
+    box-sizing: border-box; /* Ensure padding doesn't add to width */
 }
 
 .table-container {
-    flex: 1;
-    min-width: 600px; /* Reduced minimum width for better responsive behavior */
-    max-width: 1000px; /* Reduced maximum width */
+    flex: 1; /* This will make each table expand to fill available space */
+    min-width: 500px; /* Further reduced minimum width */
     background: var(--background);
     border-radius: var(--radius-2);
     border: 1px solid var(--border);
@@ -965,11 +965,13 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     overflow: hidden;
 }
 
-/* Items Table */
+/* Ensure single column takes full width */
 .items-table-wrapper.single-column .table-container {
-    min-width: 100%;
     max-width: none;
+    min-width: 100%;
 }
+
+/* Items Table */
 
 .items-table {
     width: 100%;
@@ -991,30 +993,30 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Table Column Widths for Split Quantity Controls */
 .items-table .item-column {
-    width: 25%;
-    min-width: 150px; /* Reduced from 200px */
+    width: 30%; /* Increased to fill more space */
+    min-width: 120px; /* Reduced minimum to allow more flexibility */
 }
 
 .items-table .units-column {
-    width: 12%;
-    min-width: 80px; /* Reduced from 100px */
+    width: 15%; /* Increased from 12% */
+    min-width: 70px; /* Reduced minimum */
     text-align: center;
 }
 
 .items-table .stacks-column {
-    width: 12%;
-    min-width: 80px; /* Reduced from 100px */
+    width: 15%; /* Increased from 12% */
+    min-width: 70px; /* Reduced minimum */
     text-align: center;
 }
 
 .items-table .progress-column {
-    width: 31%;
-    min-width: 180px; /* Reduced from 250px */
+    width: 25%; /* Reduced from 31% to balance with item column */
+    min-width: 150px; /* Reduced minimum */
 }
 
 .items-table .actions-column {
-    width: 20%;
-    min-width: 120px; /* Reduced from 150px */
+    width: 15%; /* Reduced from 20% */
+    min-width: 100px; /* Reduced minimum */
     text-align: center;
 }
 

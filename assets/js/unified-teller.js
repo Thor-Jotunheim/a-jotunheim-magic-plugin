@@ -4481,7 +4481,7 @@ class UnifiedTeller {
     getOptimalColumnCount() {
         // Determine optimal number of columns based on available space
         const containerWidth = window.innerWidth - 80; // Account for padding/margins/scrollbar
-        const tableMinWidth = 600; // Reduced minimum table width from CSS
+        const tableMinWidth = 500; // Updated to match CSS minimum width
         const gapWidth = 20; // Gap between tables from CSS
         
         // Calculate maximum columns that can fit without cutting off
