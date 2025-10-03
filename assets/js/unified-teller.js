@@ -610,6 +610,9 @@ class UnifiedTeller {
             this.updateViewCartButton();
             this.updateRecordTransactionButton();
             
+            // Load transaction history for the selected shop
+            await this.loadTransactionHistory();
+            
             // Ensure we're in shop view mode and hide transaction summary
             this.isCartView = false;
             const transactionSummaryCard = document.querySelector('.summary-card');
@@ -632,6 +635,9 @@ class UnifiedTeller {
             }
             
             this.clearCart();
+            
+            // Clear transaction history when no shop is selected
+            await this.loadTransactionHistory();
         }
     }
 
@@ -2568,6 +2574,15 @@ class UnifiedTeller {
             const dateFilter = document.getElementById('history-date-filter').value;
             if (dateFilter) params.date_from = dateFilter;
             
+            // Filter by selected shop if one is chosen
+            if (this.selectedShop) {
+                const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                const shopName = selectedOption ? selectedOption.dataset.shopName : null;
+                if (shopName) {
+                    params.shop_name = shopName;
+                }
+            }
+            
             // Limit to recent transactions
             params.limit = 50;
             
@@ -2585,21 +2600,45 @@ class UnifiedTeller {
         container.innerHTML = '';
 
         if (transactions.length === 0) {
-            container.innerHTML = '<div class="transaction-item">No transactions found</div>';
+            const emptyMessage = this.selectedShop ? 
+                '<div class="transaction-item">No transactions found for this shop</div>' :
+                '<div class="transaction-item">Select a shop to view transaction history</div>';
+            container.innerHTML = emptyMessage;
             return;
         }
 
         transactions.forEach(transaction => {
             const transactionItem = document.createElement('div');
             transactionItem.className = 'transaction-item';
+            
+            // Use customer_name if available, fallback to player_name 
+            const customerName = transaction.customer_name || transaction.player_name || 'Unknown';
+            const itemName = transaction.item_name || 'Unknown Item';
+            const quantity = transaction.quantity || 1;
+            const transactionType = transaction.transaction_type || 'general';
+            const teller = transaction.teller || 'Unknown';
+            const totalAmount = parseFloat(transaction.total_amount || 0);
+            
+            // Format the transaction type for display
+            const typeDisplay = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+            
             transactionItem.innerHTML = `
                 <div class="transaction-info">
-                    <strong>${this.escapeHtml(transaction.player_name || 'Unknown')}</strong> - 
-                    ${transaction.transaction_type || 'Unknown'} - 
-                    ${this.formatDate(transaction.transaction_date)}
-                    ${transaction.notes ? `<br><small>${this.escapeHtml(transaction.notes)}</small>` : ''}
+                    <div class="transaction-main-line">
+                        <strong>${this.escapeHtml(customerName)}</strong> - 
+                        ${this.escapeHtml(itemName)} 
+                        ${quantity > 1 ? `(x${quantity})` : ''} - 
+                        ${this.formatDate(transaction.transaction_date)}
+                    </div>
+                    <div class="transaction-details">
+                        <small>
+                            ${typeDisplay} | 
+                            Teller: ${this.escapeHtml(teller)}
+                            ${transaction.notes ? ` | ${this.escapeHtml(transaction.notes)}` : ''}
+                        </small>
+                    </div>
                 </div>
-                <div class="transaction-amount">$${parseFloat(transaction.total_amount || 0).toFixed(2)}</div>
+                <div class="transaction-amount">${totalAmount.toFixed(0)} ${totalAmount === 1 ? 'coin' : 'coins'}</div>
             `;
             container.appendChild(transactionItem);
         });

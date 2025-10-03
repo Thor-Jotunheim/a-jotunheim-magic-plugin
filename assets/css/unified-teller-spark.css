@@ -58,20 +58,6 @@
     --red-11: hsl(358, 65%, 48.7%);
     --red-12: hsl(354, 50%, 14.6%);
     
-    /* Orange Colors */
-    --orange-1: hsl(24, 70%, 99%);
-    --orange-2: hsl(24, 83%, 97.6%);
-    --orange-3: hsl(24, 100%, 95.3%);
-    --orange-4: hsl(25, 100%, 92.2%);
-    --orange-5: hsl(25, 100%, 87.8%);
-    --orange-6: hsl(25, 100%, 81.8%);
-    --orange-7: hsl(24, 100%, 75.3%);
-    --orange-8: hsl(24, 100%, 68.2%);
-    --orange-9: hsl(24, 94%, 50%);
-    --orange-10: hsl(24, 100%, 46.5%);
-    --orange-11: hsl(24, 100%, 37%);
-    --orange-12: hsl(15, 60%, 17%);
-    
     /* Semantic Colors */
     --background: var(--gray-1);
     --foreground: var(--gray-12);
@@ -393,6 +379,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .registration-button-container {
     margin-top: var(--space-4);
     margin-bottom: var(--space-4);
+    /* This container sets the baseline positioning for button alignment */
 }
 
 .register-new-player-btn {
@@ -1001,158 +988,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-size: var(--font-size-2);
 }
 
-/* Table Action Buttons */
-.table-action-btn {
-    padding: 4px 8px !important;
-    font-size: 12px !important;
-    margin: 0 2px !important;
-    border-radius: 4px !important;
-    border: none !important;
-    cursor: pointer;
-    display: inline-block;
-    text-align: center;
-    line-height: 1.2;
-    transition: all 0.2s ease;
-}
-
-.table-action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.table-action-btn.btn-success {
-    background-color: var(--green-9) !important;
-    color: white !important;
-}
-
-.table-action-btn.btn-success:hover {
-    background-color: var(--green-10) !important;
-}
-
-.table-action-btn.btn-warning {
-    background-color: var(--orange-9) !important;
-    color: white !important;
-}
-
-.table-action-btn.btn-warning:hover {
-    background-color: var(--orange-10) !important;
-}
-
-.table-action-btn.btn-info {
-    background-color: var(--blue-9) !important;
-    color: white !important;
-}
-
-.table-action-btn.btn-info:hover {
-    background-color: var(--blue-10) !important;
-}
-
-/* Unified Card Layout - Transaction Info Display */
-.transaction-info {
-    padding: var(--space-3);
-    border-radius: var(--radius-2);
-    margin-bottom: var(--space-2);
-}
-
-.transaction-info .info-label {
-    font-size: var(--font-size-2);
-    color: var(--muted-foreground);
-    margin-bottom: var(--space-1);
-}
-
-.transaction-info .info-value {
-    font-size: var(--font-size-4);
-    font-weight: 600;
-    margin-bottom: var(--space-2);
-}
-
-.transaction-info .info-details {
-    display: flex;
-    gap: var(--space-3);
-    font-size: var(--font-size-1);
-    color: var(--muted-foreground);
-}
-
-.transaction-info.buy-info {
-    background-color: var(--green-2);
-    border: 1px solid var(--green-6);
-}
-
-.transaction-info.buy-info .info-value {
-    color: var(--green-11);
-}
-
-.transaction-info.sell-info {
-    background-color: var(--orange-2);
-    border: 1px solid var(--orange-6);
-}
-
-.transaction-info.sell-info .info-value {
-    color: var(--orange-11);
-}
-
-.transaction-info.turnin-info {
-    background-color: var(--blue-2);
-    border: 1px solid var(--blue-6);
-}
-
-.transaction-info.turnin-info .info-value {
-    color: var(--blue-11);
-}
-
-.transaction-info.no-actions {
-    background-color: var(--gray-2);
-    border: 1px solid var(--gray-6);
-}
-
-/* Large quantity inputs for unified layout */
-.large-quantity-input {
-    width: 80px;
-    padding: var(--space-2);
-    text-align: center;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-3);
-    font-weight: 500;
-}
-
-/* Turn-in Progress Display */
-.turnin-progress {
-    background-color: var(--blue-2);
-    border: 1px solid var(--blue-6);
-    padding: var(--space-3);
-    border-radius: var(--radius-2);
-    margin-bottom: var(--space-2);
-}
-
-.progress-line {
-    margin-bottom: var(--space-1);
-    font-size: var(--font-size-2);
-    line-height: var(--line-height-3);
-}
-
-.progress-line:last-child {
-    margin-bottom: 0;
-}
-
-/* Transaction progress (current turn-in) - Green */
-.transaction-progress {
-    color: var(--green-11);
-    font-weight: 600;
-}
-
-/* Player daily progress - Blue/Info */
-.player-progress {
-    color: var(--blue-11);
-    font-weight: 500;
-}
-
-/* Server total progress - Standard */
-.server-progress {
-    color: var(--gray-11);
-    font-weight: 500;
-}
-
 /* Transaction List */
 .transaction-list {
     border: 1px solid var(--border);
@@ -1423,7 +1258,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .item-tags {
     display: flex;
     flex-direction: column;
-    align-items: flex-end; /* Right alignment for grid view */
+    align-items: flex-end;
     gap: 4px;
 }
 
@@ -1437,15 +1272,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Biome Tags */
 .item-biome {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
-    padding: 2px 5px;
-    border-radius: 3px;
+    padding: 3px 6px;
+    border-radius: 4px;
     display: inline-block;
     text-transform: capitalize;
     text-align: center;
-    min-width: 45px;
-    line-height: 1.2;
+    min-width: 50px;
 }
 
 /* Biome Color Coding */
@@ -1587,24 +1421,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .cart-qty-input {
-    width: 140px !important;
-    height: 60px !important;
-    padding: 12px !important;
-    font-size: 28px !important;
-    font-weight: bold !important;
-    text-align: center !important;
+    width: 50px;
+    padding: 2px 4px;
     margin-right: var(--space-1);
-    border: 2px solid var(--gray-6) !important;
-    border-radius: 8px !important;
-    background: white !important;
-    -moz-appearance: textfield !important;
-    appearance: textfield !important;
-}
-
-.cart-qty-input::-webkit-outer-spin-button,
-.cart-qty-input::-webkit-inner-spin-button {
-    -webkit-appearance: none !important;
-    margin: 0 !important;
 }
 
 
@@ -1945,8 +1764,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .customer-payment-actions-row {
     display: flex;
     gap: var(--space-4);
+    margin-bottom: var(--space-6);
     align-items: stretch;
-    margin-bottom: 0 !important;
+    min-height: 400px; /* Force minimum height for button alignment */
 }
 
 .customer-card {
@@ -1954,6 +1774,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
+    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .payment-card {
@@ -1961,6 +1782,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
+    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .actions-card {
@@ -1968,11 +1790,46 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 200px; /* Minimum width for buttons */
     display: flex;
     flex-direction: column;
+    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .actions-card .card-content {
     flex: 1;
     display: flex;
+    flex-direction: column;
+    padding-top: var(--space-3); /* Reduce top padding to move content up */
+}
+
+/* Ensure all card content sections expand to fill available space */
+.customer-card .card-content,
+.payment-card .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make form fields within actions card expand and align consistently */
+.actions-card .card-content .form-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end !important; /* Push buttons to bottom - force override */
+    min-height: 200px; /* Minimum height to enable proper flex alignment */
+}
+
+/* Ensure customer card form field aligns consistently */
+.customer-card .card-content .form-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end !important; /* Push registration button to bottom - force override */
+    min-height: 200px; /* Minimum height to enable proper flex alignment */
+}
+
+/* Ensure payment card content expands properly */
+.payment-card .card-content {
+    flex: 1;
+    min-height: 0;
 }
 
 /* Compact Payment Grid */
@@ -1983,16 +1840,28 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin-bottom: var(--space-4);
 }
 
-/* Vertical Transaction Actions */
-/* Transaction Button Containers - Mirror Registration Button */
-.clear-transaction-container {
-    margin-top: var(--space-4);
-    margin-bottom: var(--space-4);
+/* FORCE BUTTON ALIGNMENT - Nuclear Approach */
+.actions-card .form-field {
+    position: relative !important;
+    min-height: 300px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
 }
 
-.record-transaction-container {
-    margin-top: var(--space-4);
-    margin-bottom: var(--space-4);
+.customer-card .form-field {
+    position: relative !important;
+    min-height: 300px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+}
+
+/* Reset button margins to let flex handle positioning */
+.clear-transaction-container,
+.record-transaction-btn,
+.registration-button-container {
+    margin: 0 !important;
 }
 
 .clear-transaction-btn,
@@ -2206,13 +2075,13 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .turnin-compact-item {
     display: grid;
-    grid-template-columns: minmax(120px, auto) 1fr 70px 35px;
+    grid-template-columns: 2fr 80px auto auto;
     gap: 6px;
     align-items: center;
     padding: 3px 6px;
     background: var(--gray-1);
     border-radius: 3px;
-    font-size: var(--dynamic-font-size, 18px);
+    font-size: 13px;
     line-height: 1.3;
     margin-bottom: 1px;
 }
@@ -2231,9 +2100,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .turnin-compact-progress {
-    width: 100%;
+    width: 80px;
     height: 10px;
-    min-width: 60px;
+    flex-shrink: 0;
 }
 
 .turnin-compact-bar {
@@ -2273,736 +2142,49 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     padding: var(--space-5);
 }
 
-/* Universal Table Layout Styles - Match Card View Exactly */
-.table-universal-inputs {
+/* Enhanced Transaction History Styling */
+.history-list .transaction-item {
     display: flex;
-    gap: var(--space-3);
+    justify-content: space-between;
     align-items: flex-start;
-}
-
-.table-input-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 120px;
-}
-
-.table-input-label {
-    font-size: 12px;
-    color: var(--muted-foreground);
-    margin-bottom: var(--space-1);
-    font-weight: 500;
-}
-
-.table-qty-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 3px;
-    width: 100%;
-}
-
-.table-qty-btn {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    width: 50px;
-    height: 38px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.table-qty-btn:hover {
-    background-color: #5a6268;
-}
-
-.table-qty-btn:disabled {
-    background-color: #adb5bd;
-    cursor: not-allowed;
-}
-
-.table-universal-qty-input {
-    width: 80px;
-    height: 38px;
-    border: 2px solid #ced4da;
-    background: white;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 0 8px;
-    border-radius: 4px;
-    color: #333;
-}
-
-.table-universal-qty-input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.table-universal-calculations {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    font-size: 13px;
-}
-
-.calc-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-1) 0;
-}
-
-.calc-label {
-    color: var(--muted-foreground);
-    font-size: 12px;
-}
-
-.calc-value {
-    color: var(--foreground);
-    font-weight: 500;
-    text-align: right;
-    min-width: 40px;
-}
-
-.table-universal-btn {
-    min-width: 80px;
-    height: 32px;
-    font-size: 13px;
-    padding: var(--space-1) var(--space-3);
-    margin: 1px;
-}
-
-/* Table cell styling for reused card components */
-.table-controls-cell {
-    padding: 8px;
-    vertical-align: middle;
-    text-align: center;
-    min-width: 200px;
-}
-
-.table-progress-cell {
-    padding: 8px;
-    vertical-align: middle;
-    min-width: 250px;
-}
-
-.table-info-cell {
-    padding: 8px;
-    vertical-align: middle;
-    text-align: center;
-}
-
-.table-price-cell {
-    padding: 8px;
-    vertical-align: middle;
-    text-align: center;
-    font-weight: bold;
-}
-
-.table-actions-cell {
-    padding: 8px;
-    vertical-align: middle;
-    text-align: center;
-    min-width: 120px;
-}
-
-/* Make sure card components work well in table cells */
-.table-controls-cell .quantity-controls {
-    justify-content: center;
-    margin: 0;
-}
-
-.table-progress-cell .turnin-progress-container {
-    margin: 0;
-}
-
-.table-actions-cell .action-buttons {
-    justify-content: center;
-    margin: 0;
-}
-
-.table-price-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-/* Table View with Working Cards */
-.items-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--background, #ffffff);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.items-table thead {
-    background: var(--muted, #f8f9fa);
-    border-bottom: 2px solid var(--border, #dee2e6);
-}
-
-.items-table thead th {
-    padding: 12px 8px; /* Reduced horizontal padding from 16px to 8px */
-    text-align: center;
-    font-weight: 600;
-    color: var(--foreground, #333);
-    font-size: 14px;
-}
-
-.table-body-cards {
-    display: table-row-group;
-}
-
-.table-row-card-wrapper {
-    border-bottom: 1px solid var(--border, #dee2e6);
-}
-
-.table-row-card-wrapper:hover {
-    background: var(--muted, #f8f9fa);
-}
-
-.table-row-card-wrapper:last-child {
-    border-bottom: none;
-}
-
-/* Old card-based CSS removed - now using proper table cells for column alignment */
-
-/* Responsive table layout with dynamic columns */
-#items-table-view {
-    display: grid !important;
-    gap: 10px;
-    width: 100%;
-    padding-left: 2px;
-    padding-right: 2px;
-    
-    /* Responsive grid columns based on screen width */
-    /* Mobile: 1 column (stack vertically) */
-    grid-template-columns: 1fr;
-}
-
-/* Very small screens: ensure tables are readable */
-@media (max-width: 480px) {
-    #items-table-view {
-        gap: 5px;
-        padding-left: 1px;
-        padding-right: 1px;
-    }
-    
-    #items-table-view .table-container .items-table {
-        min-width: 400px; /* Reduce minimum width for very small screens */
-        font-size: 0.9em; /* Slightly smaller text */
-    }
-}
-
-/* Tablet and up: 2 columns */
-@media (min-width: 768px) {
-    #items-table-view {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-/* Large screens: 3 columns */
-@media (min-width: 1200px) {
-    #items-table-view {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
-}
-
-/* Extra large screens: 4 columns */
-@media (min-width: 1600px) {
-    #items-table-view {
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-    }
-}
-
-/* Ultra wide screens: 5 columns */
-@media (min-width: 2000px) {
-    #items-table-view {
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    }
-}
-
-#items-table-view .table-container {
-    min-width: 0; /* Allow shrinking */
-    display: flex;
-    justify-content: center; /* Center tables within their grid cells */
-    overflow-x: auto; /* Handle narrow containers */
-    width: 100%;
-    box-sizing: border-box;
-}
-
-#items-table-view .table-container .items-table {
-    width: 700px; /* Back to the original perfect width */
-    table-layout: fixed;
-    border-collapse: collapse;
-}
-
-/* Table column widths for 4-column layout (no icon column) */
-#items-table-view .table-container .items-table th:nth-child(1),
-#items-table-view .table-container .items-table td:nth-child(1),
-#items-table-view .table-container .items-table .item-column,
-#items-table-view .table-container .items-table .item-cell {
-    width: 152px !important; /* Item column - increased by 8px from 144px */
-    min-width: 152px !important;
-    max-width: 152px !important; /* Force exact width */
-    text-align: left !important; /* Force left alignment for item column */
-    box-sizing: border-box !important; /* Include padding in width calculation */
-    overflow: hidden !important; /* Prevent content from expanding width */
-    white-space: nowrap !important; /* Prevent text wrapping */
-}
-
-#items-table-view .table-container .items-table th:nth-child(2),
-#items-table-view .table-container .items-table td:nth-child(2) {
-    width: 80px !important; /* Units column - back to reasonable size */
-    min-width: 80px !important;
-    max-width: 80px !important;
-    text-align: center !important;
-    box-sizing: border-box !important;
-}
-
-#items-table-view .table-container .items-table th:nth-child(3),
-#items-table-view .table-container .items-table td:nth-child(3) {
-    width: 80px !important; /* Stacks column - back to reasonable size */
-    min-width: 80px !important;
-    max-width: 80px !important;
-    text-align: center !important;
-    box-sizing: border-box !important;
-}
-
-#items-table-view .table-container .items-table th:nth-child(4),
-#items-table-view .table-container .items-table td:nth-child(4) {
-    width: 288px !important; /* Progress column - reduced by 8px to maintain 700px total */
-    min-width: 288px !important;
-    max-width: 288px !important;
-    box-sizing: border-box !important;
-}
-
-#items-table-view .table-container .items-table th:nth-child(5),
-#items-table-view .table-container .items-table td:nth-child(5) {
-    width: 100px !important; /* Actions column */
-    min-width: 100px !important;
-    max-width: 100px !important;
-    text-align: center !important;
-    box-sizing: border-box !important;
-}
-
-/* Table cell styling for proper column alignment with enhanced visual effects */
-#items-table-view .table-item-row {
-    border-bottom: 1px solid var(--gray-6);
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-#items-table-view .table-item-row:hover {
-    background-color: var(--gray-2);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transform: translateY(-1px);
-}
-
-#items-table-view .table-item-row:last-child {
-    border-bottom: none;
-}
-
-/* Icon cell styling - enhanced with proper framing */
-#items-table-view .icon-cell {
-    text-align: center;
-    padding: 8px 4px;
-    vertical-align: middle;
-}
-
-#items-table-view .icon-cell .item-icon-container {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto;
-    background: var(--gray-2);
-    border-radius: 6px;
-    border: 1px solid var(--gray-6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    position: relative;
-}
-
-/* Hide empty icon containers */
-#items-table-view .icon-cell .item-icon-container:empty {
-    display: none;
-}
-
-#items-table-view .icon-cell .item-icon {
-    width: 32px;
-    height: 32px;
-    object-fit: cover;
-    border-radius: 3px;
-    transform: scale(1.05);
-    display: block;
-}
-
-/* Ensure icons that fail to load are hidden */
-#items-table-view .icon-cell .item-icon[style*="display: none"] {
-    display: none !important;
-}
-
-/* Item info cell styling - enhanced with proper formatting */
-#items-table-view .item-cell {
-    padding: 8px 6px;
-    vertical-align: middle;
-}
-
-#items-table-view .item-cell .item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: flex-start; /* Ensure all child elements align to the left */
-    width: 100% !important;
-    max-width: 153px !important; /* Match container width */
-    overflow: hidden !important;
-}
-
-#items-table-view .item-cell .item-name {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 2px;
-    color: var(--foreground);
-    line-height: 1.2;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    max-width: 140px !important; /* Use more available space */
-}
-
-#items-table-view .item-cell .item-type {
-    font-size: 11px;
-    color: var(--gray-9);
-    background: var(--gray-3);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-bottom: 2px;
-    display: inline-block;
-    width: fit-content;
-}
-
-#items-table-view .item-cell .item-tags {
-    display: flex;
-    gap: 2px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
-#items-table-view .item-cell .biome-tag {
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 5px;
-    border-radius: 3px;
-    display: inline-block;
-    text-transform: capitalize;
-    min-width: 45px;
-    line-height: 1.2;
-    /* Remove background and color overrides to allow biome-specific colors */
-}
-
-/* Quantity controls cell styling - enhanced with proper button styling */
-#items-table-view .quantity-cell {
-    padding: 8px 4px;
-    vertical-align: middle;
-    width: 180px;
-    min-width: 180px;
-}
-
-#items-table-view .quantity-cell .quantity-section {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-    width: 100%;
-    justify-content: space-between;
-}
-
-/* Ensure quantity controls from the original method work in table view */
-#items-table-view .quantity-cell .quantity-control-group {
-    margin-bottom: 0;
-    flex: 1;
-    min-width: 0;
-}
-
-#items-table-view .quantity-cell .quantity-label {
-    font-weight: 600;
-    font-size: 10px;
-    margin-bottom: 4px;
-    color: var(--gray-11);
-}
-
-#items-table-view .quantity-cell .quantity-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 3px;
-    width: 100%;
-}
-
-#items-table-view .quantity-cell .quantity-controls label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--gray-11);
-    min-width: 60px;
-    text-align: left;
-}
-
-#items-table-view .quantity-cell .quantity-controls button {
-    background-color: #6c757d; /* Match grid view color */
-    color: white;
-    border: none;
-    width: 40px; /* Increased from 20px to match grid style */
-    height: 32px; /* Increased from 20px to match grid style */
-    font-size: 20px; /* Increased from 14px to match grid style */
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px; /* Match grid view radius */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
     transition: background-color 0.2s ease;
 }
 
-#items-table-view .quantity-cell .quantity-controls button:hover {
-    background-color: #5a6268; /* Match grid view hover color */
+.history-list .transaction-item:hover {
+    background: var(--muted);
 }
 
-#items-table-view .quantity-cell .quantity-controls button:disabled {
-    background-color: #ccc; /* Match grid view disabled color */
-    cursor: not-allowed;
+.history-list .transaction-item:last-child {
+    border-bottom: none;
 }
 
-#items-table-view .quantity-cell .quantity-input {
-    width: 70px; /* Increased from 40px to match grid style */
-    height: 32px; /* Increased from 20px to match grid style */
-    text-align: center;
-    border: 2px solid #ddd; /* Match grid view border color */
-    border-radius: 4px; /* Match grid view radius */
-    font-size: 14px; /* Increased from 11px */
-    font-weight: 600;
-    background-color: white; /* Match grid view background */
-    color: #333; /* Match grid view text color */
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#items-table-view .quantity-cell .quantity-input:focus {
-    outline: none;
-    border-color: var(--gray-8);
-    background-color: white;
-    cursor: text;
-}
-
-/* Progress cell styling - enhanced with proper progress display */
-#items-table-view .progress-cell {
-    padding: 8px 4px;
-    vertical-align: middle;
-    text-align: center;
-}
-
-#items-table-view .progress-cell .progress-info {
+.history-list .transaction-info {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 6px 8px;
-    background: var(--gray-1);
-    border-radius: 4px;
-    border: none; /* Remove extra border outline */
-    min-width: 70px;
+    gap: var(--space-1);
 }
 
-#items-table-view .progress-cell .collected-count {
-    font-size: 14px;
+.transaction-main-line {
+    font-size: var(--font-size-3);
+    color: var(--foreground);
+    line-height: var(--line-height-4);
+}
+
+.transaction-details {
+    font-size: var(--font-size-1);
+    color: var(--muted-foreground);
+    line-height: var(--line-height-3);
+}
+
+.history-list .transaction-amount {
+    font-size: var(--font-size-4);
     font-weight: 600;
-    color: var(--gray-11);
-    margin-bottom: 2px;
-    line-height: 1.2;
-}
-
-#items-table-view .progress-cell .collected-label {
-    font-size: 10px;
-    color: var(--gray-9);
-    text-transform: lowercase;
-}
-
-/* Actions cell styling - enhanced with proper button design */
-#items-table-view .actions-cell {
-    padding: 8px 4px;
-    vertical-align: middle;
-    text-align: center;
-    width: 80px;
-    min-width: 80px;
-}
-
-#items-table-view .actions-cell .actions-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-#items-table-view .actions-cell .turn-in-button,
-#items-table-view .actions-cell .table-action-btn {
-    font-size: 10px !important;
-    font-weight: 500 !important;
-    padding: 6px 8px !important;
-    min-height: auto !important;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    min-width: 50px;
+    color: var(--blue-11);
+    text-align: right;
     white-space: nowrap;
-}
-
-#items-table-view .actions-cell .turn-in-button {
-    background: var(--blue-9);
-    color: white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-#items-table-view .actions-cell .turn-in-button:hover {
-    background: var(--blue-10);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-#items-table-view .actions-cell .table-action-btn.btn-success {
-    background: var(--green-9);
-    color: white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-#items-table-view .actions-cell .table-action-btn.btn-success:hover {
-    background: var(--green-10);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-#items-table-view .actions-cell .table-action-btn.btn-warning {
-    background: var(--orange-9);
-    color: white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-#items-table-view .actions-cell .table-action-btn.btn-warning:hover {
-    background: var(--orange-10);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-#items-table-view .actions-cell .text-muted {
-    font-size: 10px;
-    color: var(--gray-8);
-    font-style: italic;
-}
-
-/* Compact quantity controls for two-table layout */
-#items-table-view .card-cell .item-card .quantity-controls {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 2px !important;
-    width: 80px !important; /* Smaller for compactness */
-    font-size: 10px !important;
-}
-
-#items-table-view .card-cell .item-card .quantity-controls button {
-    width: 18px !important;
-    height: 18px !important;
-    font-size: 9px !important;
-    padding: 0 !important;
-    border-radius: 2px !important;
-}
-
-#items-table-view .card-cell .item-card .quantity-controls input {
-    width: 35px !important;
-    height: 18px !important;
-    font-size: 9px !important;
-    padding: 1px !important;
-    text-align: center !important;
-    border-radius: 2px !important;
-}
-
-/* Hide the main item-main-content and item-bottom-section containers' default layout */
-#items-table-view .card-cell .item-card .item-main-content,
-#items-table-view .card-cell .item-card .item-bottom-section {
-    display: contents; /* Make containers transparent to grid layout */
-}
-
-/* Hide non-Turn In buttons in table view actions column */
-#items-table-view .card-cell .item-card .item-bottom-section .item-actions .purchase-button,
-#items-table-view .card-cell .item-card .item-bottom-section .item-actions .sell-to-shop {
-    display: none;
-}
-
-/* Table header styling for proper column alignment with enhanced design */
-#items-table-view .items-table thead th {
-    background: linear-gradient(135deg, var(--gray-3), var(--gray-4));
-    border-bottom: 2px solid var(--gray-7);
-    padding: 12px 8px;
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-    vertical-align: middle;
-    color: var(--gray-12);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* General table cell padding consistency - reduced for more compact rows */
-#items-table-view .items-table td {
-    padding: 6px 8px;
-    vertical-align: middle;
-}
-
-/* Show the table body with proper table cells */
-#items-table-view .items-table tbody.table-body-cells {
-    display: table-row-group;
-}
-
-
-
-/* Style the icon column header */
-.items-table th.icon-column {
-    width: 60px;
-    text-align: center;
-    padding: 8px 4px;
-}
-
-/* Responsive adjustments - UNIFIED TELLER ONLY */
-@media (max-width: 768px) {
-    #items-table-view .card-cell .item-card {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    
-    #items-table-view .card-cell .item-main-content {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    
-    #items-table-view .card-cell .quantity-controls,
-    #items-table-view .card-cell .turnin-progress-container,
-    #items-table-view .card-cell .action-buttons {
-        grid-column: 1;
-    }
+    margin-left: var(--space-3);
 }
