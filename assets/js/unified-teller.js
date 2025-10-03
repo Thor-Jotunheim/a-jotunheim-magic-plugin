@@ -4467,14 +4467,34 @@ class UnifiedTeller {
     }
 
     getOptimalColumnCount() {
-        // Determine optimal number of columns based on screen width
-        const width = window.innerWidth;
+        // Determine optimal number of columns based on available space
+        const containerWidth = window.innerWidth - 40; // Account for padding/margins
+        const minTableWidth = 600; // Minimum width for a readable table
+        const gapWidth = 10; // Gap between tables
         
-        if (width >= 2000) return 5;      // Ultra wide screens: 5 columns
-        if (width >= 1600) return 4;      // Extra large screens: 4 columns  
-        if (width >= 1200) return 3;      // Large screens: 3 columns
-        if (width >= 768) return 2;       // Tablet and up: 2 columns
-        return 1;                         // Mobile: 1 column (stacked)
+        // Calculate maximum columns that can fit without cutting off
+        let maxPossibleColumns = Math.floor((containerWidth + gapWidth) / (minTableWidth + gapWidth));
+        
+        // Cap at reasonable maximums based on screen size for UX
+        let maxRecommendedColumns;
+        if (containerWidth >= 2000) maxRecommendedColumns = 5;
+        else if (containerWidth >= 1600) maxRecommendedColumns = 4;
+        else if (containerWidth >= 1200) maxRecommendedColumns = 3;
+        else if (containerWidth >= 768) maxRecommendedColumns = 2;
+        else maxRecommendedColumns = 1;
+        
+        // Use the smaller of the two limits
+        const optimalColumns = Math.min(maxPossibleColumns, maxRecommendedColumns);
+        
+        console.log('📐 Column Calculation:', {
+            containerWidth,
+            minTableWidth,
+            maxPossibleColumns,
+            maxRecommendedColumns,
+            optimalColumns
+        });
+        
+        return Math.max(1, optimalColumns); // Always at least 1 column
     }
 
     createTableRow(item) {

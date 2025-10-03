@@ -2534,9 +2534,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 #items-table-view .table-container {
     min-width: 0; /* Allow shrinking */
-    display: block;
+    display: flex;
+    justify-content: center; /* Center tables within their grid cells */
     overflow-x: auto; /* Handle narrow containers */
-    /* Ensure containers don't force stacking */
     width: 100%;
     box-sizing: border-box;
 }
@@ -2544,6 +2544,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 #items-table-view .table-container .items-table {
     width: 100%;
     min-width: 600px; /* Minimum table width for readability */
+    max-width: 800px; /* Maximum table width to prevent over-stretching */
     table-layout: fixed;
     border-collapse: collapse;
 }
