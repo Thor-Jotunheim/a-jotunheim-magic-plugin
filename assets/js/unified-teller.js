@@ -1061,7 +1061,7 @@ class UnifiedTeller {
                 buttonsHTML += `
                     <div class="quantity-controls buy-section">
                         <label>Stack (${stackSize}):</label>
-                        <input type="number" class="stack-input" id="qty-stack-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / stackSize)}">
+                        <input type="number" class="stack-input" id="qty-stack-${item.shop_item_id}" value="1" min="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / Math.max(1, stackSize))}">
                         <button class="btn purchase-button stack-buy" data-type="stack" style="background-color: #28a745 !important; color: white !important; border: 1px solid #28a745 !important;">Sell</button>
                     </div>`;
             }
@@ -1211,7 +1211,7 @@ class UnifiedTeller {
                     <div class="quantity-label">Stack(s) (${item.stack_size}):</div>
                     <div class="quantity-controls">
                         <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('turnin-stack-qty-${item.shop_item_id}')">−</button>
-                        <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
+                        <input type="number" id="turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / Math.max(1, parseInt(item.stack_size) || 1))}"
                                class="turnin-large-quantity-input" 
                                data-debug="preventOverLimit-attached"
                                oninput="window.unifiedTeller.enforceQuantityLimits(this)"
@@ -1219,7 +1219,7 @@ class UnifiedTeller {
                                onkeydown="console.log('🔥 KEYDOWN FIRED on', this.id, 'event:', event); window.unifiedTeller.preventOverLimit(event, this)"
                                onfocus="window.unifiedTeller.handleQuantityFocus(this)"
                                onblur="window.unifiedTeller.handleQuantityBlur(this)">
-                        <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))})">+</button>
+                        <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('turnin-stack-qty-${item.shop_item_id}', ${Math.floor(this.getMaxAllowedTurnin(item) / Math.max(1, parseInt(item.stack_size) || 1))})">+</button>
                     </div>
                 </div>
                 ` : ''}
@@ -1249,10 +1249,10 @@ class UnifiedTeller {
                             <div class="quantity-label">Stack(s) (${item.stack_size}):</div>
                             <div class="quantity-controls">
                                 <button type="button" class="qty-btn qty-decrease" onclick="window.unifiedTeller.decreaseQuantity('buy-stack-qty-${item.shop_item_id}')">−</button>
-                                <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))}"
+                                <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / Math.max(1, parseInt(item.stack_size) || 1))}"
                                        class="large-quantity-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
                                        onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
-                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('buy-stack-qty-${item.shop_item_id}', ${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))})">+</button>
+                                <button type="button" class="qty-btn qty-increase" onclick="window.unifiedTeller.increaseQuantity('buy-stack-qty-${item.shop_item_id}', ${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / Math.max(1, parseInt(item.stack_size) || 1))})">+</button>
                             </div>
                         </div>`;
                 }
@@ -1346,7 +1346,7 @@ class UnifiedTeller {
                 return `
                     <div class="quantity-control-group">
                         <div class="quantity-controls">
-                            <input type="number" id="table-turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / parseInt(item.stack_size))}"
+                            <input type="number" id="table-turnin-stack-qty-${item.shop_item_id}" min="0" value="0" max="${Math.floor(this.getMaxAllowedTurnin(item) / Math.max(1, parseInt(item.stack_size) || 1))}"
                                    class="turnin-large-quantity-input table-input" 
                                    data-debug="preventOverLimit-attached"
                                    onchange="window.unifiedTeller.updateProgressDisplay('${item.shop_item_id}', ${item.turn_in_requirement || 0})"
@@ -1365,7 +1365,7 @@ class UnifiedTeller {
                 return `
                     <div class="quantity-control-group">
                         <div class="quantity-controls">
-                            <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / parseInt(item.stack_size))}"
+                            <input type="number" id="buy-stack-qty-${item.shop_item_id}" min="1" value="1" max="${item.stock_quantity === -1 ? 999 : Math.floor(item.stock_quantity / Math.max(1, parseInt(item.stack_size) || 1))}"
                                    class="large-quantity-input table-input" onchange="window.unifiedTeller.updateTransactionDisplay('${item.shop_item_id}', 'buy')"
                                    onkeypress="window.unifiedTeller.handleQuantityKeyPress(event, this)" onfocus="window.unifiedTeller.handleQuantityFocus(this)" onblur="window.unifiedTeller.handleQuantityBlur(this)">
                         </div>
@@ -1916,21 +1916,23 @@ class UnifiedTeller {
     }
 
     getMaxAllowedTurnin(item) {
+        // Safety check: if this isn't a turn-in item, return 999
+        if (!item.turn_in_requirement || parseInt(item.turn_in_requirement) <= 0) {
+            return 999; // No limit set for non-turn-in items
+        }
+        
         const dailyTotal = this.getDailyTurninTotal(item.item_name);
-        const turnInRequirement = parseInt(item.turn_in_requirement) || 0;
+        const turnInRequirement = parseInt(item.turn_in_requirement);
         
         console.log('DEBUG - getMaxAllowedTurnin:', {
             itemName: item.item_name,
             dailyTotal,
             turnInRequirement,
-            remaining: turnInRequirement > 0 ? Math.max(0, turnInRequirement - dailyTotal) : 999,
+            remaining: Math.max(0, turnInRequirement - dailyTotal),
             dailyTurninDataExists: !!this.dailyTurninData
         });
         
-        if (turnInRequirement > 0) {
-            return Math.max(0, turnInRequirement - dailyTotal);
-        }
-        return 999; // No limit set
+        return Math.max(0, turnInRequirement - dailyTotal);
     }
 
     checkTurninLimits(item, requestedQuantity) {
