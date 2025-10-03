@@ -2249,8 +2249,10 @@ class UnifiedTeller {
                 gridView.style.display = 'none';
                 tableView.style.display = 'block';
                 this.isTableView = true;
-                // Ensure table is populated
-                this.renderItemsTable(tableView);
+                // Add small delay to ensure proper layout calculation
+                setTimeout(() => {
+                    this.renderItemsTable(tableView);
+                }, 10);
             }
             // Button text never changes - always "Toggle View"
             toggleBtn.textContent = 'Toggle View';
@@ -4402,6 +4404,8 @@ class UnifiedTeller {
         // Determine number of columns based on screen width
         const numColumns = this.getOptimalColumnCount();
         
+        console.log('🚨🚨🚨 CRITICAL DEBUG - numColumns value:', numColumns, typeof numColumns);
+        
         console.log('🎯 TABLE RENDER DEBUG:', {
             containerElement: container,
             containerWidth: container.offsetWidth,
@@ -4424,9 +4428,17 @@ class UnifiedTeller {
         const itemsPerTable = Math.ceil(availableItems.length / numColumns);
         const tableSections = [];
         
+        console.log('🚨 LOOP DEBUG:', {
+            numColumns,
+            availableItemsLength: availableItems.length,
+            itemsPerTable,
+            willLoopTimes: numColumns
+        });
+        
         for (let i = 0; i < numColumns; i++) {
             const start = i * itemsPerTable;
             const end = Math.min(start + itemsPerTable, availableItems.length);
+            console.log(`🚨 Loop iteration ${i}:`, { start, end, itemsToAdd: availableItems.slice(start, end).length });
             if (start < availableItems.length) {
                 tableSections.push(availableItems.slice(start, end));
             }
@@ -4484,7 +4496,23 @@ class UnifiedTeller {
     getOptimalColumnCount() {
         // Get the actual container width, not window width
         const tableWrapper = document.getElementById('items-table-view');
-        const actualContainerWidth = tableWrapper ? tableWrapper.offsetWidth : (window.innerWidth - 80);
+        let actualContainerWidth = 0;
+        
+        if (tableWrapper) {
+            // Force layout recalculation if needed
+            if (tableWrapper.offsetWidth === 0) {
+                // Element might be hidden or not properly sized yet
+                tableWrapper.style.display = 'block';
+                // Force a reflow
+                tableWrapper.offsetHeight;
+            }
+            actualContainerWidth = tableWrapper.offsetWidth;
+        }
+        
+        // Fallback to window width if container width is still 0 or unavailable
+        if (actualContainerWidth === 0) {
+            actualContainerWidth = window.innerWidth - 80;
+        }
         
         // Much more conservative approach - prioritize width over number of columns
         let optimalColumns;
@@ -4500,6 +4528,8 @@ class UnifiedTeller {
         
         console.log('📐 Column Calculation:', {
             windowWidth: window.innerWidth,
+            tableWrapperFound: !!tableWrapper,
+            tableWrapperWidth: tableWrapper ? tableWrapper.offsetWidth : 'N/A',
             actualContainerWidth,
             selectedColumns: optimalColumns,
             breakpointUsed: actualContainerWidth >= 2400 ? '3-column (>=2400px)' : 
