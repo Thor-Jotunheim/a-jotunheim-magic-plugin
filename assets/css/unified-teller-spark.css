@@ -2542,9 +2542,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 #items-table-view .table-container .items-table {
-    width: 100%;
-    min-width: 600px; /* Minimum table width for readability */
-    max-width: 800px; /* Maximum table width to prevent over-stretching */
+    width: 700px; /* Back to the original perfect width */
     table-layout: fixed;
     border-collapse: collapse;
 }
