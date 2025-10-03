@@ -3271,8 +3271,10 @@ class UnifiedTeller {
 
     isCurrentlyTableView() {
         // Check if table view is currently visible/active
-        const tableView = document.querySelector('.table-view-container');
+        const tableView = document.querySelector('#items-table-view');
         const gridView = document.querySelector('.shop-items-grid');
+        
+        console.log(`🔧 View detection elements found: table=${!!tableView}, grid=${!!gridView}`);
         
         if (tableView && gridView) {
             // Both exist, check which one is visible
@@ -3282,9 +3284,11 @@ class UnifiedTeller {
             return tableVisible && !gridVisible;
         } else if (tableView) {
             // Only table view exists
+            console.log(`🔧 View detection: only table view exists, returning true`);
             return true;
         } else {
             // Only grid view exists or neither exists
+            console.log(`🔧 View detection: no table view found, returning false`);
             return false;
         }
     }
