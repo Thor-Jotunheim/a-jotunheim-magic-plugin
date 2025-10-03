@@ -4597,11 +4597,13 @@ class UnifiedTeller {
         // Much more conservative approach - prioritize width over number of columns
         let optimalColumns;
         
-        // EXTREMELY conservative breakpoints - prioritize wide tables over many columns
-        if (actualContainerWidth >= 3000) {
-            optimalColumns = 2; // Only ultra-wide screens get 2 columns
+        // Balanced responsive breakpoints - now that width issue is fixed
+        if (actualContainerWidth >= 2100) {
+            optimalColumns = 3; // Wide screens get 3 columns
+        } else if (actualContainerWidth >= 1400) {
+            optimalColumns = 2; // Medium screens get 2 columns  
         } else {
-            optimalColumns = 1; // Everything else gets 1 column for maximum width
+            optimalColumns = 1; // Narrow screens get 1 column
         }
         
         console.log('📐 Column Calculation:', {
@@ -4610,7 +4612,9 @@ class UnifiedTeller {
             tableWrapperWidth: tableWrapper ? tableWrapper.offsetWidth : 'N/A',
             actualContainerWidth,
             selectedColumns: optimalColumns,
-            breakpointUsed: actualContainerWidth >= 3000 ? '2-column (>=3000px)' : '1-column (<3000px)'
+            breakpointUsed: actualContainerWidth >= 2100 ? '3-column (>=2100px)' : 
+                           actualContainerWidth >= 1400 ? '2-column (>=1400px)' : 
+                           '1-column (<1400px)'
         });
         
         // DEBUG: Check what CSS is actually being applied
