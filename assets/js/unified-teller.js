@@ -4402,6 +4402,15 @@ class UnifiedTeller {
         // Determine number of columns based on screen width
         const numColumns = this.getOptimalColumnCount();
         
+        console.log('🎯 TABLE RENDER DEBUG:', {
+            containerElement: container,
+            containerWidth: container.offsetWidth,
+            parentWidth: container.parentElement?.offsetWidth,
+            windowWidth: window.innerWidth,
+            availableItemsCount: availableItems.length,
+            calculatedColumns: numColumns
+        });
+        
         console.log('🔍 Table Layout Debug:', {
             screenWidth: window.innerWidth,
             numColumns: numColumns,
@@ -4472,7 +4481,7 @@ class UnifiedTeller {
     getOptimalColumnCount() {
         // Determine optimal number of columns based on available space
         const containerWidth = window.innerWidth - 80; // Account for padding/margins/scrollbar
-        const tableMinWidth = 800; // Minimum table width from CSS
+        const tableMinWidth = 600; // Reduced minimum table width from CSS
         const gapWidth = 20; // Gap between tables from CSS
         
         // Calculate maximum columns that can fit without cutting off
@@ -4480,8 +4489,8 @@ class UnifiedTeller {
         
         // Cap at reasonable maximums based on screen size for better UX
         let maxRecommendedColumns;
-        if (containerWidth >= 2400) maxRecommendedColumns = 3; // Very wide screens can handle 3 tables
-        else if (containerWidth >= 1600) maxRecommendedColumns = 2; // Most desktop screens get 2 tables  
+        if (containerWidth >= 1800) maxRecommendedColumns = 3; // Wide screens can handle 3 tables
+        else if (containerWidth >= 1200) maxRecommendedColumns = 2; // Most desktop screens get 2 tables  
         else maxRecommendedColumns = 1; // Smaller screens get 1 table
         
         // Use the smaller of the two limits

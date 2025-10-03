@@ -694,6 +694,11 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: block !important;
 }
 
+/* Override for table view - allow proper flex layout */
+.items-container .items-table-wrapper {
+    display: flex !important;
+}
+
 .items-grid {
     display: flex;
     flex-wrap: wrap;
@@ -951,8 +956,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .table-container {
     flex: 1;
-    min-width: 800px; /* Proper minimum width for full table display */
-    max-width: 1200px; /* Maximum width to prevent tables from getting too wide */
+    min-width: 600px; /* Reduced minimum width for better responsive behavior */
+    max-width: 1000px; /* Reduced maximum width */
     background: var(--background);
     border-radius: var(--radius-2);
     border: 1px solid var(--border);
@@ -987,29 +992,29 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* Table Column Widths for Split Quantity Controls */
 .items-table .item-column {
     width: 25%;
-    min-width: 200px;
+    min-width: 150px; /* Reduced from 200px */
 }
 
 .items-table .units-column {
     width: 12%;
-    min-width: 100px;
+    min-width: 80px; /* Reduced from 100px */
     text-align: center;
 }
 
 .items-table .stacks-column {
     width: 12%;
-    min-width: 100px;
+    min-width: 80px; /* Reduced from 100px */
     text-align: center;
 }
 
 .items-table .progress-column {
     width: 31%;
-    min-width: 250px;
+    min-width: 180px; /* Reduced from 250px */
 }
 
 .items-table .actions-column {
     width: 20%;
-    min-width: 150px;
+    min-width: 120px; /* Reduced from 150px */
     text-align: center;
 }
 
