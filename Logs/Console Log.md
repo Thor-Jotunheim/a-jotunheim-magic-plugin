@@ -1,8 +1,8 @@
 [Log] JQMIGRATE: Migrate is installed, version 3.4.1 (load-scripts.php, line 5)
 [Log] Jotunheim Comprehensive API loaded (jotun-comprehensive-api.js, line 526)
-[Log] 🚀🚀� UNIFIED TELLER: Initialization check: – {unified-teller-interface: true, teller-shop-selector: true, unified-teller-container: false, …} (unified-teller.js, line 5129)
+[Log] 🚀🚀� UNIFIED TELLER: Initialization check: – {unified-teller-interface: true, teller-shop-selector: true, unified-teller-container: false, …} (unified-teller.js, line 5154)
 {unified-teller-interface: true, teller-shop-selector: true, unified-teller-container: false, refresh-shop-btn: true, shouldInitialize: true}Object
-[Log] 🚀🚀� UNIFIED TELLER: Conditions met, initializing UnifiedTeller... (unified-teller.js, line 5138)
+[Log] 🚀🚀� UNIFIED TELLER: Conditions met, initializing UnifiedTeller... (unified-teller.js, line 5163)
 [Log] �🚀🚀 UNIFIED TELLER: Event listener registered for shopRotationChanged (unified-teller.js, line 85)
 [Log] DEBUG: Clear transaction button found: –  (unified-teller.js, line 110)
 <button id="clear-transaction-btn" class="field-input clear-transaction-btn" onclick="console.log('🚨 DEBUG: Clear button onclick fired'); if(window.unifiedTeller) { console.log('🚨 DEBUG: unifiedTeller found, typeof clearCart:', typeof window.unifiedTeller.clearCart); try { console.log('🚨 ONCLICK: About to call clearCart'); window.unifiedTeller.clearCart(); console.log('🚨 ONCLICK: clearCart completed'); } catch(e) { console.error('🚨 ERROR in onclick clearCart():', e); console.error('🚨 ERROR stack:', e.stack); } } else { console.log('🚨 ERROR: unifiedTeller not found on window'); }">Clear Transaction</button>
@@ -54,6 +54,8 @@
 {data: Array}Object
 [Error] Failed to load resource: the server responded with a status of 403 (Forbidden) (current, line 0)
 [Warning] User endpoint access denied - using fallback (unified-teller.js, line 287)
+> Selected Element
+< <select id="teller-shop-selector" class="field-select">…</select>
 [Log] 🚨 DEBUG: Current cart contents: – [] (0) (unified-teller.js, line 2171)
 [Log] 🚨 DEBUG: Cart array set to empty. New length: – 0 (unified-teller.js, line 2174)
 [Log] 🚨 DEBUG: updateCartDisplay() called (unified-teller.js, line 2177)
@@ -283,18 +285,18 @@
 [Log] 🚨 DEBUG: cart contents: – [] (0) (unified-teller.js, line 3032)
 [Log] 🚨 DEBUG: Updating View Cart button: – {hasItems: false, cartLength: 0} (unified-teller.js, line 3036)
 [Log] 🚨 DEBUG: View Cart button updated - disabled: – true – "text:" – "View Cart" (unified-teller.js, line 3053)
-[Log] 📐 Column Calculation: – {windowWidth: 1708, tableWrapperFound: true, tableWrapperWidth: 1412, …} (unified-teller.js, line 4576)
-{windowWidth: 1708, tableWrapperFound: true, tableWrapperWidth: 1412, actualContainerWidth: 1412, selectedColumns: 1, …}Object
-[Log] 🎨 CSS DEBUG: wrapper display: grid (unified-teller.js, line 4589)
-[Log] 🎨 CSS DEBUG: wrapper grid-template-columns: 351.833344px 351.833344px 351.833344px 351.833344px (unified-teller.js, line 4590)
-[Log] 🎨 CSS DEBUG: wrapper flex-direction: row (unified-teller.js, line 4591)
-[Log] 🎨 CSS DEBUG: wrapper flex-wrap: nowrap (unified-teller.js, line 4592)
-[Log] 🎨 CSS DEBUG: wrapper classes: items-table-wrapper (unified-teller.js, line 4593)
-[Log] 🎨 CSS DEBUG: Found 0 table containers (unified-teller.js, line 4597)
+[Log] 📐 Column Calculation: – {windowWidth: 1721, tableWrapperFound: true, tableWrapperWidth: 1425, …} (unified-teller.js, line 4601)
+{windowWidth: 1721, tableWrapperFound: true, tableWrapperWidth: 1425, actualContainerWidth: 1425, selectedColumns: 1, …}Object
+[Log] 🎨 CSS DEBUG: wrapper display: grid (unified-teller.js, line 4614)
+[Log] 🎨 CSS DEBUG: wrapper grid-template-columns: 355.166656px 355.166656px 355.166656px 355.166656px (unified-teller.js, line 4615)
+[Log] 🎨 CSS DEBUG: wrapper flex-direction: row (unified-teller.js, line 4616)
+[Log] 🎨 CSS DEBUG: wrapper flex-wrap: nowrap (unified-teller.js, line 4617)
+[Log] 🎨 CSS DEBUG: wrapper classes: items-table-wrapper (unified-teller.js, line 4618)
+[Log] 🎨 CSS DEBUG: Found 0 table containers (unified-teller.js, line 4622)
 [Log] 🚨🚨🚨 CRITICAL DEBUG - numColumns value: – 1 – "number" (unified-teller.js, line 4407)
-[Log] 🎯 TABLE RENDER DEBUG: – {containerElement: <div id="items-table-view">, containerWidth: 1412, parentWidth: 1408, …} (unified-teller.js, line 4409)
-{containerElement: <div id="items-table-view">, containerWidth: 1412, parentWidth: 1408, cardContentWidth: 1456, tellerCardWidth: 1459, …}Object
-[Log] 🔍 Table Layout Debug: – {screenWidth: 1708, numColumns: 1, totalItems: 7} (unified-teller.js, line 4421)
+[Log] 🎯 TABLE RENDER DEBUG: – {containerElement: <div id="items-table-view">, containerWidth: 1425, parentWidth: 1421, …} (unified-teller.js, line 4409)
+{containerElement: <div id="items-table-view">, containerWidth: 1425, parentWidth: 1421, cardContentWidth: 1469, tellerCardWidth: 1472, …}Object
+[Log] 🔍 Table Layout Debug: – {screenWidth: 1721, numColumns: 1, totalItems: 7} (unified-teller.js, line 4421)
 [Log] 🚨 LOOP DEBUG: – {numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, …} (unified-teller.js, line 4431)
 {numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, willLoopTimes: 1}Object
 [Log] 🚨 Loop iteration 0: – {start: 0, end: 7, itemsToAdd: 7} (unified-teller.js, line 4441)
@@ -391,421 +393,35 @@
 [Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
 {itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 125, …}Object
 [Log] Generating button for item 39: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] 🎨🎨🎨 POST-RENDER CSS DEBUG - Starting inspection... (unified-teller.js, line 4499)
-[Log] 🎨 Outer Container (#items-table-view): –  (unified-teller.js, line 4504)
+[Log] 🔥 NUCLEAR CSS OVERRIDE: Forcing flex layout via JavaScript (unified-teller.js, line 4490)
+[Log] 🔥 NUCLEAR CSS OVERRIDE: Applied to – 1 – "table containers" (unified-teller.js, line 4507)
+[Log] 🎨🎨🎨 POST-RENDER CSS DEBUG - Starting inspection... (unified-teller.js, line 4524)
+[Log] 🎨 Outer Container (#items-table-view): –  (unified-teller.js, line 4529)
 <div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
 
 <div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-[Log] 🎨 Table Wrapper (.items-table-wrapper): –  (unified-teller.js, line 4505)
-<div class="items-table-wrapper single-column">…</div>
+[Log] 🎨 Table Wrapper (.items-table-wrapper): –  (unified-teller.js, line 4530)
+<div class="items-table-wrapper single-column" style="display: flex !important; flex-flow: wrap !important; gap: 20px !important; width: 100% !important; grid: none !important;">…</div>
 
-<div class="items-table-wrapper single-column">…</div>
-[Log] 🎨 OUTER CONTAINER CSS: (unified-teller.js, line 4509)
-[Log]   - display: – "grid" (unified-teller.js, line 4510)
-[Log]   - className: – "items-container single-column" (unified-teller.js, line 4511)
-[Log]   - offsetWidth: – 1412 (unified-teller.js, line 4512)
-[Log] 🎨 TABLE WRAPPER CSS: (unified-teller.js, line 4517)
-[Log]   - display: – "block" (unified-teller.js, line 4518)
-[Log]   - grid-template-columns: – "none" (unified-teller.js, line 4519)
-[Log]   - flex-direction: – "row" (unified-teller.js, line 4520)
-[Log]   - flex-wrap: – "nowrap" (unified-teller.js, line 4521)
-[Log]   - className: – "items-table-wrapper single-column" (unified-teller.js, line 4522)
-[Log]   - computed width: – "344.333344px" (unified-teller.js, line 4523)
-[Log]   - actual offsetWidth: – 344 (unified-teller.js, line 4524)
-[Log] 🎨 FOUND TABLE CONTAINERS: – 1 (unified-teller.js, line 4528)
-[Log] 🎨 CONTAINER 1: (unified-teller.js, line 4532)
-[Log]   - flex: – "0 1 auto" (unified-teller.js, line 4533)
-[Log]   - width: – "344.333344px" (unified-teller.js, line 4534)
-[Log]   - min-width: – "0px" (unified-teller.js, line 4535)
-[Log]   - max-width: – "none" (unified-teller.js, line 4536)
-[Log]   - offsetWidth: – 344 (unified-teller.js, line 4537)
-[Log] 📐 Column Calculation: – {windowWidth: 1350, tableWrapperFound: true, tableWrapperWidth: 1055, …} (unified-teller.js, line 4576)
-{windowWidth: 1350, tableWrapperFound: true, tableWrapperWidth: 1055, actualContainerWidth: 1055, selectedColumns: 1, …}Object
-[Log] 🚨🚨🚨 CRITICAL DEBUG - numColumns value: – 1 – "number" (unified-teller.js, line 4407)
-[Log] 🎯 TABLE RENDER DEBUG: – {containerElement: <div id="items-table-view">, containerWidth: 1055, parentWidth: 1051, …} (unified-teller.js, line 4409)
-{containerElement: <div id="items-table-view">, containerWidth: 1055, parentWidth: 1051, cardContentWidth: 1099, tellerCardWidth: 1101, …}Object
-[Log] 🔍 Table Layout Debug: – {screenWidth: 1350, numColumns: 1, totalItems: 7} (unified-teller.js, line 4421)
-[Log] 🚨 LOOP DEBUG: – {numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, …} (unified-teller.js, line 4431)
-{numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, willLoopTimes: 1}Object
-[Log] 🚨 Loop iteration 0: – {start: 0, end: 7, itemsToAdd: 7} (unified-teller.js, line 4441)
-[Log] 📊 Table Sections: – [Object] (1) (unified-teller.js, line 4447)
-[Object]Array (1)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, …} (unified-teller.js, line 1942)
-{itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, remaining: 1, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, …} (unified-teller.js, line 1942)
-{itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, remaining: 1, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Abomination Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Abomination Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 1, …}Object
-[Log] Generating button for item 59: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, …} (unified-teller.js, line 1942)
-{itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, remaining: 3762, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, …} (unified-teller.js, line 1942)
-{itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, remaining: 3762, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Bear Hide", dailyTotal: 238, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Bear Hide", dailyTotal: 238, currentlySelected: 0, projectedTotal: 238, turnInRequirement: 4000, …}Object
-[Log] Generating button for item 41: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, …} (unified-teller.js, line 1942)
-{itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, remaining: 246, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, …} (unified-teller.js, line 1942)
-{itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, remaining: 246, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Bear Trophy", dailyTotal: 4, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Bear Trophy", dailyTotal: 4, currentlySelected: 0, projectedTotal: 4, turnInRequirement: 250, …}Object
-[Log] Generating button for item 38: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, …} (unified-teller.js, line 1942)
-{itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, remaining: 1500, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, …} (unified-teller.js, line 1942)
-{itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, remaining: 1500, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Ectoplasm", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Ectoplasm", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 1500, …}Object
-[Log] Generating button for item 43: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, …} (unified-teller.js, line 1942)
-{itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, remaining: 50, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, …} (unified-teller.js, line 1942)
-{itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, remaining: 50, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Ghost Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Ghost Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 50, …}Object
-[Log] Generating button for item 40: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, …} (unified-teller.js, line 1942)
-{itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, remaining: 2000, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, …} (unified-teller.js, line 1942)
-{itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, remaining: 2000, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Ribcage", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Vile Ribcage", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 2000, …}Object
-[Log] Generating button for item 42: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, …} (unified-teller.js, line 1942)
-{itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, remaining: 125, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, …} (unified-teller.js, line 1942)
-{itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, remaining: 125, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 125, …}Object
-[Log] Generating button for item 39: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] 🎨🎨🎨 POST-RENDER CSS DEBUG - Starting inspection... (unified-teller.js, line 4499)
-[Log] 🎨 Outer Container (#items-table-view): –  (unified-teller.js, line 4504)
-<div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-
-<div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-[Log] 🎨 Table Wrapper (.items-table-wrapper): –  (unified-teller.js, line 4505)
-<div class="items-table-wrapper single-column">…</div>
-
-<div class="items-table-wrapper single-column">…</div>
-[Log] 🎨 OUTER CONTAINER CSS: (unified-teller.js, line 4509)
-[Log]   - display: – "grid" (unified-teller.js, line 4510)
-[Log]   - className: – "items-container single-column" (unified-teller.js, line 4511)
-[Log]   - offsetWidth: – 1055 (unified-teller.js, line 4512)
-[Log] 🎨 TABLE WRAPPER CSS: (unified-teller.js, line 4517)
-[Log]   - display: – "block" (unified-teller.js, line 4518)
-[Log]   - grid-template-columns: – "none" (unified-teller.js, line 4519)
-[Log]   - flex-direction: – "row" (unified-teller.js, line 4520)
-[Log]   - flex-wrap: – "nowrap" (unified-teller.js, line 4521)
-[Log]   - className: – "items-table-wrapper single-column" (unified-teller.js, line 4522)
-[Log]   - computed width: – "343.333344px" (unified-teller.js, line 4523)
-[Log]   - actual offsetWidth: – 344 (unified-teller.js, line 4524)
-[Log] 🎨 FOUND TABLE CONTAINERS: – 1 (unified-teller.js, line 4528)
-[Log] 🎨 CONTAINER 1: (unified-teller.js, line 4532)
-[Log]   - flex: – "0 1 auto" (unified-teller.js, line 4533)
-[Log]   - width: – "343.333344px" (unified-teller.js, line 4534)
-[Log]   - min-width: – "0px" (unified-teller.js, line 4535)
-[Log]   - max-width: – "none" (unified-teller.js, line 4536)
-[Log]   - offsetWidth: – 344 (unified-teller.js, line 4537)
-[Log] 📐 Column Calculation: – {windowWidth: 1316, tableWrapperFound: true, tableWrapperWidth: 1020, …} (unified-teller.js, line 4576)
-{windowWidth: 1316, tableWrapperFound: true, tableWrapperWidth: 1020, actualContainerWidth: 1020, selectedColumns: 1, …}Object
-[Log] 🚨🚨🚨 CRITICAL DEBUG - numColumns value: – 1 – "number" (unified-teller.js, line 4407)
-[Log] 🎯 TABLE RENDER DEBUG: – {containerElement: <div id="items-table-view">, containerWidth: 1020, parentWidth: 1016, …} (unified-teller.js, line 4409)
-{containerElement: <div id="items-table-view">, containerWidth: 1020, parentWidth: 1016, cardContentWidth: 1064, tellerCardWidth: 1067, …}Object
-[Log] 🔍 Table Layout Debug: – {screenWidth: 1316, numColumns: 1, totalItems: 7} (unified-teller.js, line 4421)
-[Log] 🚨 LOOP DEBUG: – {numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, …} (unified-teller.js, line 4431)
-{numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, willLoopTimes: 1}Object
-[Log] 🚨 Loop iteration 0: – {start: 0, end: 7, itemsToAdd: 7} (unified-teller.js, line 4441)
-[Log] 📊 Table Sections: – [Object] (1) (unified-teller.js, line 4447)
-[Object]Array (1)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, …} (unified-teller.js, line 1942)
-{itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, remaining: 1, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, …} (unified-teller.js, line 1942)
-{itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, remaining: 1, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Abomination Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Abomination Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 1, …}Object
-[Log] Generating button for item 59: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, …} (unified-teller.js, line 1942)
-{itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, remaining: 3762, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, …} (unified-teller.js, line 1942)
-{itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, remaining: 3762, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Bear Hide", dailyTotal: 238, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Bear Hide", dailyTotal: 238, currentlySelected: 0, projectedTotal: 238, turnInRequirement: 4000, …}Object
-[Log] Generating button for item 41: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, …} (unified-teller.js, line 1942)
-{itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, remaining: 246, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, …} (unified-teller.js, line 1942)
-{itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, remaining: 246, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Bear Trophy", dailyTotal: 4, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Bear Trophy", dailyTotal: 4, currentlySelected: 0, projectedTotal: 4, turnInRequirement: 250, …}Object
-[Log] Generating button for item 38: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, …} (unified-teller.js, line 1942)
-{itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, remaining: 1500, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, …} (unified-teller.js, line 1942)
-{itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, remaining: 1500, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Ectoplasm", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Ectoplasm", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 1500, …}Object
-[Log] Generating button for item 43: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, …} (unified-teller.js, line 1942)
-{itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, remaining: 50, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, …} (unified-teller.js, line 1942)
-{itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, remaining: 50, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Ghost Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Ghost Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 50, …}Object
-[Log] Generating button for item 40: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, …} (unified-teller.js, line 1942)
-{itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, remaining: 2000, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, …} (unified-teller.js, line 1942)
-{itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, remaining: 2000, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Ribcage", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Vile Ribcage", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 2000, …}Object
-[Log] Generating button for item 42: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, …} (unified-teller.js, line 1942)
-{itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, remaining: 125, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, …} (unified-teller.js, line 1942)
-{itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, remaining: 125, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 125, …}Object
-[Log] Generating button for item 39: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] 🎨🎨🎨 POST-RENDER CSS DEBUG - Starting inspection... (unified-teller.js, line 4499)
-[Log] 🎨 Outer Container (#items-table-view): –  (unified-teller.js, line 4504)
-<div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-
-<div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-[Log] 🎨 Table Wrapper (.items-table-wrapper): –  (unified-teller.js, line 4505)
-<div class="items-table-wrapper single-column">…</div>
-
-<div class="items-table-wrapper single-column">…</div>
-[Log] 🎨 OUTER CONTAINER CSS: (unified-teller.js, line 4509)
-[Log]   - display: – "grid" (unified-teller.js, line 4510)
-[Log]   - className: – "items-container single-column" (unified-teller.js, line 4511)
-[Log]   - offsetWidth: – 1020 (unified-teller.js, line 4512)
-[Log] 🎨 TABLE WRAPPER CSS: (unified-teller.js, line 4517)
-[Log]   - display: – "block" (unified-teller.js, line 4518)
-[Log]   - grid-template-columns: – "none" (unified-teller.js, line 4519)
-[Log]   - flex-direction: – "row" (unified-teller.js, line 4520)
-[Log]   - flex-wrap: – "nowrap" (unified-teller.js, line 4521)
-[Log]   - className: – "items-table-wrapper single-column" (unified-teller.js, line 4522)
-[Log]   - computed width: – "331.770844px" (unified-teller.js, line 4523)
-[Log]   - actual offsetWidth: – 332 (unified-teller.js, line 4524)
-[Log] 🎨 FOUND TABLE CONTAINERS: – 1 (unified-teller.js, line 4528)
-[Log] 🎨 CONTAINER 1: (unified-teller.js, line 4532)
-[Log]   - flex: – "0 1 auto" (unified-teller.js, line 4533)
-[Log]   - width: – "331.770844px" (unified-teller.js, line 4534)
-[Log]   - min-width: – "0px" (unified-teller.js, line 4535)
-[Log]   - max-width: – "none" (unified-teller.js, line 4536)
-[Log]   - offsetWidth: – 332 (unified-teller.js, line 4537)
-[Log] 📐 Column Calculation: – {windowWidth: 1080, tableWrapperFound: true, tableWrapperWidth: 784, …} (unified-teller.js, line 4576)
-{windowWidth: 1080, tableWrapperFound: true, tableWrapperWidth: 784, actualContainerWidth: 784, selectedColumns: 1, …}Object
-[Log] 🚨🚨🚨 CRITICAL DEBUG - numColumns value: – 1 – "number" (unified-teller.js, line 4407)
-[Log] 🎯 TABLE RENDER DEBUG: – {containerElement: <div id="items-table-view">, containerWidth: 784, parentWidth: 780, …} (unified-teller.js, line 4409)
-{containerElement: <div id="items-table-view">, containerWidth: 784, parentWidth: 780, cardContentWidth: 828, tellerCardWidth: 831, …}Object
-[Log] 🔍 Table Layout Debug: – {screenWidth: 1080, numColumns: 1, totalItems: 7} (unified-teller.js, line 4421)
-[Log] 🚨 LOOP DEBUG: – {numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, …} (unified-teller.js, line 4431)
-{numColumns: 1, availableItemsLength: 7, itemsPerTable: 7, willLoopTimes: 1}Object
-[Log] 🚨 Loop iteration 0: – {start: 0, end: 7, itemsToAdd: 7} (unified-teller.js, line 4441)
-[Log] 📊 Table Sections: – [Object] (1) (unified-teller.js, line 4447)
-[Object]Array (1)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, …} (unified-teller.js, line 1942)
-{itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, remaining: 1, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, …} (unified-teller.js, line 1942)
-{itemName: "Abomination Trophy", dailyTotal: 0, turnInRequirement: 1, remaining: 1, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Abomination Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Abomination Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Abomination Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 1, …}Object
-[Log] Generating button for item 59: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, …} (unified-teller.js, line 1942)
-{itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, remaining: 3762, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, …} (unified-teller.js, line 1942)
-{itemName: "Bear Hide", dailyTotal: 238, turnInRequirement: 4000, remaining: 3762, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Hide", item: Object, turn_in_quantity: "238", …} (unified-teller.js, line 1922)
-{itemName: "Bear Hide", item: Object, turn_in_quantity: "238", parsed: 238, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Bear Hide", dailyTotal: 238, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Bear Hide", dailyTotal: 238, currentlySelected: 0, projectedTotal: 238, turnInRequirement: 4000, …}Object
-[Log] Generating button for item 41: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, …} (unified-teller.js, line 1942)
-{itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, remaining: 246, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, …} (unified-teller.js, line 1942)
-{itemName: "Bear Trophy", dailyTotal: 4, turnInRequirement: 250, remaining: 246, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", …} (unified-teller.js, line 1922)
-{itemName: "Bear Trophy", item: Object, turn_in_quantity: "4", parsed: 4, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Bear Trophy", dailyTotal: 4, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Bear Trophy", dailyTotal: 4, currentlySelected: 0, projectedTotal: 4, turnInRequirement: 250, …}Object
-[Log] Generating button for item 38: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, …} (unified-teller.js, line 1942)
-{itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, remaining: 1500, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, …} (unified-teller.js, line 1942)
-{itemName: "Ectoplasm", dailyTotal: 0, turnInRequirement: 1500, remaining: 1500, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ectoplasm", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Ectoplasm", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Ectoplasm", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 1500, …}Object
-[Log] Generating button for item 43: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, …} (unified-teller.js, line 1942)
-{itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, remaining: 50, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, …} (unified-teller.js, line 1942)
-{itemName: "Ghost Trophy", dailyTotal: 0, turnInRequirement: 50, remaining: 50, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Ghost Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Ghost Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Ghost Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 50, …}Object
-[Log] Generating button for item 40: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, …} (unified-teller.js, line 1942)
-{itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, remaining: 2000, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, …} (unified-teller.js, line 1942)
-{itemName: "Vile Ribcage", dailyTotal: 0, turnInRequirement: 2000, remaining: 2000, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Ribcage", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Ribcage", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Vile Ribcage", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 2000, …}Object
-[Log] Generating button for item 42: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, …} (unified-teller.js, line 1942)
-{itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, remaining: 125, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - getMaxAllowedTurnin: – {itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, …} (unified-teller.js, line 1942)
-{itemName: "Vile Trophy", dailyTotal: 0, turnInRequirement: 125, remaining: 125, dailyTurninDataExists: false}Object
-[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – {itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", …} (unified-teller.js, line 1922)
-{itemName: "Vile Trophy", item: Object, turn_in_quantity: "0", parsed: 0, oldMethod: 0}Object
-[Log] DEBUG - Turn-in progress calculation: – {itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, …} (unified-teller.js, line 3592)
-{itemName: "Vile Trophy", dailyTotal: 0, currentlySelected: 0, projectedTotal: 0, turnInRequirement: 125, …}Object
-[Log] Generating button for item 39: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1484)
-[Log] 🎨🎨🎨 POST-RENDER CSS DEBUG - Starting inspection... (unified-teller.js, line 4499)
-[Log] 🎨 Outer Container (#items-table-view): –  (unified-teller.js, line 4504)
-<div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-
-<div class="items-container single-column" id="items-table-view" style="display: block;">…</div>
-[Log] 🎨 Table Wrapper (.items-table-wrapper): –  (unified-teller.js, line 4505)
-<div class="items-table-wrapper single-column">…</div>
-
-<div class="items-table-wrapper single-column">…</div>
-[Log] 🎨 OUTER CONTAINER CSS: (unified-teller.js, line 4509)
-[Log]   - display: – "grid" (unified-teller.js, line 4510)
-[Log]   - className: – "items-container single-column" (unified-teller.js, line 4511)
-[Log]   - offsetWidth: – 784 (unified-teller.js, line 4512)
-[Log] 🎨 TABLE WRAPPER CSS: (unified-teller.js, line 4517)
-[Log]   - display: – "block" (unified-teller.js, line 4518)
-[Log]   - grid-template-columns: – "none" (unified-teller.js, line 4519)
-[Log]   - flex-direction: – "row" (unified-teller.js, line 4520)
-[Log]   - flex-wrap: – "nowrap" (unified-teller.js, line 4521)
-[Log]   - className: – "items-table-wrapper single-column" (unified-teller.js, line 4522)
-[Log]   - computed width: – "384.666656px" (unified-teller.js, line 4523)
-[Log]   - actual offsetWidth: – 385 (unified-teller.js, line 4524)
-[Log] 🎨 FOUND TABLE CONTAINERS: – 1 (unified-teller.js, line 4528)
-[Log] 🎨 CONTAINER 1: (unified-teller.js, line 4532)
-[Log]   - flex: – "0 1 auto" (unified-teller.js, line 4533)
-[Log]   - width: – "384.666656px" (unified-teller.js, line 4534)
-[Log]   - min-width: – "0px" (unified-teller.js, line 4535)
-[Log]   - max-width: – "none" (unified-teller.js, line 4536)
-[Log]   - offsetWidth: – 385 (unified-teller.js, line 4537)
+<div class="items-table-wrapper single-column" style="display: flex !important; flex-flow: wrap !important; gap: 20px !important; width: 100% !important; grid: none !important;">…</div>
+[Log] 🎨 OUTER CONTAINER CSS: (unified-teller.js, line 4534)
+[Log]   - display: – "grid" (unified-teller.js, line 4535)
+[Log]   - className: – "items-container single-column" (unified-teller.js, line 4536)
+[Log]   - offsetWidth: – 1425 (unified-teller.js, line 4537)
+[Log] 🎨 TABLE WRAPPER CSS: (unified-teller.js, line 4542)
+[Log]   - display: – "flex" (unified-teller.js, line 4543)
+[Log]   - grid-template-columns: – "none" (unified-teller.js, line 4544)
+[Log]   - flex-direction: – "row" (unified-teller.js, line 4545)
+[Log]   - flex-wrap: – "wrap" (unified-teller.js, line 4546)
+[Log]   - className: – "items-table-wrapper single-column" (unified-teller.js, line 4547)
+[Log]   - computed width: – "347.666656px" (unified-teller.js, line 4548)
+[Log]   - actual offsetWidth: – 348 (unified-teller.js, line 4549)
+[Log] 🎨 FOUND TABLE CONTAINERS: – 1 (unified-teller.js, line 4553)
+[Log] 🎨 CONTAINER 1: (unified-teller.js, line 4557)
+[Log]   - flex: – "1 1 auto" (unified-teller.js, line 4558)
+[Log]   - width: – "700px" (unified-teller.js, line 4559)
+[Log]   - min-width: – "700px" (unified-teller.js, line 4560)
+[Log]   - max-width: – "none" (unified-teller.js, line 4561)
+[Log]   - offsetWidth: – 700 (unified-teller.js, line 4562)
+> Selected Element
+< <div class="items-container single-column" id="items-table-view" style="display: block;">…</div>

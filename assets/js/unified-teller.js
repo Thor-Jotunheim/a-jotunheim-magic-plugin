@@ -4485,6 +4485,12 @@ class UnifiedTeller {
         
         // NUCLEAR OPTION: Force CSS via JavaScript since !important isn't working
         setTimeout(() => {
+            // CRITICAL: Fix the OUTER container first!
+            console.log('🔥 NUCLEAR CSS OVERRIDE: Forcing OUTER container to not use grid');
+            container.style.setProperty('display', 'block', 'important');
+            container.style.setProperty('grid-template-columns', 'none', 'important');
+            container.style.setProperty('grid', 'none', 'important');
+            
             const wrapper = container.querySelector('.items-table-wrapper');
             if (wrapper) {
                 console.log('🔥 NUCLEAR CSS OVERRIDE: Forcing flex layout via JavaScript');
@@ -4504,7 +4510,7 @@ class UnifiedTeller {
                     tableContainer.style.setProperty('width', 'auto', 'important');
                 });
                 
-                console.log('🔥 NUCLEAR CSS OVERRIDE: Applied to', tableContainers.length, 'table containers');
+                console.log('🔥 NUCLEAR CSS OVERRIDE: Applied to outer container + wrapper + ', tableContainers.length, 'table containers');
             }
         }, 50);
 
