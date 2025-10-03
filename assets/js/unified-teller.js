@@ -4482,6 +4482,31 @@ class UnifiedTeller {
         // CRITICAL FIX: Wrap tables in the .items-table-wrapper that CSS expects!
         const wrapperClass = numColumns === 1 ? 'single-column' : `multi-column-${numColumns}`;
         container.innerHTML = `<div class="items-table-wrapper ${wrapperClass}">${tablesHTML}</div>`;
+        
+        // NUCLEAR OPTION: Force CSS via JavaScript since !important isn't working
+        setTimeout(() => {
+            const wrapper = container.querySelector('.items-table-wrapper');
+            if (wrapper) {
+                console.log('🔥 NUCLEAR CSS OVERRIDE: Forcing flex layout via JavaScript');
+                wrapper.style.setProperty('display', 'flex', 'important');
+                wrapper.style.setProperty('flex-direction', 'row', 'important');
+                wrapper.style.setProperty('flex-wrap', 'wrap', 'important');
+                wrapper.style.setProperty('gap', '20px', 'important');
+                wrapper.style.setProperty('width', '100%', 'important');
+                wrapper.style.setProperty('grid-template-columns', 'none', 'important');
+                wrapper.style.setProperty('grid', 'none', 'important');
+                
+                const tableContainers = wrapper.querySelectorAll('.table-container');
+                tableContainers.forEach(tableContainer => {
+                    tableContainer.style.setProperty('flex', '1 1 auto', 'important');
+                    tableContainer.style.setProperty('min-width', '700px', 'important');
+                    tableContainer.style.setProperty('max-width', 'none', 'important');
+                    tableContainer.style.setProperty('width', 'auto', 'important');
+                });
+                
+                console.log('🔥 NUCLEAR CSS OVERRIDE: Applied to', tableContainers.length, 'table containers');
+            }
+        }, 50);
 
         // Populate each table with its items
         tableSections.forEach((items, tableIndex) => {
