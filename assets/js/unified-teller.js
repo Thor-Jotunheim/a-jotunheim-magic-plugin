@@ -4457,7 +4457,7 @@ class UnifiedTeller {
         // Add CSS class to container based on column count
         container.className = `items-container ${numColumns === 1 ? 'single-column' : 'multi-column'}`;
         
-        // Create table containers dynamically
+        // Create table containers dynamically WITH PROPER WRAPPER
         let tablesHTML = '';
         tableSections.forEach((items, index) => {
             tablesHTML += `
@@ -4479,7 +4479,9 @@ class UnifiedTeller {
             `;
         });
         
-        container.innerHTML = tablesHTML;
+        // CRITICAL FIX: Wrap tables in the .items-table-wrapper that CSS expects!
+        const wrapperClass = numColumns === 1 ? 'single-column' : `multi-column-${numColumns}`;
+        container.innerHTML = `<div class="items-table-wrapper ${wrapperClass}">${tablesHTML}</div>`;
 
         // Populate each table with its items
         tableSections.forEach((items, tableIndex) => {
@@ -4491,6 +4493,53 @@ class UnifiedTeller {
                 });
             }
         });
+
+        // 🎨 CSS DEBUGGING - After tables are rendered and added to DOM
+        setTimeout(() => {
+            console.log('🎨🎨🎨 POST-RENDER CSS DEBUG - Starting inspection...');
+            
+            const outerContainer = document.getElementById('items-table-view');
+            const tableWrapper = document.querySelector('.items-table-wrapper');
+            
+            console.log('🎨 Outer Container (#items-table-view):', outerContainer);
+            console.log('🎨 Table Wrapper (.items-table-wrapper):', tableWrapper);
+            
+            if (outerContainer) {
+                const outerStyle = window.getComputedStyle(outerContainer);
+                console.log('🎨 OUTER CONTAINER CSS:');
+                console.log('  - display:', outerStyle.display);
+                console.log('  - className:', outerContainer.className);
+                console.log('  - offsetWidth:', outerContainer.offsetWidth);
+            }
+            
+            if (tableWrapper) {
+                const wrapperStyle = window.getComputedStyle(tableWrapper);
+                console.log('🎨 TABLE WRAPPER CSS:');
+                console.log('  - display:', wrapperStyle.display);
+                console.log('  - grid-template-columns:', wrapperStyle.gridTemplateColumns);
+                console.log('  - flex-direction:', wrapperStyle.flexDirection);
+                console.log('  - flex-wrap:', wrapperStyle.flexWrap);
+                console.log('  - className:', tableWrapper.className);
+                console.log('  - computed width:', wrapperStyle.width);
+                console.log('  - actual offsetWidth:', tableWrapper.offsetWidth);
+                
+                // Check if there are any table containers and their CSS
+                const containers = tableWrapper.querySelectorAll('.table-container');
+                console.log('🎨 FOUND TABLE CONTAINERS:', containers.length);
+                
+                containers.forEach((container, index) => {
+                    const containerStyle = window.getComputedStyle(container);
+                    console.log(`🎨 CONTAINER ${index + 1}:`);
+                    console.log('  - flex:', containerStyle.flex);
+                    console.log('  - width:', containerStyle.width);
+                    console.log('  - min-width:', containerStyle.minWidth);
+                    console.log('  - max-width:', containerStyle.maxWidth);
+                    console.log('  - offsetWidth:', container.offsetWidth);
+                });
+            } else {
+                console.log('🎨 ERROR: No .items-table-wrapper found! This is the problem!');
+            }
+        }, 100); // Small delay to ensure DOM is fully updated
     }
 
     getOptimalColumnCount() {
