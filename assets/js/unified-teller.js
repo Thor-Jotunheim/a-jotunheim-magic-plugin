@@ -3235,31 +3235,17 @@ class UnifiedTeller {
     }
 
     updateProgressDisplay(shopItemId, turnInRequirement) {
-        console.log(`🔵 updateProgressDisplay called for item ${shopItemId}`);
-        console.log(`🔵 STACK TRACE:`, new Error().stack);
-        
         // Detect current view and target the correct progress element
         const isTableView = this.isCurrentlyTableView();
         const progressId = isTableView ? `table-progress-${shopItemId}` : `progress-${shopItemId}`;
         const progressElement = document.getElementById(progressId);
         
-        console.log(`🔵 Current view: ${isTableView ? 'TABLE' : 'GRID'}, targeting ID: ${progressId}`);
-        console.log(`🔵 Progress element found:`, !!progressElement);
-        
         if (progressElement) {
             const item = this.turninItems.find(i => i.shop_item_id == shopItemId) || 
                         this.shopItems.find(i => i.shop_item_id == shopItemId);
-            console.log(`🔵 Item found:`, !!item, item?.item_name);
             if (item) {
                 const newProgressHTML = this.generateProgressText(item, true);
-                console.log(`🔵 Generated progress HTML:`, newProgressHTML);
-                
-                // Add visual confirmation that update happened
-                const timestamp = new Date().toLocaleTimeString();
-                const enhancedHTML = `<div style="background: yellow; padding: 2px; margin: 2px;">UPDATED at ${timestamp}</div>${newProgressHTML}`;
-                
-                progressElement.innerHTML = enhancedHTML;
-                console.log(`🔵 DOM updated with enhanced HTML at ${timestamp}`);
+                progressElement.innerHTML = newProgressHTML;
             }
         }
         
@@ -3274,21 +3260,16 @@ class UnifiedTeller {
         const tableView = document.querySelector('#items-table-view');
         const gridView = document.querySelector('.shop-items-grid');
         
-        console.log(`🔧 View detection elements found: table=${!!tableView}, grid=${!!gridView}`);
-        
         if (tableView && gridView) {
             // Both exist, check which one is visible
             const tableVisible = getComputedStyle(tableView).display !== 'none';
             const gridVisible = getComputedStyle(gridView).display !== 'none';
-            console.log(`🔧 View detection: table visible=${tableVisible}, grid visible=${gridVisible}`);
             return tableVisible && !gridVisible;
         } else if (tableView) {
             // Only table view exists
-            console.log(`🔧 View detection: only table view exists, returning true`);
             return true;
         } else {
             // Only grid view exists or neither exists
-            console.log(`🔧 View detection: no table view found, returning false`);
             return false;
         }
     }
@@ -4397,9 +4378,6 @@ class UnifiedTeller {
     }
 
     renderItemsTable(container) {
-        console.log('🔧 DEBUG: renderItemsTable called, container:', container);
-        console.log('🔧 DEBUG: shopItems length:', this.shopItems.length);
-        
         // Create two side-by-side table containers for maximum item display
         container.innerHTML = '';
 
@@ -4410,16 +4388,11 @@ class UnifiedTeller {
 
         // Filter available items
         const availableItems = this.shopItems.filter(item => item.is_available == 1);
-        console.log('🔧 DEBUG: availableItems length:', availableItems.length);
-        console.log('🔧 DEBUG: availableItems:', availableItems.map(i => i.item_name));
         
         // Split items into two halves for the two tables
         const midPoint = Math.ceil(availableItems.length / 2);
         const leftItems = availableItems.slice(0, midPoint);
         const rightItems = availableItems.slice(midPoint);
-        console.log('🔧 DEBUG: leftItems length:', leftItems.length, 'rightItems length:', rightItems.length);
-
-        console.log('🔧 DEBUG: Creating table HTML structure without icon column');
         
         // Determine if we have turn-in items to set appropriate header
         const hasTurnInItems = availableItems.some(item => item.event_points !== undefined && item.event_points !== null);
@@ -4463,24 +4436,19 @@ class UnifiedTeller {
         const rightTableBody = container.querySelector('.right-table');
 
         // Populate left table with proper table cells
-        console.log('🔧 DEBUG: About to populate left table with', leftItems.length, 'items');
         leftItems.forEach((item, index) => {
-            console.log('🔧 DEBUG: Processing left item', index, ':', item.item_name);
             const tableRow = this.createTableRow(item);
             leftTableBody.appendChild(tableRow);
         });
 
         // Populate right table with proper table cells
-        console.log('🔧 DEBUG: About to populate right table with', rightItems.length, 'items');
         rightItems.forEach((item, index) => {
-            console.log('🔧 DEBUG: Processing right item', index, ':', item.item_name);
             const tableRow = this.createTableRow(item);
             rightTableBody.appendChild(tableRow);
         });
     }
 
     createTableRow(item) {
-        console.log('🔧 DEBUG: createTableRow called for item:', item.item_name, item);
         const row = document.createElement('tr');
         row.className = 'table-item-row';
         
@@ -4520,35 +4488,15 @@ class UnifiedTeller {
             if (isTurnInItem) {
                 const unitsInput = unitsCell.querySelector(`#table-turnin-qty-${item.shop_item_id}`);
                 if (unitsInput) {
-                    console.log('🟡 Manually attaching event listeners to units input:', unitsInput.id);
-                    console.log('🟡 Input element details:', {id: unitsInput.id, value: unitsInput.value, type: unitsInput.type});
-                    
-                    // Test if the input is actually interactive
-                    unitsInput.addEventListener('focus', () => {
-                        console.log('🔸 Units input focused:', unitsInput.id);
-                    });
-                    
-                    // Test if element is actually receiving events
-                    unitsInput.addEventListener('click', () => {
-                        console.log('🔸 Units input CLICKED:', unitsInput.id);
-                    });
-                    
                     unitsInput.addEventListener('input', (e) => {
-                        console.log('🟢🟢🟢 MANUAL ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
                     
-                    // Also try 'change' event as backup
                     unitsInput.addEventListener('change', (e) => {
-                        console.log('🟠🟠🟠 MANUAL ONCHANGE FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
-                    
-                    console.log('🟡 Event listeners attached successfully to:', unitsInput.id);
-                } else {
-                    console.log('❌ Could not find units input for', item.shop_item_id);
                 }
             }
         }, 100); // Increased timeout to ensure DOM is ready
@@ -4567,35 +4515,15 @@ class UnifiedTeller {
             if (isTurnInItem && item.stack_size && parseInt(item.stack_size) > 1) {
                 const stacksInput = stacksCell.querySelector(`#table-turnin-stack-qty-${item.shop_item_id}`);
                 if (stacksInput) {
-                    console.log('🟡 Manually attaching event listeners to stacks input:', stacksInput.id);
-                    console.log('🟡 Stacks input element details:', {id: stacksInput.id, value: stacksInput.value, type: stacksInput.type});
-                    
-                    // Test if the input is actually interactive
-                    stacksInput.addEventListener('focus', () => {
-                        console.log('🔸 Stacks input focused:', stacksInput.id);
-                    });
-                    
-                    // Test if element is actually receiving events
-                    stacksInput.addEventListener('click', () => {
-                        console.log('🔸 Stacks input CLICKED:', stacksInput.id);
-                    });
-                    
                     stacksInput.addEventListener('input', (e) => {
-                        console.log('🟢🟢🟢 MANUAL STACKS ONINPUT FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
                     
-                    // Also try 'change' event as backup
                     stacksInput.addEventListener('change', (e) => {
-                        console.log('🟠 MANUAL ONCHANGE FIRED for', e.target.id, 'value:', e.target.value);
                         this.enforceQuantityLimits(e.target);
                         this.updateProgressDisplay(item.shop_item_id, item.turn_in_requirement || 0);
                     });
-                    
-                    console.log('🟡 Stacks event listeners attached successfully to:', stacksInput.id);
-                } else {
-                    console.log('❌ Could not find stacks input for', item.shop_item_id);
                 }
             }
         }, 100); // Increased timeout to ensure DOM is ready
