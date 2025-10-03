@@ -2479,13 +2479,13 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Create two side-by-side table containers, each with 5 columns */
 #items-table-view {
-    display: flex !important;
-    flex-direction: row !important;
+    display: flex;
+    flex-direction: row;
     gap: 10px; /* Reduced gap to allow more table width */
-    width: 100% !important;
-    align-items: flex-start !important;
-    padding-left: 2px !important; /* Prevent left border cutoff */
-    padding-right: 2px !important; /* Balance the padding */
+    width: 100%;
+    align-items: flex-start;
+    padding-left: 2px; /* Prevent left border cutoff */
+    padding-right: 2px; /* Balance the padding */
 }
 
 #items-table-view .table-container {
