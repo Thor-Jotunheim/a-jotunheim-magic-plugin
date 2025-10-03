@@ -4402,6 +4402,12 @@ class UnifiedTeller {
         // Determine number of columns based on screen width
         const numColumns = this.getOptimalColumnCount();
         
+        console.log('🔍 Table Layout Debug:', {
+            screenWidth: window.innerWidth,
+            numColumns: numColumns,
+            totalItems: availableItems.length
+        });
+        
         // Split items across multiple tables
         const itemsPerTable = Math.ceil(availableItems.length / numColumns);
         const tableSections = [];
@@ -4413,6 +4419,12 @@ class UnifiedTeller {
                 tableSections.push(availableItems.slice(start, end));
             }
         }
+        
+        console.log('📊 Table Sections:', tableSections.map((section, i) => ({
+            tableIndex: i,
+            itemCount: section.length,
+            items: section.map(item => item.item_name)
+        })));
         
         // Determine if we have turn-in items to set appropriate header
         const hasTurnInItems = availableItems.some(item => item.event_points !== undefined && item.event_points !== null);

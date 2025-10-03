@@ -2479,7 +2479,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Responsive table layout with dynamic columns */
 #items-table-view {
-    display: grid;
+    display: grid !important;
     gap: 10px;
     width: 100%;
     padding-left: 2px;
@@ -2536,6 +2536,9 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allow shrinking */
     display: block;
     overflow-x: auto; /* Handle narrow containers */
+    /* Ensure containers don't force stacking */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #items-table-view .table-container .items-table {
