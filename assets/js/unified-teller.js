@@ -4469,11 +4469,11 @@ class UnifiedTeller {
     getOptimalColumnCount() {
         // Determine optimal number of columns based on available space
         const containerWidth = window.innerWidth - 40; // Account for padding/margins
-        const minTableWidth = 600; // Minimum width for a readable table
+        const tableWidth = 700; // Actual table width from CSS
         const gapWidth = 10; // Gap between tables
         
         // Calculate maximum columns that can fit without cutting off
-        let maxPossibleColumns = Math.floor((containerWidth + gapWidth) / (minTableWidth + gapWidth));
+        let maxPossibleColumns = Math.floor((containerWidth + gapWidth) / (tableWidth + gapWidth));
         
         // Cap at reasonable maximums based on screen size for UX
         let maxRecommendedColumns;
@@ -4488,7 +4488,7 @@ class UnifiedTeller {
         
         console.log('📐 Column Calculation:', {
             containerWidth,
-            minTableWidth,
+            tableWidth,
             maxPossibleColumns,
             maxRecommendedColumns,
             optimalColumns
