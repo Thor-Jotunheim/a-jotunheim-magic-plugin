@@ -2401,3 +2401,45 @@ input[type="number"] {
     --orange-6: hsl(32, 98%, 83%);
     --orange-11: hsl(32, 98%, 45%);
 }
+
+/* ========================================
+   NUCLEAR OVERRIDE: FORCE WIDE TABLES
+   ======================================== */
+
+/* Override ALL possible selectors that might apply grid layout */
+#items-table-view .items-table-wrapper,
+.items-table-wrapper,
+.unified-teller .items-table-wrapper,
+.unified-teller-container .items-table-wrapper,
+[class*="items-table-wrapper"] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+    width: 100% !important;
+    /* Kill ALL grid properties */
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    grid-auto-columns: none !important;
+    grid-auto-rows: none !important;
+    grid-gap: 0 !important;
+    grid: none !important;
+    grid-area: none !important;
+}
+
+/* Force table containers to use ALL available space */
+#items-table-view .table-container,
+.table-container,
+.unified-teller .table-container,
+.unified-teller-container .table-container,
+[class*="table-container"] {
+    flex: 1 1 auto !important;
+    min-width: 400px !important; /* Reasonable minimum for readability */
+    max-width: none !important;
+    width: auto !important;
+    /* Kill ALL grid properties */
+    grid-column: none !important;
+    grid-row: none !important;
+    grid-area: none !important;
+    box-sizing: border-box !important;
+}

@@ -4517,13 +4517,11 @@ class UnifiedTeller {
         // Much more conservative approach - prioritize width over number of columns
         let optimalColumns;
         
-        // Very conservative breakpoints to ensure tables fill space properly
-        if (actualContainerWidth >= 2400) {
-            optimalColumns = 3; // Only very wide screens get 3 columns
-        } else if (actualContainerWidth >= 1600) {
-            optimalColumns = 2; // Standard desktop gets 2 columns  
+        // EXTREMELY conservative breakpoints - prioritize wide tables over many columns
+        if (actualContainerWidth >= 3000) {
+            optimalColumns = 2; // Only ultra-wide screens get 2 columns
         } else {
-            optimalColumns = 1; // Everything else gets 1 column
+            optimalColumns = 1; // Everything else gets 1 column for maximum width
         }
         
         console.log('📐 Column Calculation:', {
