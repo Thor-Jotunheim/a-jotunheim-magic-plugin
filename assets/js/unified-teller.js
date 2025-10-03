@@ -987,16 +987,19 @@ class UnifiedTeller {
     }
 
     renderShopItems() {
-        // Respect current view mode when re-rendering
-        if (this.isTableView) {
-            const tableContainer = document.getElementById('items-table-view');
-            if (tableContainer) {
-                this.renderItemsTable(tableContainer);
-            }
-        } else {
-            const gridContainer = document.getElementById('items-grid-view');
-            if (gridContainer) {
-                this.renderItemsGrid(gridContainer);
+        // Initialize view visibility - ensure only one view is shown
+        const gridView = document.getElementById('items-grid-view');
+        const tableView = document.getElementById('items-table-view');
+        
+        if (gridView && tableView) {
+            if (this.isTableView) {
+                gridView.style.display = 'none';
+                tableView.style.display = 'block';
+                this.renderItemsTable(tableView);
+            } else {
+                gridView.style.display = 'flex'; // Use flex for grid layout
+                tableView.style.display = 'none';
+                this.renderItemsGrid(gridView);
             }
         }
     }
@@ -2587,11 +2590,24 @@ class UnifiedTeller {
             if (this.selectedShop) {
                 const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
                 const shopName = selectedOption ? selectedOption.dataset.shopName : null;
+                const shopType = selectedOption ? selectedOption.dataset.shopType : null;
                 console.log('🔍 DEBUG Transaction History: selectedShop:', this.selectedShop);
                 console.log('🔍 DEBUG Transaction History: selectedOption:', selectedOption);
                 console.log('🔍 DEBUG Transaction History: shopName from dataset:', shopName);
+                console.log('🔍 DEBUG Transaction History: shopType from dataset:', shopType);
+                
                 if (shopName) {
                     params.shop_name = shopName;
+                    
+                    // Set transaction_type based on shop type to query the correct table
+                    if (shopType === 'turn-in_only') {
+                        params.transaction_type = 'turnin';
+                        console.log('🔍 DEBUG Transaction History: Set transaction_type=turnin for turn-in shop');
+                    } else if (shopType === 'aesir') {
+                        // For Aesir shops, we need to query jotun_ledger - but the API doesn't support this yet
+                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - ledger queries not implemented yet');
+                    }
+                    
                     console.log('🔍 DEBUG Transaction History: Added shop_name filter:', shopName);
                 }
             }
