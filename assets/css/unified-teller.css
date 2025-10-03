@@ -699,6 +699,12 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex !important;
 }
 
+/* FORCE table view containers to use flex layout */
+#items-table-view.items-container {
+    display: flex !important;
+    grid-template-columns: none !important;
+}
+
 .items-grid {
     display: flex;
     flex-wrap: wrap;
