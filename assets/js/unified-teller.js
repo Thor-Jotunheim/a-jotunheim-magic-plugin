@@ -196,6 +196,21 @@ class UnifiedTeller {
         if (recordTurninBtn) {
             recordTurninBtn.addEventListener('click', () => this.recordTurnin());
         }
+
+        // Responsive table layout - re-render on window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // Only re-render if we're currently in table view
+                if (this.isTableView) {
+                    const tableView = document.getElementById('items-table-view');
+                    if (tableView && tableView.style.display !== 'none') {
+                        this.renderItemsTable(tableView);
+                    }
+                }
+            }, 150); // Debounce resize events
+        });
     }
 
     async loadInitialData() {
@@ -4373,7 +4388,7 @@ class UnifiedTeller {
     }
 
     renderItemsTable(container) {
-        // Create two side-by-side table containers for maximum item display
+        // Create responsive table containers based on screen width
         container.innerHTML = '';
 
         if (this.shopItems.length === 0) {
@@ -4384,63 +4399,70 @@ class UnifiedTeller {
         // Filter available items
         const availableItems = this.shopItems.filter(item => item.is_available == 1);
         
-        // Split items into two halves for the two tables
-        const midPoint = Math.ceil(availableItems.length / 2);
-        const leftItems = availableItems.slice(0, midPoint);
-        const rightItems = availableItems.slice(midPoint);
+        // Determine number of columns based on screen width
+        const numColumns = this.getOptimalColumnCount();
+        
+        // Split items across multiple tables
+        const itemsPerTable = Math.ceil(availableItems.length / numColumns);
+        const tableSections = [];
+        
+        for (let i = 0; i < numColumns; i++) {
+            const start = i * itemsPerTable;
+            const end = Math.min(start + itemsPerTable, availableItems.length);
+            if (start < availableItems.length) {
+                tableSections.push(availableItems.slice(start, end));
+            }
+        }
         
         // Determine if we have turn-in items to set appropriate header
         const hasTurnInItems = availableItems.some(item => item.event_points !== undefined && item.event_points !== null);
         const thirdColumnHeader = hasTurnInItems ? 'Progress' : 'Price';
         
-        // Create two table containers side by side
-        container.innerHTML = `
-            <div class="table-container">
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th class="item-column">Item</th>
-                            <th class="units-column">Units</th>
-                            <th class="stacks-column">Stacks</th>
-                            <th class="progress-column">${thirdColumnHeader}</th>
-                            <th class="actions-column">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-body-cells left-table">
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-container">
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th class="item-column">Item</th>
-                            <th class="units-column">Units</th>
-                            <th class="stacks-column">Stacks</th>
-                            <th class="progress-column">${thirdColumnHeader}</th>
-                            <th class="actions-column">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-body-cells right-table">
-                    </tbody>
-                </table>
-            </div>
-        `;
-
-        const leftTableBody = container.querySelector('.left-table');
-        const rightTableBody = container.querySelector('.right-table');
-
-        // Populate left table with proper table cells
-        leftItems.forEach((item, index) => {
-            const tableRow = this.createTableRow(item);
-            leftTableBody.appendChild(tableRow);
+        // Create table containers dynamically
+        let tablesHTML = '';
+        tableSections.forEach((items, index) => {
+            tablesHTML += `
+                <div class="table-container">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th class="item-column">Item</th>
+                                <th class="units-column">Units</th>
+                                <th class="stacks-column">Stacks</th>
+                                <th class="progress-column">${thirdColumnHeader}</th>
+                                <th class="actions-column">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-body-cells table-${index}">
+                        </tbody>
+                    </table>
+                </div>
+            `;
         });
+        
+        container.innerHTML = tablesHTML;
 
-        // Populate right table with proper table cells
-        rightItems.forEach((item, index) => {
-            const tableRow = this.createTableRow(item);
-            rightTableBody.appendChild(tableRow);
+        // Populate each table with its items
+        tableSections.forEach((items, tableIndex) => {
+            const tableBody = container.querySelector(`.table-${tableIndex}`);
+            if (tableBody) {
+                items.forEach((item) => {
+                    const tableRow = this.createTableRow(item);
+                    tableBody.appendChild(tableRow);
+                });
+            }
         });
+    }
+
+    getOptimalColumnCount() {
+        // Determine optimal number of columns based on screen width
+        const width = window.innerWidth;
+        
+        if (width >= 2000) return 5;      // Ultra wide screens: 5 columns
+        if (width >= 1600) return 4;      // Extra large screens: 4 columns  
+        if (width >= 1200) return 3;      // Large screens: 3 columns
+        if (width >= 768) return 2;       // Tablet and up: 2 columns
+        return 1;                         // Mobile: 1 column (stacked)
     }
 
     createTableRow(item) {

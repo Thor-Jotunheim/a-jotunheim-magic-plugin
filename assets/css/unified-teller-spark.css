@@ -2477,28 +2477,72 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Old card-based CSS removed - now using proper table cells for column alignment */
 
-/* Create two side-by-side table containers, each with 5 columns */
+/* Responsive table layout with dynamic columns */
 #items-table-view {
-    display: flex;
-    flex-direction: row;
-    gap: 10px; /* Reduced gap to allow more table width */
+    display: grid;
+    gap: 10px;
     width: 100%;
-    align-items: flex-start;
-    padding-left: 2px; /* Prevent left border cutoff */
-    padding-right: 2px; /* Balance the padding */
+    padding-left: 2px;
+    padding-right: 2px;
+    
+    /* Responsive grid columns based on screen width */
+    /* Mobile: 1 column (stack vertically) */
+    grid-template-columns: 1fr;
+}
+
+/* Very small screens: ensure tables are readable */
+@media (max-width: 480px) {
+    #items-table-view {
+        gap: 5px;
+        padding-left: 1px;
+        padding-right: 1px;
+    }
+    
+    #items-table-view .table-container .items-table {
+        min-width: 400px; /* Reduce minimum width for very small screens */
+        font-size: 0.9em; /* Slightly smaller text */
+    }
+}
+
+/* Tablet and up: 2 columns */
+@media (min-width: 768px) {
+    #items-table-view {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Large screens: 3 columns */
+@media (min-width: 1200px) {
+    #items-table-view {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+/* Extra large screens: 4 columns */
+@media (min-width: 1600px) {
+    #items-table-view {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+}
+
+/* Ultra wide screens: 5 columns */
+@media (min-width: 2000px) {
+    #items-table-view {
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    }
 }
 
 #items-table-view .table-container {
-    flex: 1 1 49.5% !important;
-    min-width: 0 !important; /* Allow shrinking */
-    max-width: 49.5% !important; /* Fine-tuned to maximize space without overflow */
-    display: block !important;
+    min-width: 0; /* Allow shrinking */
+    display: block;
+    overflow-x: auto; /* Handle narrow containers */
 }
 
 #items-table-view .table-container .items-table {
-    width: 700px !important; /* Set specific table width */
-    table-layout: fixed !important;
-    border-collapse: collapse !important;
+    width: 100%;
+    min-width: 600px; /* Minimum table width for readability */
+    table-layout: fixed;
+    border-collapse: collapse;
 }
 
 /* Table column widths for 4-column layout (no icon column) */
