@@ -2406,40 +2406,57 @@ input[type="number"] {
    NUCLEAR OVERRIDE: FORCE WIDE TABLES
    ======================================== */
 
-/* Override ALL possible selectors that might apply grid layout */
+/* Override ALL possible selectors that might apply grid layout - INCLUDING MULTI-COLUMN CLASSES */
 #items-table-view .items-table-wrapper,
 .items-table-wrapper,
 .unified-teller .items-table-wrapper,
 .unified-teller-container .items-table-wrapper,
-[class*="items-table-wrapper"] {
+[class*="items-table-wrapper"],
+.items-table-wrapper.single-column,
+.items-table-wrapper.two-column,
+.items-table-wrapper.three-column,
+.items-table-wrapper.four-column,
+.items-table-wrapper.five-column {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: wrap !important;
     gap: 20px !important;
     width: 100% !important;
-    /* Kill ALL grid properties */
+    /* Kill ALL grid properties with extreme prejudice */
     grid-template-columns: none !important;
     grid-template-rows: none !important;
     grid-auto-columns: none !important;
     grid-auto-rows: none !important;
     grid-gap: 0 !important;
+    grid-column-gap: 0 !important;
+    grid-row-gap: 0 !important;
     grid: none !important;
     grid-area: none !important;
+    grid-auto-flow: initial !important;
 }
 
-/* Force table containers to use ALL available space */
+/* Force table containers to use ALL available space - INCLUDING MULTI-COLUMN CLASSES */
 #items-table-view .table-container,
 .table-container,
 .unified-teller .table-container,
 .unified-teller-container .table-container,
-[class*="table-container"] {
+[class*="table-container"],
+.items-table-wrapper.single-column .table-container,
+.items-table-wrapper.two-column .table-container,
+.items-table-wrapper.three-column .table-container,
+.items-table-wrapper.four-column .table-container,
+.items-table-wrapper.five-column .table-container {
     flex: 1 1 auto !important;
     min-width: 400px !important; /* Reasonable minimum for readability */
     max-width: none !important;
     width: auto !important;
-    /* Kill ALL grid properties */
+    /* Kill ALL grid properties with extreme prejudice */
     grid-column: none !important;
     grid-row: none !important;
     grid-area: none !important;
+    grid-column-start: auto !important;
+    grid-column-end: auto !important;
+    grid-row-start: auto !important;
+    grid-row-end: auto !important;
     box-sizing: border-box !important;
 }

@@ -4530,10 +4530,30 @@ class UnifiedTeller {
             tableWrapperWidth: tableWrapper ? tableWrapper.offsetWidth : 'N/A',
             actualContainerWidth,
             selectedColumns: optimalColumns,
-            breakpointUsed: actualContainerWidth >= 2400 ? '3-column (>=2400px)' : 
-                           actualContainerWidth >= 1600 ? '2-column (>=1600px)' : 
-                           '1-column (<1600px)'
+            breakpointUsed: actualContainerWidth >= 3000 ? '2-column (>=3000px)' : '1-column (<3000px)'
         });
+        
+        // DEBUG: Check what CSS is actually being applied
+        const wrapper = document.querySelector('.items-table-wrapper');
+        if (wrapper) {
+            const computedStyle = window.getComputedStyle(wrapper);
+            console.log(`🎨 CSS DEBUG: wrapper display: ${computedStyle.display}`);
+            console.log(`🎨 CSS DEBUG: wrapper grid-template-columns: ${computedStyle.gridTemplateColumns}`);
+            console.log(`🎨 CSS DEBUG: wrapper flex-direction: ${computedStyle.flexDirection}`);
+            console.log(`🎨 CSS DEBUG: wrapper flex-wrap: ${computedStyle.flexWrap}`);
+            console.log(`🎨 CSS DEBUG: wrapper classes: ${wrapper.className}`);
+            
+            // Check if there are any table containers and their CSS
+            const containers = wrapper.querySelectorAll('.table-container');
+            console.log(`🎨 CSS DEBUG: Found ${containers.length} table containers`);
+            if (containers.length > 0) {
+                const firstContainer = containers[0];
+                const containerStyle = window.getComputedStyle(firstContainer);
+                console.log(`🎨 CSS DEBUG: container flex: ${containerStyle.flex}`);
+                console.log(`🎨 CSS DEBUG: container width: ${containerStyle.width}`);
+                console.log(`🎨 CSS DEBUG: container min-width: ${containerStyle.minWidth}`);
+            }
+        }
         
         return optimalColumns;
     }
