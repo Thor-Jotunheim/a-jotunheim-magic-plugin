@@ -4486,33 +4486,28 @@ class UnifiedTeller {
         const tableWrapper = document.getElementById('items-table-view');
         const actualContainerWidth = tableWrapper ? tableWrapper.offsetWidth : (window.innerWidth - 80);
         
-        // Use more conservative sizing to ensure tables fill space properly
-        const tableMinWidth = 700; // Increased minimum width for better spacing
-        const gapWidth = 20; // Gap between tables from CSS
+        // Much more conservative approach - prioritize width over number of columns
+        let optimalColumns;
         
-        // Calculate maximum columns that can fit without cutting off
-        let maxPossibleColumns = Math.floor((actualContainerWidth + gapWidth) / (tableMinWidth + gapWidth));
-        
-        // Be more conservative with recommended maximums to ensure proper width
-        let maxRecommendedColumns;
-        if (actualContainerWidth >= 2100) maxRecommendedColumns = 3; // Very wide screens only
-        else if (actualContainerWidth >= 1400) maxRecommendedColumns = 2; // Desktop screens  
-        else maxRecommendedColumns = 1; // Smaller screens
-        
-        // Use the smaller of the two limits
-        const optimalColumns = Math.min(maxPossibleColumns, maxRecommendedColumns);
+        // Very conservative breakpoints to ensure tables fill space properly
+        if (actualContainerWidth >= 2400) {
+            optimalColumns = 3; // Only very wide screens get 3 columns
+        } else if (actualContainerWidth >= 1600) {
+            optimalColumns = 2; // Standard desktop gets 2 columns  
+        } else {
+            optimalColumns = 1; // Everything else gets 1 column
+        }
         
         console.log('📐 Column Calculation:', {
             windowWidth: window.innerWidth,
             actualContainerWidth,
-            tableMinWidth,
-            gapWidth,
-            maxPossibleColumns,
-            maxRecommendedColumns,
-            optimalColumns
+            selectedColumns: optimalColumns,
+            breakpointUsed: actualContainerWidth >= 2400 ? '3-column (>=2400px)' : 
+                           actualContainerWidth >= 1600 ? '2-column (>=1600px)' : 
+                           '1-column (<1600px)'
         });
         
-        return Math.max(1, optimalColumns); // Always at least 1 column
+        return optimalColumns;
     }
 
     createTableRow(item) {
