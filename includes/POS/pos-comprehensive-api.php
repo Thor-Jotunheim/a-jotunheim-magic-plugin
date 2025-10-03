@@ -2569,6 +2569,7 @@ function jotun_api_get_transactions($request) {
     }
     
     $shop_name = $request->get_param('shop_name');
+    $shop_id = $request->get_param('shop_id');
     $customer_name = $request->get_param('customer_name');
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
@@ -2580,9 +2581,29 @@ function jotun_api_get_transactions($request) {
     $params = [];
     $conditions = [];
     
-    if ($shop_name) {
-        $conditions[] = "shop_name = %s";
-        $params[] = $shop_name;
+    // Handle shop filtering based on table structure
+    if ($transaction_type === 'turnin') {
+        // Turn-in table uses shop_id, convert shop_name to shop_id if needed
+        if ($shop_id) {
+            $conditions[] = "shop_id = %d";
+            $params[] = $shop_id;
+        } elseif ($shop_name) {
+            // Look up shop_id from shop_name
+            $shop_lookup = $wpdb->get_var($wpdb->prepare(
+                "SELECT shop_id FROM jotun_shops WHERE shop_name = %s",
+                $shop_name
+            ));
+            if ($shop_lookup) {
+                $conditions[] = "shop_id = %d";
+                $params[] = $shop_lookup;
+            }
+        }
+    } else {
+        // Regular transactions table uses shop_name
+        if ($shop_name) {
+            $conditions[] = "shop_name = %s";
+            $params[] = $shop_name;
+        }
     }
     
     if ($customer_name) {

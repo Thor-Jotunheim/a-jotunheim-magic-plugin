@@ -2602,10 +2602,12 @@ class UnifiedTeller {
                     // Set transaction_type based on shop type to query the correct table
                     if (shopType === 'turn-in_only') {
                         params.transaction_type = 'turnin';
-                        console.log('🔍 DEBUG Transaction History: Set transaction_type=turnin for turn-in shop');
+                        params.shop_id = this.selectedShop; // Pass shop_id for turn-in queries
+                        console.log('🔍 DEBUG Transaction History: Set transaction_type=turnin, shop_id=' + this.selectedShop);
                     } else if (shopType === 'aesir') {
-                        // For Aesir shops, we need to query jotun_ledger - but the API doesn't support this yet
-                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - ledger queries not implemented yet');
+                        // For Aesir shops, show message that ledger doesn't store individual transactions
+                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - ledger stores balances, not individual transactions');
+                        // Still try to query in case there are any legacy transactions
                     }
                     
                     console.log('🔍 DEBUG Transaction History: Added shop_name filter:', shopName);
@@ -2641,9 +2643,19 @@ class UnifiedTeller {
         container.innerHTML = '';
 
         if (transactions.length === 0) {
-            const emptyMessage = this.selectedShop ? 
-                '<div class="transaction-item">No transactions found for this shop</div>' :
-                '<div class="transaction-item">Select a shop to view transaction history</div>';
+            let emptyMessage;
+            if (this.selectedShop) {
+                const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+                
+                if (shopType === 'aesir') {
+                    emptyMessage = '<div class="transaction-item">Aesir shops use a balance system (jotun_ledger) rather than individual transaction records</div>';
+                } else {
+                    emptyMessage = '<div class="transaction-item">No transactions found for this shop</div>';
+                }
+            } else {
+                emptyMessage = '<div class="transaction-item">Select a shop to view transaction history</div>';
+            }
             container.innerHTML = emptyMessage;
             console.log('🔍 DEBUG Render Transaction History: Empty state message:', emptyMessage);
             return;

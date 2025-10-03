@@ -1,128 +1,136 @@
-[Warning] 390 console messages are not shown.
+[Warning] 1630 console messages are not shown.
+[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3673)
+Object
+[Log] Generating button for item 40: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1494)
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3673)
+Object
+[Log] Generating button for item 42: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1494)
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - getMaxAllowedTurnin: – Object (unified-teller.js, line 1952)
+Object
+[Log] DEBUG getDailyTurninTotal (using turn_in_quantity from item): – Object (unified-teller.js, line 1932)
+Object
+[Log] DEBUG - Turn-in progress calculation: – Object (unified-teller.js, line 3673)
+Object
+[Log] Generating button for item 39: inCart=false, buttonText=Turn In, cartSize=0 (unified-teller.js, line 1494)
+[Log] 🚨 DEBUG: resetItemDisplay() called (unified-teller.js, line 2198)
+[Log] 🚨 DEBUG: showShopView() called (unified-teller.js, line 3069)
+[Log] 🚨 DEBUG: Setting isCartView to false (unified-teller.js, line 3070)
+[Log] 🚨 DEBUG: shopInventoryCard found: – true (unified-teller.js, line 3075)
+[Log] 🚨 DEBUG: transactionSummaryCard found: – true (unified-teller.js, line 3082)
+[Log] 🚨 DEBUG: Buttons found - viewCart: – true – "record:" – true – "back:" – true (unified-teller.js, line 3092)
+[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3110)
+[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3111)
+[Log] 🚨 DEBUG: cart length: – 0 (unified-teller.js, line 3112)
+[Log] 🚨 DEBUG: cart contents: – Array (0) (unified-teller.js, line 3113)
+Array (0)
+[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3117)
+Object
+[Log] 🚨 DEBUG: View Cart button updated - disabled: – true – "text:" – "View Cart" (unified-teller.js, line 3134)
+[Log] 🚨 DEBUG: showShopView() called (unified-teller.js, line 2202)
+[Log] 🚨🚨🚨 DEBUG: clearCart() completed - CART CLEARING FINISHED (unified-teller.js, line 2204)
+[Log] Loading shop items for shop ID: – "138" – "rotation:" – "1" (unified-teller.js, line 660)
+[Log] Making API request: – "GET" – "/wp-json/jotun-api/v1/shop-items?shop_id=138&rotation=1" – null (jotun-comprehensive-api.js, line 17)
+[Log] Request config: – Object (jotun-comprehensive-api.js, line 31)
+Object
+[Log] Sending fetch request... (jotun-comprehensive-api.js, line 34)
+[Log] DEBUG: About to force button state update. Cart length: 0 (unified-teller.js, line 2238)
+[Log] 🚨 DEBUG: forceButtonStateUpdate() called, cart length: – 0 (unified-teller.js, line 2319)
+[Log] 🚨 DEBUG: Cart contents: – Array (0) (unified-teller.js, line 2320)
+Array (0)
+[Log] 🚨 DEBUG: Found 6 turn-in buttons to update (unified-teller.js, line 2333)
+[Log] 🚨 DEBUG: Button for item 41: inCart=false, current text="Turn In", cart.length=0 (unified-teller.js, line 2346)
+[Log] 🚨 DEBUG: Button for item 38: inCart=false, current text="Turn In", cart.length=0 (unified-teller.js, line 2346)
+[Log] 🚨 DEBUG: Button for item 43: inCart=false, current text="Turn In", cart.length=0 (unified-teller.js, line 2346)
+[Log] 🚨 DEBUG: Button for item 40: inCart=false, current text="Turn In", cart.length=0 (unified-teller.js, line 2346)
+[Log] 🚨 DEBUG: Button for item 42: inCart=false, current text="Turn In", cart.length=0 (unified-teller.js, line 2346)
+[Log] 🚨 DEBUG: Button for item 39: inCart=false, current text="Turn In", cart.length=0 (unified-teller.js, line 2346)
+[Log] 🚨 DEBUG: forceButtonStateUpdate() completed (unified-teller.js, line 2360)
 [Log] Response received: – 200 – "OK" (jotun-comprehensive-api.js, line 36)
 [Log] Response data: – Object (jotun-comprehensive-api.js, line 39)
 Object
-[Log] Search API response: – Object (unified-teller.js, line 1668)
-Object
-[Log] Players found from search: – Array (12) (unified-teller.js, line 1670)
-Array (12)
-[Log] Checking player: Test4, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test69, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test11, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test9, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test8, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test7, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: test5, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test6, activeMatch: false, nameMatch: false (unified-teller.js, line 1693)
-[Log] Checking player: Test, activeMatch: true, nameMatch: true (unified-teller.js, line 1693)
-[Log] Player found result: – Object (unified-teller.js, line 1697)
-Object
-[Log] Validation successful for: – "Test" (unified-teller.js, line 1699)
-[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3029)
-[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3030)
-[Log] 🚨 DEBUG: cart length: – 0 (unified-teller.js, line 3031)
-[Log] 🚨 DEBUG: cart contents: – Array (1) (unified-teller.js, line 3032)
+[Log] Raw shop items from API: – Array (1) (unified-teller.js, line 665)
 Array (1)
-[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3036)
-Object
-[Log] 🚨 DEBUG: View Cart button updated - disabled: – true – "text:" – "View Cart" (unified-teller.js, line 3053)
-[Log] Making API request: – "GET" – "/wp-json/jotun-api/v1/transactions?customer_name=Test&transaction_type=turnin&hours=24" – null (jotun-comprehensive-api.js, line 17)
+[Log] Making API request: – "GET" – "/wp-json/jotun-api/v1/itemlist" – null (jotun-comprehensive-api.js, line 17)
 [Log] Request config: – Object (jotun-comprehensive-api.js, line 31)
 Object
 [Log] Sending fetch request... (jotun-comprehensive-api.js, line 34)
 [Log] Response received: – 200 – "OK" (jotun-comprehensive-api.js, line 36)
 [Log] Response data: – Object (jotun-comprehensive-api.js, line 39)
 Object
-[Log] Daily turn-in data loaded: – Object (unified-teller.js, line 942)
+[Log] Item list response: – Object (unified-teller.js, line 669)
 Object
-[Log] Preserving quantities and re-rendering items... (unified-teller.js, line 3313)
-[Log] Saved sell-qty-47: 1 (unified-teller.js, line 3330)
-[Log] Saved sell-qty-49: 1 (unified-teller.js, line 3330)
-[Log] Saved sell-qty-50: 1 (unified-teller.js, line 3330)
-[Log] Saved sell-qty-54: 1 (unified-teller.js, line 3330)
-[Log] Saved sell-qty-55: 1 (unified-teller.js, line 3330)
-[Log] Saved sell-qty-56: 1 (unified-teller.js, line 3330)
-[Log] Saved sell-qty-57: 1 (unified-teller.js, line 3330)
-[Log] No individual buy button found for item: – "Fader Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "Fader Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "Fader Trophy" (unified-teller.js, line 1185)
-[Log] No individual buy button found for item: – "The Queen Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "The Queen Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "The Queen Trophy" (unified-teller.js, line 1185)
-[Log] No individual buy button found for item: – "Yagluth Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "Yagluth Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "Yagluth Trophy" (unified-teller.js, line 1185)
-[Log] No individual buy button found for item: – "Moder Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "Moder Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "Moder Trophy" (unified-teller.js, line 1185)
-[Log] No individual buy button found for item: – "Bonemass Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "Bonemass Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "Bonemass Trophy" (unified-teller.js, line 1185)
-[Log] No individual buy button found for item: – "The Elder Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "The Elder Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "The Elder Trophy" (unified-teller.js, line 1185)
-[Log] No individual buy button found for item: – "Eikthyr Trophy" (unified-teller.js, line 1139)
-[Log] No sell button found for item: – "Eikthyr Trophy" (unified-teller.js, line 1170)
-[Log] No turn-in button found for item: – "Eikthyr Trophy" (unified-teller.js, line 1185)
-[Log] Restored sell-qty-47: 1 (unified-teller.js, line 3343)
-[Log] Restored sell-qty-49: 1 (unified-teller.js, line 3343)
-[Log] Restored sell-qty-50: 1 (unified-teller.js, line 3343)
-[Log] Restored sell-qty-54: 1 (unified-teller.js, line 3343)
-[Log] Restored sell-qty-55: 1 (unified-teller.js, line 3343)
-[Log] Restored sell-qty-56: 1 (unified-teller.js, line 3343)
-[Log] Restored sell-qty-57: 1 (unified-teller.js, line 3343)
-[Log] Recalculating all progress displays based on current input values... (unified-teller.js, line 3353)
-[Log] Progress recalculation complete. (unified-teller.js, line 3375)
-[Log] getCurrentShopType: – Object (unified-teller.js, line 766)
-Object
-[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3029)
-[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3030)
-[Log] 🚨 DEBUG: cart length: – 1 (unified-teller.js, line 3031)
-[Log] 🚨 DEBUG: cart contents: – Array (1) (unified-teller.js, line 3032)
+[Log] Enriched shop items: – Array (1) (unified-teller.js, line 722)
 Array (1)
-[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3036)
+[Log] No individual buy button found for item: – "Unbreakable Oath" (unified-teller.js, line 1149)
+[Log] No sell button found for item: – "Unbreakable Oath" (unified-teller.js, line 1180)
+[Log] No turn-in button found for item: – "Unbreakable Oath" (unified-teller.js, line 1195)
+[Log] getCurrentShopType: – Object (unified-teller.js, line 773)
 Object
-[Log] 🚨 DEBUG: View Cart button updated - disabled: – false – "text:" – "View Cart (1)" (unified-teller.js, line 3053)
-[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3029)
-[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3030)
-[Log] 🚨 DEBUG: cart length: – 1 (unified-teller.js, line 3031)
-[Log] 🚨 DEBUG: cart contents: – Array (1) (unified-teller.js, line 3032)
-Array (1)
-[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3036)
+[Log] Setting up tracking interface: – Object (unified-teller.js, line 728)
 Object
-[Log] 🚨 DEBUG: View Cart button updated - disabled: – false – "text:" – "View Cart (1)" (unified-teller.js, line 3053)
-[Log] getCurrentShopType: – Object (unified-teller.js, line 766)
+[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3110)
+[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3111)
+[Log] 🚨 DEBUG: cart length: – 0 (unified-teller.js, line 3112)
+[Log] 🚨 DEBUG: cart contents: – Array (0) (unified-teller.js, line 3113)
+Array (0)
+[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3117)
 Object
-[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3029)
-[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3030)
-[Log] 🚨 DEBUG: cart length: – 2 (unified-teller.js, line 3031)
-[Log] 🚨 DEBUG: cart contents: – Array (1) (unified-teller.js, line 3032)
-Array (1)
-[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3036)
+[Log] 🚨 DEBUG: View Cart button updated - disabled: – true – "text:" – "View Cart" (unified-teller.js, line 3134)
+[Log] 🔍 DEBUG Transaction History: selectedShop: – "138" (unified-teller.js, line 2594)
+[Log] 🔍 DEBUG Transaction History: selectedOption: –  (unified-teller.js, line 2595)
+<option value="138" data-shop-name="Aesir Spells & Items" data-shop-type="aesir" data-current-rotation="1">Aesir Spells & Items</option>
+
+<option value="138" data-shop-name="Aesir Spells & Items" data-shop-type="aesir" data-current-rotation="1">Aesir Spells & Items</option>
+[Log] 🔍 DEBUG Transaction History: shopName from dataset: – "Aesir Spells & Items" (unified-teller.js, line 2596)
+[Log] 🔍 DEBUG Transaction History: shopType from dataset: – "aesir" (unified-teller.js, line 2597)
+[Log] 🔍 DEBUG Transaction History: Aesir shop detected - ledger queries not implemented yet (unified-teller.js, line 2608)
+[Log] 🔍 DEBUG Transaction History: Added shop_name filter: – "Aesir Spells & Items" (unified-teller.js, line 2611)
+[Log] 🔍 DEBUG Transaction History: Final params: – Object (unified-teller.js, line 2618)
 Object
-[Log] 🚨 DEBUG: View Cart button updated - disabled: – false – "text:" – "View Cart (2)" (unified-teller.js, line 3053)
-[Log] 🚨 DEBUG: updateViewCartButton() called (unified-teller.js, line 3029)
-[Log] 🚨 DEBUG: viewCartBtn found: – true (unified-teller.js, line 3030)
-[Log] 🚨 DEBUG: cart length: – 2 (unified-teller.js, line 3031)
-[Log] 🚨 DEBUG: cart contents: – Array (1) (unified-teller.js, line 3032)
-Array (1)
-[Log] 🚨 DEBUG: Updating View Cart button: – Object (unified-teller.js, line 3036)
+[Log] Making API request: – "GET" – "/wp-json/jotun-api/v1/transactions?shop_name=Aesir+Spells+%26+Items&limit=50" – null (jotun-comprehensive-api.js, line 17)
+[Log] Request config: – Object (jotun-comprehensive-api.js, line 31)
 Object
-[Log] 🚨 DEBUG: View Cart button updated - disabled: – false – "text:" – "View Cart (2)" (unified-teller.js, line 3053)
-[Log] Switching to cart view (unified-teller.js, line 2953)
-[Log] getCurrentShopType: – Object (unified-teller.js, line 766)
+[Log] Sending fetch request... (jotun-comprehensive-api.js, line 34)
+[Log] Response received: – 200 – "OK" (jotun-comprehensive-api.js, line 36)
+[Log] Response data: – Object (jotun-comprehensive-api.js, line 39)
 Object
-[Error] TypeError: itemPrice.toFixed is not a function. (In 'itemPrice.toFixed(2)', 'itemPrice.toFixed' is undefined)
-	(anonymous function) (unified-teller.js:2423:92)
-	forEach
-	generateTransactionSummary (unified-teller.js:2420)
-	showTransactionModal (unified-teller.js:2365)
-[Log] getCurrentShopType: – Object (unified-teller.js, line 766)
+[Log] 🔍 DEBUG Transaction History: API response: – Object (unified-teller.js, line 2620)
 Object
-[Error] TypeError: itemPrice.toFixed is not a function. (In 'itemPrice.toFixed(2)', 'itemPrice.toFixed' is undefined)
-	(anonymous function) (unified-teller.js:2423:92)
-	forEach
-	generateTransactionSummary (unified-teller.js:2420)
-	showTransactionModal (unified-teller.js:2365)
+[Log] 🔍 DEBUG Render Transaction History: transactions received: – Array (0) (unified-teller.js, line 2637)
+Array (0)
+[Log] 🔍 DEBUG Render Transaction History: selectedShop: – "138" (unified-teller.js, line 2638)
+[Log] 🔍 DEBUG Render Transaction History: Empty state message: – "<div class=\"transaction-item\">No transactions found for this shop</div>" (unified-teller.js, line 2648)
 > Selected Element
-< <div class="teller-card customer-card">…</div>
+< <div class="history-controls">…</div>
