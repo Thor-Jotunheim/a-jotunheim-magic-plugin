@@ -4406,9 +4406,12 @@ class UnifiedTeller {
             containerElement: container,
             containerWidth: container.offsetWidth,
             parentWidth: container.parentElement?.offsetWidth,
+            cardContentWidth: container.closest('.card-content')?.offsetWidth,
+            tellerCardWidth: container.closest('.teller-card')?.offsetWidth,
             windowWidth: window.innerWidth,
             availableItemsCount: availableItems.length,
-            calculatedColumns: numColumns
+            calculatedColumns: numColumns,
+            itemsPerTable: Math.ceil(availableItems.length / numColumns)
         });
         
         console.log('🔍 Table Layout Debug:', {
@@ -4479,25 +4482,29 @@ class UnifiedTeller {
     }
 
     getOptimalColumnCount() {
-        // Determine optimal number of columns based on available space
-        const containerWidth = window.innerWidth - 80; // Account for padding/margins/scrollbar
-        const tableMinWidth = 500; // Updated to match CSS minimum width
+        // Get the actual container width, not window width
+        const tableWrapper = document.getElementById('items-table-view');
+        const actualContainerWidth = tableWrapper ? tableWrapper.offsetWidth : (window.innerWidth - 80);
+        
+        // Use more conservative sizing to ensure tables fill space properly
+        const tableMinWidth = 700; // Increased minimum width for better spacing
         const gapWidth = 20; // Gap between tables from CSS
         
         // Calculate maximum columns that can fit without cutting off
-        let maxPossibleColumns = Math.floor((containerWidth + gapWidth) / (tableMinWidth + gapWidth));
+        let maxPossibleColumns = Math.floor((actualContainerWidth + gapWidth) / (tableMinWidth + gapWidth));
         
-        // Cap at reasonable maximums based on screen size for better UX
+        // Be more conservative with recommended maximums to ensure proper width
         let maxRecommendedColumns;
-        if (containerWidth >= 1800) maxRecommendedColumns = 3; // Wide screens can handle 3 tables
-        else if (containerWidth >= 1200) maxRecommendedColumns = 2; // Most desktop screens get 2 tables  
-        else maxRecommendedColumns = 1; // Smaller screens get 1 table
+        if (actualContainerWidth >= 2100) maxRecommendedColumns = 3; // Very wide screens only
+        else if (actualContainerWidth >= 1400) maxRecommendedColumns = 2; // Desktop screens  
+        else maxRecommendedColumns = 1; // Smaller screens
         
         // Use the smaller of the two limits
         const optimalColumns = Math.min(maxPossibleColumns, maxRecommendedColumns);
         
         console.log('📐 Column Calculation:', {
-            containerWidth,
+            windowWidth: window.innerWidth,
+            actualContainerWidth,
             tableMinWidth,
             gapWidth,
             maxPossibleColumns,

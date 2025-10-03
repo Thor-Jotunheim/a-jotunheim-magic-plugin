@@ -957,7 +957,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .table-container {
     flex: 1; /* This will make each table expand to fill available space */
-    min-width: 500px; /* Further reduced minimum width */
+    min-width: 700px; /* Increased minimum width to match JS calculation */
     background: var(--background);
     border-radius: var(--radius-2);
     border: 1px solid var(--border);
