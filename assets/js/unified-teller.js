@@ -233,7 +233,8 @@ class UnifiedTeller {
         console.log('JotunAPI is available, loading data...');
         await this.loadShopsForSelector();
         await this.loadPlayerList();
-        await this.loadTransactionHistory();
+        // Don't load transaction history on initial load - wait for shop selection
+        this.initializeTransactionHistory();
         await this.loadCurrentUserInfo();
         this.setupPlayerAutocomplete();
     }
@@ -2424,8 +2425,16 @@ class UnifiedTeller {
             const total = this.cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * item.quantity), 0);
             
             this.cart.forEach(item => {
-                const itemPrice = item.price || item.unit_price || 0;
-                const totalPrice = item.total_price || (itemPrice * item.quantity);
+                const itemPrice = parseFloat(item.price || item.unit_price || 0);
+                const totalPrice = parseFloat(item.total_price || (itemPrice * item.quantity));
+                console.log('🔍 DEBUG Price calculation:', {
+                    item_name: item.item_name,
+                    raw_price: item.price,
+                    raw_unit_price: item.unit_price,
+                    parsed_itemPrice: itemPrice,
+                    quantity: item.quantity,
+                    calculated_totalPrice: totalPrice
+                });
                 summary += `<li>${item.item_name} x${item.quantity} @ $${itemPrice.toFixed(2)} = $${totalPrice.toFixed(2)}</li>`;
             });
 
@@ -2578,15 +2587,21 @@ class UnifiedTeller {
             if (this.selectedShop) {
                 const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
                 const shopName = selectedOption ? selectedOption.dataset.shopName : null;
+                console.log('🔍 DEBUG Transaction History: selectedShop:', this.selectedShop);
+                console.log('🔍 DEBUG Transaction History: selectedOption:', selectedOption);
+                console.log('🔍 DEBUG Transaction History: shopName from dataset:', shopName);
                 if (shopName) {
                     params.shop_name = shopName;
+                    console.log('🔍 DEBUG Transaction History: Added shop_name filter:', shopName);
                 }
             }
             
             // Limit to recent transactions
             params.limit = 50;
             
+            console.log('🔍 DEBUG Transaction History: Final params:', params);
             const response = await JotunAPI.getTransactions(params);
+            console.log('🔍 DEBUG Transaction History: API response:', response);
             const transactions = response.data || [];
             
             this.renderTransactionHistory(transactions);
@@ -2595,7 +2610,17 @@ class UnifiedTeller {
         }
     }
 
+    initializeTransactionHistory() {
+        const container = document.getElementById('transaction-history');
+        if (container) {
+            container.innerHTML = '<div class="transaction-item">Select a shop to view transaction history</div>';
+        }
+    }
+
     renderTransactionHistory(transactions) {
+        console.log('🔍 DEBUG Render Transaction History: transactions received:', transactions);
+        console.log('🔍 DEBUG Render Transaction History: selectedShop:', this.selectedShop);
+        
         const container = document.getElementById('transaction-history');
         container.innerHTML = '';
 
@@ -2604,6 +2629,7 @@ class UnifiedTeller {
                 '<div class="transaction-item">No transactions found for this shop</div>' :
                 '<div class="transaction-item">Select a shop to view transaction history</div>';
             container.innerHTML = emptyMessage;
+            console.log('🔍 DEBUG Render Transaction History: Empty state message:', emptyMessage);
             return;
         }
 
