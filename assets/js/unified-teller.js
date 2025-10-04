@@ -4075,7 +4075,7 @@ class UnifiedTeller {
         if (container) container.style.display = 'none';
     }
 
-    handleCustomerKeydown(e) {
+    async handleCustomerKeydown(e) {
         const suggestions = document.querySelectorAll('#customer-suggestions .customer-suggestion');
         
         if (e.key === 'Enter') {
@@ -4101,23 +4101,13 @@ class UnifiedTeller {
                 
                 if (exactMatch) {
                     console.log('Enter key - exact match found:', exactMatch.activePlayerName);
-                    // Set the customer directly
-                    this.currentCustomer = exactMatch;
-                    this.showValidationIcon('valid');
-                    
-                    // Aggressively hide dropdown and prevent it from showing again
-                    this.hideCustomerSuggestions();
-                    this.isSelectingCustomer = true;
+                    // Set the customer directly and trigger the same flow as autocomplete selection
+                    await this.selectCustomer(exactMatch);
                     
                     // Force hide dropdown multiple times to ensure it stays hidden
                     setTimeout(() => this.hideCustomerSuggestions(), 10);
                     setTimeout(() => this.hideCustomerSuggestions(), 50);
                     setTimeout(() => this.hideCustomerSuggestions(), 100);
-                    
-                    // Clear the flag after a delay
-                    setTimeout(() => {
-                        this.isSelectingCustomer = false;
-                    }, 200);
                 } else {
                     console.log('Enter key - no exact match, triggering validation');
                     // No exact match, trigger full validation
