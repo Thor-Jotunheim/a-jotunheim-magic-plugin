@@ -2619,24 +2619,9 @@ class UnifiedTeller {
                         params.shop_id = this.selectedShop; // Pass shop_id for turn-in queries
                         console.log('🔍 DEBUG Transaction History: Set transaction_type=turnin, shop_id=' + this.selectedShop);
                     } else if (shopType === 'aesir') {
-                        // For Aesir shops, check if there's a selected customer to show their ledger balance
-                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - checking for customer to show ledger balance');
-                        
-                        // Use customer passed from transaction, or check the input field
-                        let customerName = customerFromTransaction;
-                        if (!customerName) {
-                            const customerInput = document.getElementById('customer-name');
-                            customerName = customerInput ? customerInput.value.trim() : '';
-                        }
-                        
-                        if (customerName) {
-                            console.log('🔍 DEBUG Transaction History: Customer selected, showing ledger balance for:', customerName);
-                            await this.showLedgerBalance(customerName);
-                            return; // Skip the normal transaction query
-                        } else {
-                            console.log('🔍 DEBUG Transaction History: No customer selected for Aesir shop');
-                        }
-                        // If no customer, still try to query in case there are any legacy transactions
+                        // For Aesir shops, show normal transaction history like other shops
+                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - showing transaction history');
+                        params.shop_type = 'aesir'; // Filter by shop type for aesir transactions
                     }
                     
                     console.log('🔍 DEBUG Transaction History: Added shop_name filter:', shopName);
@@ -2711,6 +2696,68 @@ class UnifiedTeller {
             } else {
                 container.innerHTML = '<div class="transaction-item">Error loading ledger balance</div>';
             }
+        }
+    }
+
+    async showLedgerBalanceAfterHistory(customerName) {
+        try {
+            console.log('🔍 DEBUG Ledger Balance After History: Fetching balance for customer:', customerName);
+            const response = await JotunAPI.getLedgerBalance(customerName);
+            console.log('🔍 DEBUG Ledger Balance After History: API response:', response);
+            
+            const container = document.getElementById('transaction-history');
+            
+            // Add a separator between transaction history and ledger balance
+            const separatorDiv = document.createElement('div');
+            separatorDiv.className = 'transaction-separator';
+            separatorDiv.innerHTML = '<hr><h4>Current Ledger Balance</h4>';
+            container.appendChild(separatorDiv);
+            
+            if (!response.balances || response.balances.length === 0) {
+                const noBalanceDiv = document.createElement('div');
+                noBalanceDiv.className = 'transaction-item ledger-empty';
+                noBalanceDiv.innerHTML = `<div class="transaction-info">
+                    <strong>${this.escapeHtml(customerName)}</strong> has no items in the Aesir ledger
+                </div>`;
+                container.appendChild(noBalanceDiv);
+                return;
+            }
+
+            // Create header
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'transaction-item ledger-header';
+            headerDiv.innerHTML = `<div class="transaction-info">
+                <strong>Current Balance for ${this.escapeHtml(customerName)}</strong>
+                <small>Last updated: ${this.formatDate(response.last_updated)}</small>
+            </div>`;
+            container.appendChild(headerDiv);
+
+            // Show each balance
+            response.balances.forEach(balance => {
+                const balanceDiv = document.createElement('div');
+                balanceDiv.className = 'transaction-item ledger-balance';
+                balanceDiv.innerHTML = `<div class="transaction-info">
+                    <strong>${this.escapeHtml(balance.item_name)}: ${balance.quantity}</strong>
+                    <div class="transaction-details">
+                        <small>Balance stored in ledger system</small>
+                    </div>
+                </div>`;
+                container.appendChild(balanceDiv);
+            });
+            
+        } catch (error) {
+            console.error('Error loading ledger balance after history:', error);
+            const container = document.getElementById('transaction-history');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'transaction-item ledger-error';
+            if (error.message && error.message.includes('404')) {
+                errorDiv.innerHTML = `<div class="transaction-info">
+                    <strong>${this.escapeHtml(customerName)}</strong> not found in Aesir ledger
+                </div>`;
+            } else {
+                errorDiv.innerHTML = '<div class="transaction-info">Error loading ledger balance</div>';
+            }
+            container.appendChild(errorDiv);
         }
     }
 
@@ -3950,6 +3997,13 @@ class UnifiedTeller {
         // Load daily turn-in data and transaction history for this customer
         await this.loadDailyTurninData(player.activePlayerName);
         await this.loadTransactionHistory(player.activePlayerName);
+        
+        // For Aesir shops, also show ledger balance after transaction history
+        const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+        const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+        if (shopType === 'aesir') {
+            await this.showLedgerBalanceAfterHistory(player.activePlayerName);
+        }
         
         // Re-render items to update limits, but preserve current quantities
         if (this.selectedShop && this.shopItems.length > 0) {

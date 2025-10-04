@@ -2792,8 +2792,37 @@ function jotun_api_add_transaction($request) {
             error_log("Created new ledger record for $customer_name with initial $column_name quantity: $quantity");
         }
         
+        // ALSO record the transaction in jotun_transactions for transaction history
+        $transaction_data = [
+            'shop_name' => sanitize_text_field($data['shop_name']),
+            'item_name' => $item_name,
+            'customer_name' => $customer_name,
+            'quantity' => $quantity,
+            'unit_price' => floatval($data['unit_price'] ?? 0),
+            'total_price' => floatval(($data['unit_price'] ?? 0) * $quantity),
+            'transaction_type' => 'buy',
+            'shop_type' => 'aesir',
+            'notes' => sanitize_text_field($data['notes'] ?? ''),
+            'transaction_date' => current_time('mysql')
+        ];
+        
+        $transaction_insert = $wpdb->insert('jotun_transactions', $transaction_data);
+        if ($transaction_insert === false) {
+            error_log("Failed to record Aesir transaction history: " . $wpdb->last_error);
+            // Don't fail the whole transaction - ledger update succeeded
+        } else {
+            error_log("Aesir transaction history recorded with ID: " . $wpdb->insert_id);
+        }
+        
         error_log("Aesir transaction successfully recorded in ledger for $customer_name: $item_name (qty: $quantity) -> column: $column_name");
-        return new WP_REST_Response(['message' => 'Aesir transaction recorded in ledger', 'table' => 'jotun_ledger', 'column_updated' => $column_name, 'quantity_added' => $quantity], 201);
+        return new WP_REST_Response([
+            'message' => 'Aesir transaction recorded in both ledger and transaction history', 
+            'ledger_table' => 'jotun_ledger', 
+            'transaction_table' => 'jotun_transactions',
+            'column_updated' => $column_name, 
+            'quantity_added' => $quantity,
+            'transaction_id' => $wpdb->insert_id
+        ], 201);
         
     } elseif ($table_name === 'jotun_turn_ins') {
         // Turn-in transactions table
