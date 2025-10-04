@@ -1910,6 +1910,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     opacity: 0.6;
 }
 
+.transaction-actions-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100%;
+    justify-content: flex-start;
+}
+
 .transaction-actions-vertical .btn {
     width: 100%;
     justify-content: center;

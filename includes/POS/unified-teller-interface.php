@@ -206,24 +206,17 @@ function unified_teller_interface() {
             </div>
 
             <!-- Transaction Actions -->
-            <div class="teller-card customer-card">
+            <div class="teller-card actions-card">
                 <div class="card-header">
                     <h2 class="card-title">Transaction Actions</h2>
                 </div>
                 <div class="card-content">
-                    <div class="form-field">
-                        <div class="customer-search-container">
-                            <div class="input-group">
-                                <button id="clear-transaction-btn" class="field-input clear-transaction-btn" onclick="console.log('🚨 DEBUG: Clear button onclick fired'); if(window.unifiedTeller) { console.log('🚨 DEBUG: unifiedTeller found, typeof clearCart:', typeof window.unifiedTeller.clearCart); try { console.log('🚨 ONCLICK: About to call clearCart'); window.unifiedTeller.clearCart(); console.log('🚨 ONCLICK: clearCart completed'); } catch(e) { console.error('🚨 ERROR in onclick clearCart():', e); console.error('🚨 ERROR stack:', e.stack); } } else { console.log('🚨 ERROR: unifiedTeller not found on window'); }">Clear Transaction</button>
-                            </div>
-                            <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
-                        </div>
+                    <div class="transaction-actions-vertical">
+                        <button id="clear-transaction-btn" class="btn btn-secondary clear-transaction-btn" onclick="console.log('🚨 DEBUG: Clear button onclick fired'); if(window.unifiedTeller) { console.log('🚨 DEBUG: unifiedTeller found, typeof clearCart:', typeof window.unifiedTeller.clearCart); try { console.log('🚨 ONCLICK: About to call clearCart'); window.unifiedTeller.clearCart(); console.log('🚨 ONCLICK: clearCart completed'); } catch(e) { console.error('🚨 ERROR in onclick clearCart():', e); console.error('🚨 ERROR stack:', e.stack); } } else { console.log('🚨 ERROR: unifiedTeller not found on window'); }">Clear Transaction</button>
                         
-                        <!-- Cart View Toggle Button / Record Transaction Button -->
-                        <div class="registration-button-container">
-                                <button id="view-cart-btn" class="register-new-player-btn" disabled>View Cart</button>
-                                <button id="record-transaction-btn" class="register-new-player-btn record-transaction-btn" disabled style="display: none;">Record Transaction</button>
-                        </div>
+                        <button id="view-cart-btn" class="btn btn-outline" disabled>View Cart</button>
+                        
+                        <button id="record-transaction-btn" class="btn btn-primary record-transaction-btn" disabled style="display: none;">Record Transaction</button>
                     </div>
                 </div>
             </div>
