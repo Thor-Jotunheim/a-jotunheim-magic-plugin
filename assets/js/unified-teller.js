@@ -2542,6 +2542,11 @@ class UnifiedTeller {
                 
                 this.showStatus(`Transaction completed successfully (${responses.length} items)`, 'success');
                 
+                // Get customer name before clearing it for transaction history
+                const customerInput = document.getElementById('customer-name');
+                const customerName = customerInput ? customerInput.value.trim() : '';
+                console.log('🔍 DEBUG Transaction Success: Saving customer name for history:', customerName);
+                
                 // Clear cart and customer
                 this.clearCart();
                 this.currentCustomer = null;
@@ -2563,7 +2568,7 @@ class UnifiedTeller {
                 } else {
                     await this.loadShopItems(this.selectedShop, currentRotation);
                 }
-                await this.loadTransactionHistory();
+                await this.loadTransactionHistory(customerName);
                 
                 this.closeTellerModal();
             } else {
@@ -2576,7 +2581,7 @@ class UnifiedTeller {
         }
     }
 
-    async loadTransactionHistory() {
+    async loadTransactionHistory(customerFromTransaction = null) {
         try {
             const params = {};
             
@@ -2595,6 +2600,7 @@ class UnifiedTeller {
                 console.log('🔍 DEBUG Transaction History: selectedOption:', selectedOption);
                 console.log('🔍 DEBUG Transaction History: shopName from dataset:', shopName);
                 console.log('🔍 DEBUG Transaction History: shopType from dataset:', shopType);
+                console.log('🔍 DEBUG Transaction History: customerFromTransaction:', customerFromTransaction);
                 
                 if (shopName) {
                     params.shop_name = shopName;
@@ -2607,8 +2613,13 @@ class UnifiedTeller {
                     } else if (shopType === 'aesir') {
                         // For Aesir shops, check if there's a selected customer to show their ledger balance
                         console.log('🔍 DEBUG Transaction History: Aesir shop detected - checking for customer to show ledger balance');
-                        const customerInput = document.getElementById('customer-name');
-                        const customerName = customerInput ? customerInput.value.trim() : '';
+                        
+                        // Use customer passed from transaction, or check the input field
+                        let customerName = customerFromTransaction;
+                        if (!customerName) {
+                            const customerInput = document.getElementById('customer-name');
+                            customerName = customerInput ? customerInput.value.trim() : '';
+                        }
                         
                         if (customerName) {
                             console.log('🔍 DEBUG Transaction History: Customer selected, showing ledger balance for:', customerName);
