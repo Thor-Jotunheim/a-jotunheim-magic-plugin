@@ -2742,17 +2742,34 @@ function jotun_api_add_transaction($request) {
         $column_name = $item_column_map[$item_name];
         
         // Update the player's balance in the ledger
-        // First try to update existing record using flexible name matching
-        $update_result = $wpdb->query($wpdb->prepare("
-            UPDATE jotun_ledger 
-            SET $column_name = $column_name + %d 
+        // First check what records exist for this player
+        $existing_records = $wpdb->get_results($wpdb->prepare("
+            SELECT id, activePlayerName, playerName, $column_name 
+            FROM jotun_ledger 
             WHERE activePlayerName = %s OR playerName = %s
-        ", $quantity, $customer_name, $customer_name));
+        ", $customer_name, $customer_name));
+        
+        error_log("DEBUG: Found " . count($existing_records) . " existing ledger records for '$customer_name':");
+        foreach ($existing_records as $record) {
+            error_log("DEBUG: Record ID {$record->id}: activePlayerName='{$record->activePlayerName}', playerName='{$record->playerName}', $column_name=" . ($record->$column_name ?? 'NULL'));
+        }
+        
+        // Try to update existing record using flexible name matching
+        $update_query = $wpdb->prepare("
+            UPDATE jotun_ledger 
+            SET $column_name = COALESCE($column_name, 0) + %d 
+            WHERE activePlayerName = %s OR playerName = %s
+        ", $quantity, $customer_name, $customer_name);
+        
+        error_log("DEBUG: Executing update query: " . $update_query);
+        $update_result = $wpdb->query($update_query);
         
         if ($update_result === false) {
             error_log("Failed to update ledger balance for $customer_name: " . $wpdb->last_error);
             return new WP_REST_Response(['error' => 'Failed to update ledger balance: ' . $wpdb->last_error], 500);
         }
+        
+        error_log("DEBUG: Update result: $update_result rows affected");
         
         if ($update_result === 0) {
             // No existing record was updated, create new record with the quantity
