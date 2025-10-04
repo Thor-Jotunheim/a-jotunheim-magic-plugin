@@ -379,7 +379,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .registration-button-container {
     margin-top: var(--space-4);
     margin-bottom: var(--space-4);
-    /* This container sets the baseline positioning for button alignment */
 }
 
 .register-new-player-btn {
@@ -695,6 +694,17 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: block !important;
 }
 
+/* Override for table view - allow proper flex layout */
+.items-container .items-table-wrapper {
+    display: flex !important;
+}
+
+/* FORCE table view containers to use flex layout */
+#items-table-view.items-container {
+    display: flex !important;
+    grid-template-columns: none !important;
+}
+
 .items-grid {
     display: flex;
     flex-wrap: wrap;
@@ -735,17 +745,25 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .item-card {
-    padding: var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-2);
-    background: var(--card);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    width: 304px;
-    flex-shrink: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
+    width: 304px;
+    flex-shrink: 0;
     justify-content: space-between;
-    min-height: 320px;
+    min-height: 280px;
+}
+
+.item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #007cba;
 }
 
 /* Icon Container with Frame */
@@ -775,21 +793,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     transform: scale(1.1);
 }
 
-.item-card:hover {
-    border-color: var(--ring);
-    box-shadow: var(--shadow-2);
-}
-
-.item-name {
-    font-weight: 500;
-    margin-bottom: var(--space-2);
-}
-
-.item-actions {
-    display: flex;
-    gap: var(--space-2);
-}
-
 /* Bottom section wrapper for pricing and actions */
 .item-bottom-section {
     margin-top: auto;
@@ -814,8 +817,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     align-items: flex-start;
 }
 
-
-
 .item-quantity-section {
     flex: 1;
     min-width: 0; /* Allow proper flex behavior */
@@ -825,79 +826,55 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-2);
 }
 
-/* Quantity controls styling */
-.quantity-control-group {
-    margin-bottom: 10px;
-}
-
-.quantity-label {
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 5px;
-    color: #333;
-}
-
 .quantity-controls {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 3px;
-    width: 100%;
+    gap: 8px;
 }
 
 .qty-btn {
-    background-color: #6c757d;
-    color: white;
-    border: none;
     width: 50px;
-    height: 38px;
+    height: 50px;
+    border: 2px solid var(--gray-6);
+    background: white;
+    border-radius: 8px;
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .qty-btn:hover {
-    background-color: #5a6268;
+    background: var(--gray-2);
+    border-color: var(--gray-8);
 }
 
-.qty-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+.qty-btn:active {
+    background: var(--gray-3);
+    transform: scale(0.95);
 }
 
-.large-quantity-input, .turnin-large-quantity-input {
-    width: 100px;
-    height: 38px;
-    text-align: center;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+.turnin-large-quantity-input {
+    width: 140px;
+    height: 60px;
+    padding: 12px;
+    font-size: 28px;
     font-weight: bold;
-    -moz-appearance: textfield; /* Firefox */
-    appearance: textfield; /* Standard */
-    background-color: #e9ecef !important; /* Darker gray default - force override */
-    color: #495057;
-    cursor: pointer;
+    text-align: center;
+    border: 2px solid var(--gray-6);
+    border-radius: 8px;
+    background: white;
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
-/* Hide Chrome, Safari, Edge arrows */
-.large-quantity-input::-webkit-outer-spin-button,
-.large-quantity-input::-webkit-inner-spin-button,
 .turnin-large-quantity-input::-webkit-outer-spin-button,
 .turnin-large-quantity-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-
-.large-quantity-input:focus, .turnin-large-quantity-input:focus {
-    outline: none;
-    border-color: #6c757d;
-    background-color: white !important; /* White when focused/editing - force override */
-    cursor: text;
 }
 
 .remaining-text {
@@ -918,34 +895,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     border: 1px solid var(--gray-4);
 }
 
-/* Multi-line progress display styles */
-.progress-line {
-    margin-bottom: 4px;
-    font-size: 13px;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.progress-line:last-child {
-    margin-bottom: 0;
-}
-
-.transaction-progress {
-    color: #28a745;
-    font-weight: bold;
-}
-
-.player-progress {
-    color: #6f42c1;
-    font-weight: 600;
-}
-
-.server-progress {
-    color: #495057;
-    font-weight: 700;
-    font-size: 14px;
-}
-
 /* Legacy turn-in quantity input styling - keep for backwards compatibility */
 .turnin-quantity-input {
     width: 80px;
@@ -959,16 +908,76 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     background: white;
 }
 
+.item-name {
+    font-weight: 500;
+    margin-bottom: var(--space-2);
+}
+
+.item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: auto;
+}
+
+.quantity-section {
+    padding: var(--space-2);
+    background: var(--gray-2);
+    border-radius: 6px;
+}
+
+.item-icon {
+    width: 80px !important;
+    height: 80px !important;
+    padding: 6px;
+    background: var(--gray-2);
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #ddd);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-icon .item-image {
+    width: 130%;
+    height: 130%;
+    object-fit: cover;
+}
+
 .item-btn {
     flex: 1;
     padding: var(--space-1) var(--space-2);
     font-size: var(--font-size-1);
 }
 
-/* Items Table */
+/* Table Layout Container - for multiple tables side by side */
 .items-table-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
     overflow-x: auto;
+    padding: 10px 0;
+    box-sizing: border-box; /* Ensure padding doesn't add to width */
 }
+
+.table-container {
+    flex: 1; /* This will make each table expand to fill available space */
+    min-width: 700px; /* Increased minimum width to match JS calculation */
+    background: var(--background);
+    border-radius: var(--radius-2);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* Ensure single column takes full width */
+.items-table-wrapper.single-column .table-container {
+    max-width: none;
+    min-width: 100%;
+}
+
+/* Items Table */
 
 .items-table {
     width: 100%;
@@ -986,6 +995,97 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     font-weight: 500;
     color: var(--muted-foreground);
     font-size: var(--font-size-2);
+}
+
+/* Table Column Widths for Split Quantity Controls */
+.items-table .item-column {
+    width: 30%; /* Increased to fill more space */
+    min-width: 120px; /* Reduced minimum to allow more flexibility */
+}
+
+.items-table .units-column {
+    width: 15%; /* Increased from 12% */
+    min-width: 70px; /* Reduced minimum */
+    text-align: center;
+}
+
+.items-table .stacks-column {
+    width: 15%; /* Increased from 12% */
+    min-width: 70px; /* Reduced minimum */
+    text-align: center;
+}
+
+.items-table .progress-column {
+    width: 25%; /* Reduced from 31% to balance with item column */
+    min-width: 150px; /* Reduced minimum */
+}
+
+.items-table .actions-column {
+    width: 15%; /* Reduced from 20% */
+    min-width: 100px; /* Reduced minimum */
+    text-align: center;
+}
+
+/* Units and Stacks Cell Styling */
+.units-cell,
+.stacks-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.units-section,
+.stacks-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.stack-label {
+    font-size: var(--font-size-1);
+    color: var(--muted-foreground);
+    margin-bottom: var(--space-1);
+}
+
+.no-stacks {
+    color: var(--muted-foreground);
+    font-style: italic;
+    font-size: var(--font-size-1);
+    padding: var(--space-2);
+}
+
+/* Table Input Specific Styling */
+.table-input {
+    width: 60px !important;
+    text-align: center !important;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-1);
+    padding: var(--space-1) var(--space-2);
+    background: var(--background);
+    transition: border-color 0.2s ease;
+}
+
+.table-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.table-input:hover {
+    border-color: var(--accent-muted);
+}
+
+/* Remove spinner arrows for table inputs */
+.table-input::-webkit-outer-spin-button,
+.table-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.table-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* Transaction List */
@@ -1162,6 +1262,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
         align-items: stretch;
     }
     
+    /* Table responsive behavior */
+    .table-container {
+        min-width: 100% !important; /* Force single column on mobile */
+        max-width: none !important;
+    }
+    
+    .items-table .item-column {
+        min-width: 150px;
+    }
+    
+    .items-table .progress-column {
+        min-width: 180px;
+    }
+    
+    .items-table .actions-column {
+        min-width: 120px;
+    }
+    
     .transaction-header,
     .transaction-item {
         grid-template-columns: 1fr;
@@ -1202,7 +1320,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     .items-grid {
         overflow: visible !important;
         height: auto !important;
-        grid-template-columns: repeat(auto-fit, minmax(min(200px, 45%), 1fr));
+        grid-template-columns: 1fr;
         gap: var(--space-3);
         max-width: 100%;
         justify-items: center;
@@ -1274,86 +1392,31 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 .item-biome {
     font-size: 11px;
     font-weight: 500;
-    padding: 3px 6px;
+    padding: 2px 6px;
     border-radius: 4px;
     display: inline-block;
     text-transform: capitalize;
-    text-align: center;
-    min-width: 50px;
 }
 
 /* Biome Color Coding */
-.biome-meadow, .biome-meadows { 
-    background: #90EE90; 
-    color: #2F4F2F; 
-    border: 1px solid #7CCD7C;
-}
-
-.biome-forest { 
-    background: #228B22; 
-    color: #FFFFFF; 
-    border: 1px solid #32CD32;
-}
-
-.biome-blackforest { 
-    background: #1B4B1B; 
-    color: #FFFFFF; 
-    border: 1px solid #006400;
-}
-
-.biome-swamp { 
-    background: #8B4513; 
-    color: #FFFFFF; 
-    border: 1px solid #A0522D;
-}
-
-.biome-mountain { 
-    background: #708090; 
-    color: #FFFFFF; 
-    border: 1px solid #778899;
-}
-
-.biome-plains { 
-    background: #F0E68C; 
-    color: #8B4513; 
-    border: 1px solid #BDB76B;
-}
-
-.biome-mistland, .biome-mistlands { 
-    background: #9370DB; 
-    color: #FFFFFF; 
-    border: 1px solid #8A2BE2;
-}
-
-.biome-ashland, .biome-ashlands { 
-    background: #DC143C; 
-    color: #FFFFFF; 
-    border: 1px solid #B22222;
-}
-
-.biome-deepnorth { 
-    background: #4682B4; 
-    color: #FFFFFF; 
-    border: 1px solid #5F9EA0;
-}
-
-.biome-ocean { 
-    background: #006994; 
-    color: #FFFFFF; 
-    border: 1px solid #4169E1;
-}
-
-.biome-unknown { 
-    background: var(--gray-3); 
-    color: var(--gray-9); 
-    border: 1px solid var(--gray-6);
-}
+.biome-meadow { background: #90EE90; color: #2F4F2F; }
+.biome-meadows { background: #90EE90; color: #2F4F2F; }
+.biome-forest { background: #228B22; color: #FFFFFF; }
+.biome-blackforest { background: #1B4B1B; color: #FFFFFF; }
+.biome-swamp { background: #8B4513; color: #FFFFFF; }
+.biome-mountain { background: #708090; color: #FFFFFF; }
+.biome-plains { background: #F0E68C; color: #8B4513; }
+.biome-mistland { background: #9370DB; color: #FFFFFF; }
+.biome-mistlands { background: #9370DB; color: #FFFFFF; }
+.biome-ashland { background: #DC143C; color: #FFFFFF; }
+.biome-ashlands { background: #DC143C; color: #FFFFFF; }
+.biome-deepnorth { background: #4682B4; color: #FFFFFF; }
+.biome-ocean { background: #006994; color: #FFFFFF; }
+.biome-unknown { background: var(--gray-3); color: var(--gray-9); }
 
 .item-pricing {
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2);
     padding: var(--space-2);
-    background: var(--gray-2);
-    border-radius: 6px;
 }
 
 .price-row {
@@ -1399,11 +1462,79 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin-bottom: var(--space-1);
 }
 
+/* Quantity controls styling */
+.quantity-control-group {
+    margin-bottom: 10px;
+}
+
+.quantity-label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
+    justify-content: space-between;
+    gap: 3px;
+    width: 100%;
+}
+
+.qty-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    width: 50px;
+    height: 38px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:hover {
+    background-color: #5a6268;
+}
+
+.qty-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.large-quantity-input, .turnin-large-quantity-input {
+    width: 100px;
+    height: 38px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield; /* Standard */
+    background-color: #e9ecef !important; /* Darker gray default - force override */
+    color: #495057;
+    cursor: pointer;
+}
+
+/* Hide Chrome, Safari, Edge arrows */
+.large-quantity-input::-webkit-outer-spin-button,
+.large-quantity-input::-webkit-inner-spin-button,
+.turnin-large-quantity-input::-webkit-outer-spin-button,
+.turnin-large-quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.large-quantity-input:focus, .turnin-large-quantity-input:focus {
+    outline: none;
+    border-color: #6c757d;
+    background-color: white !important; /* White when focused/editing - force override */
+    cursor: text;
 }
 
 .quantity-input, .table-qty-input, .cart-qty-input {
@@ -1421,9 +1552,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .cart-qty-input {
-    width: 50px;
-    padding: 2px 4px;
+    width: 140px !important;
+    height: 60px !important;
+    padding: 12px !important;
+    font-size: 28px !important;
+    font-weight: bold !important;
+    text-align: center !important;
     margin-right: var(--space-1);
+    border: 2px solid var(--gray-6) !important;
+    border-radius: 8px !important;
+    background: white !important;
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 
@@ -1766,7 +1912,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-4);
     margin-bottom: var(--space-6);
     align-items: stretch;
-    min-height: 400px; /* Force minimum height for button alignment */
 }
 
 .customer-card {
@@ -1774,7 +1919,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .payment-card {
@@ -1782,7 +1926,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .actions-card {
@@ -1790,46 +1933,11 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 200px; /* Minimum width for buttons */
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .actions-card .card-content {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    padding-top: var(--space-3); /* Reduce top padding to move content up */
-}
-
-/* Ensure all card content sections expand to fill available space */
-.customer-card .card-content,
-.payment-card .card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Make form fields within actions card expand and align consistently */
-.actions-card .card-content .form-field {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end !important; /* Push buttons to bottom - force override */
-    min-height: 200px; /* Minimum height to enable proper flex alignment */
-}
-
-/* Ensure customer card form field aligns consistently */
-.customer-card .card-content .form-field {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end !important; /* Push registration button to bottom - force override */
-    min-height: 200px; /* Minimum height to enable proper flex alignment */
-}
-
-/* Ensure payment card content expands properly */
-.payment-card .card-content {
-    flex: 1;
-    min-height: 0;
 }
 
 /* Compact Payment Grid */
@@ -1840,28 +1948,16 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     margin-bottom: var(--space-4);
 }
 
-/* FORCE BUTTON ALIGNMENT - Nuclear Approach */
-.actions-card .form-field {
-    position: relative !important;
-    min-height: auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
+/* Vertical Transaction Actions */
+/* Transaction Button Containers - Mirror Registration Button */
+.clear-transaction-container {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-4);
 }
 
-.customer-card .form-field {
-    position: relative !important;
-    min-height: auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-}
-
-/* Reset button margins to let flex handle positioning */
-.clear-transaction-container,
-.record-transaction-btn,
-.registration-button-container {
-    margin: 0 !important;
+.record-transaction-container {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-4);
 }
 
 .clear-transaction-btn,
@@ -1914,8 +2010,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     width: 100%;
     justify-content: center;
     min-height: 56px;
-    padding: var(--space-4);
-    font-size: var(--font-size-3);
+    padding: 16px;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -2075,24 +2171,24 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 .turnin-compact-item {
     display: grid;
-    grid-template-columns: 2fr 80px auto auto;
+    grid-template-columns: minmax(120px, auto) 1fr 70px 35px;
     gap: 6px;
     align-items: center;
     padding: 3px 6px;
-    background: var(--gray-1);
+    background: #f8f9fa;
     border-radius: 3px;
-    font-size: 13px;
+    font-size: var(--dynamic-font-size, 18px);
     line-height: 1.3;
     margin-bottom: 1px;
 }
 
 .turnin-compact-item:hover {
-    background: var(--gray-2);
+    background: #f1f3f4;
 }
 
 .turnin-compact-name {
     font-weight: 500;
-    color: var(--foreground);
+    color: #495057;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2100,107 +2196,267 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 }
 
 .turnin-compact-progress {
-    width: 80px;
+    width: 100%;
     height: 10px;
-    flex-shrink: 0;
+    min-width: 60px;
 }
 
 .turnin-compact-bar {
     width: 100%;
     height: 100%;
-    background: var(--gray-4);
+    background: #e9ecef;
     border-radius: 1px;
     overflow: hidden;
 }
 
 .turnin-compact-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--green-9), var(--green-10));
+    background: linear-gradient(90deg, #28a745, #20c997);
     border-radius: 1px;
     transition: width 0.3s ease;
 }
 
 .turnin-compact-counts {
     font-size: 12px;
-    color: var(--muted-foreground);
+    color: #6c757d;
     white-space: nowrap;
-    min-width: 35px;
     text-align: right;
 }
 
 .turnin-compact-percent {
     font-size: 11px;
-    color: var(--muted-foreground);
-    min-width: 25px;
+    color: #6c757d;
     text-align: right;
 }
 
 .no-turnin-items {
     text-align: center;
-    color: var(--muted-foreground);
+    color: #6c757d;
     font-style: italic;
-    padding: var(--space-5);
+    padding: 20px;
 }
 
-/* Enhanced Transaction History Styling */
-.history-list .transaction-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--border);
-    background: var(--card);
-    transition: background-color 0.2s ease;
+/* ===== CRITICAL BUTTON STYLING OVERRIDES ===== */
+/* FINAL OVERRIDE: Force button colors with maximum specificity */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success,
+.shop-items-grid .item-card button.btn.btn-success.individual-buy,
+.shop-items-grid .item-card button.btn.btn-success.stack-buy,
+.item-card .quantity-controls .btn.btn-success,
+button.btn.btn-success.individual-buy,
+button.btn.btn-success.stack-buy,
+input[type="button"].btn.btn-success,
+[class*="btn-success"] {
+    background-color: #28a745 !important;
+    background-image: none !important;
+    background: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+    border-color: #28a745 !important;
+    box-shadow: none !important;
 }
 
-.history-list .transaction-item:hover {
-    background: var(--muted);
+/* Force normal state explicitly */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success:not(:hover),
+button.btn.btn-success.individual-buy:not(:hover),
+button.btn.btn-success.stack-buy:not(:hover) {
+    background-color: #28a745 !important;
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
 }
 
-.history-list .transaction-item:last-child {
-    border-bottom: none;
+/* Force hover state */
+.shop-items-grid .item-card .quantity-controls button.btn.btn-success:hover,
+button.btn.btn-success.individual-buy:hover,
+button.btn.btn-success.stack-buy:hover {
+    background-color: #218838 !important;
+    border-color: #218838 !important;
+    color: white !important;
 }
 
-.history-list .transaction-info {
-    flex: 1;
+/* ========================================
+   ENHANCED CART DESIGN - v0.9.5.7.4+
+   ======================================== */
+
+/* Simplified Cart Item Layout */
+.cart-item-simple {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 8px;
 }
 
-.transaction-main-line {
-    font-size: var(--font-size-3);
-    color: var(--foreground);
-    line-height: var(--line-height-4);
+.cart-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.transaction-details {
-    font-size: var(--font-size-1);
-    color: var(--muted-foreground);
-    line-height: var(--line-height-3);
-}
-
-.history-list .transaction-amount {
-    font-size: var(--font-size-4);
+.cart-item-header .item-name {
+    font-size: 16px;
     font-weight: 600;
+    color: var(--gray-12);
+}
+
+.item-requirement {
+    background-color: var(--blue-3);
     color: var(--blue-11);
-    text-align: right;
-    white-space: nowrap;
-    margin-left: var(--space-3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-block;
 }
 
-/* Ledger Balance Styling */
-.transaction-item.ledger-header {
-    background: var(--blue-2);
-    border-left: 4px solid var(--blue-9);
+.cart-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cart-qty-input-enhanced {
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+    width: 80px !important;
+    background-color: var(--gray-2) !important;
+    border: 1px solid var(--gray-6) !important;
+    border-radius: 6px !important;
+    cursor: not-allowed !important;
+    text-align: center;
     font-weight: 600;
+    -moz-appearance: textfield !important; /* Remove arrows in Firefox */
+    appearance: textfield !important; /* Remove arrows standard property */
 }
 
-.transaction-item.ledger-balance {
-    background: var(--green-1);
-    border-left: 3px solid var(--green-8);
+/* Remove input number arrows in WebKit browsers */
+.cart-qty-input-enhanced::-webkit-outer-spin-button,
+.cart-qty-input-enhanced::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
 }
 
-.transaction-item.ledger-balance:hover {
-    background: var(--green-2);
+/* Remove spinner arrows from all quantity inputs to prevent confusion */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+.cart-qty-input-enhanced:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Enhanced Progress Displays */
+.daily-limit-enhanced {
+    background-color: var(--blue-2);
+    color: var(--blue-11);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--blue-6);
+}
+
+.daily-limit-enhanced.at-limit {
+    background-color: var(--red-2);
+    color: var(--red-11);
+    border-color: var(--red-6);
+}
+
+.daily-limit-enhanced.near-limit {
+    background-color: var(--orange-2);
+    color: var(--orange-11);
+    border-color: var(--orange-6);
+}
+
+.stack-info-enhanced {
+    background-color: var(--gray-2);
+    color: var(--gray-11);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--gray-6);
+}
+
+/* Enhanced Transaction Item Spacing */
+.transaction-item {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid var(--gray-4) !important;
+    border-radius: 8px !important;
+    background-color: var(--gray-1) !important;
+}
+
+/* Orange colors for near-limit warnings */
+:root {
+    --orange-2: hsl(32, 100%, 97%);
+    --orange-6: hsl(32, 98%, 83%);
+    --orange-11: hsl(32, 98%, 45%);
+}
+
+/* ========================================
+   NUCLEAR OVERRIDE: FORCE WIDE TABLES
+   ======================================== */
+
+/* Override ALL possible selectors that might apply grid layout - INCLUDING MULTI-COLUMN CLASSES */
+#items-table-view .items-table-wrapper,
+.items-table-wrapper,
+.unified-teller .items-table-wrapper,
+.unified-teller-container .items-table-wrapper,
+[class*="items-table-wrapper"],
+.items-table-wrapper.single-column,
+.items-table-wrapper.two-column,
+.items-table-wrapper.three-column,
+.items-table-wrapper.four-column,
+.items-table-wrapper.five-column {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+    width: 100% !important;
+    /* Kill ALL grid properties with extreme prejudice */
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    grid-auto-columns: none !important;
+    grid-auto-rows: none !important;
+    grid-gap: 0 !important;
+    grid-column-gap: 0 !important;
+    grid-row-gap: 0 !important;
+    grid: none !important;
+    grid-area: none !important;
+    grid-auto-flow: initial !important;
+}
+
+/* Force table containers to use ALL available space - INCLUDING MULTI-COLUMN CLASSES */
+#items-table-view .table-container,
+.table-container,
+.unified-teller .table-container,
+.unified-teller-container .table-container,
+[class*="table-container"],
+.items-table-wrapper.single-column .table-container,
+.items-table-wrapper.two-column .table-container,
+.items-table-wrapper.three-column .table-container,
+.items-table-wrapper.four-column .table-container,
+.items-table-wrapper.five-column .table-container {
+    flex: 1 1 auto !important;
+    min-width: 400px !important; /* Reasonable minimum for readability */
+    max-width: none !important;
+    width: auto !important;
+    /* Kill ALL grid properties with extreme prejudice */
+    grid-column: none !important;
+    grid-row: none !important;
+    grid-area: none !important;
+    grid-column-start: auto !important;
+    grid-column-end: auto !important;
+    grid-row-start: auto !important;
+    grid-row-end: auto !important;
+    box-sizing: border-box !important;
 }
