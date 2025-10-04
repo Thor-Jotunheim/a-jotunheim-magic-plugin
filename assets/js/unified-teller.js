@@ -3916,6 +3916,7 @@ class UnifiedTeller {
             );
             
             if (exactMatch) {
+                console.log('🚀🚀🚀 VERSION 0.9.5.5.64 EXACT MATCH FOUND:', exactMatch.activePlayerName);
                 console.log('Exact match found:', exactMatch.activePlayerName);
                 this.currentCustomer = exactMatch;
                 this.showValidationIcon('valid');
