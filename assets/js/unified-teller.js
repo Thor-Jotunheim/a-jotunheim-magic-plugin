@@ -1696,12 +1696,14 @@ class UnifiedTeller {
                 console.log('Filtered players:', players);
             }
             
-            // Find exact match by activePlayerName (case-insensitive)
+            // Find exact match by activePlayerName (case-insensitive), or partial match
             const player = players.find(p => {
-                const activeMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
-                const nameMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
-                console.log(`Checking player: ${p.activePlayerName}, activeMatch: ${activeMatch}, nameMatch: ${nameMatch}`);
-                return activeMatch || nameMatch;
+                const exactMatch = p.activePlayerName && p.activePlayerName.toLowerCase() === customerName.toLowerCase();
+                const partialMatch = p.activePlayerName && 
+                    customerName.length >= 3 && 
+                    p.activePlayerName.toLowerCase().startsWith(customerName.toLowerCase());
+                console.log(`Checking player: ${p.activePlayerName}, exactMatch: ${exactMatch}, partialMatch: ${partialMatch}`);
+                return exactMatch || partialMatch;
             });
             
             console.log('Player found result:', player);
@@ -1741,6 +1743,9 @@ class UnifiedTeller {
                 // Update button states when customer validation fails
                 this.updateViewCartButton();
                 this.updateRecordTransactionButton();
+                
+                // Clear transaction history when customer is not found
+                await this.loadTransactionHistory();
                 
                 const turninBtn = document.getElementById('record-turnin-btn');
                 if (turninBtn) turninBtn.disabled = true;
