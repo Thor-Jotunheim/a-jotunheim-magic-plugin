@@ -2620,26 +2620,21 @@ class UnifiedTeller {
                         console.log('🔍 DEBUG Transaction History: Set transaction_type=turnin, shop_id=' + this.selectedShop);
                     } else if (shopType === 'aesir') {
                         // For Aesir shops, check if there's a selected customer to show their ledger balance
-                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - checking for customer to show ledger balance');
+                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - showing transaction history');
                         
-                        // Use customer passed from transaction, or check the input field
+                        // Use customer passed from transaction, or check the input field, or currentCustomer
                         let customerName = customerFromTransaction;
                         if (!customerName) {
                             const customerInput = document.getElementById('customer-name');
                             customerName = customerInput ? customerInput.value.trim() : '';
                         }
-                        
-                        if (customerName) {
-                            console.log('🔍 DEBUG Transaction History: Customer selected, showing ledger balance for:', customerName);
-                            await this.showLedgerBalance(customerName);
-                            return; // Skip the normal transaction query
-                        } else {
-                            console.log('🔍 DEBUG Transaction History: No customer selected for Aesir shop');
+                        if (!customerName && this.currentCustomer) {
+                            customerName = this.currentCustomer.activePlayerName;
                         }
-                        // If no customer, show generic message
-                        const container = document.getElementById('transaction-history');
-                        container.innerHTML = '<div class="transaction-item">Select a customer to view their Aesir ledger balance</div>';
-                        return;
+                        
+                        // For Aesir shops, we still query for transactions but expect empty results
+                        params.shop_type = 'aesir';
+                        console.log('🔍 DEBUG Transaction History: Aesir shop - will show ledger balance after empty transactions');
                     }
                     
                     console.log('🔍 DEBUG Transaction History: Added shop_name filter:', shopName);
@@ -2800,7 +2795,23 @@ class UnifiedTeller {
                 const shopType = selectedOption ? selectedOption.dataset.shopType : null;
                 
                 if (shopType === 'aesir') {
-                    emptyMessage = '<div class="transaction-item">Aesir shops use a balance system (jotun_ledger) rather than individual transaction records</div>';
+                    // For Aesir shops, check if there's a selected customer to show ledger balance
+                    let customerName;
+                    if (this.currentCustomer) {
+                        customerName = this.currentCustomer.activePlayerName;
+                    } else {
+                        const customerInput = document.getElementById('customer-name');
+                        customerName = customerInput ? customerInput.value.trim() : '';
+                    }
+                    
+                    if (customerName) {
+                        // Show ledger balance for the selected customer
+                        console.log('🔍 DEBUG Render Transaction History: Showing ledger balance for customer:', customerName);
+                        this.showLedgerBalanceAfterHistory(customerName);
+                        return;
+                    } else {
+                        emptyMessage = '<div class="transaction-item">Select a customer to view their Aesir ledger balance</div>';
+                    }
                 } else {
                     emptyMessage = '<div class="transaction-item">No transactions found for this shop</div>';
                 }
