@@ -5137,11 +5137,11 @@ class UnifiedTeller {
         // Much more conservative approach - prioritize width over number of columns
         let optimalColumns;
         
-        // Balanced responsive breakpoints - now that width issue is fixed
+        // Balanced responsive breakpoints - adjusted for better 2-column trigger
         if (actualContainerWidth >= 2100) {
             optimalColumns = 3; // Wide screens get 3 columns
-        } else if (actualContainerWidth >= 1400) {
-            optimalColumns = 2; // Medium screens get 2 columns  
+        } else if (actualContainerWidth >= 1200) {
+            optimalColumns = 2; // Medium screens get 2 columns (lowered from 1400)
         } else {
             optimalColumns = 1; // Narrow screens get 1 column
         }
