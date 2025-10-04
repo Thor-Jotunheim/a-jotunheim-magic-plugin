@@ -2742,12 +2742,12 @@ function jotun_api_add_transaction($request) {
         $column_name = $item_column_map[$item_name];
         
         // Update the player's balance in the ledger
-        // First try to update existing record
+        // First try to update existing record using flexible name matching
         $update_result = $wpdb->query($wpdb->prepare("
             UPDATE jotun_ledger 
             SET $column_name = $column_name + %d 
-            WHERE activePlayerName = %s
-        ", $quantity, $customer_name));
+            WHERE activePlayerName = %s OR playerName = %s
+        ", $quantity, $customer_name, $customer_name));
         
         if ($update_result === false) {
             error_log("Failed to update ledger balance for $customer_name: " . $wpdb->last_error);
@@ -2964,8 +2964,8 @@ function jotun_api_get_ledger_balance($request) {
     }
     
     $ledger_record = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM jotun_ledger WHERE activePlayerName = %s LIMIT 1",
-        $player_name
+        "SELECT * FROM jotun_ledger WHERE activePlayerName = %s OR playerName = %s LIMIT 1",
+        $player_name, $player_name
     ));
     
     if (!$ledger_record) {
