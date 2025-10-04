@@ -62,7 +62,7 @@ function unified_teller_interface() {
                     <h2 class="card-title">Customer Name</h2>
                 </div>
                 <div class="card-content">
-                    <div class="form-field">
+                    <div class="customer-actions-vertical">
                         <div class="customer-search-container">
                             <div class="input-group">
                                 <input 
@@ -80,10 +80,7 @@ function unified_teller_interface() {
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
                         
-                        <!-- Always Visible Registration Button -->
-                        <div class="registration-button-container">
-                            <button id="register-new-player-btn" class="register-new-player-btn">Register New Player</button>
-                        </div>
+                        <button id="register-new-player-btn" class="btn btn-secondary register-new-player-btn">Register New Player</button>
                     </div>
                 </div>
             </div>
