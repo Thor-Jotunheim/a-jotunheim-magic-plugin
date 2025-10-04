@@ -3970,7 +3970,7 @@ class UnifiedTeller {
             console.log('Filtered players:', filteredPlayers);
             
             // Check for exact match and auto-validate
-            const exactMatch = filteredPlayers.find(player => 
+            let exactMatch = filteredPlayers.find(player => 
                 player.activePlayerName && player.activePlayerName.toLowerCase() === searchTerm.toLowerCase()
             );
             
@@ -4030,29 +4030,32 @@ class UnifiedTeller {
                     this.showCustomerSuggestions(filteredPlayers, 'customer-suggestions');
                 }
             }
+            // Clear any existing validation timeout to prevent conflicts
+            clearTimeout(this.validateTimeout);
+            
+            // Only set delayed validation if no exact match was found and we need to validate
+            if (!exactMatch && !this.currentCustomer && searchTerm.trim().length >= 2) {
+                console.log('🔍 DEBUG: No exact match found, setting delayed validation');
+                this.validateTimeout = setTimeout(() => {
+                    // Double-check that user hasn't typed more and we still don't have a customer
+                    const currentValue = document.getElementById('customer-name').value.trim();
+                    if (currentValue === searchTerm.trim() && !this.currentCustomer) {
+                        console.log('🔍 DEBUG: Executing delayed validation for:', searchTerm.trim());
+                        this.validateCustomer(searchTerm.trim());
+                    } else {
+                        console.log('🔍 DEBUG: Skipping delayed validation - input changed or customer found');
+                    }
+                }, 500);
+            } else if (exactMatch) {
+                console.log('🔍 DEBUG: Exact match processed, no delayed validation needed');
+            }
+            
         } catch (error) {
             console.error('Error searching customers:', error);
             this.showStatus('Error searching for customers', 'error');
-        }
-        
-        // Clear any existing validation timeout to prevent conflicts
-        clearTimeout(this.validateTimeout);
-        
-        // Only set delayed validation if no exact match was found and we need to validate
-        if (!exactMatch && !this.currentCustomer && searchTerm.trim().length >= 2) {
-            console.log('🔍 DEBUG: No exact match found, setting delayed validation');
-            this.validateTimeout = setTimeout(() => {
-                // Double-check that user hasn't typed more and we still don't have a customer
-                const currentValue = document.getElementById('customer-name').value.trim();
-                if (currentValue === searchTerm.trim() && !this.currentCustomer) {
-                    console.log('🔍 DEBUG: Executing delayed validation for:', searchTerm.trim());
-                    this.validateCustomer(searchTerm.trim());
-                } else {
-                    console.log('🔍 DEBUG: Skipping delayed validation - input changed or customer found');
-                }
-            }, 500);
-        } else if (exactMatch) {
-            console.log('🔍 DEBUG: Exact match processed, no delayed validation needed');
+            
+            // Clear any existing validation timeout on error
+            clearTimeout(this.validateTimeout);
         }
     }
 
