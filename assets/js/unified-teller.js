@@ -3938,7 +3938,7 @@ class UnifiedTeller {
         container.style.display = 'block';
     }
 
-    selectCustomer(player) {
+    async selectCustomer(player) {
         // Set flag to prevent handleCustomerSearch from clearing validation
         this.isSelectingCustomer = true;
         
@@ -3946,6 +3946,15 @@ class UnifiedTeller {
         this.currentCustomer = player;
         this.hideCustomerSuggestions();
         this.showValidationIcon('valid');
+        
+        // Load daily turn-in data and transaction history for this customer
+        await this.loadDailyTurninData(player.activePlayerName);
+        await this.loadTransactionHistory(player.activePlayerName);
+        
+        // Re-render items to update limits, but preserve current quantities
+        if (this.selectedShop && this.shopItems.length > 0) {
+            this.preserveQuantitiesAndRerender();
+        }
         
         // Enable transaction processing if cart has items
         const recordBtn = document.getElementById('record-transaction-btn');
