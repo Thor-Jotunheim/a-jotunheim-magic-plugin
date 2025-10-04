@@ -5134,6 +5134,13 @@ class UnifiedTeller {
             actualContainerWidth = window.innerWidth - 80;
         }
         
+        // DEBUG: Log width information to help troubleshoot column issues
+        console.log('🔍 Column Count Debug:', {
+            containerWidth: actualContainerWidth,
+            windowWidth: window.innerWidth,
+            breakpoints: { '3col': 2100, '2col': 1000, '1col': '<1000' }
+        });
+        
         // Much more conservative approach - prioritize width over number of columns
         let optimalColumns;
         
