@@ -3909,6 +3909,10 @@ class UnifiedTeller {
                 this.showValidationIcon('valid');
                 this.hideCustomerSuggestions();
                 
+                // Load transaction history automatically for exact matches
+                console.log('Auto-loading transaction history for exact match:', exactMatch.activePlayerName);
+                await this.loadTransactionHistory(exactMatch.activePlayerName);
+                
                 // Enable transaction processing if cart has items
                 const recordBtn = document.getElementById('record-transaction-btn');
                 const turninBtn = document.getElementById('record-turnin-btn');
