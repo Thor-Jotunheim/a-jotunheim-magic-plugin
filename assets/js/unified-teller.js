@@ -3916,11 +3916,7 @@ class UnifiedTeller {
             );
             
             if (exactMatch) {
-                console.log('DEBUG: About to log version message');
-                console.log('🚀🚀🚀 VERSION 0.9.5.5.64 EXACT MATCH FOUND:', exactMatch.activePlayerName);
-                console.log('DEBUG: Version message logged, about to log exact match');
                 console.log('Exact match found:', exactMatch.activePlayerName);
-                console.log('DEBUG: Exact match logged');
                 this.currentCustomer = exactMatch;
                 this.showValidationIcon('valid');
                 this.hideCustomerSuggestions();
@@ -5451,7 +5447,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (shouldInitialize) {
         console.log('🚀🚀� UNIFIED TELLER: Conditions met, initializing UnifiedTeller...');
-        console.log('🚀🚀🚀 JOTUNHEIM MAGIC VERSION 0.9.5.5.64 - AUTO-LOADING ENABLED 🚀🚀🚀');
         // Wait for JotunAPI to be available
         const checkAPI = () => {
 
