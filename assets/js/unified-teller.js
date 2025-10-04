@@ -5045,7 +5045,8 @@ class UnifiedTeller {
                 const tableContainers = wrapper.querySelectorAll('.table-container');
                 tableContainers.forEach(tableContainer => {
                     tableContainer.style.setProperty('flex', '1 1 auto', 'important');
-                    tableContainer.style.setProperty('min-width', '700px', 'important');
+                    // Reduced min-width to allow 2 columns at 1400px+ screen widths
+                    tableContainer.style.setProperty('min-width', '600px', 'important');
                     tableContainer.style.setProperty('max-width', 'none', 'important');
                     tableContainer.style.setProperty('width', 'auto', 'important');
                 });
