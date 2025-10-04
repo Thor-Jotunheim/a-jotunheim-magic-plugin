@@ -5140,8 +5140,8 @@ class UnifiedTeller {
         // Balanced responsive breakpoints - adjusted for better 2-column trigger
         if (actualContainerWidth >= 2100) {
             optimalColumns = 3; // Wide screens get 3 columns
-        } else if (actualContainerWidth >= 1200) {
-            optimalColumns = 2; // Medium screens get 2 columns (lowered from 1400)
+        } else if (actualContainerWidth >= 1000) {
+            optimalColumns = 2; // Medium screens get 2 columns (lowered from 1200)
         } else {
             optimalColumns = 1; // Narrow screens get 1 column
         }
@@ -5153,8 +5153,8 @@ class UnifiedTeller {
             actualContainerWidth,
             selectedColumns: optimalColumns,
             breakpointUsed: actualContainerWidth >= 2100 ? '3-column (>=2100px)' : 
-                           actualContainerWidth >= 1400 ? '2-column (>=1400px)' : 
-                           '1-column (<1400px)'
+                           actualContainerWidth >= 1000 ? '2-column (>=1000px)' : 
+                           '1-column (<1000px)'
         });
         
         // DEBUG: Check what CSS is actually being applied
