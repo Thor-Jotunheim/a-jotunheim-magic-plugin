@@ -63,19 +63,17 @@ function unified_teller_interface() {
                 </div>
                 <div class="card-content">
                     <div class="customer-actions-vertical">
-                        <div class="customer-search-container">
-                            <div class="input-group">
-                                <input 
-                                    type="text" 
-                                    id="customer-name" 
-                                    class="field-input" 
-                                    placeholder="Start typing player name... (auto-validates)"
-                                    autocomplete="off"
-                                >
-                                <div class="validation-icon-container">
-                                    <div id="validation-success-icon" class="validation-icon success-icon" style="display: none;">✓</div>
-                                    <div id="validation-error-icon" class="validation-icon error-icon" style="display: none;">✗</div>
-                                </div>
+                        <div class="input-group customer-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="customer-name" 
+                                class="field-input" 
+                                placeholder="Start typing player name... (auto-validates)"
+                                autocomplete="off"
+                            >
+                            <div class="validation-icon-container">
+                                <div id="validation-success-icon" class="validation-icon success-icon" style="display: none;">✓</div>
+                                <div id="validation-error-icon" class="validation-icon error-icon" style="display: none;">✗</div>
                             </div>
                             <div id="customer-suggestions" class="customer-suggestions" style="display: none;"></div>
                         </div>
