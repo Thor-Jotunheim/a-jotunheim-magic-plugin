@@ -970,6 +970,27 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     overflow-x: auto;
 }
 
+/* Multi-column table layouts */
+.items-table-wrapper.multi-column-2 {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.items-table-wrapper.multi-column-3 {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.items-table-wrapper.single-column {
+    display: block;
+}
+
+.items-table-wrapper.multi-column-2 .table-container,
+.items-table-wrapper.multi-column-3 .table-container {
+    flex: 1;
+    min-width: 0;
+}
+
 .items-table {
     width: 100%;
     border-collapse: collapse;
