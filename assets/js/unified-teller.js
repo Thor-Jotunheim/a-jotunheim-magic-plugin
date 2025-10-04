@@ -1725,6 +1725,9 @@ class UnifiedTeller {
                 // Load daily turn-in data for this customer
                 await this.loadDailyTurninData(this.currentCustomer.playerName || this.currentCustomer.player_name);
                 
+                // Load transaction history to show ledger balance for Aesir shops
+                await this.loadTransactionHistory(customerName);
+                
                 // Re-render items to update limits, but preserve current quantities
                 if (this.selectedShop && this.shopItems.length > 0) {
                     this.preserveQuantitiesAndRerender();
