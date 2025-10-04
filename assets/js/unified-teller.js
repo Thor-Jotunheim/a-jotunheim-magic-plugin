@@ -2758,6 +2758,87 @@ class UnifiedTeller {
         }
     }
 
+    async loadAesirLedgerAndTransactions(customerName) {
+        try {
+            console.log('🔍 DEBUG Load Aesir Combined: Fetching both ledger and transactions for customer:', customerName);
+            
+            // Fetch both ledger balance and transaction history in parallel
+            const [ledgerResponse, transactionResponse] = await Promise.all([
+                JotunAPI.getLedgerBalance(customerName),
+                JotunAPI.getTransactions({ 
+                    customer_name: customerName, 
+                    shop_name: "Aesir Spells & Items",
+                    limit: 20 
+                })
+            ]);
+            
+            console.log('🔍 DEBUG Load Aesir Combined: Ledger response:', ledgerResponse);
+            console.log('🔍 DEBUG Load Aesir Combined: Transaction response:', transactionResponse);
+            
+            const container = document.getElementById('transaction-history');
+            container.innerHTML = '';
+            
+            // Create side-by-side layout
+            const sideBySideContainer = document.createElement('div');
+            sideBySideContainer.className = 'aesir-side-by-side-container';
+            sideBySideContainer.style.cssText = `
+                display: flex;
+                gap: 20px;
+                margin: 10px 0;
+            `;
+            
+            // Left side: Current Ledger Balance
+            const ledgerSection = document.createElement('div');
+            ledgerSection.className = 'aesir-ledger-section';
+            ledgerSection.style.cssText = `
+                flex: 1;
+                min-width: 0;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                padding: 15px;
+                background: #f9f9ff;
+            `;
+            
+            const ledgerHeader = document.createElement('h4');
+            ledgerHeader.textContent = 'Current Ledger Balance';
+            ledgerHeader.style.cssText = 'margin: 0 0 10px 0; color: #333;';
+            ledgerSection.appendChild(ledgerHeader);
+            
+            this.renderLedgerBalance(ledgerResponse, customerName, ledgerSection);
+            
+            // Right side: Recent Transactions
+            const transactionSection = document.createElement('div');
+            transactionSection.className = 'aesir-transaction-section';
+            transactionSection.style.cssText = `
+                flex: 1;
+                min-width: 0;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                padding: 15px;
+                background: #fff9f9;
+            `;
+            
+            const transactionHeader = document.createElement('h4');
+            transactionHeader.textContent = 'Recent Transactions';
+            transactionHeader.style.cssText = 'margin: 0 0 10px 0; color: #333;';
+            transactionSection.appendChild(transactionHeader);
+            
+            this.renderAesirTransactionHistory(transactionResponse.data || [], customerName, transactionSection);
+            
+            // Add both sections to the side-by-side container
+            sideBySideContainer.appendChild(ledgerSection);
+            sideBySideContainer.appendChild(transactionSection);
+            
+            // Add the side-by-side container to the main container
+            container.appendChild(sideBySideContainer);
+            
+        } catch (error) {
+            console.error('Error loading Aesir ledger and transactions:', error);
+            const container = document.getElementById('transaction-history');
+            container.innerHTML = '<div class="transaction-item">Error loading Aesir data</div>';
+        }
+    }
+
     async showLedgerBalanceAfterHistory(customerName) {
         try {
             console.log('🔍 DEBUG Ledger Balance After History: Fetching balance for customer:', customerName);
@@ -2810,6 +2891,53 @@ class UnifiedTeller {
                 </div>
             </div>`;
             container.appendChild(balanceDiv);
+        });
+    }
+
+    renderAesirTransactionHistory(transactions, customerName, container) {
+        if (!transactions || transactions.length === 0) {
+            const noTransactionsDiv = document.createElement('div');
+            noTransactionsDiv.className = 'transaction-item transaction-empty';
+            noTransactionsDiv.innerHTML = `<div class="transaction-info">
+                <small>No recent Aesir transactions found for ${this.escapeHtml(customerName)}</small>
+            </div>`;
+            container.appendChild(noTransactionsDiv);
+            return;
+        }
+
+        transactions.forEach(transaction => {
+            const transactionDiv = document.createElement('div');
+            transactionDiv.className = 'transaction-item aesir-transaction';
+            
+            // Format the transaction details
+            const date = new Date(transaction.transaction_date).toLocaleDateString();
+            const time = new Date(transaction.transaction_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const teller = transaction.teller_name || 'Unknown Teller';
+            const amountPaid = transaction.total_cost || '0';
+            const quantity = transaction.quantity || '1';
+            const itemName = transaction.item_name || 'Unknown Item';
+            
+            transactionDiv.innerHTML = `<div class="transaction-info">
+                <div class="transaction-main">
+                    <strong>${this.escapeHtml(itemName)} × ${quantity}</strong>
+                    <span class="transaction-cost">${amountPaid} coins</span>
+                </div>
+                <div class="transaction-details">
+                    <small>
+                        Sold by <strong>${this.escapeHtml(teller)}</strong> on ${date} at ${time}
+                    </small>
+                </div>
+            </div>`;
+            
+            // Add some styling to make it look nice
+            transactionDiv.style.cssText = `
+                margin-bottom: 8px;
+                padding: 8px;
+                border-left: 3px solid #4CAF50;
+                background: rgba(76, 175, 80, 0.1);
+            `;
+            
+            container.appendChild(transactionDiv);
         });
     }
 
@@ -3997,9 +4125,9 @@ class UnifiedTeller {
                 console.log('🔍 DEBUG Auto-loading: shopType =', shopType);
                 
                 if (shopType === 'aesir') {
-                    // For Aesir shops, show ledger balance directly (no history needed first)
-                    console.log('Auto-loading Aesir ledger balance for exact match:', exactMatch.activePlayerName);
-                    await this.loadAesirLedgerBalance(exactMatch.activePlayerName);
+                    // For Aesir shops, show both ledger balance and transaction history side by side
+                    console.log('Auto-loading Aesir ledger and transactions for exact match:', exactMatch.activePlayerName);
+                    await this.loadAesirLedgerAndTransactions(exactMatch.activePlayerName);
                 } else {
                     // For other shops, load transaction history
                     console.log('Auto-loading transaction history for exact match:', exactMatch.activePlayerName);
@@ -4143,9 +4271,9 @@ class UnifiedTeller {
         await this.loadDailyTurninData(player.activePlayerName);
         
         if (shopType && shopType.shopType === 'aesir') {
-            // For Aesir shops, show ledger balance directly
-            console.log('🔍 DEBUG selectCustomer: Loading Aesir ledger for', player.activePlayerName);
-            await this.loadAesirLedgerBalance(player.activePlayerName);
+            // For Aesir shops, show both ledger balance and transaction history side by side
+            console.log('🔍 DEBUG selectCustomer: Loading Aesir ledger and transactions for', player.activePlayerName);
+            await this.loadAesirLedgerAndTransactions(player.activePlayerName);
         } else {
             // For other shops, load transaction history
             console.log('🔍 DEBUG selectCustomer: Loading transaction history for', player.activePlayerName);
