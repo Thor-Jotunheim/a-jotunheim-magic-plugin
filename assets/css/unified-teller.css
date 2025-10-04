@@ -1798,7 +1798,8 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 
 /* Ensure all card content sections expand to fill available space */
 .customer-card .card-content,
-.payment-card .card-content {
+.payment-card .card-content,
+.actions-card .card-content {
     flex: 1;
     display: flex;
     flex-direction: column;
