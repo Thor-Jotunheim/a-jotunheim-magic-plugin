@@ -3890,6 +3890,26 @@ class UnifiedTeller {
         
         if (searchTerm.length < 2) {
             this.hideCustomerSuggestions();
+            
+            // Clear customer validation and transaction history when search is too short
+            if (searchTerm.length === 0) {
+                console.log('🔍 DEBUG: Empty search term - clearing customer validation and transaction history');
+                this.currentCustomer = null;
+                this.hideValidationIcon();
+                
+                // Update button states when customer is cleared
+                this.updateViewCartButton();
+                this.updateRecordTransactionButton();
+                
+                // Clear transaction history display for Aesir shops
+                const shopType = this.getCurrentShopType();
+                if (shopType && shopType.shopType === 'aesir') {
+                    const container = document.getElementById('transaction-history');
+                    if (container) {
+                        container.innerHTML = '<div class="transaction-item">Select a customer to view their Aesir ledger balance</div>';
+                    }
+                }
+            }
             return;
         }
 
