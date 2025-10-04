@@ -3878,6 +3878,7 @@ class UnifiedTeller {
     // Customer search functionality
     async handleCustomerSearch(searchTerm) {
         console.log('handleCustomerSearch called with:', searchTerm);
+        console.log('🔍 DEBUG Flags: isSelectingCustomer =', this.isSelectingCustomer, ', suppressDropdown =', this.suppressDropdown);
         
         // Don't clear validation or show suggestions if we're in the middle of selecting a customer
         if (this.isSelectingCustomer || this.suppressDropdown) {
