@@ -1843,18 +1843,18 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
 /* FORCE BUTTON ALIGNMENT - Nuclear Approach */
 .actions-card .form-field {
     position: relative !important;
-    min-height: 300px !important;
+    min-height: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
 }
 
 .customer-card .form-field {
     position: relative !important;
-    min-height: 300px !important;
+    min-height: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
 }
 
 /* Reset button margins to let flex handle positioning */
