@@ -2756,50 +2756,34 @@ function jotun_api_add_transaction($request) {
         if ($update_result === 0) {
             // No existing record was updated, create new record with the quantity
             error_log("No existing ledger record updated for $customer_name, creating new record with initial quantity");
+            
+            // Get existing table structure to avoid column errors
+            $table_columns = $wpdb->get_col("SHOW COLUMNS FROM jotun_ledger");
+            error_log("Available ledger columns: " . implode(', ', $table_columns));
+            
+            // Start with basic required columns
             $insert_data = [
                 'activePlayerName' => $customer_name,
-                'playerName' => $customer_name,
-                'vidar' => 0,
-                'steamID' => '',
-                'unbreakableoath' => 0,
-                'eternalflame' => 0,
-                'floatingrockbase' => 0,
-                'rockpillar' => 0,
-                'rockfingerthumb' => 0,
-                'unbreakabletrees' => 0,
-                'widestone' => 0,
-                'greydwarfspawner' => 0,
-                'pickablethistle' => 0,
-                'cloudberrybush' => 0,
-                'pickablemushroom' => 0,
-                'blueberrybush' => 0,
-                'raspberrybush' => 0,
-                'bluemushroomsx50' => 0,
-                'yuletree' => 0,
-                'maypole' => 0,
-                'jackoturnip' => 0,
-                'flowercrown' => 0,
-                'doorautoclose' => 0,
-                'mistlandsrockgreen' => 0,
-                'mistlandsrockyellow' => 0,
-                'mistlandsrocksmall' => 0,
-                'pickableyellowmushroom' => 0,
-                'stonemarker' => 0,
-                'deertrophy' => 0,
-                'leechtrophy' => 0,
-                'draugrellitetrophy' => 0,
-                'growthtrophy' => 0,
-                'seekertrophy' => 0,
-                'ulvtrophy' => 0,
-                'gjerrahfatrophy' => 0,
-                'fulingbeserkertrophy' => 0,
-                'yagluthtrophy' => 0,
-                'player_id' => null
+                'playerName' => $customer_name
             ];
             
-            // Set the specific item quantity
-            $insert_data[$column_name] = $quantity;
+            // Add the specific item quantity we're recording
+            if (in_array($column_name, $table_columns)) {
+                $insert_data[$column_name] = $quantity;
+            } else {
+                error_log("Column $column_name not found in ledger table");
+                return new WP_REST_Response(['error' => "Ledger column '$column_name' does not exist"], 400);
+            }
             
+            // Add other common columns if they exist, defaulting to 0
+            $common_columns = ['vidar', 'unbreakableoath', 'eternalflame', 'steamID'];
+            foreach ($common_columns as $col) {
+                if (in_array($col, $table_columns) && !isset($insert_data[$col])) {
+                    $insert_data[$col] = ($col === 'steamID') ? '' : 0;
+                }
+            }
+            
+            error_log("Creating ledger record with columns: " . implode(', ', array_keys($insert_data)));
             $insert_result = $wpdb->insert('jotun_ledger', $insert_data);
             if ($insert_result === false) {
                 error_log("Failed to create new ledger record for $customer_name: " . $wpdb->last_error);
