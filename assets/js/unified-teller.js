@@ -3921,8 +3921,11 @@ class UnifiedTeller {
                 this.hideCustomerSuggestions();
                 
                 // Check shop type and load appropriate history
+                console.log('🔍 DEBUG Auto-loading: this.selectedShop =', this.selectedShop);
                 const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                console.log('🔍 DEBUG Auto-loading: selectedOption =', selectedOption);
                 const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+                console.log('🔍 DEBUG Auto-loading: shopType =', shopType);
                 
                 if (shopType === 'aesir') {
                     // For Aesir shops, directly show ledger balance
