@@ -3920,9 +3920,19 @@ class UnifiedTeller {
                 this.showValidationIcon('valid');
                 this.hideCustomerSuggestions();
                 
-                // Load transaction history automatically for exact matches
-                console.log('Auto-loading transaction history for exact match:', exactMatch.activePlayerName);
-                await this.loadTransactionHistory(exactMatch.activePlayerName);
+                // Check shop type and load appropriate history
+                const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
+                const shopType = selectedOption ? selectedOption.dataset.shopType : null;
+                
+                if (shopType === 'aesir') {
+                    // For Aesir shops, directly show ledger balance
+                    console.log('Auto-loading Aesir ledger balance for exact match:', exactMatch.activePlayerName);
+                    await this.showLedgerBalanceAfterHistory(exactMatch.activePlayerName);
+                } else {
+                    // For other shops, load transaction history
+                    console.log('Auto-loading transaction history for exact match:', exactMatch.activePlayerName);
+                    await this.loadTransactionHistory(exactMatch.activePlayerName);
+                }
                 
                 // Enable transaction processing if cart has items
                 const recordBtn = document.getElementById('record-transaction-btn');
