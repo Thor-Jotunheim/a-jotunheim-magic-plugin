@@ -1766,6 +1766,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-4);
     margin-bottom: var(--space-6);
     align-items: stretch;
+    min-height: 200px; /* Consistent reasonable height for alignment */
 }
 
 .customer-card {
@@ -1773,6 +1774,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
+    min-height: 200px; /* Consistent height */
 }
 
 .payment-card {
@@ -1780,6 +1782,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
+    min-height: 200px; /* Consistent height */
 }
 
 .actions-card {
@@ -1787,6 +1790,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 200px; /* Minimum width for buttons */
     display: flex;
     flex-direction: column;
+    min-height: 200px; /* Consistent height */
 }
 
 .actions-card .card-content {
