@@ -2538,7 +2538,8 @@ class UnifiedTeller {
                     customer_name: customerName,
                     transaction_type: itemTransactionType,
                     notes: document.getElementById('transaction-notes').value,
-                    transaction_date: new Date().toISOString()
+                    transaction_date: new Date().toISOString(),
+                    teller_name: this.currentTeller ? this.currentTeller.name : 'Unknown'
                 };
                 
                 console.log('Recording individual transaction:', individualTransactionData);
@@ -2915,18 +2916,22 @@ class UnifiedTeller {
             const date = new Date(transaction.transaction_date).toLocaleDateString();
             const time = new Date(transaction.transaction_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const teller = transaction.teller_name || 'Unknown Teller';
-            const amountPaid = transaction.total_cost || '0';
+            const amountPaid = transaction.total_cost || transaction.total_amount || '0';
             const quantity = transaction.quantity || '1';
             const itemName = transaction.item_name || 'Unknown Item';
+            const transactionType = transaction.transaction_type || 'sell';
+            
+            // Only show coins for non-turn-in transactions
+            const costDisplay = transactionType === 'turnin' ? '' : `<span class="transaction-cost">${amountPaid} coins</span>`;
             
             transactionDiv.innerHTML = `<div class="transaction-info">
                 <div class="transaction-main">
                     <strong>${this.escapeHtml(itemName)} × ${quantity}</strong>
-                    <span class="transaction-cost">${amountPaid} coins</span>
+                    ${costDisplay}
                 </div>
                 <div class="transaction-details">
                     <small>
-                        Sold by <strong>${this.escapeHtml(teller)}</strong> on ${date} at ${time}
+                        ${transactionType === 'turnin' ? 'Turned in to' : 'Sold by'} <strong>${this.escapeHtml(teller)}</strong> on ${date} at ${time}
                     </small>
                 </div>
             </div>`;
@@ -3000,12 +3005,23 @@ class UnifiedTeller {
             const customerName = transaction.customer_name || transaction.player_name || 'Unknown';
             const itemName = transaction.item_name || 'Unknown Item';
             const quantity = transaction.quantity || 1;
-            const transactionType = transaction.transaction_type || 'general';
-            const teller = transaction.teller || 'Unknown';
+            const transactionType = transaction.transaction_type || 'sell';
+            const teller = transaction.teller_name || transaction.teller || 'Unknown';
             const totalAmount = parseFloat(transaction.total_amount || 0);
             
-            // Format the transaction type for display
-            const typeDisplay = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+            // Format the transaction type for display - avoid "General"
+            let typeDisplay;
+            if (transactionType === 'turnin') {
+                typeDisplay = 'Turn-in';
+            } else if (transactionType === 'sell') {
+                typeDisplay = 'Sale';
+            } else {
+                typeDisplay = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+            }
+            
+            // Only show coins for non-turn-in transactions
+            const amountDisplay = transactionType === 'turnin' ? '' : 
+                `<div class="transaction-amount">${totalAmount.toFixed(0)} ${totalAmount === 1 ? 'coin' : 'coins'}</div>`;
             
             transactionItem.innerHTML = `
                 <div class="transaction-info">
@@ -3023,7 +3039,7 @@ class UnifiedTeller {
                         </small>
                     </div>
                 </div>
-                <div class="transaction-amount">${totalAmount.toFixed(0)} ${totalAmount === 1 ? 'coin' : 'coins'}</div>
+                ${amountDisplay}
             `;
             container.appendChild(transactionItem);
         });
@@ -4865,13 +4881,64 @@ class UnifiedTeller {
             return;
         }
 
-        // Would record the turn-in transaction
-        this.showStatus('Turn-in recording functionality to be implemented', 'info');
-        console.log('Recording turn-in:', {
-            customer: this.currentTurninCustomer,
-            items: this.turninList,
-            notes: document.getElementById('turnin-notes').value
-        });
+        this.showStatus('Recording turn-in transactions...', 'info');
+        
+        try {
+            const shopSelector = document.getElementById('teller-shop-selector');
+            const selectedOption = shopSelector.options[shopSelector.selectedIndex];
+            const shopName = selectedOption.text;
+            const shopType = selectedOption.dataset.shopType || 'turn-in_only';
+            
+            let allSuccessful = true;
+            const responses = [];
+
+            // Record each turn-in item as individual transaction
+            for (const turninItem of this.turninList) {
+                const turninTransactionData = {
+                    shop_id: this.selectedShop,
+                    shop_name: shopName,
+                    shop_type: shopType,
+                    item_name: turninItem.item_name,
+                    item_id: turninItem.item_id,
+                    quantity: turninItem.quantity,
+                    total_amount: 0, // Turn-ins have no monetary value
+                    customer_name: this.currentTurninCustomer,
+                    transaction_type: 'turnin',
+                    notes: document.getElementById('turnin-notes').value,
+                    transaction_date: new Date().toISOString(),
+                    teller_name: this.currentTeller ? this.currentTeller.name : 'Unknown'
+                };
+                
+                console.log('Recording turn-in transaction:', turninTransactionData);
+                try {
+                    const response = await JotunAPI.addTransaction(turninTransactionData);
+                    responses.push(response);
+                    
+                    if (response.success === false) {
+                        allSuccessful = false;
+                        console.error('Turn-in transaction failed for item:', turninItem.item_name, response.error);
+                    }
+                } catch (error) {
+                    allSuccessful = false;
+                    console.error('Error recording turn-in transaction for item:', turninItem.item_name, error);
+                    responses.push({ success: false, error: error.message });
+                }
+            }
+
+            if (allSuccessful) {
+                this.showStatus('Turn-in transactions recorded successfully!', 'success');
+                // Clear the turn-in list and refresh the interface
+                this.turninList = [];
+                this.updateTurninDisplay();
+                // Refresh transaction history
+                this.showCustomerHistory(this.currentTurninCustomer);
+            } else {
+                this.showStatus('Some turn-in transactions failed. Check console for details.', 'error');
+            }
+        } catch (error) {
+            console.error('Error recording turn-in:', error);
+            this.showStatus('Failed to record turn-in: ' + error.message, 'error');
+        }
     }
 
     displayShopItems() {
