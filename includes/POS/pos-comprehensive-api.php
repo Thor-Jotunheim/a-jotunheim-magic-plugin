@@ -2596,6 +2596,7 @@ function jotun_api_get_transactions($request) {
     
     $shop_name = $request->get_param('shop_name');
     $shop_id = $request->get_param('shop_id');
+    $shop_type = $request->get_param('shop_type');
     $customer_name = $request->get_param('customer_name');
     $limit = $request->get_param('limit') ?: 100;
     $offset = $request->get_param('offset') ?: 0;
