@@ -2934,8 +2934,8 @@ function jotun_api_get_ledger_balance($request) {
     }
     
     $ledger_record = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM jotun_ledger WHERE activePlayerName = %s OR playerName = %s LIMIT 1",
-        $player_name, $player_name
+        "SELECT * FROM jotun_ledger WHERE activePlayerName = %s LIMIT 1",
+        $player_name
     ));
     
     if (!$ledger_record) {
