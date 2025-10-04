@@ -5448,6 +5448,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (shouldInitialize) {
         console.log('🚀🚀� UNIFIED TELLER: Conditions met, initializing UnifiedTeller...');
+        console.log('🚀🚀🚀 JOTUNHEIM MAGIC VERSION 0.9.5.5.64 - AUTO-LOADING ENABLED 🚀🚀🚀');
         // Wait for JotunAPI to be available
         const checkAPI = () => {
 
