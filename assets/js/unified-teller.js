@@ -2281,15 +2281,15 @@ class UnifiedTeller {
             // Use flag to track state instead of DOM inspection
             if (this.isTableView) {
                 // Currently showing table, switch back to grid view
-                gridView.style.display = 'flex'; // Use flex, not grid!
-                tableView.style.display = 'none';
+                tableView.style.display = 'none'; // Hide table first
+                gridView.style.display = 'flex'; // Then show grid
                 this.isTableView = false;
                 // Ensure grid is populated
                 this.renderItemsGrid(gridView);
             } else {
                 // Currently showing grid, switch to table view
-                gridView.style.display = 'none';
-                tableView.style.display = 'block';
+                gridView.style.display = 'none'; // Hide grid first
+                tableView.style.display = 'block'; // Then show table
                 this.isTableView = true;
                 // Add small delay to ensure proper layout calculation
                 setTimeout(() => {
@@ -4878,15 +4878,25 @@ class UnifiedTeller {
         const tableContainer = document.getElementById('items-table-view');
         const toggleBtn = document.getElementById('toggle-view-btn');
         
-        // Initialize view state - grid view should be default (when button shows "Toggle View")
         if (gridContainer && tableContainer && toggleBtn) {
-            gridContainer.style.display = 'flex'; // Use flex to match CSS
-            tableContainer.style.display = 'none';
-            toggleBtn.textContent = 'Toggle View';
-            this.isTableView = false; // Reset to grid view
+            // Preserve current view state instead of always resetting to grid
+            if (this.isTableView === undefined) {
+                // Only initialize on first load - grid view is default
+                this.isTableView = false;
+            }
             
-            // Only render the active view (grid by default)
-            this.renderItemsGrid(gridContainer);
+            // Apply current view state
+            if (this.isTableView) {
+                gridContainer.style.display = 'none';
+                tableContainer.style.display = 'block';
+                this.renderItemsTable(tableContainer);
+            } else {
+                gridContainer.style.display = 'flex';
+                tableContainer.style.display = 'none';
+                this.renderItemsGrid(gridContainer);
+            }
+            
+            toggleBtn.textContent = 'Toggle View';
         } else if (gridContainer) {
             // Fallback: render grid view if containers exist
             this.renderItemsGrid(gridContainer);
