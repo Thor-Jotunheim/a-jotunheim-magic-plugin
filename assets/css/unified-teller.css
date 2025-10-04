@@ -1766,7 +1766,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     gap: var(--space-4);
     margin-bottom: var(--space-6);
     align-items: stretch;
-    min-height: 400px; /* Force minimum height for button alignment */
 }
 
 .customer-card {
@@ -1774,7 +1773,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .payment-card {
@@ -1782,7 +1780,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0; /* Allows flex shrinking */
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .actions-card {
@@ -1790,7 +1787,6 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 200px; /* Minimum width for buttons */
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Ensure sufficient height for button alignment */
 }
 
 .actions-card .card-content {
@@ -1814,16 +1810,13 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     display: flex;
     flex-direction: column;
     justify-content: flex-end !important; /* Push buttons to bottom - force override */
-    min-height: 200px; /* Minimum height to enable proper flex alignment */
 }
 
 /* Ensure customer card form field aligns consistently */
 .customer-card .card-content .form-field {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end !important; /* Push registration button to bottom - force override */
-    min-height: 200px; /* Minimum height to enable proper flex alignment */
+    gap: var(--space-4);
 }
 
 /* Ensure payment card content expands properly */
@@ -1915,7 +1908,7 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     flex-direction: column;
     gap: var(--space-4);
     height: 100%;
-    justify-content: flex-start;
+    justify-content: center;
 }
 
 .transaction-actions-vertical .btn {
