@@ -307,6 +307,13 @@ class JotunheimAPI {
         return this.request(`/ledger/${id}`, 'DELETE');
     }
 
+    async getLedgerBalance(playerName) {
+        if (!playerName) {
+            throw new Error('Player name is required');
+        }
+        return this.request(`/ledger/${encodeURIComponent(playerName)}`);
+    }
+
     // ============================================================================
     // UTILITY METHODS
     // ============================================================================

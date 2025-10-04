@@ -2188,3 +2188,19 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     white-space: nowrap;
     margin-left: var(--space-3);
 }
+
+/* Ledger Balance Styling */
+.transaction-item.ledger-header {
+    background: var(--blue-2);
+    border-left: 4px solid var(--blue-9);
+    font-weight: 600;
+}
+
+.transaction-item.ledger-balance {
+    background: var(--green-1);
+    border-left: 3px solid var(--green-8);
+}
+
+.transaction-item.ledger-balance:hover {
+    background: var(--green-2);
+}

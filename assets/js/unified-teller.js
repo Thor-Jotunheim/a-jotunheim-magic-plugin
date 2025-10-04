@@ -2605,9 +2605,19 @@ class UnifiedTeller {
                         params.shop_id = this.selectedShop; // Pass shop_id for turn-in queries
                         console.log('🔍 DEBUG Transaction History: Set transaction_type=turnin, shop_id=' + this.selectedShop);
                     } else if (shopType === 'aesir') {
-                        // For Aesir shops, show message that ledger doesn't store individual transactions
-                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - ledger stores balances, not individual transactions');
-                        // Still try to query in case there are any legacy transactions
+                        // For Aesir shops, check if there's a selected customer to show their ledger balance
+                        console.log('🔍 DEBUG Transaction History: Aesir shop detected - checking for customer to show ledger balance');
+                        const customerInput = document.getElementById('customer-name');
+                        const customerName = customerInput ? customerInput.value.trim() : '';
+                        
+                        if (customerName) {
+                            console.log('🔍 DEBUG Transaction History: Customer selected, showing ledger balance for:', customerName);
+                            await this.showLedgerBalance(customerName);
+                            return; // Skip the normal transaction query
+                        } else {
+                            console.log('🔍 DEBUG Transaction History: No customer selected for Aesir shop');
+                        }
+                        // If no customer, still try to query in case there are any legacy transactions
                     }
                     
                     console.log('🔍 DEBUG Transaction History: Added shop_name filter:', shopName);
@@ -2625,6 +2635,63 @@ class UnifiedTeller {
             this.renderTransactionHistory(transactions);
         } catch (error) {
             console.error('Error loading transaction history:', error);
+        }
+    }
+
+    async showLedgerBalance(customerName) {
+        try {
+            console.log('🔍 DEBUG Ledger Balance: Fetching balance for customer:', customerName);
+            const response = await JotunAPI.getLedgerBalance(customerName);
+            console.log('🔍 DEBUG Ledger Balance: API response:', response);
+            
+            const container = document.getElementById('transaction-history');
+            container.innerHTML = '';
+            
+            if (!response.balances || response.balances.length === 0) {
+                container.innerHTML = `<div class="transaction-item">
+                    <div class="transaction-info">
+                        <strong>${this.escapeHtml(customerName)}</strong> has no items in the Aesir ledger
+                    </div>
+                </div>`;
+                return;
+            }
+            
+            // Create header
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'transaction-item ledger-header';
+            headerDiv.innerHTML = `<div class="transaction-info">
+                <strong>Aesir Ledger Balance for ${this.escapeHtml(customerName)}</strong>
+                <small>Last updated: ${this.formatDate(response.last_updated)}</small>
+            </div>`;
+            container.appendChild(headerDiv);
+            
+            // Show each balance
+            response.balances.forEach(balance => {
+                const balanceDiv = document.createElement('div');
+                balanceDiv.className = 'transaction-item ledger-balance';
+                balanceDiv.innerHTML = `<div class="transaction-info">
+                    <div class="transaction-main-line">
+                        <strong>${this.escapeHtml(balance.item_name)}</strong>: ${balance.quantity}
+                    </div>
+                    <div class="transaction-details">
+                        <small>Balance stored in ledger system</small>
+                    </div>
+                </div>`;
+                container.appendChild(balanceDiv);
+            });
+            
+        } catch (error) {
+            console.error('Error loading ledger balance:', error);
+            const container = document.getElementById('transaction-history');
+            if (error.message && error.message.includes('404')) {
+                container.innerHTML = `<div class="transaction-item">
+                    <div class="transaction-info">
+                        <strong>${this.escapeHtml(customerName)}</strong> not found in Aesir ledger
+                    </div>
+                </div>`;
+            } else {
+                container.innerHTML = '<div class="transaction-item">Error loading ledger balance</div>';
+            }
         }
     }
 

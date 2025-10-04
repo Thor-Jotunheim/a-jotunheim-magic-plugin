@@ -1149,6 +1149,19 @@ add_action('rest_api_init', function() {
     ]);
     
     // ============================================================================
+    // LEDGER API ENDPOINTS (jotun_ledger)
+    // ============================================================================
+    
+    // Get ledger balance for a player
+    register_rest_route('jotun-api/v1', '/ledger/(?P<player_name>[^/]+)', [
+        'methods' => 'GET',
+        'callback' => 'jotun_api_get_ledger_balance',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
+    // ============================================================================
     // ITEM LIST API ENDPOINTS (jotun_itemlist)
     // ============================================================================
     
@@ -2754,9 +2767,40 @@ function jotun_api_add_transaction($request) {
             error_log("Created new ledger record for player: $customer_name");
         }
         
-        // For now, just log the transaction - full ledger integration would need item mapping
-        error_log("Aesir transaction recorded in ledger for $customer_name: $item_name (qty: $quantity)");
-        return new WP_REST_Response(['message' => 'Aesir transaction recorded in ledger', 'table' => 'jotun_ledger'], 201);
+        // Map item names to ledger columns
+        $item_column_map = [
+            'Vidar\'s Hammer' => 'vidar',
+            'Unbreakable Oath' => 'unbreakableoath',
+            'Eternal Flame' => 'eternalflame'
+        ];
+        
+        // Check if this item can be recorded in the ledger
+        if (!isset($item_column_map[$item_name])) {
+            error_log("Item '$item_name' not found in ledger column mapping - cannot record in jotun_ledger");
+            return new WP_REST_Response(['error' => "Item '$item_name' is not supported in the Aesir ledger system"], 400);
+        }
+        
+        $column_name = $item_column_map[$item_name];
+        
+        // Update the player's balance in the ledger
+        $update_result = $wpdb->query($wpdb->prepare("
+            UPDATE jotun_ledger 
+            SET $column_name = $column_name + %d 
+            WHERE activePlayerName = %s
+        ", $quantity, $customer_name));
+        
+        if ($update_result === false) {
+            error_log("Failed to update ledger balance for $customer_name: " . $wpdb->last_error);
+            return new WP_REST_Response(['error' => 'Failed to update ledger balance: ' . $wpdb->last_error], 500);
+        }
+        
+        if ($update_result === 0) {
+            error_log("No ledger record found for player: $customer_name");
+            return new WP_REST_Response(['error' => "No ledger record found for player: $customer_name"], 404);
+        }
+        
+        error_log("Aesir transaction successfully recorded in ledger for $customer_name: $item_name (qty: $quantity) -> column: $column_name");
+        return new WP_REST_Response(['message' => 'Aesir transaction recorded in ledger', 'table' => 'jotun_ledger', 'column_updated' => $column_name, 'quantity_added' => $quantity], 201);
         
     } elseif ($table_name === 'jotun_turn_ins') {
         // Turn-in transactions table
@@ -2881,6 +2925,54 @@ function jotun_api_delete_transaction($request) {
     }
     
     return new WP_REST_Response(['message' => 'Transaction deleted successfully'], 200);
+}
+
+// ============================================================================
+// LEDGER FUNCTIONS (jotun_ledger)
+// ============================================================================
+
+function jotun_api_get_ledger_balance($request) {
+    global $wpdb;
+    
+    $player_name = urldecode($request['player_name']);
+    
+    if (empty($player_name)) {
+        return new WP_REST_Response(['error' => 'Player name is required'], 400);
+    }
+    
+    $ledger_record = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM jotun_ledger WHERE activePlayerName = %s OR playerName = %s LIMIT 1",
+        $player_name, $player_name
+    ));
+    
+    if (!$ledger_record) {
+        return new WP_REST_Response(['error' => 'Player not found in ledger'], 404);
+    }
+    
+    // Map the ledger columns to readable item names
+    $item_names = [
+        'vidar' => 'Vidar\'s Hammer',
+        'unbreakableoath' => 'Unbreakable Oath',
+        'eternalflame' => 'Eternal Flame'
+    ];
+    
+    $balances = [];
+    foreach ($item_names as $column => $display_name) {
+        $balance = intval($ledger_record->$column ?? 0);
+        if ($balance > 0) {
+            $balances[] = [
+                'item_name' => $display_name,
+                'quantity' => $balance,
+                'column_name' => $column
+            ];
+        }
+    }
+    
+    return new WP_REST_Response([
+        'player_name' => $ledger_record->activePlayerName,
+        'balances' => $balances,
+        'last_updated' => current_time('mysql')
+    ], 200);
 }
 
 // ============================================================================
