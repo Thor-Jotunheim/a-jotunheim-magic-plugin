@@ -3916,8 +3916,11 @@ class UnifiedTeller {
             );
             
             if (exactMatch) {
+                console.log('DEBUG: About to log version message');
                 console.log('🚀🚀🚀 VERSION 0.9.5.5.64 EXACT MATCH FOUND:', exactMatch.activePlayerName);
+                console.log('DEBUG: Version message logged, about to log exact match');
                 console.log('Exact match found:', exactMatch.activePlayerName);
+                console.log('DEBUG: Exact match logged');
                 this.currentCustomer = exactMatch;
                 this.showValidationIcon('valid');
                 this.hideCustomerSuggestions();
@@ -3969,7 +3972,7 @@ class UnifiedTeller {
             this.validateTimeout = setTimeout(() => {
                 this.validateCustomer(searchTerm.trim());
             }, 500);
-        } else if (exactMatch) {
+        } else if (this.currentCustomer) {
             // Clear any existing validation timeout since we found an exact match
             clearTimeout(this.validateTimeout);
             console.log('🔍 DEBUG: Exact match processed, skipping delayed validation to prevent overwrite');
