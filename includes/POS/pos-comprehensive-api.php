@@ -705,6 +705,19 @@ add_action('rest_api_init', function() {
         'permission_callback' => '__return_true'
     ]);
     
+    // Debug POST endpoint to test POST requests
+    register_rest_route('jotun-api/v1', '/debug-post', [
+        'methods' => 'POST',
+        'callback' => function($request) {
+            $data = $request->get_json_params();
+            error_log('DEBUG: POST endpoint called successfully with data: ' . json_encode($data));
+            return new WP_REST_Response(['message' => 'POST is working!', 'received_data' => $data, 'timestamp' => current_time('mysql')], 200);
+        },
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+    
     // ============================================================================
     // PLAYER LIST API ENDPOINTS (jotun_playerlist)
     // ============================================================================
