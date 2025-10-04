@@ -2278,23 +2278,25 @@ class UnifiedTeller {
         const toggleBtn = document.getElementById('toggle-view-btn');
         
         if (gridView && tableView && toggleBtn) {
+            // CLEAR BOTH CONTAINERS to prevent dual content
+            gridView.innerHTML = '';
+            tableView.innerHTML = '';
+            
             // Use flag to track state instead of DOM inspection
             if (this.isTableView) {
                 // Currently showing table, switch back to grid view
                 tableView.style.display = 'none'; // Hide table first
                 gridView.style.display = 'flex'; // Then show grid
                 this.isTableView = false;
-                // Ensure grid is populated
+                // Render only grid content
                 this.renderItemsGrid(gridView);
             } else {
                 // Currently showing grid, switch to table view
                 gridView.style.display = 'none'; // Hide grid first
                 tableView.style.display = 'block'; // Then show table
                 this.isTableView = true;
-                // Add small delay to ensure proper layout calculation
-                setTimeout(() => {
-                    this.renderItemsTable(tableView);
-                }, 10);
+                // Render only table content
+                this.renderItemsTable(tableView);
             }
             // Button text never changes - always "Toggle View"
             toggleBtn.textContent = 'Toggle View';
@@ -4879,26 +4881,33 @@ class UnifiedTeller {
         const toggleBtn = document.getElementById('toggle-view-btn');
         
         if (gridContainer && tableContainer && toggleBtn) {
+            // CLEAR BOTH CONTAINERS FIRST to prevent dual rendering
+            gridContainer.innerHTML = '';
+            tableContainer.innerHTML = '';
+            
             // Preserve current view state instead of always resetting to grid
             if (this.isTableView === undefined) {
                 // Only initialize on first load - grid view is default
                 this.isTableView = false;
             }
             
-            // Apply current view state
+            // Apply current view state with explicit hide/show and single render
             if (this.isTableView) {
                 gridContainer.style.display = 'none';
                 tableContainer.style.display = 'block';
+                // Only render table content
                 this.renderItemsTable(tableContainer);
             } else {
                 gridContainer.style.display = 'flex';
                 tableContainer.style.display = 'none';
+                // Only render grid content
                 this.renderItemsGrid(gridContainer);
             }
             
             toggleBtn.textContent = 'Toggle View';
         } else if (gridContainer) {
             // Fallback: render grid view if containers exist
+            gridContainer.innerHTML = '';
             this.renderItemsGrid(gridContainer);
         }
     }
