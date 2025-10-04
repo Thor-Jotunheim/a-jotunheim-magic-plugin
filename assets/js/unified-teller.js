@@ -3968,6 +3968,10 @@ class UnifiedTeller {
             this.validateTimeout = setTimeout(() => {
                 this.validateCustomer(searchTerm.trim());
             }, 500);
+        } else if (exactMatch) {
+            // Clear any existing validation timeout since we found an exact match
+            clearTimeout(this.validateTimeout);
+            console.log('🔍 DEBUG: Exact match processed, skipping delayed validation to prevent overwrite');
         }
     }
 
