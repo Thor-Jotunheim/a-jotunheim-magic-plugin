@@ -2723,18 +2723,43 @@ function jotun_api_add_transaction($request) {
         $customer_name = sanitize_text_field($data['customer_name']);
         $quantity = (int)($data['quantity'] ?? 1);
         
-        // Find existing ledger record for this player
-        $existing_record = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM jotun_ledger WHERE activePlayerName = %s LIMIT 1",
-            $customer_name
-        ));
+
         
-        if (!$existing_record) {
-            // Create new ledger record for player
+        // Map item names to ledger columns
+        $item_column_map = [
+            'Vidar\'s Hammer' => 'vidar',
+            'Unbreakable Oath' => 'unbreakableoath',
+            'Eternal Flame' => 'eternalflame'
+        ];
+        
+        // Check if this item can be recorded in the ledger
+        if (!isset($item_column_map[$item_name])) {
+            error_log("Item '$item_name' not found in ledger column mapping - cannot record in jotun_ledger");
+            return new WP_REST_Response(['error' => "Item '$item_name' is not supported in the Aesir ledger system"], 400);
+        }
+        
+        $column_name = $item_column_map[$item_name];
+        
+        // Update the player's balance in the ledger
+        // First try to update existing record
+        $update_result = $wpdb->query($wpdb->prepare("
+            UPDATE jotun_ledger 
+            SET $column_name = $column_name + %d 
+            WHERE activePlayerName = %s
+        ", $quantity, $customer_name));
+        
+        if ($update_result === false) {
+            error_log("Failed to update ledger balance for $customer_name: " . $wpdb->last_error);
+            return new WP_REST_Response(['error' => 'Failed to update ledger balance: ' . $wpdb->last_error], 500);
+        }
+        
+        if ($update_result === 0) {
+            // No existing record was updated, create new record with the quantity
+            error_log("No existing ledger record updated for $customer_name, creating new record with initial quantity");
             $insert_data = [
                 'activePlayerName' => $customer_name,
-                'playerName' => $customer_name, // Fallback if different
-                'vidar' => 0, // Initialize all resources to 0
+                'playerName' => $customer_name,
+                'vidar' => 0,
                 'steamID' => '',
                 'unbreakableoath' => 0,
                 'eternalflame' => 0,
@@ -2772,44 +2797,15 @@ function jotun_api_add_transaction($request) {
                 'player_id' => null
             ];
             
-            $result = $wpdb->insert($table_name, $insert_data);
-            if ($result === false) {
-                error_log("Failed to create ledger record for player: " . $wpdb->last_error);
+            // Set the specific item quantity
+            $insert_data[$column_name] = $quantity;
+            
+            $insert_result = $wpdb->insert('jotun_ledger', $insert_data);
+            if ($insert_result === false) {
+                error_log("Failed to create new ledger record for $customer_name: " . $wpdb->last_error);
                 return new WP_REST_Response(['error' => 'Failed to create ledger record: ' . $wpdb->last_error], 500);
             }
-            error_log("Created new ledger record for player: $customer_name");
-        }
-        
-        // Map item names to ledger columns
-        $item_column_map = [
-            'Vidar\'s Hammer' => 'vidar',
-            'Unbreakable Oath' => 'unbreakableoath',
-            'Eternal Flame' => 'eternalflame'
-        ];
-        
-        // Check if this item can be recorded in the ledger
-        if (!isset($item_column_map[$item_name])) {
-            error_log("Item '$item_name' not found in ledger column mapping - cannot record in jotun_ledger");
-            return new WP_REST_Response(['error' => "Item '$item_name' is not supported in the Aesir ledger system"], 400);
-        }
-        
-        $column_name = $item_column_map[$item_name];
-        
-        // Update the player's balance in the ledger
-        $update_result = $wpdb->query($wpdb->prepare("
-            UPDATE jotun_ledger 
-            SET $column_name = $column_name + %d 
-            WHERE activePlayerName = %s
-        ", $quantity, $customer_name));
-        
-        if ($update_result === false) {
-            error_log("Failed to update ledger balance for $customer_name: " . $wpdb->last_error);
-            return new WP_REST_Response(['error' => 'Failed to update ledger balance: ' . $wpdb->last_error], 500);
-        }
-        
-        if ($update_result === 0) {
-            error_log("No ledger record found for player: $customer_name");
-            return new WP_REST_Response(['error' => "No ledger record found for player: $customer_name"], 404);
+            error_log("Created new ledger record for $customer_name with initial $column_name quantity: $quantity");
         }
         
         error_log("Aesir transaction successfully recorded in ledger for $customer_name: $item_name (qty: $quantity) -> column: $column_name");
