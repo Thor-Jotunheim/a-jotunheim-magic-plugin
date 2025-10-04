@@ -2736,6 +2736,28 @@ class UnifiedTeller {
         }
     }
 
+    async loadAesirLedgerBalance(customerName) {
+        try {
+            console.log('🔍 DEBUG Load Aesir Ledger: Fetching balance for customer:', customerName);
+            const response = await JotunAPI.getLedgerBalance(customerName);
+            console.log('🔍 DEBUG Load Aesir Ledger: API response:', response);
+            
+            const container = document.getElementById('transaction-history');
+            
+            // Clear container first, then add header for ledger balance only
+            container.innerHTML = '';
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'transaction-separator';
+            headerDiv.innerHTML = '<h4>Current Ledger Balance</h4>';
+            container.appendChild(headerDiv);
+            
+            this.renderLedgerBalance(response, customerName, container);
+            
+        } catch (error) {
+            console.error('Error loading Aesir ledger balance:', error);
+        }
+    }
+
     async showLedgerBalanceAfterHistory(customerName) {
         try {
             console.log('🔍 DEBUG Ledger Balance After History: Fetching balance for customer:', customerName);
@@ -2750,52 +2772,45 @@ class UnifiedTeller {
             separatorDiv.innerHTML = '<hr><h4>Current Ledger Balance</h4>';
             container.appendChild(separatorDiv);
             
-            if (!response.balances || response.balances.length === 0) {
-                const noBalanceDiv = document.createElement('div');
-                noBalanceDiv.className = 'transaction-item ledger-empty';
-                noBalanceDiv.innerHTML = `<div class="transaction-info">
-                    <strong>${this.escapeHtml(customerName)}</strong> has no items in the Aesir ledger
-                </div>`;
-                container.appendChild(noBalanceDiv);
-                return;
-            }
-
-            // Create header
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'transaction-item ledger-header';
-            headerDiv.innerHTML = `<div class="transaction-info">
-                <strong>Current Balance for ${this.escapeHtml(customerName)}</strong>
-                <small>Last updated: ${this.formatDate(response.last_updated)}</small>
-            </div>`;
-            container.appendChild(headerDiv);
-
-            // Show each balance
-            response.balances.forEach(balance => {
-                const balanceDiv = document.createElement('div');
-                balanceDiv.className = 'transaction-item ledger-balance';
-                balanceDiv.innerHTML = `<div class="transaction-info">
-                    <strong>${this.escapeHtml(balance.item_name)}: ${balance.quantity}</strong>
-                    <div class="transaction-details">
-                        <small>Balance stored in ledger system</small>
-                    </div>
-                </div>`;
-                container.appendChild(balanceDiv);
-            });
+            this.renderLedgerBalance(response, customerName, container);
             
         } catch (error) {
-            console.error('Error loading ledger balance after history:', error);
-            const container = document.getElementById('transaction-history');
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'transaction-item ledger-error';
-            if (error.message && error.message.includes('404')) {
-                errorDiv.innerHTML = `<div class="transaction-info">
-                    <strong>${this.escapeHtml(customerName)}</strong> not found in Aesir ledger
-                </div>`;
-            } else {
-                errorDiv.innerHTML = '<div class="transaction-info">Error loading ledger balance</div>';
-            }
-            container.appendChild(errorDiv);
+            console.error('Error showing ledger balance after history:', error);
         }
+    }
+
+    renderLedgerBalance(response, customerName, container) {
+        if (!response.balances || response.balances.length === 0) {
+            const noBalanceDiv = document.createElement('div');
+            noBalanceDiv.className = 'transaction-item ledger-empty';
+            noBalanceDiv.innerHTML = `<div class="transaction-info">
+                <strong>${this.escapeHtml(customerName)}</strong> has no items in the Aesir ledger
+            </div>`;
+            container.appendChild(noBalanceDiv);
+            return;
+        }
+
+        // Create header
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'transaction-item ledger-header';
+        headerDiv.innerHTML = `<div class="transaction-info">
+            <strong>Current Balance for ${this.escapeHtml(customerName)}</strong>
+            <small>Last updated: ${this.formatDate(response.last_updated)}</small>
+        </div>`;
+        container.appendChild(headerDiv);
+
+        // Show each balance
+        response.balances.forEach(balance => {
+            const balanceDiv = document.createElement('div');
+            balanceDiv.className = 'transaction-item ledger-balance';
+            balanceDiv.innerHTML = `<div class="transaction-info">
+                <strong>${this.escapeHtml(balance.item_name)}: ${balance.quantity}</strong>
+                <div class="transaction-details">
+                    <small>Balance stored in ledger system</small>
+                </div>
+            </div>`;
+            container.appendChild(balanceDiv);
+        });
     }
 
     initializeTransactionHistory() {
@@ -3965,6 +3980,15 @@ class UnifiedTeller {
                 this.showValidationIcon('valid');
                 this.hideCustomerSuggestions();
                 
+                // Set flag to prevent Enter key from duplicating this process
+                this.autoLoadingInProgress = true;
+                
+                // Clear any existing transaction display first to prevent duplicates
+                const container = document.getElementById('transaction-history');
+                if (container) {
+                    container.innerHTML = '';
+                }
+                
                 // Check shop type and load appropriate history
                 console.log('🔍 DEBUG Auto-loading: this.selectedShop =', this.selectedShop);
                 const selectedOption = document.querySelector(`#teller-shop-selector option[value="${this.selectedShop}"]`);
@@ -3973,9 +3997,9 @@ class UnifiedTeller {
                 console.log('🔍 DEBUG Auto-loading: shopType =', shopType);
                 
                 if (shopType === 'aesir') {
-                    // For Aesir shops, directly show ledger balance
+                    // For Aesir shops, show ledger balance directly (no history needed first)
                     console.log('Auto-loading Aesir ledger balance for exact match:', exactMatch.activePlayerName);
-                    await this.showLedgerBalanceAfterHistory(exactMatch.activePlayerName);
+                    await this.loadAesirLedgerBalance(exactMatch.activePlayerName);
                 } else {
                     // For other shops, load transaction history
                     console.log('Auto-loading transaction history for exact match:', exactMatch.activePlayerName);
@@ -3987,6 +4011,11 @@ class UnifiedTeller {
                 const turninBtn = document.getElementById('record-turnin-btn');
                 if (recordBtn) recordBtn.disabled = this.cart.length === 0;
                 if (turninBtn) turninBtn.disabled = this.cart.length === 0;
+                
+                // Clear the flag after processing
+                setTimeout(() => {
+                    this.autoLoadingInProgress = false;
+                }, 200);
             } else {
                 // Check if we should show register option (no matches at all)
                 if (filteredPlayers.length === 0) {
@@ -4097,9 +4126,28 @@ class UnifiedTeller {
         this.hideCustomerSuggestions();
         this.showValidationIcon('valid');
         
-        // Load daily turn-in data and transaction history for this customer
+        // Clear any existing transaction display first to prevent duplicates
+        const container = document.getElementById('transaction-history');
+        if (container) {
+            container.innerHTML = '';
+        }
+        
+        // Check shop type and load appropriate data
+        const shopType = this.getCurrentShopType();
+        console.log('🔍 DEBUG selectCustomer: shopType =', shopType);
+        
+        // Load daily turn-in data first
         await this.loadDailyTurninData(player.activePlayerName);
-        await this.loadTransactionHistory(player.activePlayerName);
+        
+        if (shopType && shopType.shopType === 'aesir') {
+            // For Aesir shops, show ledger balance directly
+            console.log('🔍 DEBUG selectCustomer: Loading Aesir ledger for', player.activePlayerName);
+            await this.loadAesirLedgerBalance(player.activePlayerName);
+        } else {
+            // For other shops, load transaction history
+            console.log('🔍 DEBUG selectCustomer: Loading transaction history for', player.activePlayerName);
+            await this.loadTransactionHistory(player.activePlayerName);
+        }
         
         // Re-render items to update limits, but preserve current quantities
         if (this.selectedShop && this.shopItems.length > 0) {
@@ -4166,8 +4214,22 @@ class UnifiedTeller {
         if (e.key === 'Enter') {
             e.preventDefault();
             
+            // Check if auto-loading is in progress to prevent duplicates
+            if (this.autoLoadingInProgress) {
+                console.log('🔍 DEBUG Enter key: Auto-loading in progress, skipping Enter processing');
+                return;
+            }
+            
             // Get current input value
             const customerName = e.target.value.trim();
+            
+            // If we already have this customer loaded, don't process again
+            if (this.currentCustomer && 
+                this.currentCustomer.activePlayerName && 
+                this.currentCustomer.activePlayerName.toLowerCase() === customerName.toLowerCase()) {
+                console.log('🔍 DEBUG Enter key: Customer already loaded, skipping');
+                return;
+            }
             
             // Suppress dropdown for a period after Enter is pressed
             this.suppressDropdown = true;
@@ -4185,7 +4247,7 @@ class UnifiedTeller {
                 }
                 
                 if (exactMatch) {
-                    console.log('Enter key - exact match found:', exactMatch.activePlayerName);
+                    console.log('🔍 DEBUG Enter key: exact match found:', exactMatch.activePlayerName);
                     // Set the customer directly and trigger the same flow as autocomplete selection
                     await this.selectCustomer(exactMatch);
                     
