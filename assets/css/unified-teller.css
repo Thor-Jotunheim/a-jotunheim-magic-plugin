@@ -991,6 +991,14 @@ body h1:not(.teller-title):not(#dynamic-shop-title) {
     min-width: 0;
 }
 
+/* Add visual divider between table columns */
+.items-table-wrapper.multi-column-2 .table-container:not(:last-child),
+.items-table-wrapper.multi-column-3 .table-container:not(:last-child) {
+    border-right: 2px solid var(--border);
+    padding-right: var(--space-4, 20px);
+    margin-right: var(--space-2, 10px);
+}
+
 .items-table {
     width: 100%;
     border-collapse: collapse;
